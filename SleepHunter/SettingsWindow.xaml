@@ -899,7 +899,7 @@
                                   HorizontalAlignment="Left"
                                   Margin="8"
                                   ToolTip="This will prioritize flowering your own characters before other targets.">
-                                Prioritize Alternate Characters over Others
+                            Prioritize Alternate Characters over Others
                         </CheckBox>
 
                         <!-- Flowering Before Spells Macro CheckBox -->
@@ -909,7 +909,7 @@
                                   HorizontalAlignment="Left"
                                   Margin="8"
                                   ToolTip="This will prioritize flowering over your spell casting queue.">
-                                Prioritize Flowering over Spell Casting
+                            Prioritize Flowering over Spell Casting
                         </CheckBox>
                     </StackPanel>
 
@@ -917,7 +917,7 @@
                                Grid.ColumnSpan="2"
                                Margin="4,6"
                                Style="{StaticResource ObsidianSeparator}"/>
-                    
+
                     <WrapPanel Grid.Row="2" Grid.ColumnSpan="2"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
@@ -946,11 +946,6 @@
                 </Grid>
             </TabItem>
 
-            <!-- Notifications Tab -->
-            <TabItem Header="_Notifications" IsEnabled="False">
-
-            </TabItem>
-
             <!-- About Tab -->
             <TabItem Header="_About">
                 <Grid>
@@ -973,7 +968,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <TextBlock Text="SleepHunter"
                                Style="{StaticResource ObsidianText}"
                                FontSize="38"
@@ -986,7 +981,7 @@
                                FontSize="22"
                                TextAlignment="Center"
                                Margin="4,2"/>
-                   
+
                     <TextBlock Grid.Row="3" 
                                Text="Erik 'SiLo' Rogers"
                                Style="{StaticResource ObsidianText}"
@@ -994,7 +989,7 @@
                                TextAlignment="Center"
                                Opacity="0.75"
                                Margin="4,8,4,4"/>
-                    
+
                     <TextBlock Grid.Row="4" 
                                Text="ewrogers@gmail.com"
                                Style="{StaticResource ObsidianText}"
@@ -1033,7 +1028,7 @@
                                Opacity="0.5"
                                Margin="4,4"
                                Visibility="Collapsed"/>
- 
+
                     <TextBlock Name="buildDateText" 
                                Grid.Row="9" 
                                Text="Unknown Build Date"
@@ -1051,7 +1046,7 @@
                                TextAlignment="Center"
                                Opacity="0.5"
                                Margin="4,8"/>
-                    
+
                     <CheckBox Name="autoUpdateCheckBox"
                               Grid.Row="12"
                               Style="{StaticResource ObsidianCheckBox}"
@@ -1070,10 +1065,6 @@
                             Click="updateButton_Click">Check for _Updates</Button>
                 </Grid>
             </TabItem>
-
-            <!-- Debug Tab -->
-            <TabItem Header="_Debug" IsEnabled="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.IsDebugMode}">
-            </TabItem>            
         </TabControl>
     </Grid>
 </Window>
