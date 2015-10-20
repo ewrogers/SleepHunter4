@@ -102,6 +102,23 @@
     <Compile Include="Data\TimeSpanConverter.cs" />
     <Compile Include="Data\TimeSpanExtender.cs" />
     <Compile Include="Data\VisibilityConverter.cs" />
+    <Compile Include="IO\BinaryReaderExtender.cs" />
+    <Compile Include="IO\FileArchive.cs" />
+    <Compile Include="IO\FileArchiveEntry.cs" />
+    <Compile Include="IO\FileArchiveManager.cs" />
+    <Compile Include="IO\PathHelper.cs" />
+    <Compile Include="IO\Process\ClientProcess.cs" />
+    <Compile Include="IO\Process\ClientProcessEventArgs.cs" />
+    <Compile Include="IO\Process\DynamicMemoryVariable.cs" />
+    <Compile Include="IO\Process\MemoryOffset.cs" />
+    <Compile Include="IO\Process\MemoryVariable.cs" />
+    <Compile Include="IO\Process\MemoryVariableExtender.cs" />
+    <Compile Include="IO\Process\ProcessAccess.cs" />
+    <Compile Include="IO\Process\ProcessManager.cs" />
+    <Compile Include="IO\Process\ProcessMemoryAccessor.cs" />
+    <Compile Include="IO\Process\ProcessMemoryScanner.cs" />
+    <Compile Include="IO\Process\ProcessMemoryStream.cs" />
+    <Compile Include="IO\Process\SearchMemoryVariable.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
