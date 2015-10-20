@@ -536,7 +536,7 @@ namespace SleepHunter
       {
          if (!CheckAccess())
          {
-            this.Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
+            this.Dispatcher.InvokeIfRequired((Action)RefreshSpellQueue, DispatcherPriority.DataBind);
             return;
          }
 
@@ -547,7 +547,7 @@ namespace SleepHunter
       {
          if (!CheckAccess())
          {
-            this.Dispatcher.InvokeIfRequired(RefreshFlowerQueue, DispatcherPriority.DataBind);
+            this.Dispatcher.InvokeIfRequired((Action)RefreshFlowerQueue, DispatcherPriority.DataBind);
             return;
          }
 
