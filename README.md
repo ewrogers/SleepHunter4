@@ -1,4 +1,6 @@
+
 # SleepHunter
+<img src="SleepHunter/SleepHunter.ico" width=32 height=32/>
 Dark Ages Automation Tool
 
 **Disclaimer: Much of the code here does not follow proper MVVM conventions or project structure.**
