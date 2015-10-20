@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="App.xaml.cs" />
     <Compile Include="AssemblyExtender.cs" />
+    <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="ControlExtender.cs" />
     <Compile Include="FlowerTargetWindow.xaml.cs" />
     <Compile Include="LineModifiersEditorWindow.xaml.cs" />
