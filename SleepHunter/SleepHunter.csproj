@@ -52,16 +52,22 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    <Compile Include="App.xaml.cs" />
+    <Compile Include="AssemblyExtender.cs" />
+    <Compile Include="ControlExtender.cs" />
+    <Compile Include="FlowerTargetWindow.xaml.cs" />
+    <Compile Include="LineModifiersEditorWindow.xaml.cs" />
+    <Compile Include="MainWindow.xaml.cs" />
+    <Compile Include="MessageBoxWindow.xaml.cs" />
+    <Compile Include="MetadataEditorWindow.xaml.cs" />
+    <Compile Include="Obsidian.xaml.cs" />
     <Compile Include="Security\DefaultMapVerifier.cs" />
     <Compile Include="Security\IMapVerifier.cs" />
     <Compile Include="Security\MapSecurityInformation.cs" />
     <Compile Include="Security\MapSecurityManager.cs" />
     <Compile Include="Security\NullMapSecurityManager.cs" />
     <Compile Include="Security\SecurityCompiler.cs" />
+    <Compile Include="SettingsWindow.xaml.cs" />
     <Compile Include="Settings\ClientVersion.cs" />
     <Compile Include="Settings\ClientVersionCollection.cs" />
     <Compile Include="Settings\ClientVersionEventArgs.cs" />
@@ -74,6 +80,12 @@
     <Compile Include="Settings\UserSetting.cs" />
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />
+    <Compile Include="SkillEditorWindow.xaml.cs" />
+    <Compile Include="SoftwareUpdateWindow.xaml.cs" />
+    <Compile Include="SpellEditorWindow.xaml.cs" />
+    <Compile Include="SpellTargetWindow.xaml.cs" />
+    <Compile Include="StaffEditorWindow.xaml.cs" />
+    <Compile Include="StringExtender.cs" />
     <Compile Include="Updates\BuildHelper.cs" />
     <Compile Include="Updates\SoftwareBundle.cs" />
     <Compile Include="Updates\SoftwareBundleFile.cs" />
@@ -95,18 +107,15 @@
     <Compile Include="Win32\VirtualMemoryProtection.cs" />
     <Compile Include="Win32\VirtualMemoryStatus.cs" />
     <Compile Include="Win32\VirtualMemoryType.cs" />
+    <Compile Include="WindowExtender.cs" />
+    <Page Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\NumericUpDown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controls\NumericUpDown.xaml.cs">
       <DependentUpon>NumericUpDown.xaml</DependentUpon>
     </Compile>
@@ -172,10 +181,54 @@
     <Compile Include="Macro\SavedSpellState.cs" />
     <Compile Include="Macro\SpellRotationMode.cs" />
     <Compile Include="Macro\WindowAutomator.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <Page Include="FlowerTargetWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="LineModifiersEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MessageBoxWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MetadataEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Obsidian.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SkillEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SoftwareUpdateWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SpellEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SpellTargetWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="StaffEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Templates\AbilityDataTemplate.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -249,8 +302,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="SleepHunter.exe.manifest" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="SleepHunter.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

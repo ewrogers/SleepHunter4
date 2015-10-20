@@ -1,0 +1,1079 @@
+﻿<Window Name="Window"
+        x:Class="SleepHunter.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:ctl="clr-namespace:SleepHunter.Controls"
+        xmlns:data="clr-namespace:SleepHunter.Data"
+        xmlns:settings="clr-namespace:SleepHunter.Settings"
+        Title="Settings"
+        Width="640" Height="540"
+        ResizeMode="NoResize"
+        Style="{StaticResource ObsidianWindow}"
+        WindowStartupLocation="CenterOwner">
+    <Grid>        
+        <!-- Tabs -->
+        <TabControl Name="tabControl"
+                    Style="{StaticResource ObsidianVerticalTabControl}"
+                    SelectedIndex="{Binding ElementName=Window, Path=SelectedTabIndex}"
+                    SelectionChanged="tabControl_SelectionChanged">
+            <!-- General Tab-->
+            <TabItem Header="_General">
+                <Grid Height="442" Width="436">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Process Update Interval Text -->
+                    <TextBlock Text="Process Update Interval:"
+            		           TextAlignment="Right"
+            		           Style="{StaticResource ObsidianText}"
+                               ToolTip="This is how often new clients are added and invalid clients removed."/>
+
+                    <!-- Process Update Interval -->
+                    <ComboBox Name="processUpdateIntervalComboBox"
+            		          Grid.Column="1"
+            		          Width="180"
+            		          Style="{StaticResource ObsidianComboBox}"
+            		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
+            		          SelectedValue="{Binding Settings.ProcessUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
+                              Margin="4,6">
+                        <sys:TimeSpan>0:0:0.500</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:1</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:2</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:3</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:4</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:5</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:10</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:15</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:30</sys:TimeSpan>
+                        <sys:TimeSpan>0:1:00</sys:TimeSpan>
+                    </ComboBox>
+
+                    <!-- Client Update Interval Text -->
+                    <TextBlock Grid.Row="1" 
+                               Text="Client Update Interval:"
+            		           TextAlignment="Right"            		           
+            		           Style="{StaticResource ObsidianText}"
+                               ToolTip="This is how often active clients are updated, including health and mana values."/>
+
+                    <!-- Client Update Interval -->
+                    <ComboBox Name="clientUpdateIntervalComboBox"
+            		          Grid.Row="1"
+            		          Grid.Column="1"
+            		          Width="180"
+            		          Style="{StaticResource ObsidianComboBox}"
+            		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
+            		          SelectedValue="{Binding Settings.ClientUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
+                              Margin="4,6">
+                        <sys:TimeSpan>0:0:0.100</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:0.200</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:0.300</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:0.400</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:0.500</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:1</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:2</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:3</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:4</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:5</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:10</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:15</sys:TimeSpan>
+                        <sys:TimeSpan>0:0:30</sys:TimeSpan>
+                        <sys:TimeSpan>0:1:00</sys:TimeSpan>
+                    </ComboBox>
+                    
+                    <StackPanel Grid.Row="2"
+                                Grid.ColumnSpan="2"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <!-- Save Macro State -->
+                        <CheckBox Name="saveMacroStateCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SaveMacroStates}"
+                                      Margin="8"
+                                      ToolTip="This will save character macro states on logout and reload them on login.">
+                            Remember Last Known Macro State
+                        </CheckBox>
+                    </StackPanel>
+               
+                    <!-- Metadata Editor Button -->
+                    <Button Name="metadataEditorButton"
+                            Grid.Row="5"
+                            Grid.ColumnSpan="2"
+                            Style="{StaticResource ObsidianButton}"
+                            Width="320"
+                            Margin="4,54"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Click="metadataEditorButton_Click">
+                        Show _Metadata Editor
+                    </Button>
+                    
+                    <!-- Reset Defaults Button -->
+                    <Button x:Name="resetDefaultsButton"
+            		        Grid.Row="5"
+            		        Grid.ColumnSpan="2"
+            		        Style="{StaticResource ObsidianButton}"
+            		        Width="320"
+            		        Margin="4,8"
+            		        HorizontalAlignment="Center"
+            		        VerticalAlignment="Bottom"
+            		        Click="resetDefaultsButton_Click" Content="Reset Default _Settings"/>
+                </Grid>
+            </TabItem>
+
+            <!-- UI Tab-->
+            <TabItem Header="_User Interface">
+                <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
+                              CanContentScroll="True"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,-8,0">                    
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <!-- Color Theme Text -->
+                            <TextBlock Text="Color Theme:"
+                                       Style="{StaticResource ObsidianText}"
+                                       TextAlignment="Right"
+                                       ToolTip="This is the color theme to use for the user interface."/>
+
+                            <!-- Color Themes -->
+                            <ComboBox Name="themeColorComboBox"
+                                      Width="280" Height="36"
+                                      Style="{StaticResource ObsidianComboBox}"
+                                      ItemTemplate="{StaticResource ColorThemeDataTemplate}"
+                                      ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
+                                      SelectedValuePath="Name"
+                                      SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
+                                      Margin="4,6"/>
+                        </StackPanel>
+
+                        <!-- Rainbow Mode -->
+                        <CheckBox Name="rainbowModeCheckBox"
+                                  Grid.Row="1"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RainbowMode}"
+                                  ToolTip="Aren't you curious?">
+                            _Rainbow Mode
+                        </CheckBox>
+
+                        <!-- Reset Themes Button -->
+                        <Button Name="resetThemesButton"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Style="{StaticResource ObsidianButton}"
+                                Width="190"
+                                Margin="4,1"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Click="resetThemesButton_Click">
+                            Reset _Color Themes
+                        </Button>
+
+                        <Separator Grid.Row="2"
+                                   Grid.ColumnSpan="2"
+                                   Style="{StaticResource ObsidianSeparator}"
+                                   Margin="4,8"/>
+
+                        <!-- Icon Size Text -->
+                        <TextBlock Text="Skill/Spell Icon Size:"
+                                   Grid.Row="3"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the size of icons in the skillbook, spellbook, and casting queue."/>
+
+                        <!-- Icon Size -->
+                        <ComboBox Name="skillIconSizeComboBox"
+                                  Grid.Row="3" Grid.Column="1"
+                                  Width="160" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}"
+                                  Margin="4">
+                            <settings:UserSetting Key="Small" Value="31"/>
+                            <settings:UserSetting Key="Medium" Value="46"/>
+                            <settings:UserSetting Key="Large" Value="62"/>
+                        </ComboBox>
+                        
+                        <!-- Tem/Med Skills per Row Text -->
+                        <TextBlock Text="Tem/Med Skills per Row:"
+                                   Grid.Row="4"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the maximum number of Temuair/Medenia skills displayed on each row of the skillbook."/>
+
+                        <!-- Tem/Med Skills per Row -->
+                        <ComboBox Name="skillGridWidthComboBox"
+                                  Grid.Row="4" Grid.Column="1"
+                                  Width="160" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillGridWidth}"
+                                  Margin="4">
+                            <settings:UserSetting Key="1 Skill" Value="1"/>
+                            <settings:UserSetting Key="2 Skills" Value="2"/>
+                            <settings:UserSetting Key="3 Skills" Value="3"/>
+                            <settings:UserSetting Key="4 Skills" Value="4"/>
+                            <settings:UserSetting Key="5 Skills" Value="5"/>
+                            <settings:UserSetting Key="6 Skills" Value="6"/>
+                            <settings:UserSetting Key="7 Skills" Value="7"/>
+                            <settings:UserSetting Key="8 Skills" Value="8"/>
+                            <settings:UserSetting Key="9 Skills" Value="9"/>
+                            <settings:UserSetting Key="10 Skills" Value="10"/>
+                            <settings:UserSetting Key="11 Skills" Value="11"/>
+                            <settings:UserSetting Key="12 Skills" Value="12"/>
+                            <settings:UserSetting Key="18 Skills" Value="18"/>
+                            <settings:UserSetting Key="Unlimited" Value="0"/>
+                        </ComboBox>
+
+                        <!-- World Skills per Row Text-->
+                        <TextBlock Text="World Skills per Row:"
+                                   Grid.Row="5"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the maximum number of World skills displayed on each row of the skillbook."/>
+
+                        <!-- World Skills per Row -->
+                        <ComboBox Name="worldSkillGridWidthComboBox"
+                                  Grid.Row="5" Grid.Column="1"
+                                  Width="160" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WorldSkillGridWidth}"
+                                  Margin="4">
+                            <settings:UserSetting Key="1 Skill" Value="1"/>
+                            <settings:UserSetting Key="2 Skills" Value="2"/>
+                            <settings:UserSetting Key="3 Skills" Value="3"/>
+                            <settings:UserSetting Key="4 Skills" Value="4"/>
+                            <settings:UserSetting Key="5 Skills" Value="5"/>
+                            <settings:UserSetting Key="6 Skills" Value="6"/>
+                            <settings:UserSetting Key="7 Skills" Value="7"/>
+                            <settings:UserSetting Key="8 Skills" Value="8"/>
+                            <settings:UserSetting Key="9 Skills" Value="9"/>
+                            <settings:UserSetting Key="10 Skills" Value="10"/>
+                            <settings:UserSetting Key="11 Skills" Value="11"/>
+                            <settings:UserSetting Key="12 Skills" Value="12"/>
+                            <settings:UserSetting Key="18 Skills" Value="18"/>
+                            <settings:UserSetting Key="Unlimited" Value="0"/>
+                        </ComboBox>
+
+                        <!-- Tem/Med Spells per Row Text -->
+                        <TextBlock Text="Tem/Med Spells per Row:"
+                                   Grid.Row="6"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the maximum number of Temuair/Medenia spells displayed on each row of the spellbook."/>
+
+                        <!-- Tem/Med Spells per Row -->
+                        <ComboBox Name="spellGridWidthComboBox"
+                                  Grid.Row="6" Grid.Column="1"
+                                  Width="160" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SpellGridWidth}"
+                                  Margin="4">
+                            <settings:UserSetting Key="1 Spell" Value="1"/>
+                            <settings:UserSetting Key="2 Spells" Value="2"/>
+                            <settings:UserSetting Key="3 Spells" Value="3"/>
+                            <settings:UserSetting Key="4 Spells" Value="4"/>
+                            <settings:UserSetting Key="5 Spells" Value="5"/>
+                            <settings:UserSetting Key="6 Spells" Value="6"/>
+                            <settings:UserSetting Key="7 Spells" Value="7"/>
+                            <settings:UserSetting Key="8 Spells" Value="8"/>
+                            <settings:UserSetting Key="9 Spells" Value="9"/>
+                            <settings:UserSetting Key="10 Spells" Value="10"/>
+                            <settings:UserSetting Key="11 Spells" Value="11"/>
+                            <settings:UserSetting Key="12 Spells" Value="12"/>
+                            <settings:UserSetting Key="18 Spells" Value="18"/>
+                            <settings:UserSetting Key="Unlimited" Value="0"/>
+                        </ComboBox>
+
+                        <!-- World Spells per Row Text -->
+                        <TextBlock Text="World Spells per Row:"
+                                   Grid.Row="7"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the maximum number of World spells displayed on each row of the spellbook."/>
+
+                        <!-- World Spells per Row -->
+                        <ComboBox Name="worldSpellGridWidthComboBox"
+                                  Grid.Row="7" Grid.Column="1"
+                                  Width="160" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WorldSpellGridWidth}"
+                                  Margin="4">
+                            <settings:UserSetting Key="1 Spell" Value="1"/>
+                            <settings:UserSetting Key="2 Spells" Value="2"/>
+                            <settings:UserSetting Key="3 Spells" Value="3"/>
+                            <settings:UserSetting Key="4 Spells" Value="4"/>
+                            <settings:UserSetting Key="5 Spells" Value="5"/>
+                            <settings:UserSetting Key="6 Spells" Value="6"/>
+                            <settings:UserSetting Key="7 Spells" Value="7"/>
+                            <settings:UserSetting Key="8 Spells" Value="8"/>
+                            <settings:UserSetting Key="9 Spells" Value="9"/>
+                            <settings:UserSetting Key="10 Spells" Value="10"/>
+                            <settings:UserSetting Key="11 Spells" Value="11"/>
+                            <settings:UserSetting Key="12 Spells" Value="12"/>
+                            <settings:UserSetting Key="18 Spells" Value="18"/>
+                            <settings:UserSetting Key="Unlimited" Value="0"/>
+                        </ComboBox>
+
+                        <Separator Grid.Row="8" Grid.ColumnSpan="2"
+                                   Style="{StaticResource ObsidianSeparator}"
+                                   Margin="4,8"/>
+
+                        <WrapPanel Grid.Row="9"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Top"
+                                   Margin="4">
+                            <!-- Show Skill Names  -->
+                            <CheckBox Name="showSkillNamesCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillNames}"
+                                      Margin="8"
+                                      ToolTip="This will show or hide skill names in the skillbook.">
+                                Show Skill Names
+                            </CheckBox>
+
+                            
+
+                            <!-- Show Spell Names  -->
+                            <CheckBox Name="showSpellNamesCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellNames}"
+                                      Margin="8"
+                                      ToolTip="This will show or hide spell names in the spellbook.">
+                                Show Spell Names
+                            </CheckBox>
+
+                            
+                        </WrapPanel>
+                        
+                        <WrapPanel Grid.Row="9" Grid.Column="1"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Top"
+                                   Margin="4">
+                            <!-- Show Skill Levels  -->
+                            <CheckBox Name="showSkillLevelsCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillLevels}"
+                                      Margin="8"
+                                      ToolTip="This will show or hide skill levels in the skillbook.">
+                                Show Skill Levels
+                            </CheckBox>
+
+                            <!-- Show Spell Levels  -->
+                            <CheckBox Name="showSpellLevelsCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellLevels}"
+                                      Margin="8"
+                                      ToolTip="This will show or hide spell levels in the spellbook.">
+                                Show Spell Levels
+                            </CheckBox>
+                        </WrapPanel>
+                        
+                    </Grid>
+                </ScrollViewer>               
+            </TabItem>
+
+            <!-- Game Client Tab -->
+            <TabItem Header="Game _Client">
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Client Path -->
+                    <TextBlock Text="Client Path:"
+                               Grid.Row="0" Grid.ColumnSpan="2"
+                               TextAlignment="Left"
+                               Margin="24,2"
+                               Style="{StaticResource ObsidianText}"
+                               ToolTip="This is the folder path to the game client executable."/>
+
+                    <!-- Client Path TextBox -->
+                    <TextBox Name="clientPathTextBox"
+                             Grid.Row="1"
+                             Grid.ColumnSpan="2"
+                             Width="400"
+                             Style="{StaticResource ObsidianTextBox}"
+                             Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
+                             Margin="4,2,4,6"/>
+
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <!-- Client Version-->
+                        <TextBlock Text="Client Version:"
+                                   Margin="8,1"
+                                   TextAlignment="Right"
+                                   Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the client version to expect for patching and memory reading."/>
+
+                        <!-- Client Version ComboBox -->
+                        <ComboBox Name="clientVersionComboBox"
+                                  Width="180" Height="36"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource ClientVersionDataTemplate}"
+                                  ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
+                                  SelectedValuePath="Key"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedVersion}"
+                                  Margin="4,6"/>
+                    </StackPanel>
+
+                    <Separator Grid.Row="3" 
+            		           Grid.ColumnSpan="2"
+            		           Style="{StaticResource ObsidianSeparator}"
+            		           Margin="4,6"/>
+                    
+                    <StackPanel Grid.Row="4" Grid.ColumnSpan="2" 
+                                Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top">
+                        <!-- Patch Multiple Instance CheckBox -->
+                        <CheckBox Name="patchMultipleInstanceCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
+                                  Margin="8"
+                                  ToolTip="This will patch the client to allow multiple instances to be launched.">
+                            Allow _Multiple Instances
+                        </CheckBox>
+
+                        <!-- Patch Intro Video CheckBox -->
+                        <CheckBox Name="patchIntroVideoCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
+                                  Margin="8"
+                                  ToolTip="This will patch the client to skip the introduction video.">
+                            Skip Intro _Video
+                        </CheckBox>
+
+                        <!-- Patch Walls CheckBox -->
+                        <CheckBox Name="patchNoWallsCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
+                                  Margin="8"
+                                  ToolTip="This will patch the client to not render foreground (wall) tiles.">
+                            No Foreground _Walls
+                        </CheckBox>
+                    </StackPanel>
+                    
+                    <!-- Reset Versions Button -->
+                    <Button Name="resetVersionsButton"
+                            Grid.Row="4"
+                            Grid.ColumnSpan="2"
+                            Style="{StaticResource ObsidianButton}"
+                            Width="240"
+                            Margin="4,8"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Click="resetVersionsButton_Click">
+                        Reset Client _Versions
+                    </Button>                    
+                </Grid>
+            </TabItem>
+
+            <!-- All Macros Tab -->
+            <TabItem Header="_All Macros">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Map Change Text -->
+                    <TextBlock Text="Action on Map Change:"
+                               TextAlignment="Right"
+                               Style="{StaticResource ObsidianText}"
+                               ToolTip="This is the action to take when the map changes while a macro is running."/>
+
+                    <!-- Map Change ComboBox -->
+                    <ComboBox Name="mapChangeActionComboBox"
+                              Grid.Column="1"
+                              Width="200" Height="32"
+                              Style="{StaticResource ObsidianComboBox}"
+                              ItemTemplate="{StaticResource StringDataTemplate}"
+                              SelectedValuePath="Value"
+                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.MapChangeAction}"
+                              Margin="4,6">
+                        <settings:UserSetting Key="DoNothing" DisplayText="Continue Macro" Value="None"/>
+                        <settings:UserSetting Key="PauseMacro" DisplayText="Pause Macro" Value="Pause"/>
+                        <settings:UserSetting Key="StopMacro" DisplayText="Stop Macro" Value="Stop"/>
+                        <settings:UserSetting Key="ForceQuit" DisplayText="Close Client" Value="ForceQuit"/>
+                    </ComboBox>
+                    
+                    <!-- X/Y Change Text -->
+                    <TextBlock Text="Action on X/Y Change:"
+                               Grid.Row="1"
+                               TextAlignment="Right"
+                               Style="{StaticResource ObsidianText}"
+                               ToolTip="This is the action to take when the X/Y coordinates change while a macro is running."/>
+
+                    <!-- X/Y Change ComboBox -->
+                    <ComboBox Name="coordsChangeActionComboBox"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              Width="200" Height="32"
+                              Style="{StaticResource ObsidianComboBox}"
+                              ItemTemplate="{StaticResource StringDataTemplate}"
+                              SelectedValuePath="Value"
+                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.CoordsChangeAction}"
+                              Margin="4,6">
+                        <settings:UserSetting Key="DoNothing" DisplayText="Continue Macro" Value="None"/>
+                        <settings:UserSetting Key="PauseMacro" DisplayText="Pause Macro" Value="Pause"/>
+                        <settings:UserSetting Key="StopMacro" DisplayText="Stop Macro" Value="Stop"/>
+                        <settings:UserSetting Key="ForceQuit" DisplayText="Close Client" Value="ForceQuit"/>
+                    </ComboBox>
+
+                    <Separator Grid.Row="2" 
+            		           Grid.ColumnSpan="2"
+            		           Style="{StaticResource ObsidianSeparator}"
+            		           Margin="4,6"/>
+                    
+                    <!-- Medenia Switch Text -->
+                    <TextBlock Text="Medenia Panel Switching:"
+                               Grid.Row="3"
+                               TextAlignment="Right"
+                               Style="{StaticResource ObsidianText}"
+                               ToolTip="This is the method to use for switching to Medenia skill/spell panels."/>
+
+                    <!-- Medenia Switch ComboBox -->
+                    <ComboBox Name="shiftForMedeniaPaneComboBox"
+                              Grid.Row="3"
+                              Grid.Column="1"
+                              Width="200" Height="32"
+                              Style="{StaticResource ObsidianComboBox}"
+                              ItemTemplate="{StaticResource StringDataTemplate}"
+                              SelectedValuePath="Value"
+                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseShiftForMedeniaPane}"
+                              Margin="4,6">
+                        <settings:UserSetting Key="UseShiftKey" DisplayText="Shift-Click" Value="True"/>
+                        <settings:UserSetting Key="DoNotUseShiftKey" DisplayText="Double Click" Value="False"/>
+                    </ComboBox>
+                    
+                    <!-- Preserve User Panel CheckBox -->
+                    <CheckBox Name="preserveUserPanelCheckBox"
+                              Grid.Row="7"
+                              Grid.ColumnSpan="2"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.PreserveUserPanel}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Top"
+                              Margin="8"
+                              ToolTip="This will attempt to preserve the user-selected panel while macroing.">
+                        Preserve Selected Panel While Macroing
+                    </CheckBox>
+                </Grid>
+            </TabItem>
+            
+            <!-- Skill Tab -->
+            <TabItem Header="S_kill Macros">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Assail Mode Text -->
+                    <TextBlock Text="Assail Skills Mode:"
+                               TextAlignment="Right"
+                               Style="{StaticResource ObsidianText}"
+                               ToolTip="This is the method to use for activating assail skills."/>
+
+                    <!-- Assail Mode CheckBox -->
+                    <ComboBox Name="assailModeComboBox"
+                              Grid.Column="1"
+                              Width="240" Height="32"
+                              Style="{StaticResource ObsidianComboBox}"
+                              ItemTemplate="{StaticResource StringDataTemplate}"
+                              SelectedValuePath="Value"
+                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseSpaceForAssail}"
+                              Margin="4,6">
+                        <settings:UserSetting Key="Click" DisplayText="Click Each Skill" Value="False"/>
+                        <settings:UserSetting Key="SpaceBar" DisplayText="Use Space Bar" Value="True"/>
+                    </ComboBox>
+                    
+                    <CheckBox Name="disarmForAssailsCheckBox"
+                              Grid.Row="1"
+                              Grid.ColumnSpan="2"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.DisarmForAssails}"
+                              Margin="4,8"
+                              Content="Disarm Before Using Assail Skills"
+                              ToolTip="This will disarm the character first before using assail skills."
+                              HorizontalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+            
+            <!-- Spell Tab -->
+            <TabItem Header="S_pell Macros">
+                <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
+                              CanContentScroll="True"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Spell Rotation Mode:"
+                                   TextAlignment="Right"
+                                   Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the way"/>
+
+                        <ComboBox Name="spellRotationComboBox"
+                                  Grid.Column="1"
+                                  Width="200" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SpellRotationMode}">
+                            <settings:UserSetting Key="None" DisplayText="No Rotation" Value="None"/>
+                            <settings:UserSetting Key="Singular" DisplayText="Singular Order" Value="Singular"/>
+                            <settings:UserSetting Key="RoundRobin" DisplayText="Round Robin" Value="RoundRobin"/>
+                        </ComboBox>
+
+                        <Separator Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Margin="4,6"
+                                   Style="{StaticResource ObsidianSeparator}"/>
+
+                        <!-- Zero Line Delay Text -->
+                        <TextBlock Text="Zero Line Delay:"
+                                   Grid.Row="2"
+            		               TextAlignment="Right"
+            		               Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the casting delay for a spell with no lines."/>
+
+                        <!-- Zero Line Delay ComboBox  -->
+                        <ComboBox Name="zeroLineDelayComboBox"
+                                  Grid.Row="2"
+            		              Grid.Column="1"
+            		              Width="200"
+            		              Style="{StaticResource ObsidianComboBox}"
+            		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
+                                  Margin="4,6"
+            		              SelectedValue="{Binding Settings.ZeroLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                            <sys:TimeSpan>0:0:0.1</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.2</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.3</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.4</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.5</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.6</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.7</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.8</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.9</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.0</sys:TimeSpan>
+                        </ComboBox>
+
+                        <!-- One Line Delay Text -->
+                        <TextBlock Text="Single Line Delay:"
+                                   Grid.Row="3"
+            		               TextAlignment="Right"
+            		               Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the casting delay for a spell with a single line."/>
+
+                        <!-- One Line Delay ComboBox  -->
+                        <ComboBox Name="singleLineDelayComboBox"
+                                  Grid.Row="3"
+            		              Grid.Column="1"
+            		              Width="200"
+            		              Style="{StaticResource ObsidianComboBox}"
+            		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
+                                  Margin="4,6"
+            		              SelectedValue="{Binding Settings.SingleLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                            <sys:TimeSpan>0:0:0.8</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.9</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.0</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.1</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.2</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.3</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.4</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.5</sys:TimeSpan>
+                        </ComboBox>
+
+                        <!-- Multiple Line Delay Text -->
+                        <TextBlock Text="Multiple Line Delay:"
+                                   Grid.Row="4"
+            		               TextAlignment="Right"
+            		               Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the casting delay, per line, for a spell with multiple lines."/>
+
+                        <!-- Multiple Line Delay ComboBox  -->
+                        <ComboBox x:Name="multipleLineDelayComboBox"
+                                  Grid.Row="4"
+            		              Grid.Column="1"
+            		              Width="200"
+            		              Style="{StaticResource ObsidianComboBox}"
+            		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
+                                  Margin="4,6"
+            		              SelectedValue="{Binding Settings.MultipleLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                            <sys:TimeSpan>0:0:0.8</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:0.9</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.0</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.1</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.2</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.3</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.4</sys:TimeSpan>
+                            <sys:TimeSpan>0:0:1.5</sys:TimeSpan>
+                        </ComboBox>
+
+                        <Separator Grid.Row="5"
+                                   Grid.ColumnSpan="2"
+                                   Margin="4,6"
+                                   Style="{StaticResource ObsidianSeparator}"/>
+                        
+                        <WrapPanel Grid.Row="6" Grid.ColumnSpan="2"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                            <!-- Fas Spiorad CheckBox -->
+                            <CheckBox Name="fasSpioradCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      Margin="8"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
+                                      Content="Fas Spiorad if Mana Less Than "
+                                      ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
+
+                            <!-- Fas Spiorad Up Down -->
+                            <ctl:NumericUpDown x:Name="fasSpioradUpDown"
+                                               Style="{StaticResource ObsidianNumericUpDown}"
+                                               Width="140"
+                                               Minimum="1"
+                                               Maximum="1000000"
+                                               SmallIncrement="100"
+                                               LargeIncrement="1000"
+                                               FontSize="16"
+                                               Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
+                                               IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
+                                               Margin="4"/>
+
+                            <!-- Fas Spiorad On Demand CheckBox -->
+                            <CheckBox Name="fasSpioradOnDemandCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      Margin="8"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
+                                      Content="Fas Spiorad when Insufficient Mana"
+                                      ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
+                        </WrapPanel>
+
+                        <Separator Grid.Row="7"
+                                   Grid.ColumnSpan="2"
+                                   Margin="4,6"
+                                   Style="{StaticResource ObsidianSeparator}"/>
+
+
+                        <StackPanel Grid.Row="8"
+                                    Grid.ColumnSpan="2"
+                                    Orientation="Vertical"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top">
+                            <!-- Mana Requirement CheckBox -->
+                            <CheckBox Name="manaCheckCheckBox"
+                                      Grid.ColumnSpan="2"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
+                                      Margin="8"
+                                      ToolTip="This will allow spells only to be cast when you have the required mana.">
+                                Require Mana for Casting Spells
+                            </CheckBox>
+
+                            <!-- Staff Switching CheckBox -->
+                            <CheckBox Name="staffSwitchingCheckBox"
+                                      Grid.ColumnSpan="2"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
+                                      Margin="8"
+                                      ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
+                                Allow Automatic _Staff Switching
+                            </CheckBox>
+
+                            <!-- Warn on Duplicate Spell Queue CheckBox -->
+                            <CheckBox Name="warnOnDuplicateSpellsCheckBox"
+                                      Grid.ColumnSpan="2"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
+                                      Margin="8"
+                                      ToolTip="Show warnings when the same spell is added to the spell queue again.">
+                                _Warn on Duplicate Spells in Casting Queue
+                            </CheckBox>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+            
+            <!-- Flowering Tab -->
+            <TabItem Header="_Flowering">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Vertical"
+                                Grid.ColumnSpan="2"
+                                HorizontalAlignment="Center">
+                        <!-- Flowering Priority CheckBox -->
+                        <CheckBox Name="flowerPrioritizesAltsCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerAltsFirst}"
+                                  HorizontalAlignment="Left"
+                                  Margin="8"
+                                  ToolTip="This will prioritize flowering your own characters before other targets.">
+                                Prioritize Alternate Characters over Others
+                        </CheckBox>
+
+                        <!-- Flowering Before Spells Macro CheckBox -->
+                        <CheckBox Name="flowerBeforeSpellMacroCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerBeforeSpellMacros}"
+                                  HorizontalAlignment="Left"
+                                  Margin="8"
+                                  ToolTip="This will prioritize flowering over your spell casting queue.">
+                                Prioritize Flowering over Spell Casting
+                        </CheckBox>
+                    </StackPanel>
+
+                    <Separator Grid.Row="1"
+                               Grid.ColumnSpan="2"
+                               Margin="4,6"
+                               Style="{StaticResource ObsidianSeparator}"/>
+                    
+                    <WrapPanel Grid.Row="2" Grid.ColumnSpan="2"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                        <!-- Flower Minimum Mana CheckBox -->
+                        <CheckBox Name="flowerHasMinimumCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      Margin="8"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
+                                      Content="Minimum Flower Mana: "
+                                      ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
+
+                        <!-- Flower Minimum Mana Down -->
+                        <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Width="140"
+                                           Minimum="1"
+                                           Maximum="1000000"
+                                           SmallIncrement="100"
+                                           LargeIncrement="1000"
+                                           FontSize="16"
+                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
+                                           IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
+                    </WrapPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Notifications Tab -->
+            <TabItem Header="_Notifications" IsEnabled="False">
+
+            </TabItem>
+
+            <!-- About Tab -->
+            <TabItem Header="_About">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="63*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="SleepHunter"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="38"
+                               TextAlignment="Center"
+                               Margin="4,2"/>
+
+                    <TextBlock Grid.Row="1" 
+                               Text="Dark Ages Automation Tool"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="22"
+                               TextAlignment="Center"
+                               Margin="4,2"/>
+                   
+                    <TextBlock Grid.Row="3" 
+                               Text="Erik 'SiLo' Rogers"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="18"
+                               TextAlignment="Center"
+                               Opacity="0.75"
+                               Margin="4,8,4,4"/>
+                    
+                    <TextBlock Grid.Row="4" 
+                               Text="ewrogers@gmail.com"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4,4"/>
+
+                    <Separator Grid.Row="5"
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="8"/>
+
+                    <TextBlock Name="versionText" 
+                               Grid.Row="6" 
+                               Text="Version Unknown :("
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               TextAlignment="Center"
+                               Margin="4,8,4,4"/>
+
+                    <TextBlock Name="buildText" 
+                               Grid.Row="7" 
+                               Text="Build Unknown :("
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="20"
+                               TextAlignment="Center"
+                               Opacity="0.75"
+                               Margin="4,4"/>
+
+                    <TextBlock Name="debugText" 
+                               Grid.Row="8" 
+                               Text="Debug Build"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="20"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4,4"
+                               Visibility="Collapsed"/>
+ 
+                    <TextBlock Name="buildDateText" 
+                               Grid.Row="9" 
+                               Text="Unknown Build Date"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="18"
+                               TextAlignment="Center"
+                               Opacity="0.75"
+                               Margin="4,4"/>
+
+                    <TextBlock Name="frameworkVersionText" 
+                               Grid.Row="11" 
+                               Text="Unknown Framework Version"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="18"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4,8"/>
+                    
+                    <CheckBox Name="autoUpdateCheckBox"
+                              Grid.Row="12"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="4"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
+                              Content="_Automatically Check for Updates"/>
+
+                    <Button Name="updateButton"
+                            Grid.Row="13"
+                            Width="320"
+                            Height="32"
+                            Margin="8"
+                            Style="{StaticResource ObsidianButton}"
+                            Click="updateButton_Click">Check for _Updates</Button>
+                </Grid>
+            </TabItem>
+
+            <!-- Debug Tab -->
+            <TabItem Header="_Debug" IsEnabled="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.IsDebugMode}">
+            </TabItem>            
+        </TabControl>
+    </Grid>
+</Window>

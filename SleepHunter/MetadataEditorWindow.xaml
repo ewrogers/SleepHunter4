@@ -1,0 +1,227 @@
+﻿<Window x:Class="SleepHunter.MetadataEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:data="clr-namespace:SleepHunter.Data"
+        xmlns:metadata="clr-namespace:SleepHunter.Metadata"
+        xmlns:sh="clr-namespace:SleepHunter"
+        Title="Metadata Editor"
+        Width="900" Height="640"
+        MinWidth="640" MinHeight="480"
+        Style="{StaticResource ObsidianWindow}"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+    <Grid>        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TabControl Name="tabControl"
+                    SelectedIndex="{Binding RelativeSource={RelativeSource AncestorType=sh:MetadataEditorWindow}, Path=SelectedTabIndex}"
+                    SelectionChanged="tabControl_SelectionChanged"
+                    Style="{StaticResource ObsidianTabControl}"
+                    Padding="0"
+                    Panel.ZIndex="0">
+            <TabItem Header="Skills">
+                <ListView Name="skillListView" 
+                          Style="{StaticResource ObsidianListView}" 
+                          Margin="0,-2,0,0" 
+                          Panel.ZIndex="2"
+                          SelectionMode="Extended"
+                          ItemsSource="{Binding Source={x:Static metadata:SkillMetadataManager.Instance}, Path=Skills}"
+                          SelectionChanged="skillSpellListView_SelectionChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem" BasedOn="{StaticResource ObsidianListViewItem}">
+                            <EventSetter Event="MouseDoubleClick" Handler="skillListViewItem_DoubleClick"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView ColumnHeaderContainerStyle="{StaticResource ObsidianGridViewColumnHeader}">
+                            <GridViewColumn Header="Name" Width="150" CellTemplate="{StaticResource NameDataTemplate}"/>
+                            <GridViewColumn Header="Class" Width="100" CellTemplate="{StaticResource ClassDataTemplate}"/>
+                            <GridViewColumn Header="Group" Width="100" CellTemplate="{StaticResource GroupDataTemplate}"/>
+                            <GridViewColumn Header="Mana" Width="70" CellTemplate="{StaticResource ManaDataTemplate}"/>
+                            <GridViewColumn Header="Cooldown" Width="110" CellTemplate="{StaticResource CooldownDataTemplate}"/>
+                            <GridViewColumn Header="Assail?" Width="75" CellTemplate="{StaticResource IsAssailDataTemplate}"/>
+                            <GridViewColumn Header="Dialog?" Width="75" CellTemplate="{StaticResource OpensDialogDataTemplate}"/>
+                            <GridViewColumn Header="No Level?" Width="100" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
+                            <GridViewColumn Header="Disarm?" Width="100" CellTemplate="{StaticResource RequiresDisarmDataTemplate}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <TabItem Header="Spells">
+                <ListView Name="spellListView" 
+                          Style="{StaticResource ObsidianListView}" 
+                          Margin="0,-2,0,0" 
+                          Panel.ZIndex="2"
+                          SelectionMode="Extended"
+                          ItemsSource="{Binding Source={x:Static metadata:SpellMetadataManager.Instance}, Path=Spells}"
+                          SelectionChanged="skillSpellListView_SelectionChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem" BasedOn="{StaticResource ObsidianListViewItem}">
+                            <EventSetter Event="MouseDoubleClick" Handler="spellListViewItem_DoubleClick"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView ColumnHeaderContainerStyle="{StaticResource ObsidianGridViewColumnHeader}">
+                            <GridViewColumn Header="Name" Width="150" CellTemplate="{StaticResource NameDataTemplate}"/>
+                            <GridViewColumn Header="Class" Width="100" CellTemplate="{StaticResource ClassDataTemplate}"/>
+                            <GridViewColumn Header="Group" Width="100" CellTemplate="{StaticResource GroupDataTemplate}"/>
+                            <GridViewColumn Header="Mana" Width="70" CellTemplate="{StaticResource ManaDataTemplate}"/>
+                            <GridViewColumn Header="Lines" Width="75" CellTemplate="{StaticResource LinesDataTemplate}"/>
+                            <GridViewColumn Header="Cooldown" Width="110" CellTemplate="{StaticResource CooldownDataTemplate}"/>
+                            <GridViewColumn Header="No Level?" Width="100" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <TabItem Header="Staves">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="240" MinWidth="200" MaxWidth="360"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <ListBox Name="stavesListBox"
+                             Grid.RowSpan="2"
+                             Style="{StaticResource ObsidianListBox}"
+                             SelectionMode="Extended"
+                             ItemsSource="{Binding Source={x:Static metadata:StaffMetadataManager.Instance}, Path=Staves}"
+                             ItemTemplate="{StaticResource StaffDataTemplate}"
+                             SelectionChanged="stavesListBox_SelectionChanged">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                                <EventSetter Event="MouseDoubleClick" Handler="stavesListBoxItem_DoubleClick"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                    
+                    <GridSplitter Grid.RowSpan="2"
+                                  HorizontalAlignment="Right"
+                                  Width="1"
+                                  Margin="0,0,0,-4"
+                                  Style="{StaticResource ObsidianGridSplitter}"/>
+                    
+                    <ListBox Name="lineModifiersListBox"
+                             Grid.Column="1"
+                             Style="{StaticResource ObsidianListBox}"
+                             SelectionMode="Single"
+                             ItemTemplate="{StaticResource LineModifiersDataTemplate}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                                <EventSetter Event="MouseDoubleClick" Handler="lineModifiersListBoxItem_DoubleClick"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>                       
+                    
+                    <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,-4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button Name="addModifierButton"
+                                Style="{StaticResource ObsidianToolBarButton}"
+                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                BorderThickness="0,1,0,0"
+                                Tag="Add"
+                                Click="addModifierButton_Click">
+                            <Path Stroke="{Binding ElementName=addModifierButton, Path=Foreground}"
+                                  StrokeThickness="6"
+                                  Data="M 0,14 h 32 m -16,-16 v 32"/>
+                        </Button>
+
+                        <Button Name="editModifierButton"
+                                Grid.Column="1"
+                                Style="{StaticResource ObsidianToolBarButton}"
+                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                BorderThickness="0,1,0,0"
+                                Tag="Edit"
+                                Click="editModifierButton_Click">
+                            <Path Stroke="{Binding ElementName=editModifierButton, Path=Foreground}"
+                                  StrokeThickness="6"
+                                  Data="M 0,12 h 8 m 4,0 h 8 m 4,0 h 8"/>
+                        </Button>
+
+                        <Button Name="removeModifierButton"
+                                Grid.Column="2"
+                                Style="{StaticResource ObsidianToolBarButton}"
+                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                BorderThickness="0,1,0,0"
+                                Tag="Remove"
+                                Click="removeModifierButton_Click">
+                            <Path Stroke="{Binding ElementName=removeModifierButton, Path=Foreground}"
+                                  StrokeThickness="6"
+                                  Data="M 0,0 l 26,26 m 0,-26 l -26,26"/>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Weapons" IsEnabled="False">
+
+            </TabItem>
+            <TabItem Header="Items" IsEnabled="False">
+
+            </TabItem>
+        </TabControl>
+        
+        <Separator Name="separator" 
+                   Grid.Row="1" 
+                   Style="{StaticResource ObsidianSeparator}"
+                   Margin="0,4"/>
+        
+        <WrapPanel Name="buttonPanel" 
+                   Grid.Row="2"
+                   Orientation="Horizontal"
+                   Margin="8,0,16,4"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center">
+            <Button Name="addButton" 
+                    Width="100" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Add"
+                    Click="addButton_Click"/>
+            <Button Name="editButton" 
+                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Edit"
+                    Click="editButton_Click"/>
+            <Button Name="removeButton" 
+                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Delete"
+                    Click="deleteButton_Click"/>
+            <Button Name="clearButton" 
+                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Clear All"
+                    Click="clearButton_Click"/>
+            <Button Name="saveButton" 
+                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Save"
+                    Click="saveButton_Click"/>
+            <Button Name="revertButton" 
+                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
+                    Margin="6,4"
+                    Style="{StaticResource ObsidianButton}"
+                    Content="_Reload"
+                    Click="revertButton_Click"/>
+        </WrapPanel>
+    </Grid>
+</Window>
