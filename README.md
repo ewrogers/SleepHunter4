@@ -13,3 +13,4 @@ Dark Ages Automation Tool
 - Removed load/save buttons from toolbar.
 - Increased spacing between toolbar buttons.
 - Removed Notifications and Debug tabs from Settings window.
+- Updated About tab in Settings window with new contact information.
