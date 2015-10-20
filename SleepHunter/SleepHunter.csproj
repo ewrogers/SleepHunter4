@@ -56,6 +56,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Security\DefaultMapVerifier.cs" />
+    <Compile Include="Security\IMapVerifier.cs" />
+    <Compile Include="Security\MapSecurityInformation.cs" />
+    <Compile Include="Security\MapSecurityManager.cs" />
+    <Compile Include="Security\NullMapSecurityManager.cs" />
+    <Compile Include="Security\SecurityCompiler.cs" />
     <Page Include="Controls\NumericUpDown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -179,6 +185,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
