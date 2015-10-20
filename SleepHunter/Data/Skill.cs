@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SleepHunter.Data
+{
+   public sealed class Skill : Ability
+   {
+      public Skill()
+         : base() { }
+
+      bool isAssail;
+      bool opensDialog;
+      bool requiresDisarm;
+
+      public bool IsAssail
+      {
+         get { return isAssail; }
+         set { SetProperty(ref isAssail, value, "IsAssail"); }
+      }
+
+      public bool OpensDialog
+      {
+         get { return opensDialog; }
+         set { SetProperty(ref opensDialog, value, "OpensDialog"); }
+      }
+
+      public bool RequiresDisarm
+      {
+         get { return requiresDisarm; }
+         set { SetProperty(ref requiresDisarm, value, "RequiresDisarm"); }
+      }
+
+      public static Skill MakeEmpty(int slot)
+      {
+         return new Skill
+         {
+            Slot = slot,
+            Panel = Ability.GetSkillPanelForSlot(slot),
+            IsEmpty = true
+         };
+      }
+
+      public override string ToString()
+      {
+         return string.Format("{0}", this.Name ?? "Unknown Skill");
+      }
+   }
+
+}

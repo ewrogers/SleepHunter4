@@ -71,6 +71,37 @@
     <Compile Include="Controls\NumericUpDown.xaml.cs">
       <DependentUpon>NumericUpDown.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\Ability.cs" />
+    <Compile Include="Data\BooleanInverter.cs" />
+    <Compile Include="Data\ByteStringConverter.cs" />
+    <Compile Include="Data\CharacterExtender.cs" />
+    <Compile Include="Data\ClientState.cs" />
+    <Compile Include="Data\ComparisonConverters.cs" />
+    <Compile Include="Data\EquipmentSet.cs" />
+    <Compile Include="Data\FlowerQueueItem.cs" />
+    <Compile Include="Data\FlowerQueueItemEventArgs.cs" />
+    <Compile Include="Data\ICopyable.cs" />
+    <Compile Include="Data\InterfacePanel.cs" />
+    <Compile Include="Data\Inventory.cs" />
+    <Compile Include="Data\InventoryItem.cs" />
+    <Compile Include="Data\MapLocation.cs" />
+    <Compile Include="Data\NotifyObject.cs" />
+    <Compile Include="Data\NumericConverter.cs" />
+    <Compile Include="Data\Player.cs" />
+    <Compile Include="Data\PlayerEventArgs.cs" />
+    <Compile Include="Data\PlayerManager.cs" />
+    <Compile Include="Data\PlayerModifiers.cs" />
+    <Compile Include="Data\PlayerStats.cs" />
+    <Compile Include="Data\Skill.cs" />
+    <Compile Include="Data\Skillbook.cs" />
+    <Compile Include="Data\Spell.cs" />
+    <Compile Include="Data\Spellbook.cs" />
+    <Compile Include="Data\SpellQueueItem.cs" />
+    <Compile Include="Data\SpellQueueItemEventArgs.cs" />
+    <Compile Include="Data\SpellTarget.cs" />
+    <Compile Include="Data\TimeSpanConverter.cs" />
+    <Compile Include="Data\TimeSpanExtender.cs" />
+    <Compile Include="Data\VisibilityConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
