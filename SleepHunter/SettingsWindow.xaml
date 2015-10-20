@@ -950,7 +950,6 @@
             <TabItem Header="_About">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="50*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -960,8 +959,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="63*"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -991,7 +990,7 @@
                                Margin="4,8,4,4"/>
 
                     <TextBlock Grid.Row="4" 
-                               Text="ewrogers@gmail.com"
+                               Text="erik.rogers@live.com"
                                Style="{StaticResource ObsidianText}"
                                FontSize="16"
                                TextAlignment="Center"
@@ -1004,7 +1003,7 @@
 
                     <TextBlock Name="versionText" 
                                Grid.Row="6" 
-                               Text="Version Unknown :("
+                               Text="Version ??"
                                Style="{StaticResource ObsidianText}"
                                FontSize="24"
                                TextAlignment="Center"
@@ -1012,25 +1011,15 @@
 
                     <TextBlock Name="buildText" 
                                Grid.Row="7" 
-                               Text="Build Unknown :("
+                               Text="Build ??"
                                Style="{StaticResource ObsidianText}"
                                FontSize="20"
                                TextAlignment="Center"
                                Opacity="0.75"
                                Margin="4,4"/>
 
-                    <TextBlock Name="debugText" 
-                               Grid.Row="8" 
-                               Text="Debug Build"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="20"
-                               TextAlignment="Center"
-                               Opacity="0.5"
-                               Margin="4,4"
-                               Visibility="Collapsed"/>
-
                     <TextBlock Name="buildDateText" 
-                               Grid.Row="9" 
+                               Grid.Row="8" 
                                Text="Unknown Build Date"
                                Style="{StaticResource ObsidianText}"
                                FontSize="18"
@@ -1039,7 +1028,7 @@
                                Margin="4,4"/>
 
                     <TextBlock Name="frameworkVersionText" 
-                               Grid.Row="11" 
+                               Grid.Row="9" 
                                Text="Unknown Framework Version"
                                Style="{StaticResource ObsidianText}"
                                FontSize="18"
@@ -1048,7 +1037,7 @@
                                Margin="4,8"/>
 
                     <CheckBox Name="autoUpdateCheckBox"
-                              Grid.Row="12"
+                              Grid.Row="11"
                               Style="{StaticResource ObsidianCheckBox}"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
@@ -1057,12 +1046,13 @@
                               Content="_Automatically Check for Updates"/>
 
                     <Button Name="updateButton"
-                            Grid.Row="13"
+                            Grid.Row="12"
                             Width="320"
                             Height="32"
                             Margin="8"
                             Style="{StaticResource ObsidianButton}"
-                            Click="updateButton_Click">Check for _Updates</Button>
+                            Click="updateButton_Click">Check for _Updates
+                    </Button>
                 </Grid>
             </TabItem>
         </TabControl>

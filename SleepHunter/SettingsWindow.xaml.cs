@@ -71,8 +71,8 @@ namespace SleepHunter
          else
             buildDateText.Text = string.Format("{0}", buildDate.ToLongDateString());
 
-         if (isDebug)
-            debugText.Visibility = Visibility.Visible;
+            if (isDebug)
+                buildText.Text += "  (Debug)";
 
          var frameworkVersion = "???";
 
