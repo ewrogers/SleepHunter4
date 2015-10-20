@@ -146,6 +146,22 @@
     <Compile Include="Media\IconManager.cs" />
     <Compile Include="Media\RenderedBitmap.cs" />
     <Compile Include="Media\RenderManager.cs" />
+    <Compile Include="Metadata\ComputedSpellLines.cs" />
+    <Compile Include="Metadata\PlayerClass.cs" />
+    <Compile Include="Metadata\SkillMetadata.cs" />
+    <Compile Include="Metadata\SkillMetadataCollection.cs" />
+    <Compile Include="Metadata\SkillMetadataEventArgs.cs" />
+    <Compile Include="Metadata\SkillMetadataManager.cs" />
+    <Compile Include="Metadata\SpellLineModifiers.cs" />
+    <Compile Include="Metadata\SpellLineModifiersEventArgs.cs" />
+    <Compile Include="Metadata\SpellMetadata.cs" />
+    <Compile Include="Metadata\SpellMetadataCollection.cs" />
+    <Compile Include="Metadata\SpellMetadataEventArgs.cs" />
+    <Compile Include="Metadata\SpellMetadataManager.cs" />
+    <Compile Include="Metadata\StaffMetadata.cs" />
+    <Compile Include="Metadata\StaffMetadataCollection.cs" />
+    <Compile Include="Metadata\StaffMetadataEventArgs.cs" />
+    <Compile Include="Metadata\StaffMetadataManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
