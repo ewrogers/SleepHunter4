@@ -80,6 +80,21 @@
     <Compile Include="Updates\SoftwareUpdateEventArgs.cs" />
     <Compile Include="Updates\SoftwareUpdateHelper.cs" />
     <Compile Include="Updates\VersionExtender.cs" />
+    <Compile Include="Win32\MemoryBasicInformation.cs" />
+    <Compile Include="Win32\NativeMethods.cs" />
+    <Compile Include="Win32\ProcessAccessFlags.cs" />
+    <Compile Include="Win32\ProcessCreationFlags.cs" />
+    <Compile Include="Win32\ProcessInformation.cs" />
+    <Compile Include="Win32\ProcessorArchitecture.cs" />
+    <Compile Include="Win32\ProcessorType.cs" />
+    <Compile Include="Win32\Rect.cs" />
+    <Compile Include="Win32\SecurityAttributes.cs" />
+    <Compile Include="Win32\StartupInfo.cs" />
+    <Compile Include="Win32\SystemInfo.cs" />
+    <Compile Include="Win32\VirtualKeyMapMode.cs" />
+    <Compile Include="Win32\VirtualMemoryProtection.cs" />
+    <Compile Include="Win32\VirtualMemoryStatus.cs" />
+    <Compile Include="Win32\VirtualMemoryType.cs" />
     <Page Include="Controls\NumericUpDown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
