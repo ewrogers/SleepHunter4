@@ -5,6 +5,8 @@ Dark Ages Automation Tool
 
 **Disclaimer: Much of the code here does not follow proper MVVM conventions or project structure.**
 
+<img src="Screenshots/15A200.PNG"/>
+
 #### v1.4.4 Changes (from v1.4.2)
 
 - Project now using Visual Studio 2015 format.
