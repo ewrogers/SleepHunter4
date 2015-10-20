@@ -62,6 +62,18 @@
     <Compile Include="Security\MapSecurityManager.cs" />
     <Compile Include="Security\NullMapSecurityManager.cs" />
     <Compile Include="Security\SecurityCompiler.cs" />
+    <Compile Include="Settings\ClientVersion.cs" />
+    <Compile Include="Settings\ClientVersionCollection.cs" />
+    <Compile Include="Settings\ClientVersionEventArgs.cs" />
+    <Compile Include="Settings\ClientVersionManager.cs" />
+    <Compile Include="Settings\ColorTheme.cs" />
+    <Compile Include="Settings\ColorThemeCollection.cs" />
+    <Compile Include="Settings\ColorThemeEventArgs.cs" />
+    <Compile Include="Settings\ColorThemeManager.cs" />
+    <Compile Include="Settings\MacroAction.cs" />
+    <Compile Include="Settings\UserSetting.cs" />
+    <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Settings\UserSettingsManager.cs" />
     <Page Include="Controls\NumericUpDown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
