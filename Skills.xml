@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<SkillMetadata>
+  <Skills>
+    <Skill Name="Analyze Item" Class="Wizard" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Appraise" Class="Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Archery 1" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 10" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 2" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 3" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 4" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 5" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 6" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 7" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 8" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Archery 9" Class="Rogue" Group="Bow Skill" CanImprove="false" />
+    <Skill Name="Armor Lore" Class="Warrior Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Arrow Shot 1" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 10" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 2" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 3" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 4" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 5" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 6" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 7" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 8" Class="Rogue" IsAssail="true" />
+    <Skill Name="Arrow Shot 9" Class="Rogue" IsAssail="true" />
+    <Skill Name="Assail" Group="Assail" IsAssail="true" />
+    <Skill Name="Assault" Class="Warrior" Group="Assail" IsAssail="true" />
+    <Skill Name="Clobber" Class="Warrior" Group="Assail" IsAssail="true" />
+    <Skill Name="Combat Senses" Class="Warrior" Group="Sense User" OpensDialog="true" Cooldown="7" />
+    <Skill Name="Double Punch" Class="Monk" Group="Assail" IsAssail="true" RequiresDisarm="true" />
+    <Skill Name="Double Rake 1" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 10" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 2" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 3" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 4" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 5" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 6" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 7" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 8" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Double Rake 9" Class="Monk" Group="Double Rake" Cooldown="14" RequiresDisarm="true" />
+    <Skill Name="Echo Sense" Class="Monk" Group="Sense Monster" OpensDialog="true" Cooldown="7" />
+    <Skill Name="Elemental Bless 1" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 10" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 2" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 3" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 4" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 5" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 6" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 7" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 8" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Elemental Bless 9" Class="Wizard" Group="Orb Skill" IsAssail="true" />
+    <Skill Name="Food Lore" Class="Priest Monk" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Hairstyle" Class="Rogue" CanImprove="false" />
+    <Skill Name="Herbal Lore" Class="Priest Monk" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="High Kick" Class="Monk" Group="Kick" Cooldown="7" RequiresDisarm="true" />
+    <Skill Name="Inner Beast 1" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 10" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 2" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 3" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 4" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 5" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 6" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 7" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 8" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Inner Beast 9" Class="Monk" Group="Druid Skill" CanImprove="false" />
+    <Skill Name="Instrumental 1" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 10" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 2" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 3" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 4" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 5" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 6" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 7" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 8" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental 9" Class="Priest" Group="Harp Skill" IsAssail="true" />
+    <Skill Name="Instrumental Attack 1" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 10" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 2" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 3" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 4" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 5" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 6" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 7" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 8" Class="Priest" Cooldown="12" />
+    <Skill Name="Instrumental Attack 9" Class="Priest" Cooldown="12" />
+    <Skill Name="Kick" Class="Monk" Group="Kick" Cooldown="10" RequiresDisarm="true" />
+    <Skill Name="Long Strike" Class="Warrior" Group="Assail" IsAssail="true" />
+    <Skill Name="Look" Group="Sense World" OpensDialog="true" CanImprove="false" />
+    <Skill Name="Magic Lore" Class="Wizard" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Mantis Kick" Class="Monk" Group="Kick" Cooldown="20" RequiresDisarm="true" />
+    <Skill Name="Martial Awareness" Class="Monk" Group="Sense Monster" OpensDialog="true" Cooldown="7" />
+    <Skill Name="Mass Strike 1" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 10" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 2" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 3" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 4" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 5" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 6" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 7" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 8" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Mass Strike 9" Class="Monk" Group="Mass Strike" Cooldown="25" RequiresDisarm="true" />
+    <Skill Name="Melee Lore" Class="Warrior" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Midnight Slash" Class="Rogue" Group="Assail" IsAssail="true" />
+    <Skill Name="Mind Hymn" Class="Priest" Cooldown="186" />
+    <Skill Name="Missile Lore" Class="Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Peek" Class="Rogue" Group="Peek" OpensDialog="true" Cooldown="15" />
+    <Skill Name="Perish Lore" Class="Priest Monk" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Potion Lore" Class="Monk" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+    <Skill Name="Pounce 1" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 2" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 3" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 4" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 5" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 6" Class="Monk" Cooldown="6" />
+    <Skill Name="Pounce 7" Class="Monk" Cooldown="6" />
+    <Skill Name="Sense" Class="Rogue" Group="Sense User" OpensDialog="true" Cooldown="15" />
+    <Skill Name="Special Arrow Attack" Class="Rogue" CanImprove="false" />
+    <Skill Name="Study Creature" Class="Rogue" Group="Sense Monster" OpensDialog="true" Cooldown="7" />
+    <Skill Name="Thrash" Class="Warrior" Group="Assail" IsAssail="true" />
+    <Skill Name="Throw" Class="All" Cooldown="45" />
+    <Skill Name="Thrust Attack 1" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 10" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 2" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 3" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 4" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 5" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 6" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 7" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 8" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Thrust Attack 9" Class="Warrior" Group="Blade Skill" CanImprove="false" />
+    <Skill Name="Transfer Blood" Class="Priest" Cooldown="7" />
+    <Skill Name="Triple Kick" Class="Monk" Group="Assail" IsAssail="true" />
+    <Skill Name="Two-handed Attack" Class="Warrior" CanImprove="false" />
+    <Skill Name="Wallop" Class="Warrior" Group="Assail" IsAssail="true" />
+    <Skill Name="Wield Staff" Class="Wizard Priest" CanImprove="false" />
+    <Skill Name="Wise Touch" Class="Monk" Group="Sense item" OpensDialog="true" CanImprove="false" Cooldown="14" />
+  </Skills>
+</SkillMetadata>

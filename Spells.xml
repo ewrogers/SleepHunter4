@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<SpellMetadata>
+  <Spells>
+    <Spell Name="ao ard cradh" Class="Priest" Group="ao" Mana="120" Lines="1" />
+    <Spell Name="ao beag cradh" Class="Priest" Group="ao" Mana="30" Lines="1" />
+    <Spell Name="ao cradh" Class="Priest" Group="ao" Mana="60" Lines="1" />
+    <Spell Name="ao dall" Class="Wizard Priest Rogue Monk" Group="ao" Mana="30" Lines="1" />
+    <Spell Name="ao mor cradh" Class="Priest" Group="ao" Mana="90" Lines="1" />
+    <Spell Name="ao puinsein" Class="Wizard Priest Rogue Monk" Group="ao" Mana="30" Lines="1" />
+    <Spell Name="ao suain" Class="Priest" Group="ao" Mana="30" Lines="1" />
+    <Spell Name="ard athar" Class="Wizard" Group="athar" Mana="2530" Lines="4" />
+    <Spell Name="ard athar nadur" Class="Wizard" Group="athar nadur" Mana="5" />
+    <Spell Name="ard cradh" Class="Priest" Group="cradh" Mana="500" Lines="3" />
+    <Spell Name="ard creag" Class="Wizard" Group="creag" Mana="2530" Lines="4" />
+    <Spell Name="ard creag nadur" Class="Wizard" Group="creag nadur" Mana="5" />
+    <Spell Name="ard fas nadur" Class="Wizard" Group="fas nadur" Mana="5000" Lines="4" />
+    <Spell Name="ard ioc" Class="Priest" Group="ioc" Mana="800" Lines="2" />
+    <Spell Name="ard naomh aite" Class="Priest" Group="naomh aite" Mana="600" Lines="4" />
+    <Spell Name="ard puinneag spiorad" Class="Wizard" Group="puinneag spiorad" Mana="5" />
+    <Spell Name="ard sal" Class="Wizard" Group="sal" Mana="2530" Lines="4" />
+    <Spell Name="ard sal nadur" Class="Wizard" Group="sal nadur" Mana="5" />
+    <Spell Name="ard srad" Class="Wizard" Group="srad" Mana="2530" Lines="4" />
+    <Spell Name="ard srad nadur" Class="Wizard" Group="srad nadur" Mana="5" />
+    <Spell Name="armachd" Class="Priest" Mana="30" Lines="2" />
+    <Spell Name="athar" Class="Wizard" Group="athar" Mana="200" Lines="2" />
+    <Spell Name="athar gar" Class="Wizard" Group="athar" Mana="8200" Lines="4" />
+    <Spell Name="athar lamh" Class="Wizard" Group="athar" Mana="320" Lines="1" />
+    <Spell Name="beag athar" Class="Wizard" Group="athar" Mana="60" Lines="2" />
+    <Spell Name="beag athar lamh" Class="Wizard" Group="athar" Mana="60" Lines="2" />
+    <Spell Name="beag breisleich" Class="Priest Rogue" Group="breisleich" Mana="110" Lines="1" />
+    <Spell Name="beag cradh" Class="Priest" Group="cradh" Mana="60" Lines="2" />
+    <Spell Name="beag creag" Class="Wizard" Group="creag" Mana="60" Lines="2" />
+    <Spell Name="beag creag lamh" Class="Wizard" Group="creag" Mana="60" Lines="2" />
+    <Spell Name="beag fas nadur" Class="Wizard" Group="fas nadur" Mana="20" Lines="2" />
+    <Spell Name="beag ioc" Class="Priest" Group="ioc" Mana="40" Lines="1" />
+    <Spell Name="beag ioc comlha" Class="Priest" Group="ioc" Mana="100" Lines="1" />
+    <Spell Name="beag ioc fein" Class="Priest" Group="ioc" Mana="40" Lines="1" />
+    <Spell Name="beag naomh aite" Class="Priest" Group="naomh aite" Mana="100" Lines="3" />
+    <Spell Name="beag nochd" Class="Monk" Group="nochd" Mana="720" Lines="5" />
+    <Spell Name="beag pramh" Class="Priest" Group="pramh" Mana="200" Lines="4" />
+    <Spell Name="beag puinneag spiorad" Class="Wizard" Group="puinneag spiorad" Mana="500" Lines="3" />
+    <Spell Name="beag puinsein" Class="Priest" Group="puinsein" Mana="110" Lines="4" />
+    <Spell Name="beag sal" Class="Wizard" Group="sal" Mana="60" Lines="2" />
+    <Spell Name="beag sal lamh" Class="Wizard" Group="sal" Mana="60" Lines="2" />
+    <Spell Name="beag seun" Class="Priest" Group="seun" Mana="100" Lines="3" />
+    <Spell Name="beag slan" Class="Priest" Group="slan" Mana="180" />
+    <Spell Name="beag srad" Class="Wizard" Group="srad" Mana="60" Lines="2" />
+    <Spell Name="beag srad lamh" Class="Wizard" Group="srad" Mana="60" Lines="2" />
+    <Spell Name="beannaich" Class="Priest" Group="beannaich" Mana="30" Lines="2" />
+    <Spell Name="breisleich" Class="Priest Rogue" Group="breisleich" Mana="110" Lines="1" />
+    <Spell Name="Bubble Block" Class="Wizard" Mana="700" Cooldown="22" />
+    <Spell Name="Bubble Shield" Class="Wizard" Mana="100" Lines="1" Cooldown="30" />
+    <Spell Name="Cat's Hearing" Mana="120" Lines="5" />
+    <Spell Name="Counter Attack 1" Class="Priest" Group="Counter Attack" Mana="1500" Lines="2" />
+    <Spell Name="Counter Attack 2" Class="Priest" Group="Counter Attack" Mana="1520" Lines="2" />
+    <Spell Name="Counter Attack 3" Class="Priest" Group="Counter Attack" Mana="2020" Lines="2" />
+    <Spell Name="cradh" Class="Priest" Group="cradh" Mana="120" Lines="3" />
+    <Spell Name="creag" Class="Wizard" Group="creag" Mana="200" Lines="2" />
+    <Spell Name="creag gar" Class="Wizard" Group="creag" Mana="8200" Lines="4" />
+    <Spell Name="creag lamh" Class="Wizard" Group="creag" Mana="320" Lines="1" />
+    <Spell Name="creag neart" Class="Priest" Mana="30" />
+    <Spell Name="Cursed Tune 1" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 2" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 3" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 4" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 5" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 6" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cursed Tune 7" Class="Priest" Group="Cursed Tune" Mana="5160" Cooldown="10" />
+    <Spell Name="Cyclone" Class="Wizard" Mana="1200" Cooldown="12" />
+    <Spell Name="dachaidh" Class="Wizard Priest" Mana="30" Lines="2" />
+    <Spell Name="dall" Class="Priest" Group="dall" Mana="220" Lines="4" />
+    <Spell Name="Dark Seal" Class="Priest" Group="Dark Seal" Mana="450" Lines="6" />
+    <Spell Name="Darker Seal" Class="Priest" Mana="450" Lines="6" />
+    <Spell Name="deireas faileas" Class="Priest" Mana="980" Lines="3" />
+    <Spell Name="deo lamh" Class="Priest" Group="deo" Mana="330" Lines="1" />
+    <Spell Name="deo saighead" Class="Priest" Group="deo" Mana="240" Lines="3" />
+    <Spell Name="deo searg" Class="Priest" Group="deo" Mana="1800" Lines="4" />
+    <Spell Name="deo searg gar" Class="Priest" Group="deo" Mana="8000" Lines="4" Cooldown="5" />
+    <Spell Name="dion" Class="Monk" Group="dion" Mana="600" />
+    <Spell Name="Disenchanter" Class="Wizard" Mana="3000" Lines="4" />
+    <Spell Name="Draco Stance" Class="Monk" Group="dion" Mana="200" />
+    <Spell Name="eisd creutair" Class="Rogue" Mana="120" />
+    <Spell Name="fas deireas" Class="Priest" Mana="30" Lines="1" />
+    <Spell Name="fas nadur" Class="Wizard" Group="fas nadur" Mana="80" Lines="3" />
+    <Spell Name="fas spiorad" Class="Wizard" Lines="9" />
+    <Spell Name="Fiery Defender" Class="Wizard" Mana="3000" Lines="4" />
+    <Spell Name="Frost Arrow 1" Class="Rogue" Group="Frost Arrow" Mana="900" Lines="1" />
+    <Spell Name="Frost Arrow 2" Class="Rogue" Group="Frost Arrow" Mana="900" Lines="1" />
+    <Spell Name="Frost Arrow 3" Class="Rogue" Group="Frost Arrow" Mana="900" Lines="1" />
+    <Spell Name="Frost Arrow 4" Class="Rogue" Mana="900" Lines="1" />
+    <Spell Name="Gentle Touch" Class="Monk" Mana="360" Lines="1" />
+    <Spell Name="Great Blind Snare" Class="Rogue" Group="dall" Mana="30" />
+    <Spell Name="Great Poison Snare" Class="Rogue" Group="puinsein" Mana="30" />
+    <Spell Name="Great Sleep Snare" Class="Rogue" Group="suain" Mana="30" />
+    <Spell Name="Groo 1" Class="Wizard" Group="Groo" Mana="2600" Lines="1" />
+    <Spell Name="Groo 10" Class="Wizard" Group="Groo" Mana="3000" Lines="2" />
+    <Spell Name="Groo 2" Class="Wizard" Group="Groo" Mana="2650" Lines="1" />
+    <Spell Name="Groo 3" Class="Wizard" Group="Groo" Mana="2700" Lines="1" />
+    <Spell Name="Groo 4" Class="Wizard" Group="Groo" Mana="2750" Lines="2" />
+    <Spell Name="Groo 5" Class="Wizard" Group="Groo" Mana="2800" Lines="2" />
+    <Spell Name="Groo 6" Class="Wizard" Group="Groo" Mana="2850" Lines="2" />
+    <Spell Name="Groo 7" Class="Wizard" Group="Groo" Mana="2850" Lines="2" />
+    <Spell Name="Groo 8" Class="Wizard" Group="Groo" Mana="2850" Lines="2" />
+    <Spell Name="Groo 9" Class="Wizard" Group="Groo" Mana="2875" Lines="2" />
+    <Spell Name="Hail of Feathers 4" Class="Monk" Group="Hail of Feathers" Mana="870" />
+    <Spell Name="Hide" Class="Rogue" Mana="200" />
+    <Spell Name="Howl" Class="Monk" Mana="360" Lines="5" />
+    <Spell Name="Inner Fire" Class="Monk" Mana="360" Lines="5" />
+    <Spell Name="Insult" Class="Warrior Wizard Rogue" Mana="1" Lines="2" />
+    <Spell Name="ioc" Class="Priest" Group="ioc" Mana="200" Lines="1" />
+    <Spell Name="ioc comlha" Class="Priest" Group="ioc" Mana="500" Lines="2" />
+    <Spell Name="Iron Skin" Class="Monk" Group="dion" Mana="250" Lines="2" />
+    <Spell Name="Keeter 1" Class="Wizard" Group="Keeter" Mana="2600" Lines="1" />
+    <Spell Name="Keeter 10" Class="Wizard" Group="Keeter" Mana="3000" Lines="2" />
+    <Spell Name="Keeter 2" Class="Wizard" Group="Ketter" Mana="2650" Lines="1" />
+    <Spell Name="Keeter 3" Class="Wizard" Group="Keeter" Mana="2700" Lines="1" />
+    <Spell Name="Keeter 4" Class="Wizard" Group="Keeter" Mana="2750" Lines="2" />
+    <Spell Name="Keeter 5" Class="Wizard" Group="Keeter" Mana="2800" Lines="2" />
+    <Spell Name="Keeter 6" Class="Wizard" Group="Keeter" Mana="2850" Lines="2" />
+    <Spell Name="Keeter 7" Class="Wizard" Group="Keeter" Mana="2900" Lines="2" />
+    <Spell Name="Keeter 8" Class="Wizard" Group="Keeter" Mana="2875" Lines="2" />
+    <Spell Name="Keeter 9" Class="Wizard" Group="Keeter" Mana="2675" Lines="2" />
+    <Spell Name="Kelberoth Stance" Class="Monk" Mana="30" />
+    <Spell Name="Learning Spell" Class="All" CanImprove="false" />
+    <Spell Name="Lyliac Plant" Class="Wizard" Group="Flower" Mana="100" />
+    <Spell Name="Lyliac Vineyard" Class="Wizard" Group="Flower" Mana="100" Cooldown="12" />
+    <Spell Name="Maiden Trap" Class="Rogue" Mana="300" Lines="7" />
+    <Spell Name="Mana Ward" Class="Wizard" Mana="4600" Cooldown="120" />
+    <Spell Name="Master Feral Form" Class="Monk" Group="Feral Form" Mana="360" />
+    <Spell Name="Master Karura Form" Class="Monk" Group="Karura Form" Mana="360" />
+    <Spell Name="Meramid 8" Class="Wizard" Group="Mermaid" Mana="2850" Lines="2" />
+    <Spell Name="Mermaid 1" Class="Wizard" Group="Mermaid" Mana="2600" Lines="1" />
+    <Spell Name="Mermaid 10" Class="Wizard" Group="Mermaid" Mana="3000" Lines="2" />
+    <Spell Name="Mermaid 2" Class="Wizard" Group="Mermaid" Mana="2650" Lines="1" />
+    <Spell Name="Mermaid 3" Class="Wizard" Group="Mermaid" Mana="2700" Lines="1" />
+    <Spell Name="Mermaid 4" Class="Wizard" Group="Mermaid" Mana="2700" Lines="2" />
+    <Spell Name="Mermaid 5" Class="Wizard" Group="Mermaid" Mana="2700" Lines="2" />
+    <Spell Name="Mermaid 6" Class="Wizard" Group="Mermaid" Mana="2750" Lines="2" />
+    <Spell Name="Mermaid 7" Class="Wizard" Group="Mermaid" Mana="2800" Lines="2" />
+    <Spell Name="Mermaid 9" Class="Wizard" Group="Mermaid" Mana="2850" Lines="2" />
+    <Spell Name="Mist" Class="Monk" Mana="60" />
+    <Spell Name="mor athar" Class="Wizard" Group="athar" Mana="800" Lines="4" />
+    <Spell Name="mor beannaich" Class="Priest" Group="beannaich" Mana="90" Lines="2" />
+    <Spell Name="mor breisleich" Class="Priest Rogue" Group="breisleich" Mana="110" Lines="1" />
+    <Spell Name="mor cradh" Class="Priest" Group="cradh" Mana="300" Lines="3" />
+    <Spell Name="mor creag" Class="Wizard" Group="creag" Mana="800" Lines="4" />
+    <Spell Name="mor dion" Class="Priest" Group="dion" Mana="1000" Lines="2" />
+    <Spell Name="mor dion comlha" Class="Priest" Group="dion" Mana="300" Lines="4" />
+    <Spell Name="mor fas nadur" Class="Wizard" Group="fas nadur" Mana="150" Lines="4" />
+    <Spell Name="mor ioc" Class="Priest" Group="ioc" Mana="500" Lines="2" />
+    <Spell Name="mor ioc comlha" Class="Priest" Group="ioc" Mana="1100" Lines="2" />
+    <Spell Name="mor naomh aite" Class="Priest" Group="naomh aite" Mana="400" Lines="4" />
+    <Spell Name="mor pian na dion" Class="Wizard" Mana="3000" Lines="1" />
+    <Spell Name="mor puinneag spiorad" Class="Wizard" Group="puinneag spiorad" Mana="180" Lines="1" />
+    <Spell Name="mor sal" Class="Wizard" Group="sal" Mana="800" Lines="4" />
+    <Spell Name="mor slan" Class="Priest" Group="slan" Mana="500" />
+    <Spell Name="mor srad" Class="Wizard" Group="srad" Mana="800" Lines="4" />
+    <Spell Name="mor strioch pian gar" Class="Wizard" Mana="100" Lines="1" Cooldown="5" />
+    <Spell Name="Mud Wall" Class="Wizard" Mana="700" Cooldown="22" />
+    <Spell Name="naomh aite" Class="Priest" Group="naomh aite" Mana="200" Lines="2" />
+    <Spell Name="nis" Lines="1" CanImprove="false" />
+    <Spell Name="nuadhaich" Class="Priest" Group="ioc" Mana="1360" Lines="3" />
+    <Spell Name="pian na dion" Class="Wizard" Mana="1500" Lines="1" />
+    <Spell Name="pramh" Class="Priest" Group="pramh" Mana="300" Lines="4" />
+    <Spell Name="puinneag beatha" Class="Monk" Mana="320" />
+    <Spell Name="puinneag spiorad" Class="Wizard Priest" Group="puinneag spiorad" Mana="350" Lines="2" />
+    <Spell Name="puinsein" Class="Priest" Group="puinsein" Mana="160" Lines="3" />
+    <Spell Name="Reflection" Class="Priest" Mana="1080" Lines="8" Cooldown="40" />
+    <Spell Name="Regeneration 1" Class="Priest" Group="Regeneration" Mana="320" Lines="2" Cooldown="5" />
+    <Spell Name="Regeneration 2" Class="Priest" Group="Regeneration" Mana="1010" Lines="2" Cooldown="5" />
+    <Spell Name="Regeneration 3" Class="Priest" Group="Regeneration" Mana="2020" Lines="2" Cooldown="5" />
+    <Spell Name="sal" Class="Wizard" Group="sal" Mana="200" Lines="2" />
+    <Spell Name="sal gar" Class="Wizard" Group="sal" Mana="8200" Lines="4" />
+    <Spell Name="sal lamh" Class="Wizard" Group="sal" Mana="320" Lines="1" />
+    <Spell Name="seun" Class="Priest" Group="seun" Mana="200" Lines="2" />
+    <Spell Name="Shock Arrow" Class="Rogue" Mana="710" />
+    <Spell Name="slan" Class="Priest" Group="slan" Mana="350" />
+    <Spell Name="Snort" Class="Monk" Mana="1" Lines="1" />
+    <Spell Name="sonruich nadur" Class="Priest" Group="sonruich nadur" Mana="450" Lines="5" />
+    <Spell Name="spion beathach" Class="Priest" Mana="2800" Lines="4" />
+    <Spell Name="Spit" Class="Warrior Wizard Rogue" Mana="1" Lines="1" />
+    <Spell Name="srad" Class="Wizard" Group="srad" Mana="200" Lines="2" />
+    <Spell Name="srad gar" Class="Wizard" Group="srad" Mana="8200" Lines="4" />
+    <Spell Name="srad lamh" Class="Wizard" Group="srad" Mana="320" Lines="1" />
+    <Spell Name="Star Arrow 1" Class="Rogue" Group="Star Arrow" Mana="240" />
+    <Spell Name="Star Arrow 10" Class="Rogue" Group="Star Arrow" Mana="1200" />
+    <Spell Name="Star Arrow 2" Class="Rogue" Group="Star Arrow" Mana="300" />
+    <Spell Name="Star Arrow 3" Class="Rogue" Group="Star Arrow" Mana="550" />
+    <Spell Name="Star Arrow 4" Class="Rogue" Group="Star Arrow" Mana="640" />
+    <Spell Name="Star Arrow 5" Class="Rogue" Group="Star Arrow" Mana="680" />
+    <Spell Name="Star Arrow 6" Class="Rogue" Group="Star Arrow" Mana="775" />
+    <Spell Name="Star Arrow 7" Class="Rogue" Group="Star Arrow" Mana="890" />
+    <Spell Name="Star Arrow 8" Class="Rogue" Group="Star Arrow" Mana="1000" />
+    <Spell Name="Star Arrow 9" Class="Rogue" Group="Star Arrow" Mana="1100" />
+    <Spell Name="Stone Skin" Class="All" Mana="1200" />
+    <Spell Name="suain" Class="Priest" Group="suain" Mana="330" Lines="4" />
+    <Spell Name="Taunt" Class="Warrior Wizard Rogue" Mana="1" Lines="4" />
+    <Spell Name="Torch 1" Class="Wizard" Group="Torch" Mana="2600" Lines="1" />
+    <Spell Name="Torch 10" Class="Wizard" Group="Torch" Mana="3000" Lines="2" />
+    <Spell Name="Torch 2" Class="Wizard" Group="Torch" Mana="2650" Lines="1" />
+    <Spell Name="Torch 3" Class="Wizard" Group="Torch" Mana="2700" Lines="1" />
+    <Spell Name="Torch 4" Class="Wizard" Group="Torch" Mana="2750" Lines="2" />
+    <Spell Name="Torch 5" Class="Wizard" Group="Torch" Mana="2800" Lines="2" />
+    <Spell Name="Torch 6" Class="Wizard" Group="Torch" Mana="2800" Lines="2" />
+    <Spell Name="Torch 7" Class="Wizard" Group="Torch" Mana="2600" Lines="2" />
+    <Spell Name="Torch 8" Class="Wizard" Group="Torch" Mana="2700" Lines="2" />
+    <Spell Name="Torch 9" Class="Wizard" Group="Torch" Mana="2800" Lines="2" />
+    <Spell Name="White Bat Stance" Class="Monk" Mana="110" />
+    <Spell Name="Wild Feral Form" Class="Monk" Group="Feral Form" Mana="360" />
+    <Spell Name="Wild Komodos Form" Class="Monk" Mana="360" />
+    <Spell Name="Wings of Protection" Class="Wizard" Group="dion" Mana="900" />
+    <Spell Name="Wraith Touch" Class="Monk" Mana="1420" Lines="4" />
+    <Spell Name="Zombie Defender" Class="All" Mana="3000" Lines="4" />
+  </Spells>
+</SpellMetadata>

@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<StaffMetadata>
+  <Staves>
+    <Staff Name="Holy Apollo" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Diana" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Gaea" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="4" MinThreshold="4" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Hermes" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="Group" Name="ioc" Value="0" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Kronos" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="2" MaxThreshold="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Zeus" Level="19" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="2" MinThreshold="4" MaxThreshold="4" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Apollo" Level="19" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="3" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Ares" Level="19" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="Group" Name="cradh" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Diana" Level="19" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Gaea" Level="19" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="4" MinThreshold="4" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Kronos" Level="19" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="2" MaxThreshold="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Empowered Holy Gnarl" Level="99" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="Single" Name="ard cradh" Value="0" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Empowered Magus Orb" Level="99" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Enchanted Hy-Brasyl Gnarl" Level="99" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="Single" Name="ard cradh" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Enchanted Magus Orb" Level="99" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Hy-Brasyl Gnarl" Level="99" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="2" MinThreshold="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Magus Hy-brasyl Orb" Level="99" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="2" MinThreshold="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Master Celestial Staff" Level="99" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Master Divine Staff" Level="99" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="3" />
+        <Lines Action="Set" Scope="Group" Name="cradh" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Staff of Ages" Level="99" Class="All">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Staff of Brilliance" Level="99" Class="All">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Sphere" AbilityLevel="1" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Wooden Harp" AbilityLevel="1" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Goldberry Harp" AbilityLevel="8" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Shaine Sphere" AbilityLevel="8" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Maron Sphere" AbilityLevel="15" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Rosewood Harp" AbilityLevel="15" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Veltain Staff" AbilityLevel="15" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Chernol Sphere" AbilityLevel="22" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Ironwood Harp" AbilityLevel="22" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Assassin's Cross" AbilityLevel="27" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Andor Staff" AbilityLevel="30" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Hwarone Lute" AbilityLevel="45" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Serpant Sphere" AbilityLevel="45" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Empowered Hwarone Lute" AbilityLevel="55" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Empowered Serpant Sphere" AbilityLevel="55" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Glimmering Wand" AbilityLevel="65" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Holy Hy-Brasyl Baton" AbilityLevel="65" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Brute's Quill" AbilityLevel="80" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Yowien Tree Staff" AbilityLevel="80" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+  </Staves>
+</StaffMetadata>
