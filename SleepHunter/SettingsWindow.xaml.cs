@@ -15,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+using Microsoft.Win32;
+
 using SleepHunter.Data;
 using SleepHunter.Settings;
 using SleepHunter.Updates;
@@ -23,6 +25,8 @@ namespace SleepHunter
 {
    public partial class SettingsWindow : Window
    {
+      static readonly string DotNetRegistryKey = @"Software\Microsoft\NET Framework Setup\NDP\v4\Full\";
+
       public static readonly int GeneralTabIndex = 0;
       public static readonly int UserInterfaceTabIndex = 1;
       public static readonly int GameClientTabIndex = 2;
@@ -70,8 +74,20 @@ namespace SleepHunter
          if (isDebug)
             debugText.Visibility = Visibility.Visible;
 
-         var assembly = Assembly.GetExecutingAssembly();
-         var frameworkVersion = assembly.ImageRuntimeVersion;
+         var frameworkVersion = "???";
+
+         using(var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(DotNetRegistryKey))
+         {
+            var releaseKey = Convert.ToInt32(ndpKey.GetValue("Release"));
+                if (releaseKey >= 393295)
+                    frameworkVersion = "4.6+";
+                else if (releaseKey >= 379893)
+                    frameworkVersion = "4.5.2+";
+                else if (releaseKey >= 378675)
+                    frameworkVersion = "4.5.1+";
+                else if (releaseKey >= 378389)
+                    frameworkVersion = "4.5+";
+         }
 
          frameworkVersionText.Text = string.Format(".NET Framework {0}", frameworkVersion);
       }
