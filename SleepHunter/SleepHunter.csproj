@@ -139,6 +139,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Media\ColorPalette.cs" />
+    <Compile Include="Media\EpfFrame.cs" />
+    <Compile Include="Media\EpfImage.cs" />
+    <Compile Include="Media\HueSaturationValue.cs" />
+    <Compile Include="Media\IconManager.cs" />
+    <Compile Include="Media\RenderedBitmap.cs" />
+    <Compile Include="Media\RenderManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
