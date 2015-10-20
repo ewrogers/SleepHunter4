@@ -1,0 +1,25 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DataTemplate x:Key="ColorThemeDataTemplate">
+        <Border Margin="8,2,8,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Border Name="ColorBorder" 
+                        Width="18" Height="18"
+                        Background="{Binding Background}"
+                        CornerRadius="8">                    
+                </Border>
+                
+                <TextBlock Name="Text"
+                           Grid.Column="1"
+                           Style="{StaticResource ObsidianText}"
+                           Text="{Binding Name}"
+                           FontSize="16"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

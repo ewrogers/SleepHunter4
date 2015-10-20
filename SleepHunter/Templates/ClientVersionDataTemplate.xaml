@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DataTemplate x:Key="ClientVersionDataTemplate">
+        <Border>
+            <Grid>
+                <TextBlock Name="Text"
+                           Style="{StaticResource ObsidianText}"
+                           Text="{Binding Key}"
+                           FontSize="16"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="2,3,2,2"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

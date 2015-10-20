@@ -1,0 +1,290 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:data="clr-namespace:SleepHunter.Data"
+                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+    
+    <data:VisibilityConverter x:Key="VisibilityConverter"/>
+    <data:TimeSpanConverter x:Key="TimeSpanConverter"/>
+    <data:BooleanInverter x:Key="BooleanInverter"/>
+    
+    <Style TargetType="ToolTip">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+        <Setter Property="Margin" Value="8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            Opacity="0.90"
+                            Padding="8"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          TextBlock.FontSize="16"
+                                          TextBlock.FontFamily="{StaticResource ObsidianFontFamily}"
+                                          TextBlock.FontWeight="{StaticResource ObsidianFontWeight}"
+                                          Margin="0,2,0,0">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="Black"/>
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <DataTemplate x:Key="AbilityDataTemplate">
+        <Border Name="Border" Margin="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Border Name="SlotBorder"
+                        BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                        BorderThickness="1"
+                        Padding="2">
+                    <Grid>
+                        <Rectangle Name="EmptyRectangle"
+                                   Stroke="{StaticResource ObsidianSeparatorColor}"
+                                   StrokeThickness="1"
+                                   StrokeDashArray="8,2"
+                                   Opacity="0.75"
+                                   Margin="-2"
+                                   Visibility="Hidden"/>
+
+                        <Rectangle Name="CooldownRectangle"
+                                   Fill="{DynamicResource ObsidianBackground}"
+                                   Opacity="0.5"
+                                   Margin="1,1,0,0"
+                                   Visibility="Collapsed">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="{Binding Icon}"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+
+                        <Border Name="SlotNumberBorder"
+                                Width="16" Height="14"
+                                Background="{StaticResource ObsidianSeparatorColor}"
+                                CornerRadius="0,0,4,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="-2"
+                                Opacity="0.7"
+                                Panel.ZIndex="1">
+                            <TextBlock Name="SlotText"
+                                       Style="{StaticResource ObsidianText}"
+                                       Text="{Binding RelativeSlot}"
+                                       TextAlignment="Center"
+                                       FontSize="10"
+                                       FontWeight="Semibold"
+                                       Margin="-1,2,1,1"/>
+                        </Border>
+
+                        <Border Name="LevelBorder"
+                                Width="22" Height="14"
+                                Background="{StaticResource ObsidianSeparatorColor}"
+                                CornerRadius="4,0,0,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="-2"
+                                Opacity="0.8"
+                                Panel.ZIndex="1"
+                                Visibility="Collapsed">
+                            <TextBlock Name="LevelText"
+                                       Style="{StaticResource ObsidianText}"
+                                       Text="{Binding CurrentLevel}"
+                                       TextAlignment="Center"
+                                       FontSize="10"
+                                       FontWeight="Semibold"
+                                       Margin="1,3,1,1"/>
+                        </Border>
+
+                        <Image Name="Icon" 
+                               Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                               Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                               RenderOptions.BitmapScalingMode="NearestNeighbor"
+                               Source="{Binding Icon}"
+                               Panel.ZIndex="0"
+                               Opacity="0.5"
+                               Margin="1,1,-1,-1">
+                            <Image.ToolTip>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Name="ToolTipNameText"
+                                               Text="{Binding Name}"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               TextAlignment="Center"
+                                               Margin="4,2"/>
+                                    <Separator Style="{StaticResource ObsidianSeparator}"
+                                               Background="{DynamicResource ObsidianForeground}"
+                                               Margin="1,4"/>
+                                    <TextBlock Name="ToolTipLevelText"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Margin="4,2">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="Level {0} / {1}">
+                                                <Binding Path="CurrentLevel"/>
+                                                <Binding Path="MaximumLevel"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                    <TextBlock Name="ToolTipCooldownText"
+                                               Text="{Binding Cooldown, StringFormat=Cooldown: {0}, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Long}"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Margin="4,2"/>
+                                    <TextBlock Name="ToolTipLinesText"
+                                               Style="{StaticResource ObsidianText}"
+                                               Text="{Binding NumberOfLines, StringFormat={}{0} Lines}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Margin="4,2"/>
+                                    <TextBlock Name="ToolTipManaText"
+                                               Style="{StaticResource ObsidianText}"
+                                               Text="{Binding ManaCost, StringFormat={}{0} Mana}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Margin="4,2"/>                                    
+                                </StackPanel>
+                            </Image.ToolTip>
+                        </Image>
+                    </Grid>
+                </Border>
+                
+                <TextBlock Name="NameText"
+                           Grid.Row="1"
+                           MaxWidth="{Binding ElementName=Icon, Path=Width}"
+                           Style="{StaticResource ObsidianText}"
+                           Text="{Binding Name}"
+                           TextWrapping="WrapWithOverflow"
+                           TextAlignment="Center"
+                           FontSize="10"
+                           FontWeight="Normal"
+                           Opacity="0.5"
+                           Margin="2,2"
+                           Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True">
+                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SlotNumberBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.8"/>
+                <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="LevelBorder" Property="Opacity" Value="1.0"/>
+                <Setter TargetName="NameText" Property="Opacity" Value="0.75"/>
+            </DataTrigger>
+            
+            <DataTrigger Binding="{Binding CanImprove, Mode=OneWay}" Value="False">
+                <Setter TargetName="ToolTipLevelText" Property="Text" Value="Does Not Improve"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding Cooldown, Mode=OneWay}" Value="0">
+                <Setter TargetName="ToolTipCooldownText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding ManaCost}" Value="0">
+                <Setter TargetName="ToolTipManaText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            
+            <DataTrigger Binding="{Binding NumberOfLines}" Value="0">
+                <Setter TargetName="ToolTipLinesText" Property="Text" Value="No Lines"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding NumberOfLines}" Value="1">
+                <Setter TargetName="ToolTipLinesText" Property="Text" Value="1 Line"/>
+            </DataTrigger>
+            
+            <DataTrigger Binding="{Binding IsSkill}" Value="True">
+                <Setter TargetName="ToolTipLinesText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSkill, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillNames, Mode=OneWay}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="NameText" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSpell, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellNames, Mode=OneWay}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="NameText" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSkill, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding CanImprove, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillLevels, Mode=OneWay}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="LevelBorder" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSpell, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding CanImprove, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellLevels, Mode=OneWay}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="LevelBorder" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsActive, Mode=OneWay}" Value="True"/>
+                    <Condition Binding="{Binding IsEmpty, Mode=OneWay}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                    <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                    <Setter TargetName="SlotNumberBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                    <Setter TargetName="SlotBorder" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
+                    <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="1"/>
+                    <Setter TargetName="SlotBorder" Property="BorderThickness" Value="3"/>
+                    <Setter TargetName="SlotBorder" Property="CornerRadius" Value="3"/>
+                    <Setter TargetName="Border" Property="Margin" Value="0"/>
+                    <Setter TargetName="Icon" Property="Opacity" Value="1"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+
+            <DataTrigger Binding="{Binding IsOnCooldown}" Value="True">
+                <Setter TargetName="Icon" Property="Opacity" Value="0.35"/>
+                <Setter TargetName="CooldownRectangle" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                <Setter TargetName="Icon" Property="ToolTip" Value="{x:Null}"/>
+                <Setter TargetName="Icon" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="Transparent"/>
+                <Setter TargetName="SlotNumberBorder" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="LevelBorder" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="CooldownRectangle" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+</ResourceDictionary>

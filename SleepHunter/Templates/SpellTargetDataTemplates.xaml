@@ -1,0 +1,316 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:data="clr-namespace:SleepHunter.Data"
+                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+    
+    <data:LessThanConverter x:Key="LessThanConverter"/>
+    <data:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
+    <data:GreaterThanConverter x:Key="GreaterThanConverter"/>
+    <data:GreaterThanOrEqualConverter x:Key="GreaterThanOrEqualConverter"/>
+    <data:AbsoluteValueConverter x:Key="AbsoluteValueConverter"/>
+    
+    <DataTemplate x:Key="TilesXDataTemplate">
+        <Border>
+            <Grid>
+                <TextBlock Name="Text"
+                           Style="{StaticResource ObsidianText}"
+                           Text="{Binding StringFormat={}{0} Right, Converter={StaticResource AbsoluteValueConverter}}"
+                           FontSize="18"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="2,3,2,2"/>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Converter={StaticResource LessThanConverter}, ConverterParameter=0}" Value="True">
+                <Setter TargetName="Text" Property="Text" Value="{Binding StringFormat={}{0} Left, Converter={StaticResource AbsoluteValueConverter}}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="0">
+                <Setter TargetName="Text" Property="Text" Value="None"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TilesYDataTemplate">
+        <Border>
+            <Grid>
+                <TextBlock Name="Text"
+                           Style="{StaticResource ObsidianText}"
+                           Text="{Binding StringFormat={}{0} Down, Converter={StaticResource AbsoluteValueConverter}}"
+                           FontSize="18"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="2,3,2,2"/>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Converter={StaticResource LessThanConverter}, ConverterParameter=0}" Value="True">
+                <Setter TargetName="Text" Property="Text" Value="{Binding StringFormat={}{0} Up, Converter={StaticResource AbsoluteValueConverter}}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="0">
+                <Setter TargetName="Text" Property="Text" Value="None"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+    
+    <DataTemplate x:Key="SpellQueueItemDataTemplate">
+        <Border Name="Border"
+                Background="{StaticResource ObsidianControlBackground}">
+            <Grid Margin="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Border Name="IconBorder"
+                        Grid.RowSpan="3"
+                        Padding="2"
+                        Margin="8,5"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        BorderBrush="{DynamicResource ObsidianBackground}"
+                        CornerRadius="2">
+                    <Grid>
+                        <Image Name="Icon" 
+                               Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                               Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                               Source="{Binding Icon}"
+                               RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        <Rectangle Name="ActiveRectangle"
+                                   Fill="{DynamicResource ObsidianBackground}"
+                                   Opacity="0.25"
+                                   Visibility="Collapsed">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="{Binding Icon}"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                    </Grid>                    
+                </Border>
+                
+                <StackPanel Grid.Column="1" 
+                            Orientation="Vertical"
+                            VerticalAlignment="Center">
+                    <TextBlock Name="NameText"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="20"
+                           Text="{Binding Name}"
+                           TextWrapping="WrapWithOverflow"
+                           Margin="4,2"/>
+                    <TextBlock Name="TargetText"
+                           Grid.Row="1"
+                           Grid.Column="1"
+                           Grid.ColumnSpan="3"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="16"
+                           Text="{Binding Target, StringFormat=Targeting {0}}"
+                           TextWrapping="WrapWithOverflow"
+                           Margin="4,2"
+                           Opacity="0.75"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Name="CurrentLevelText"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="12"
+                           FontWeight="Normal"
+                           Text="{Binding CurrentLevel}"
+                           TextWrapping="WrapWithOverflow"
+                           Margin="6,2,4,2"
+                           Opacity="0.75"
+                           Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
+
+                        <ProgressBar Name="ProgressBar"
+                                     Grid.Column="1"
+                                     Height="12"
+                                     Value="{Binding PercentCompleted, Mode=OneWay}"
+                                     Style="{StaticResource ObsidianProgressBar}"
+                                     Margin="2"/>
+
+                        <TextBlock Name="TargetLevelText"
+                           Grid.Column="2"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="12"
+                           FontWeight="Normal"
+                           Text="{Binding TargetLevel}"
+                           TextWrapping="WrapWithOverflow"
+                           Margin="4,2,6,2"
+                           Opacity="0.75"
+                           Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
+                    </Grid>                    
+
+                    <TextBlock Name="CompletedText"
+                               Style="{StaticResource ObsidianText}"
+                               Foreground="{StaticResource ObsidianDisabled}"
+                               FontSize="12"
+                               FontWeight="Normal"
+                               Visibility="Collapsed"
+                               Margin="6,2">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Reached Level {0} of {1}">
+                                <Binding Path="TargetLevel"/>
+                                <Binding Path="MaximumLevel"/>
+                            </MultiBinding>                            
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <Border Name="WarningBorder" 
+                        Background="{Binding ElementName=Border, Path=Background}"
+                        Grid.Column="2"
+                        BorderBrush="{StaticResource ObsidianDisabled}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="6,2"
+                        ToolTip="Warning: Undefined Spell"
+                        Visibility="Collapsed">
+                    <Path StrokeThickness="2"
+                          Stroke="{Binding ElementName=WarningBorder, Path=BorderBrush}"
+                          Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsUndefined}" Value="True">
+                <Setter TargetName="WarningBorder" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsDone}" Value="True">
+                <Setter TargetName="Border" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
+                <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                <Setter TargetName="CurrentLevelText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="TargetLevelText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="TargetText" Property="Opacity" Value="1.0"/>
+                <Setter TargetName="Icon" Property="Opacity" Value="0.5"/>
+                <Setter TargetName="CompletedText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="NameText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="TargetText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="TargetLevelText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="ProgressBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="ProgressBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="CompletedText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="WarningBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="ActiveRectangle" Property="Fill" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="IconBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="CompletedText" Property="Opacity" Value="0.5"/>
+                <Setter TargetName="Icon" Property="Opacity" Value="1.0"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasTargetLevel}" Value="False">
+                <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Target.Units}" Value="None">
+                <Setter TargetName="TargetText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="IconBorder" Property="BorderThickness" Value="3"/>
+                <Setter TargetName="IconBorder" Property="Margin" Value="5,2"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+    
+    <DataTemplate x:Key="FlowerQueueItemDataTemplate">
+        <Border Name="Border"
+                Background="{StaticResource ObsidianControlBackground}"
+                Padding="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            Margin="2">
+                    <TextBlock Name="TargetText"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               Text="{Binding Target, StringFormat=Flowering {0}}"
+                               Margin="8,4"/>
+
+                    <DockPanel>
+                        <TextBlock Name="RemainingText"
+                                   Grid.Row="1"
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="{Binding RemainingTime, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Cooldown, Mode=OneWay}"
+                                   FontSize="18"
+                                   Margin="8,4"/>
+
+                        <ProgressBar Name="TimeProgressBar"
+                                     DockPanel.Dock="Right"
+                                     Grid.Row="1"
+                                     Height="12"
+                                     Minimum="0"
+                                     Maximum="{Binding IntervalSeconds, Mode=OneWay}"
+                                     Value="{Binding RemainingTimeSeconds, Mode=OneWay}"
+                                     Style="{StaticResource ObsidianProgressBar}"
+                                     VerticalAlignment="Center"
+                                     Margin="4"/>
+                    </DockPanel>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1"
+                            Orientation="Vertical"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Right"
+                            Margin="2">
+                    <TextBlock Name="IntervalText"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="18"
+                           Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=Every {0}}"
+                           TextAlignment="Right"
+                           Opacity="0.80"
+                           Margin="8,4"/>
+
+                    <TextBlock Name="ThresholdText"
+                           Style="{StaticResource ObsidianText}"
+                           FontSize="18"
+                           Text="{Binding ManaThreshold, StringFormat=If Mana &lt; {0}}"
+                           TextAlignment="Right"
+                           Opacity="0.80"
+                           Margin="8,4"/>
+                </StackPanel>                            
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="TimeProgressBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="TimeProgressBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ManaThreshold}" Value="{x:Null}">
+                <Setter TargetName="ThresholdText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Interval}" Value="{x:Null}">
+                <Setter TargetName="IntervalText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="TimeProgressBar" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="RemainingText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Interval}" Value="0">
+                <Setter TargetName="IntervalText" Property="Text" Value="Continuously"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsReady, Mode=OneWay}" Value="True">
+                <Setter TargetName="RemainingText" Property="Text" Value="Waiting to be Flowered..."/>
+                <Setter TargetName="TimeProgressBar" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+</ResourceDictionary>
