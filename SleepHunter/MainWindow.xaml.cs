@@ -31,7 +31,6 @@ using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
-using SleepHunter.Security;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
 
@@ -84,7 +83,6 @@ namespace SleepHunter
          LoadVersions();
          LoadThemes();
          LoadSettings();
-         LoadMapSecurity();
          
          LoadSkills();
          LoadSpells();
@@ -603,23 +601,6 @@ namespace SleepHunter
          }
       }
 
-      void LoadMapSecurity()
-      {
-         if(!MapSecurityManager.IsDynamicAssemblyLoaded)
-         {
-            MacroManager.Instance.Lockdown();
-
-            this.ShowMessageBox("Security Error",
-               "There was an error loading a critical security module.\nThe application will now terminate.",
-               "Please try re-installing the application to fix this.", 
-               MessageBoxButton.OK, 
-               440, 240);
-
-            this.Close();
-            Application.Current.Shutdown();
-         }
-      }
-
       void LoadSkills()
       {
          try
@@ -816,15 +797,7 @@ namespace SleepHunter
          else
          {
             hotkeyPlayer.Update(PlayerFieldFlags.Location);
-            if (MapSecurityManager.Verifier.IsMapAllowed(hotkeyPlayer.Location.MapHash))
-               macroState.Start();
-            else
-            {
-               this.ShowMessageBox("Map Restricted",
-               string.Format("Macroing is not allowed on this map:\n{0}", hotkeyPlayer.Location.MapName),
-               "Macroing is restricted to non-hostile and low level maps.",
-               MessageBoxButton.OK);
-            }
+            macroState.Start();
          }
       }
 
@@ -832,7 +805,6 @@ namespace SleepHunter
       void ApplyDebugSettings()
       {
          var settings = UserSettingsManager.Instance.Settings.IsDebugMode = true;
-         MapSecurityManager.SetVerifier(new NullMapSecurityManager());
       }
       #endregion
 
@@ -1174,17 +1146,6 @@ namespace SleepHunter
 
          selectedMacro.Client.Update(PlayerFieldFlags.Location);
          var location = selectedMacro.Client.Location;
-         var canMacro = MapSecurityManager.Verifier.IsMapAllowed(location.MapHash) && !MacroManager.Instance.IsLockedDown;
-
-         if (!canMacro)
-         {
-            this.ShowMessageBox("Map Restricted",
-               string.Format("Macroing is not allowed on this map:\n{0}", location.MapName),
-               "Macroing is restricted to non-hostile and low level maps.", 
-               MessageBoxButton.OK);
-
-            return;
-         }
 
          selectedMacro.Start();
       }

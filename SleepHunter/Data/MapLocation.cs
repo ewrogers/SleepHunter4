@@ -6,7 +6,6 @@ using System.Text;
 
 using SleepHunter.IO;
 using SleepHunter.IO.Process;
-using SleepHunter.Security;
 
 namespace SleepHunter.Data
 {
@@ -136,11 +135,6 @@ namespace SleepHunter.Data
                this.MapName = mapName;
             else
                this.MapName = null;
-
-            if (string.IsNullOrWhiteSpace(this.MapName))
-               this.MapHash = null;
-            else
-               this.MapHash = MapSecurityManager.Verifier.ComputeMapHash(this.MapNumber, this.MapName);
          }
       }
 

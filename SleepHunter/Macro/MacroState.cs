@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using SleepHunter.Data;
-using SleepHunter.Security;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
@@ -179,13 +178,8 @@ namespace SleepHunter.Macro
          if (client == null) 
             return false;
 
-         try
-         {
             client.Update(PlayerFieldFlags.Location);
-
-            return MapSecurityManager.Verifier.IsMapAllowed(client.Location.MapHash);
-         }
-         catch { return false; }
+            return true;
       }
 
       protected virtual bool CancelTask(bool waitForTask = false)
