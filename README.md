@@ -1,2 +1,10 @@
 # SleepHunter
 Dark Ages Automation Tool
+
+#### v1.4.4 Changes (from v1.4.2)
+
+- Project now using Visual Studio 2015 format.
+- Application now targets .NET Framework 4.6 and higher.
+- Removed all map restrictions.
+- Improved .NET Framework detection for versions 4.5 and higher.
+- Updated client version defaults for Dark Ages 7.39.
