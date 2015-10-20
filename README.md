@@ -10,3 +10,5 @@ Dark Ages Automation Tool
 - Removed all map restrictions.
 - Improved .NET Framework detection for versions 4.5 and higher.
 - Updated client version defaults for Dark Ages 7.39.
+- Removed load/save buttons from toolbar.
+- Increased spacing between toolbar buttons.
