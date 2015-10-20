@@ -29,30 +29,16 @@
             <WrapPanel Orientation="Horizontal">
                 <Button Name="startNewClientButton"
                         Style="{StaticResource ObsidianToolBarButton}"
+                        Padding="16,2"
                         Tag="Start New Client"
                         Click="startNewClientButton_Click">
                     <Path Stroke="{Binding ElementName=startNewClientButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 8,0 h 6 v 8 h 8 v 6 h -8 v 8 h -6 v -8 h -8 v -6 h 8 v -8 z"/>
                 </Button>
-                <Button Name="loadMacroButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Tag="Load Macro"
-                        IsEnabled="False">
-                    <Path Stroke="{Binding ElementName=loadMacroButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 6,0 h 12 v 12 h 4 l -10 12 l -10 -12 h 4 z"/>
-                </Button>
-                <Button Name="saveMacroButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Tag="Save Macro"
-                        IsEnabled="False">
-                    <Path Stroke="{Binding ElementName=saveMacroButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 0,0 h 20 l 4,4 v 20 h -24 z m 6,0 v 10 h 12 v -10"/>
-                </Button>
                 <Button Name="startMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
+                        Padding="16,2"
                         Tag="Start Macro"
                         IsEnabled="False"
                         Click="startMacroButton_Click">
@@ -62,6 +48,7 @@
                 </Button>
                 <Button Name="pauseMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
+                        Padding="16,2"
                         Tag="Pause Macro"
                         IsEnabled="False"
                         Click="pauseMacroButton_Click">
@@ -71,6 +58,7 @@
                 </Button>
                 <Button Name="stopMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
+                        Padding="16,2"
                         Tag="Stop Macro"
                         IsEnabled="False"
                         Click="stopMacroButton_Click">
@@ -80,6 +68,7 @@
                 </Button>
                 <Button Name="settingsButton"
                         Style="{StaticResource ObsidianToolBarButton}"
+                        Padding="16,2"
                         Tag="Settings"
                         Click="settingsButton_Click">
                     <Path Stroke="{Binding ElementName=settingsButton, Path=Foreground}"
