@@ -12,3 +12,4 @@ Dark Ages Automation Tool
 - Updated client version defaults for Dark Ages 7.39.
 - Removed load/save buttons from toolbar.
 - Increased spacing between toolbar buttons.
+- Removed Notifications and Debug tabs from Settings window.
