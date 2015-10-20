@@ -74,6 +74,12 @@
     <Compile Include="Settings\UserSetting.cs" />
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />
+    <Compile Include="Updates\BuildHelper.cs" />
+    <Compile Include="Updates\SoftwareBundle.cs" />
+    <Compile Include="Updates\SoftwareBundleFile.cs" />
+    <Compile Include="Updates\SoftwareUpdateEventArgs.cs" />
+    <Compile Include="Updates\SoftwareUpdateHelper.cs" />
+    <Compile Include="Updates\VersionExtender.cs" />
     <Page Include="Controls\NumericUpDown.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
