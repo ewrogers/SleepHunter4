@@ -119,6 +119,20 @@
     <Compile Include="IO\Process\ProcessMemoryScanner.cs" />
     <Compile Include="IO\Process\ProcessMemoryStream.cs" />
     <Compile Include="IO\Process\SearchMemoryVariable.cs" />
+    <Compile Include="Macro\Hotkey.cs" />
+    <Compile Include="Macro\HotkeyManager.cs" />
+    <Compile Include="Macro\MacroManager.cs" />
+    <Compile Include="Macro\MacroState.cs" />
+    <Compile Include="Macro\MacroStateEventArgs.cs" />
+    <Compile Include="Macro\PlayerInterfaceExtender.cs" />
+    <Compile Include="Macro\PlayerMacroState.cs" />
+    <Compile Include="Macro\PlayerMacroStatus.cs" />
+    <Compile Include="Macro\SavedFlowerState.cs" />
+    <Compile Include="Macro\SavedMacroState.cs" />
+    <Compile Include="Macro\SavedSkillState.cs" />
+    <Compile Include="Macro\SavedSpellState.cs" />
+    <Compile Include="Macro\SpellRotationMode.cs" />
+    <Compile Include="Macro\WindowAutomator.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
