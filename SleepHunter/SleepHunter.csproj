@@ -65,7 +65,9 @@
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="ControlExtender.cs" />
     <Compile Include="FlowerTargetWindow.xaml.cs" />
+    <Compile Include="Input\AsyncDelegateCommand.cs" />
     <Compile Include="Input\DelegateCommand.cs" />
+    <Compile Include="Input\IAsyncCommand.cs" />
     <Compile Include="Input\IRaiseCanExecuteChanged.cs" />
     <Compile Include="LineModifiersEditorWindow.xaml.cs" />
     <Compile Include="MainWindow.xaml.cs" />
