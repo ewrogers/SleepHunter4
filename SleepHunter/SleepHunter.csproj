@@ -62,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs" />
-    <Compile Include="AssemblyExtender.cs" />
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="ControlExtender.cs" />
     <Compile Include="FlowerTargetWindow.xaml.cs" />
@@ -85,7 +84,6 @@
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />
     <Compile Include="SkillEditorWindow.xaml.cs" />
-    <Compile Include="SoftwareUpdateWindow.xaml.cs" />
     <Compile Include="SpellEditorWindow.xaml.cs" />
     <Compile Include="SpellTargetWindow.xaml.cs" />
     <Compile Include="StaffEditorWindow.xaml.cs" />
@@ -209,10 +207,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="SkillEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="SoftwareUpdateWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
