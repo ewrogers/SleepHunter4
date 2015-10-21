@@ -19,7 +19,6 @@ using Microsoft.Win32;
 
 using SleepHunter.Data;
 using SleepHunter.Settings;
-using SleepHunter.Updates;
 
 namespace SleepHunter
 {
@@ -55,21 +54,14 @@ namespace SleepHunter
 
       void GetVersion()
       {
-         Version version;
-         string build;
-         bool isDebug;
-         VersionExtender.GetCurrentVersionInfo(out version, out build, out isDebug);
+         string build = "15A200";
 
+         var version = Assembly.GetExecutingAssembly().GetName().Version;
+         var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
          versionText.Text = string.Format("Version {0}.{1}.{2}", version.Major.ToString(), version.Minor.ToString(), version.Build.ToString());
+
          buildText.Text = string.Format("Build {0}", build);
-
-         DateTime buildDate;
-         int revision;
-
-         if (!BuildHelper.TryGetBuildTime(build, out buildDate, out revision))
-            buildDateText.Visibility = Visibility.Collapsed;
-         else
-            buildDateText.Text = string.Format("{0}", buildDate.ToLongDateString());
+         buildDateText.Text = DateTime.Now.ToString("MMMM dd, yyyy");
 
             if (isDebug)
                 buildText.Text += "  (Debug)";

@@ -90,12 +90,6 @@
     <Compile Include="SpellTargetWindow.xaml.cs" />
     <Compile Include="StaffEditorWindow.xaml.cs" />
     <Compile Include="StringExtender.cs" />
-    <Compile Include="Updates\BuildHelper.cs" />
-    <Compile Include="Updates\SoftwareBundle.cs" />
-    <Compile Include="Updates\SoftwareBundleFile.cs" />
-    <Compile Include="Updates\SoftwareUpdateEventArgs.cs" />
-    <Compile Include="Updates\SoftwareUpdateHelper.cs" />
-    <Compile Include="Updates\VersionExtender.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Win32\MemoryBasicInformation.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
