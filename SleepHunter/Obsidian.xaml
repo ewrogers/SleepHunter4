@@ -40,7 +40,7 @@
     <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>  
 
     <!-- Font Parameters -->
-    <FontFamily x:Key="ObsidianFontFamily">Segoe WP</FontFamily>
+    <FontFamily x:Key="ObsidianFontFamily">Segoe UI</FontFamily>
     <sys:Double x:Key="ObsidianFontSize">14</sys:Double>
     <FontWeight x:Key="ObsidianFontWeight">Light</FontWeight>
     <sys:Double x:Key="ObsidianWindowTitleFontSize">28</sys:Double>
@@ -570,7 +570,7 @@
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
-        <Setter Property="Padding" Value="4,6,4,4"/>
+        <Setter Property="Padding" Value="4"/>
         <Setter Property="Margin" Value="4,2"/>
         <Setter Property="MinWidth" Value="20"/>
         <Setter Property="MinHeight" Value="20"/>
@@ -1301,7 +1301,7 @@
     <Style x:Key="ObsidianWindowTitleBorder" TargetType="Border">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-        <Setter Property="Padding" Value="10,6,10,2"/>
+        <Setter Property="Padding" Value="10,1,10,2"/>
     </Style>
     
     <!-- Window Title Text Style -->
