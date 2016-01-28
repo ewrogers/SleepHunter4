@@ -153,10 +153,10 @@ namespace SleepHunter.Settings
          if (!clientVersions.ContainsKey("Auto-Detect"))
             AddVersion(ClientVersion.AutoDetect);
 
-         var version = new ClientVersion("7.39");
-         version.Hash = @"CA31B8165EA7409D285D81616D8CA4F2";
-         version.VersionNumber = 739;
-         version.MultipleInstanceAddress = 0x5911A9;
+         var version = new ClientVersion("7.40");
+         version.Hash = @"9DC6FB13D0470331BF5BA230343FCE42";
+         version.VersionNumber = 740;
+         version.MultipleInstanceAddress = 0x5912AE;
          version.IntroVideoAddress = 0x42F495;
          version.NoWallAddress = 0x624BD5;
          version.Variables.Add(new MemoryVariable("VersionNumber", 0x772534)); 

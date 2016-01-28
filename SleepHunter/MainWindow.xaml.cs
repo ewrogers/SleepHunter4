@@ -234,8 +234,11 @@ namespace SleepHunter
                if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
                {
                   patchStream.Position = version.MultipleInstanceAddress;
-                  writer.Write((byte)0xB8);        // MOV EAX,
-                  writer.Write((int)0x00000000);   // 0
+                  writer.Write((byte)0x31);        // XOR
+                  writer.Write((byte)0xC0);        // EAX, EAX
+                  writer.Write((byte)0x90);        // NOP
+                  writer.Write((byte)0x90);        // NOP
+                  writer.Write((byte)0x90);        // NOP
                   writer.Write((byte)0x90);        // NOP
                }
 

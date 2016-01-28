@@ -38,11 +38,12 @@
   <PropertyGroup>
     <ApplicationIcon>SleepHunter.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>SleepHunter.exe.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <StartupObject>SleepHunter.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -299,7 +300,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="SleepHunter.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
