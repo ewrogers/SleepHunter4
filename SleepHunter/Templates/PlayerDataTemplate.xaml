@@ -32,44 +32,51 @@
     </Style>
     
     <DataTemplate x:Key="PlayerDataTemplate" DataType="models:Player">
-        <Border Name="Border"
-                Padding="4">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Name -->
-                <TextBlock Name="NameText"
+        <DockPanel>
+            <Border Name="SelectionBorder" 
+                    DockPanel.Dock="Left"
+                    Width="4"
+                    Background="{DynamicResource ObsidianBackground}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Visibility="Collapsed"/>
+            <Border Name="Border" Padding="8,4,4,4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Name -->
+                    <TextBlock Name="NameText"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding Name}"
-                           FontSize="28"
+                           FontSize="20"
                            VerticalAlignment="Top"
-                           Margin="4,6,4,-2"/>                                   
-                
-                <!-- Hotkey Information -->
-                <Border Name="HotkeyBorder"
+                           Margin="4,6,4,-2"/>
+
+                    <!-- Hotkey Information -->
+                    <Border Name="HotkeyBorder"
                         Grid.Column="1"
                         Background="Transparent"
                         BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                        BorderThickness="2"
-                        CornerRadius="2"
+                        BorderThickness="1"
+                        CornerRadius="4"
                         Margin="8"
                         Padding="4,1"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Visibility="Collapsed">
-                    <TextBlock Name="HotkeyText"
+                        <TextBlock Name="HotkeyText"
                                 Foreground="{StaticResource ObsidianInactive}"
                                 Style="{StaticResource ObsidianText}"
                                 Text="{Binding HotkeyString}"
@@ -77,10 +84,10 @@
                                 Margin="2,1"
                                 FontWeight="Normal"
                                 TextAlignment="Center"/>
-                </Border>   
+                    </Border>
 
-                <!-- Status -->
-                <TextBlock Name="StatusText"
+                    <!-- Status -->
+                    <TextBlock Name="StatusText"
                            Grid.Row="1"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource ObsidianText}"
@@ -88,122 +95,123 @@
                            TextWrapping="WrapWithOverflow"
                            TextAlignment="Left"
                            VerticalAlignment="Center"
-                           FontSize="16"
+                           FontSize="14"
                            Margin="4"
                            Opacity="0.7"/>
 
-                <!-- Map Location -->
-                <TextBlock Name="MapText"
+                    <!-- Map Location -->
+                    <TextBlock Name="MapText"
                            Grid.Row="2"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource ObsidianText}"
                            TextWrapping="Wrap"
-                           FontSize="16"
+                           FontSize="14"
                            Margin="4,2"
                            Opacity="0.5">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} ({1}, {2})">
-                            <Binding Path="Location.MapName"/>
-                            <Binding Path="Location.X"/>
-                            <Binding Path="Location.Y"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} ({1}, {2})">
+                                <Binding Path="Location.MapName"/>
+                                <Binding Path="Location.X"/>
+                                <Binding Path="Location.Y"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
 
-                <!-- HP Text -->
-                <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,6,0,0">
-                    <TextBlock Text="HP"
+                    <!-- HP Text -->
+                    <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,6,0,0">
+                        <TextBlock Text="HP"
                                Style="{StaticResource ObsidianText}"
                                FontSize="12"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=HealthBar, Path=Visibility}"/>
-                    
-                    <TextBlock Name="HealthText"
+
+                        <TextBlock Name="HealthText"
                                Style="{StaticResource ObsidianText}"
                                FontSize="12"
                                TextAlignment="Right"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=HealthBar, Path=Visibility}">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0} / {1}">
-                                <Binding Path="Stats.CurrentHealth"/>
-                                <Binding Path="Stats.MaximumHealth"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </DockPanel>
-                
-                <!-- HP Bar -->
-                <ProgressBar Name="HealthBar" 
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="Stats.CurrentHealth"/>
+                                    <Binding Path="Stats.MaximumHealth"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DockPanel>
+
+                    <!-- HP Bar -->
+                    <ProgressBar Name="HealthBar" 
                              Grid.Row="4"
                              Grid.ColumnSpan="2"
                              Style="{StaticResource VitalProgressBar}"
                              Value="{Binding Stats.HealthPercent, Mode=OneWay}"/>
 
-                <!-- MP Text -->
-                <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,4,0,0">
-                    <TextBlock Text="MP"
+                    <!-- MP Text -->
+                    <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                        <TextBlock Text="MP"
                                Style="{StaticResource ObsidianText}"
                                FontSize="12"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=ManaBar, Path=Visibility}"/>
 
-                    <TextBlock Name="ManaText"
+                        <TextBlock Name="ManaText"
                                Style="{StaticResource ObsidianText}"
                                FontSize="12"
                                TextAlignment="Right"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=ManaBar, Path=Visibility}">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0} / {1}">
-                                <Binding Path="Stats.CurrentMana"/>
-                                <Binding Path="Stats.MaximumMana"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </DockPanel>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="Stats.CurrentMana"/>
+                                    <Binding Path="Stats.MaximumMana"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DockPanel>
 
-                <!-- MP Bar -->
-                <ProgressBar Name="ManaBar" 
+                    <!-- MP Bar -->
+                    <ProgressBar Name="ManaBar" 
                              Grid.Row="6"
                              Grid.ColumnSpan="2"
                              Style="{StaticResource VitalProgressBar}"
                              Value="{Binding Stats.ManaPercent, Mode=OneWay}"
                              Margin="2,1,2,6"/>
 
-                <!-- Process Id -->
-                <TextBlock Name="ProcessText"
+                    <!-- Process Id -->
+                    <TextBlock Name="ProcessText"
                            Grid.Row="3"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding Process.ProcessId, StringFormat=Process {0}}"
-                           FontSize="16"
+                           FontSize="14"
                            Opacity="{Binding ElementName=MapText, Path=Opacity}"
                            Margin="4,4,4,1"
                            Visibility="Collapsed"/>
 
-                <!-- Window Handle -->
-                <TextBlock Name="WindowText"
+                    <!-- Window Handle -->
+                    <TextBlock Name="WindowText"
                            Grid.Row="4"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding Process.WindowHandle, StringFormat=Window {0}}"
-                           FontSize="16"
+                           FontSize="14"
                            Opacity="{Binding ElementName=MapText, Path=Opacity}"
                            Margin="4,1"
                            Visibility="Collapsed"/>
-            </Grid>
-        </Border>
+                </Grid>
+            </Border>
+        </DockPanel>
+        
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="{x:Null}">
                 <Setter TargetName="StatusText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsLoggedIn}" Value="False">
-                <Setter TargetName="Border" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
                 <Setter TargetName="NameText" Property="Text" Value="{Binding Process.WindowTitle}"/>
                 <Setter TargetName="MapText" Property="Text" Value="{Binding GameClient.VersionKey, StringFormat=Version {0}}"/>
                 <Setter TargetName="HealthBar" Property="Visibility" Value="Collapsed"/>
@@ -217,7 +225,8 @@
                 <Setter TargetName="HotkeyBorder" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Border" Property="Padding" Value="4"/>
                 <Setter TargetName="HealthBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
                 <Setter TargetName="HealthBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
                 <Setter TargetName="ManaBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
