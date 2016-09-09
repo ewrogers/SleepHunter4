@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 
 using SleepHunter.Common;
@@ -65,6 +66,8 @@ namespace SleepHunter.IO.Process
 
       public void Update()
       {
+         Debug.WriteLine($"Updating client window state (pid={ProcessId}, hwnd={WindowHandle})...");
+ 
          var windowTextLength = NativeMethods.GetWindowTextLength(windowHandle);
          var windowTextBuffer = new StringBuilder(windowTextLength + 1);
          windowTextLength = NativeMethods.GetWindowText(windowHandle, windowTextBuffer, windowTextBuffer.Capacity);
@@ -78,6 +81,12 @@ namespace SleepHunter.IO.Process
             WindowWidth = windowRect.Width;
             WindowHeight = windowRect.Height;
          }
+
+          Debug.WriteLine($"WindowTitle = {WindowTitle}");
+          Debug.WriteLine($"WindowWidth = {WindowWidth}");
+          Debug.WriteLine($"WindowHeight = {WindowHeight}");
+          Debug.WriteLine($"WindowScaleX = {WindowScaleX}");
+          Debug.WriteLine($"WindowScaleY = {WindowScaleY}");
       }
    }
 }

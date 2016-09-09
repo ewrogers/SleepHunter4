@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
@@ -35,6 +36,8 @@ namespace SleepHunter.Models
       {
          if (accessor == null)
             throw new ArgumentNullException("accessor");
+
+         Debug.WriteLine($"Updating modifiers (pid={accessor.ProcessId})...");
       }
    }
 }

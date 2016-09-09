@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -170,8 +171,10 @@ namespace SleepHunter.Models
             ResetDefaults();
             return;
          }
-         
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating skillbok (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             var skillbookPointer = skillbookVariable.DereferenceValue(reader);
@@ -234,6 +237,9 @@ namespace SleepHunter.Models
                   }
 
                   skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader);
+
+                  if (!skills[i].IsEmpty)
+                      Debug.WriteLine($"Skill slot {i + 1}: {skills[i].Name} (cur={skills[i].CurrentLevel}, max={skills[i].MaximumLevel}, icon={skills[i].IconIndex})");
                }
                catch { }
             }

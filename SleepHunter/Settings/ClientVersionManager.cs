@@ -159,30 +159,31 @@ namespace SleepHunter.Settings
          version.IntroVideoAddress = 0x42E61F;
          version.NoWallAddress = 0x5FD874;
          version.Variables.Add(new MemoryVariable("CharacterName", 0x73D910, maxLength: 13));
-         version.Variables.Add(new DynamicMemoryVariable("CurrentHealth", 0x777A24, maxLength: 10, offsets: 0x4C6));
-         version.Variables.Add(new DynamicMemoryVariable("MaximumHealth", 0x777A24, maxLength: 10, offsets: 0x546));
-         version.Variables.Add(new DynamicMemoryVariable("CurrentMana", 0x777A24, maxLength: 10, offsets: 0x5C6));
-         version.Variables.Add(new DynamicMemoryVariable("MaximumMana", 0x777A24, maxLength: 10, offsets: 0x646));
+         version.Variables.Add(new DynamicMemoryVariable("CurrentHealth", 0x755AA4, maxLength: 10, offsets: 0x4C6));
+         version.Variables.Add(new DynamicMemoryVariable("MaximumHealth", 0x755AA4, maxLength: 10, offsets: 0x546));
+         version.Variables.Add(new DynamicMemoryVariable("CurrentMana", 0x755AA4, maxLength: 10, offsets: 0x5C6));
+         version.Variables.Add(new DynamicMemoryVariable("MaximumMana", 0x755AA4, maxLength: 10, offsets: 0x646));
 
-         version.Variables.Add(new DynamicMemoryVariable("Level", 0x777A24, maxLength: 3, offsets: 0x8C6));
-         version.Variables.Add(new DynamicMemoryVariable("AbilityLevel", 0x777A24, maxLength: 3, offsets: 0x9C6));
+         version.Variables.Add(new DynamicMemoryVariable("Level", 0x755AA4, maxLength: 3, offsets: 0x8C6));
+         version.Variables.Add(new DynamicMemoryVariable("AbilityLevel", 0x755AA4, maxLength: 3, offsets: 0x9C6));
 
-         version.Variables.Add(new DynamicMemoryVariable("MapName", 0x84D6E4, maxLength: 32, offsets: 0x4E40));
-         version.Variables.Add(new DynamicMemoryVariable("MapNumber", 0x8A4DE0, offsets: 0x26C));
-         version.Variables.Add(new DynamicMemoryVariable("MapX", 0x8A4DE0, offsets: 0x23C));
-         version.Variables.Add(new DynamicMemoryVariable("MapY", 0x8A4DE0, offsets: 0x238));
+         version.Variables.Add(new DynamicMemoryVariable("MapName", 0x82B76C, maxLength: 32, offsets: 0x4E3C));
+         version.Variables.Add(new DynamicMemoryVariable("MapNumber", 0x882E68, offsets: 0x26C));
+         version.Variables.Add(new DynamicMemoryVariable("MapX", 0x882E68, offsets: 0x23C));
+         version.Variables.Add(new DynamicMemoryVariable("MapY", 0x882E68, offsets: 0x238));
 
-         version.Variables.Add(new DynamicMemoryVariable("Inventory", 0x8A4DE0, maxLength: 256, size: 261, count: 60, offsets: new long[] { 0x2CC, 0x1092 }));
-         version.Variables.Add(new DynamicMemoryVariable("Equipment", 0x71E894, maxLength: 128, size: 261, count: 18, offsets: 0x1152));
-         version.Variables.Add(new DynamicMemoryVariable("Skillbook", 0x8A4DE0, maxLength: 256, size: 260, count: 90, offsets: new long[] { 0x2CC, 0x10210 }));
-         version.Variables.Add(new DynamicMemoryVariable("Spellbook", 0x8A4DE0, maxLength: 256, size: 518, count: 90, offsets: new long[] { 0x2CC, 0x4DFA }));
+         version.Variables.Add(new DynamicMemoryVariable("Inventory", 0x882E68, maxLength: 256, size: 261, count: 60, offsets: new long[] { 0x2CC, 0x1092 }));
+         version.Variables.Add(new DynamicMemoryVariable("Equipment", 0x6FC914, maxLength: 128, size: 261, count: 18, offsets: 0x1152));
+         version.Variables.Add(new DynamicMemoryVariable("Skillbook", 0x882E68, maxLength: 256, size: 260, count: 90, offsets: new long[] { 0x2CC, 0x10210 }));
+         version.Variables.Add(new DynamicMemoryVariable("Spellbook", 0x882E68, maxLength: 256, size: 518, count: 90, offsets: new long[] { 0x2CC, 0x4DFA }));
 
-         version.Variables.Add(new SearchMemoryVariable("SkillCooldowns", 0x69B43C, 0x194, size: 4, offsets: 0x322));
+         version.Variables.Add(new SearchMemoryVariable("SkillCooldowns", 0x67639C, 0x194, size: 4, offsets: 0x322));
          
-         version.Variables.Add(new DynamicMemoryVariable("ActivePanel", 0x84D6E4, offsets: 0x4FA8));
-         version.Variables.Add(new DynamicMemoryVariable("InventoryExpanded", 0x84D6E4, offsets: 0x4FB0));
-         version.Variables.Add(new DynamicMemoryVariable("MinimizedMode", 0x84D6E4, offsets: 0x4DF0));
-         version.Variables.Add(new DynamicMemoryVariable("DialogOpen", 0x873104, offsets: new long[] { 0x59C, 0x594, 0x18, 0x24, 0xA20 }));
+         version.Variables.Add(new DynamicMemoryVariable("ActivePanel", 0x82B76C, offsets: 0x4FA8));
+         version.Variables.Add(new DynamicMemoryVariable("InventoryExpanded", 0x82B76C, offsets: 0x4FB0));
+         version.Variables.Add(new DynamicMemoryVariable("MinimizedMode", 0x82B76C, offsets: 0x4DF0));
+         version.Variables.Add(new DynamicMemoryVariable("DialogOpen", 0x85118C, offsets: new long[] { 0x59C, 0x594, 0x18, 0x24, 0xA20 }));
+         version.Variables.Add(new DynamicMemoryVariable("SenseOpen", 0x6FB194, offsets: new long[] { 0x4C, 0x44, 0x18, 0xE }));
          version.Variables.Add(new DynamicMemoryVariable("UserChatting", 0x70D098, offsets: 0x438));
 
          AddVersion(version);

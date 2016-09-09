@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -300,8 +301,9 @@ namespace SleepHunter.Models
 
       public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
       {
-         GameClient.VersionKey = Version?.Key ?? "Unknown";         
+         GameClient.VersionKey = Version?.Key ?? "Unknown";
 
+         Debug.WriteLine($"Updating values from memory (pid={process.ProcessId}, fields={updateFields})...");
          try
          {
             if (updateFields.HasFlag(PlayerFieldFlags.Name))
@@ -359,12 +361,16 @@ namespace SleepHunter.Models
 
          if (version != null && version.ContainsVariable(CharacterNameKey))
          {
+            Debug.WriteLine($"Updating character name (pid={accessor.ProcessId})...");
+
             using (var stream = accessor.GetStream())
             using (var reader = new BinaryReader(stream, Encoding.ASCII))
             {
                var nameVariable = version.GetVariable(CharacterNameKey);
                nameVariable.TryReadString(reader, out name);
             }
+
+            Debug.WriteLine($"CharacterName = {name}");
          }
 
          if (!string.IsNullOrWhiteSpace(name))

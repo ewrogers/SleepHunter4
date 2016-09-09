@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
-using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
@@ -14,6 +14,7 @@ namespace SleepHunter.Models
       static readonly string InventoryExpandedKey = @"InventoryExpanded";
       static readonly string MinimizedModeKey = @"MinimizedMode";
       static readonly string DialogOpenKey = @"DialogOpen";
+      static readonly string SenseOpenKey = @"SenseOpen";
       static readonly string UserChattingKey = @"UserChatting";
 
       Player owner;
@@ -22,6 +23,7 @@ namespace SleepHunter.Models
       bool isInventoryExpanded;
       bool isMinimizedMode;
       bool isDialogOpen;
+      bool isSenseOpen;
       bool isUserChatting;
 
       public Player Owner
@@ -60,7 +62,13 @@ namespace SleepHunter.Models
          set { SetProperty(ref isDialogOpen, value); }
       }
 
-      public bool IsUserChatting
+      public bool IsSenseOpen
+      {
+          get { return isSenseOpen; }
+          set { SetProperty(ref isSenseOpen, value); }
+      }
+    
+        public bool IsUserChatting
       {
          get { return isUserChatting; }
          set { SetProperty(ref isUserChatting, value); }
@@ -98,7 +106,8 @@ namespace SleepHunter.Models
          var activePanelVariable = version.GetVariable(ActivePanelKey);
          var inventoryExpandedVariable = version.GetVariable(InventoryExpandedKey);
          var minimizedModeVariable = version.GetVariable(MinimizedModeKey);
-         var dialogOpenVariable = version.GetVariable(DialogOpenKey) as SearchMemoryVariable;
+         var dialogOpenVariable = version.GetVariable(DialogOpenKey);
+         var senseOpenVariable = version.GetVariable(SenseOpenKey);
          var userChattingVariable = version.GetVariable(UserChattingKey);
 
          byte activePanelByte;
@@ -106,8 +115,10 @@ namespace SleepHunter.Models
          bool isMinimizedMode;
          bool isDialogOpen;
          bool isUserChatting;
-         
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating client state (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
@@ -130,11 +141,23 @@ namespace SleepHunter.Models
             else
                IsDialogOpen = false;
 
+            if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
+                IsSenseOpen = isSenseOpen;
+            else
+                IsSenseOpen = false;
+
             if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
                IsUserChatting = isUserChatting;
             else
                IsUserChatting = false;
          }
+
+         Debug.WriteLine($"ActivePanel = {ActivePanel}");
+         Debug.WriteLine($"IsInventoryExpanded = {IsInventoryExpanded}");
+         Debug.WriteLine($"IsMinimizedMode = {IsMinimizedMode}");
+         Debug.WriteLine($"IsDialogOpen = {IsDialogOpen}");
+         Debug.WriteLine($"IsSenseOpen = {IsSenseOpen}");
+         Debug.WriteLine($"IsUserChatting = {IsUserChatting}");
       }
 
       public void ResetDefaults()

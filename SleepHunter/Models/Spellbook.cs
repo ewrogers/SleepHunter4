@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -157,8 +158,10 @@ namespace SleepHunter.Models
             ResetDefaults();
             return;
          }
-         
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating spellbook (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             var spellbookPointer = spellbookVariable.DereferenceValue(reader);
@@ -235,7 +238,10 @@ namespace SleepHunter.Models
                      spells[i].CanImprove = true;
                      spells[i].IsOnCooldown = false;
                   }
-               }
+
+                  if (!spells[i].IsEmpty)
+                      Debug.WriteLine($"Spell slot {i + 1}: {spells[i].Name} (cur={spells[i].CurrentLevel}, max={spells[i].MaximumLevel}, lines={spells[i].NumberOfLines}, icon={spells[i].IconIndex})");
+            }
                catch { }
             }
 

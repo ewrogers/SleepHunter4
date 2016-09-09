@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -110,8 +111,10 @@ namespace SleepHunter.Models
          int mapNumber;
          int mapX, mapY;
          string mapName;
-         
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating map location (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
@@ -134,6 +137,11 @@ namespace SleepHunter.Models
             else
                MapName = null;
          }
+
+         Debug.WriteLine($"MapNumber = {MapNumber}");
+         Debug.WriteLine($"MapName = {MapName}");
+         Debug.WriteLine($"X = {X}");
+         Debug.WriteLine($"Y = {Y}");
       }
 
       public void ResetDefaults()

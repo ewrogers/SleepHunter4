@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -100,8 +101,9 @@ namespace SleepHunter.Models
             return;
          }
 
+         Debug.WriteLine($"Updating inventory (pid={accessor.ProcessId})...");
          
-         using(var stream = accessor.GetStream())
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
 
@@ -128,6 +130,9 @@ namespace SleepHunter.Models
                   inventory[i].IsEmpty = !hasItem;
                   inventory[i].IconIndex = iconIndex;
                   inventory[i].Name = name.StripNumbers();
+
+                  if (!inventory[i].IsEmpty)
+                      Debug.WriteLine($"Inventory slot {i + 1}: {inventory[i].Name} (icon={inventory[i].IconIndex.ToString("X")})");
                }
                catch { }
             }

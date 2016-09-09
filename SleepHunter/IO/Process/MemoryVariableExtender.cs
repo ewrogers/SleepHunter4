@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 
 using SleepHunter.Extensions;
 
@@ -19,6 +20,7 @@ namespace SleepHunter.IO.Process
          reader.BaseStream.Position = address;
          var reference = reader.ReadUInt32();
 
+         Debug.WriteLine($"Dereferenced [{address.ToString("X")}] -> {reference.ToString("X")}");
          return reference;
       }
 

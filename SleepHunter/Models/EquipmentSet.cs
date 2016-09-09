@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -226,8 +227,10 @@ namespace SleepHunter.Models
             ResetDefaults();
             return;
          }
-         
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating equipment (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             var equipmentPointer = equipmentVariable.DereferenceValue(reader);

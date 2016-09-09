@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using SleepHunter.IO.Process;
+using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
@@ -40,10 +41,15 @@ namespace SleepHunter.Models
          get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
       }
 
-      public void AddNewClient(ClientProcess process)
+      public void AddNewClient(ClientProcess process, ClientVersion version = null)
       {
-         var player = new Player(process);
+         var player = new Player(process) { Version = version };
          player.PropertyChanged += Player_PropertyChanged;
+        
+        if (player.Version == null)
+        {
+            player.Version = ClientVersionManager.Instance.Versions.First(v => v.Key != "Auto-Detect");
+        }
 
          AddPlayer(player);
          player.Update();

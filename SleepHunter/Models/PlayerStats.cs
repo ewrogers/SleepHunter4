@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -155,8 +156,10 @@ namespace SleepHunter.Models
          long currentHealth, maximumHealth;
          long currentMana, maximumMana;
          long level, abilityLevel;
-                  
-         using(var stream = accessor.GetStream())
+
+         Debug.WriteLine($"Updating stats (pid={accessor.ProcessId})...");
+
+         using (var stream = accessor.GetStream())
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             // Current Health
@@ -195,6 +198,13 @@ namespace SleepHunter.Models
             else
                AbilityLevel = 0;
          }
+
+        Debug.WriteLine($"CurrentHealth = {CurrentHealth}");
+        Debug.WriteLine($"MaximumHealth = {MaximumHealth}");
+        Debug.WriteLine($"CurrentMana = {CurrentMana}");
+        Debug.WriteLine($"MaximumMana = {MaximumMana}");
+        Debug.WriteLine($"Level = { Level}");
+        Debug.WriteLine($"AbilityLevel = {AbilityLevel}");
       }
 
       public void ResetDefaults()
