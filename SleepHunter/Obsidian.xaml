@@ -795,7 +795,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
-        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontSize" Value="20"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="4,4"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
