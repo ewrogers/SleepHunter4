@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:SleepHunter.Models"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
-        xmlns:sh="clr-namespace:SleepHunter"
+        xmlns:views="clr-namespace:SleepHunter.Views"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Choose Target" 
@@ -32,14 +32,14 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="8,4">
-             <Image Source="{Binding RelativeSource={RelativeSource AncestorType=sh:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
+             <Image Source="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
                     Width="62" Height="62"
                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
         </Border>
 
         <TextBlock Grid.Column="1"
                    Grid.RowSpan="2"
-                   Text="{Binding RelativeSource={RelativeSource AncestorType=sh:SpellTargetWindow}, Path=Spell.Name, Mode=OneWay}"
+                   Text="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Name, Mode=OneWay}"
                    Style="{StaticResource ObsidianText}"
                    FontSize="26"
                    TextWrapping="WrapWithOverflow"
@@ -78,8 +78,8 @@
                    Margin="8,-8,8,4">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0} / {1}">
-                    <Binding RelativeSource="{RelativeSource AncestorType=sh:SpellTargetWindow}" Path="Spell.CurrentLevel" Mode="OneWay"/>
-                    <Binding RelativeSource="{RelativeSource AncestorType=sh:SpellTargetWindow}" Path="Spell.MaximumLevel" Mode="OneWay"/>
+                    <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.CurrentLevel" Mode="OneWay"/>
+                    <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.MaximumLevel" Mode="OneWay"/>
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
