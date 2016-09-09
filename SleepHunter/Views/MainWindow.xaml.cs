@@ -414,19 +414,19 @@ namespace SleepHunter.Views
       void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
       {
          var player = sender as Player;
-         if (player == null) return;
-
-         if (string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-         {
-            if (!player.IsLoggedIn)
-               OnPlayerLoggedOut(player);
-            else
-               OnPlayerLoggedIn(player);
-         }
+         if (player == null) return;         
 
          this.Dispatcher.InvokeIfRequired(() =>
          {
-            BindingOperations.GetBindingExpression(clientListBox, ListView.ItemsSourceProperty).UpdateTarget();
+             if (string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+             {
+                 if (!player.IsLoggedIn)
+                     OnPlayerLoggedOut(player);
+                 else
+                     OnPlayerLoggedIn(player);
+             }
+
+             BindingOperations.GetBindingExpression(clientListBox, ListView.ItemsSourceProperty).UpdateTarget();
             clientListBox.Items.Refresh();
 
             var selectedPlayer = clientListBox.SelectedItem as Player;

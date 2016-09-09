@@ -10,7 +10,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="MinHeight" Value="8"/>
         <Setter Property="Margin" Value="2,1"/>
-        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Padding" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
@@ -35,12 +35,12 @@
         <DockPanel>
             <Border Name="SelectionBorder" 
                     DockPanel.Dock="Left"
-                    Width="4"
+                    Width="8"
                     Background="{DynamicResource ObsidianBackground}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch"
                     Visibility="Collapsed"/>
-            <Border Name="Border" Padding="8,4,4,4">
+            <Border Name="Border" Padding="12,4,12,4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -226,16 +226,7 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="Border" Property="Padding" Value="4"/>
-                <Setter TargetName="HealthBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="HealthBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ManaBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ManaBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="HotkeyBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="HotkeyBorder" Property="Background" Value="Transparent"/>
-                <Setter TargetName="HotkeyText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="StatusText" Property="Opacity" Value="0.9"/>
-                <Setter TargetName="MapText" Property="Opacity" Value="0.9"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,4,12,4"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

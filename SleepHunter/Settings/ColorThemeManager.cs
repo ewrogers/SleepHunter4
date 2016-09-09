@@ -50,6 +50,7 @@ namespace SleepHunter.Settings
          DefaultThemes.Add(new ColorTheme("Pretty in Pink", "#FFDF2878", "#FFF8F8F8"));
          DefaultThemes.Add(new ColorTheme("Wood", "#FF4F1F08", "#FFF8F8F8"));
          DefaultThemes.Add(new ColorTheme("Sand", "#FF8F6F48", "#FFF8F8F8"));
+         DefaultThemes.Add(new ColorTheme("Silverstone", "#FF697E8C", "#FFF8F8F8"));
          DefaultThemes.Add(new ColorTheme("Steel", "#FF808080", "#FFF8F8F8"));
          DefaultThemes.Add(new ColorTheme("Smoke", "#FF606060", "#FFF8F8F8"));
          DefaultThemes.Add(new ColorTheme("Shadow", "#FF404040", "#FFF8F8F8"));
