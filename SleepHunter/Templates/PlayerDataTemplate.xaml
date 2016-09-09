@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:data="clr-namespace:SleepHunter.Data">
+                    xmlns:models="clr-namespace:SleepHunter.Models">
     <Style x:Key="VitalProgressBar" TargetType="ProgressBar">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -31,7 +31,7 @@
         </Setter>
     </Style>
     
-    <DataTemplate x:Key="PlayerDataTemplate" DataType="data:Player">
+    <DataTemplate x:Key="PlayerDataTemplate" DataType="models:Player">
         <Border Name="Border"
                 Padding="4">
             <Grid>

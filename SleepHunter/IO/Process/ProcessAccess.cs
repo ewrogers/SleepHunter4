@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   [Flags]
+    [Flags]
    public enum ProcessAccess
    {
       Read = 0x1,

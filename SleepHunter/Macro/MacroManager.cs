@@ -3,15 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
-using SleepHunter.Data;
+using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-   public sealed class MacroManager
+    public sealed class MacroManager
    {
       #region Singleton
       static readonly MacroManager instance = new MacroManager();

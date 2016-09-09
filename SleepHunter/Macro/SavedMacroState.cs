@@ -2,19 +2,17 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Input;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 
 namespace SleepHunter.Macro
 {
-   [Serializable]
+    [Serializable]
    [XmlRoot("MacroState")]
-   public sealed class SavedMacroState : NotifyObject
-   {
+   public sealed class SavedMacroState : ObservableObject
+    {
       string characterName;
       ModifierKeys hotkeyModifiers;
       Key hotkeyKey;

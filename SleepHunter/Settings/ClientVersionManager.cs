@@ -3,14 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings
 {
-   public sealed class ClientVersionManager
+    public sealed class ClientVersionManager
    {
       public static readonly string VersionsFile = @"Versions.xml";
 

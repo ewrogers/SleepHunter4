@@ -2,12 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SleepHunter.Metadata
 {
-   public sealed class ComputedSpellLines
+    public sealed class ComputedSpellLines
    {
       ConcurrentDictionary<string, int> spellLines = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 

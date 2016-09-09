@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using System.Xml.Serialization;
 
 namespace SleepHunter.IO.Process
 {
-   [Serializable]
+    [Serializable]
    public class DynamicMemoryVariable : MemoryVariable
    {
       protected List<MemoryOffset> offsets = new List<MemoryOffset>();

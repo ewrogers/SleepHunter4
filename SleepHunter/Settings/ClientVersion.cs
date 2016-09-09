@@ -2,18 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings
 {
-   [Serializable]
-   public sealed class ClientVersion : NotifyObject
+    [Serializable]
+   public sealed class ClientVersion : ObservableObject
    {
       public static readonly ClientVersion AutoDetect = new ClientVersion("Auto-Detect");
 

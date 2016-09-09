@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
+using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
 {
-   [Serializable]
-   public sealed class StaffMetadata : NotifyObject
-   {
+    [Serializable]
+   public sealed class StaffMetadata : ObservableObject
+    {
       public readonly static StaffMetadata NoStaff = new StaffMetadata { Name = "No Staff", Class = PlayerClass.All };
 
       string name;

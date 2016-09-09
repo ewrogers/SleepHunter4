@@ -5,9 +5,11 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
 
+using SleepHunter.Extensions;
+
 namespace SleepHunter.IO
 {
-   public sealed class FileArchive : IDisposable
+    public sealed class FileArchive : IDisposable
    {
       static readonly int NameLength = 13;
 

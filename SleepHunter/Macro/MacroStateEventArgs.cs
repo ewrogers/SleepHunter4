@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SleepHunter.Macro
 {
-   public delegate void MacroStateEventHandler(object sender, MacroStateEventArgs e);
+    public delegate void MacroStateEventHandler(object sender, MacroStateEventArgs e);
 
    public delegate void MacroStatusEventHandler(object sender, MacroStatusEventArgs e);
 

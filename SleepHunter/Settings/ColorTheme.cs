@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Windows.Media;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 using SleepHunter.Media;
 
 namespace SleepHunter.Settings
 {
-   [Serializable]
-   public sealed class ColorTheme : NotifyObject
-   {
+    [Serializable]
+   public sealed class ColorTheme : ObservableObject
+    {
       string name;
       SolidColorBrush background;
       HueSaturationValue backgroundHsv;

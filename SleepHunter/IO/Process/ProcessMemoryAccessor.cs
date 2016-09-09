@@ -1,16 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   public sealed class ProcessMemoryAccessor : IDisposable
+    public sealed class ProcessMemoryAccessor : IDisposable
    {
       bool isDisposed;
       int processId;

@@ -1,12 +1,12 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                    xmlns:data="clr-namespace:SleepHunter.Data"
+                    xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
     
-    <data:VisibilityConverter x:Key="VisibilityConverter"/>
-    <data:TimeSpanConverter x:Key="TimeSpanConverter"/>
-    <data:BooleanInverter x:Key="BooleanInverter"/>
+    <converters:VisibilityConverter x:Key="VisibilityConverter"/>
+    <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
+    <converters:BooleanInverter x:Key="BooleanInverter"/>
     
     <Style TargetType="ToolTip">
         <Setter Property="SnapsToDevicePixels" Value="True"/>

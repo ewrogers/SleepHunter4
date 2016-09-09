@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
+using SleepHunter.Models;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-   public enum MacroStatus
+    public enum MacroStatus
    {
       Idle,
       Running,
@@ -19,7 +17,7 @@ namespace SleepHunter.Macro
       Error = -1
    }
 
-   public abstract class MacroState : NotifyObject, IDisposable
+   public abstract class MacroState : ObservableObject, IDisposable
    {
       bool isDisposed;
       protected string name;

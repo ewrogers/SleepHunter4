@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 using SleepHunter.Metadata;
+using SleepHunter.Models;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-   public sealed class PlayerMacroState : MacroState
+    public sealed class PlayerMacroState : MacroState
    {
       static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
       static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);

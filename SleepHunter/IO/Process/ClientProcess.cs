@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
 
-using SleepHunter.Data;
-using SleepHunter.Settings;
+using SleepHunter.Common;
 using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   public sealed class ClientProcess : NotifyObject
-   {
+    public sealed class ClientProcess : ObservableObject
+    {
       int processId;
       IntPtr windowHandle;
       string windowClassName = string.Empty;

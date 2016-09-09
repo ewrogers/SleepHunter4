@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SleepHunter.Settings
 {
-   public delegate void ColorThemeEventHandler(object sender, ColorThemeEventArgs e);
+    public delegate void ColorThemeEventHandler(object sender, ColorThemeEventArgs e);
 
    public sealed class ColorThemeEventArgs : EventArgs
    {

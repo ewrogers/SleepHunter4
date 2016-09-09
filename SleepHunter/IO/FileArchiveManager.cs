@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace SleepHunter.IO
 {
-   public sealed class FileArchiveManager
+    public sealed class FileArchiveManager
    {
       #region Singleton
       static readonly FileArchiveManager instance = new FileArchiveManager();

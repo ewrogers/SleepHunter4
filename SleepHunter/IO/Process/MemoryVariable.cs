@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
 namespace SleepHunter.IO.Process
 {
-   [Serializable]
+    [Serializable]
    public class MemoryVariable
    {
       protected string key;

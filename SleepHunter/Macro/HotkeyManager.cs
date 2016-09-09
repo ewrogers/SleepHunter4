@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Input;
 
@@ -10,7 +9,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-   public sealed class HotkeyManager
+    public sealed class HotkeyManager
    {
       #region Singleton
       static readonly HotkeyManager instance = new HotkeyManager();

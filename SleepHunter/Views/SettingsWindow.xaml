@@ -4,7 +4,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
-        xmlns:data="clr-namespace:SleepHunter.Data"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Settings"
         Width="640" Height="540"

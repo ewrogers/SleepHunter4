@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-using SleepHunter.Data;
-using SleepHunter.IO.Process;
-using SleepHunter.Win32;
+using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-   public static class PlayerInterfaceExtender
+    public static class PlayerInterfaceExtender
    {
       public static void Disarm(this Player client)
       {

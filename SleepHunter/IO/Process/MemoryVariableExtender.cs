@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
+
+using SleepHunter.Extensions;
 
 namespace SleepHunter.IO.Process
 {
-   public static class MemoryVariableExtender
+    public static class MemoryVariableExtender
    {
       static readonly long MinimumAddress = 0x00400000;
       static readonly long MaximumAddress = 0x7FFFFFFF;

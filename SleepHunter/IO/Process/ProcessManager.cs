@@ -8,7 +8,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   public sealed class ProcessManager
+    public sealed class ProcessManager
    {
       #region Singleton
       static readonly ProcessManager instance = new ProcessManager();

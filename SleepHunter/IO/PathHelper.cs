@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SleepHunter.IO
 {
-   public static class PathHelper
+    public static class PathHelper
    {
       public static string RootPath(string baseDirectory, string path)
       {

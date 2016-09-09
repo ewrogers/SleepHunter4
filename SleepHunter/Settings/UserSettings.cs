@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 using SleepHunter.Macro;
 
 namespace SleepHunter.Settings
 {
-   [Serializable]
+    [Serializable]
    [XmlRoot("UserSettings")]
-   public class UserSettings : NotifyObject
-   {
+   public class UserSettings : ObservableObject
+    {
       public static readonly string CurrentVersion = "1.0";
 
       bool isDebugMode;

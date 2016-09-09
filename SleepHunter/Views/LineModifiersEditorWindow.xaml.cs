@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
+using SleepHunter.Extensions;
 using SleepHunter.Metadata;
 
 namespace SleepHunter.Views

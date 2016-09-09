@@ -1,16 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   internal sealed class ProcessMemoryStream : Stream
+    internal sealed class ProcessMemoryStream : Stream
    {
       bool isDisposed;
       IntPtr processHandle;

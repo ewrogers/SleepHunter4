@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 
 namespace SleepHunter.Settings
 {
-   [Serializable]
-   public sealed class UserSetting : NotifyObject
-   {
+    [Serializable]
+   public sealed class UserSetting : ObservableObject
+    {
       string key;
       string displayText;
       object value;

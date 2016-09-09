@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
-using SleepHunter.Data;
 using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-   public static class WindowAutomator
+    public static class WindowAutomator
    {
       public static readonly byte VK_SHIFT = 0x10;
       public static readonly byte VK_ESCAPE = 0x1B;

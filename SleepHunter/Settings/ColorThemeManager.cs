@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
 {
-   public sealed class ColorThemeManager
+    public sealed class ColorThemeManager
    {
       public static readonly string ThemesFile = @"Themes.xml";
 

@@ -15,12 +15,13 @@ using System.Windows.Threading;
 
 using Path = System.IO.Path;
 
-using SleepHunter.Data;
+using SleepHunter.Extensions;
 using SleepHunter.IO;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
+using SleepHunter.Models;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
 

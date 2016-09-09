@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Windows.Input;
-using System.Windows;
-using System.Windows.Interop;
 
 namespace SleepHunter.Macro
 {
-   public sealed class Hotkey
+    public sealed class Hotkey
    {
       string atomName;
       ModifierKeys modifiers;

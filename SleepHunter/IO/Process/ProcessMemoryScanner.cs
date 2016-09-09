@@ -1,17 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-   internal sealed class ProcessMemoryScanner : IDisposable
+    internal sealed class ProcessMemoryScanner : IDisposable
    {
       bool isDisposed;
       IntPtr processHandle;

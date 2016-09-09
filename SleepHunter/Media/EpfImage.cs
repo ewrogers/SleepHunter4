@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace SleepHunter.Media
 {
-   public sealed class EpfImage
+    public sealed class EpfImage
    {
       string name;
       int width;

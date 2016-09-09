@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
 {
-   public sealed class UserSettingsManager
+    public sealed class UserSettingsManager
    {
       public static readonly string SettingsFile = @"Settings.xml";      
 

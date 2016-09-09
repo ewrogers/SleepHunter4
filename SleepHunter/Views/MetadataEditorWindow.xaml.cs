@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
+using SleepHunter.Extensions;
 using SleepHunter.Metadata;
 
 namespace SleepHunter.Views

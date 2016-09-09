@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
+using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-   [Serializable]
-   public sealed class SavedSpellState : NotifyObject
-   {
+    [Serializable]
+   public sealed class SavedSpellState : ObservableObject
+    {
       string spellName;
       TargetCoordinateUnits targetMode;
       string characterName;

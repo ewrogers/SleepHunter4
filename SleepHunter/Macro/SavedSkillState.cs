@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
 
 namespace SleepHunter.Macro
 {
-   [Serializable]
-   public sealed class SavedSkillState : NotifyObject
-   {
+    [Serializable]
+   public sealed class SavedSkillState : ObservableObject
+    {
       string skillName;
 
       [XmlAttribute("Name")]

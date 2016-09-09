@@ -2,13 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-   public sealed class ColorPalette : IEnumerable<Color>
+    public sealed class ColorPalette : IEnumerable<Color>
    {
       public static readonly int ColorCount = 256;
 

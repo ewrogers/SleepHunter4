@@ -1,13 +1,13 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:data="clr-namespace:SleepHunter.Data"
+                    xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
     
-    <data:LessThanConverter x:Key="LessThanConverter"/>
-    <data:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
-    <data:GreaterThanConverter x:Key="GreaterThanConverter"/>
-    <data:GreaterThanOrEqualConverter x:Key="GreaterThanOrEqualConverter"/>
-    <data:AbsoluteValueConverter x:Key="AbsoluteValueConverter"/>
+    <converters:LessThanConverter x:Key="LessThanConverter"/>
+    <converters:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
+    <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
+    <converters:GreaterThanOrEqualConverter x:Key="GreaterThanOrEqualConverter"/>
+    <converters:AbsoluteValueConverter x:Key="AbsoluteValueConverter"/>
     
     <DataTemplate x:Key="TilesXDataTemplate">
         <Border>

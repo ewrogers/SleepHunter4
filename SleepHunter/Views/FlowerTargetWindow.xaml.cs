@@ -5,7 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
 
-using SleepHunter.Data;
+using SleepHunter.Extensions;
+using SleepHunter.Models;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views

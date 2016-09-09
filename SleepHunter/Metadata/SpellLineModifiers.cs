@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-using SleepHunter.Data;
+using SleepHunter.Common;
+using SleepHunter.Extensions;
 
 namespace SleepHunter.Metadata
 {
-   public enum ModifierAction
+    public enum ModifierAction
    {
       None = 0,
       Increase,
@@ -27,8 +25,8 @@ namespace SleepHunter.Metadata
    }
 
    [Serializable]
-   public sealed class SpellLineModifiers : NotifyObject
-   {
+   public sealed class SpellLineModifiers : ObservableObject
+    {
       ModifierAction action;
       ModifierScope scope;
       string scopeName;

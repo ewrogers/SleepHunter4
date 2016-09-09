@@ -1,7 +1,6 @@
 ﻿<Window x:Class="SleepHunter.Views.MetadataEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:data="clr-namespace:SleepHunter.Data"
         xmlns:metadata="clr-namespace:SleepHunter.Metadata"
         xmlns:sh="clr-namespace:SleepHunter"
         Title="Metadata Editor"

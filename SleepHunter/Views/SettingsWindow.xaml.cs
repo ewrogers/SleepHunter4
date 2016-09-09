@@ -5,6 +5,7 @@ using System.Windows.Controls;
 
 using Microsoft.Win32;
 
+using SleepHunter.Extensions;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views

@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Text;
-using System.Threading.Tasks;
-
-using SleepHunter.IO;
 
 namespace SleepHunter.Media
 {
-   public sealed class RenderManager
+    public sealed class RenderManager
    {  
       #region Singleton
       static readonly RenderManager instance = new RenderManager();

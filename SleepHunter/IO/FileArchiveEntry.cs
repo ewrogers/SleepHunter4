@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace SleepHunter.IO
 {
-   public sealed class FileArchiveEntry
+    public sealed class FileArchiveEntry
    {
       int index;
       string name;

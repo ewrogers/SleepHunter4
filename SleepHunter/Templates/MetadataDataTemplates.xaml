@@ -1,11 +1,11 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ctl="clr-namespace:SleepHunter.Controls"
-                    xmlns:data="clr-namespace:SleepHunter.Data"
+                    xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:meta="clr-namespace:SleepHunter.Metadata">
     
-    <meta:PlayerClassConverter x:Key="PlayerClassConverter"/>
-    <data:GreaterThanConverter x:Key="GreaterThanConverter"/>
+    <converters:PlayerClassConverter x:Key="PlayerClassConverter"/>
+    <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
     
     <!-- Name Text Data Template -->
     <DataTemplate x:Key="NameDataTemplate">

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace SleepHunter.Media
 {
-   public sealed class EpfFrame
+    public sealed class EpfFrame
    {
       int index;
       int x;

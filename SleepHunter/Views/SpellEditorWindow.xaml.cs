@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Windows;
 
-using SleepHunter.Data;
+using SleepHunter.Extensions;
 using SleepHunter.Metadata;
+using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
