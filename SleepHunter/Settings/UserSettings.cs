@@ -527,7 +527,7 @@ namespace SleepHunter.Settings
          FlowerHasMinimum = true;
          FlowerMinimumMana = 10000;
          
-         this.AutoUpdateEnabled = true;
+         AutoUpdateEnabled = true;
 
          foreach (var theme in ColorThemeManager.Instance.Themes)
             if (theme.IsDefault)

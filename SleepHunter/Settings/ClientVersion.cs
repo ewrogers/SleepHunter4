@@ -106,7 +106,7 @@ namespace SleepHunter.Settings
          }
       }
 
-      [XmlArray("Variables")]
+    [XmlArray("Variables")]
       [XmlArrayItem("Static", typeof(MemoryVariable))]
       [XmlArrayItem("Dynamic", typeof(DynamicMemoryVariable))]
       [XmlArrayItem("Search", typeof(SearchMemoryVariable))]

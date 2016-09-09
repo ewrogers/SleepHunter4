@@ -17,7 +17,6 @@ namespace SleepHunter.Models
       static readonly string UserChattingKey = @"UserChatting";
 
       Player owner;
-      int versionNumber;
       string versionKey;
       InterfacePanel activePanel;
       bool isInventoryExpanded;
@@ -29,12 +28,6 @@ namespace SleepHunter.Models
       {
          get { return owner; }
          set { SetProperty(ref owner, value); }
-      }
-
-      public int VersionNumber
-      {
-         get { return versionNumber; }
-         set { SetProperty(ref versionNumber, value); }
       }
 
       public string VersionKey
@@ -151,37 +144,6 @@ namespace SleepHunter.Models
          IsMinimizedMode = false;
          IsDialogOpen = false;
          IsUserChatting = false;
-      }
-
-      public static ClientVersion DetectVersion(ProcessMemoryAccessor accessor)
-      {
-         ClientVersion detectedVersion = null;
-
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            foreach (var version in ClientVersionManager.Instance.Versions)
-            {
-               ushort versionNumber;
-               var versionVariable = version.GetVariable("VersionNumber");
-
-               if (versionVariable == null) continue;
-
-               if (!versionVariable.TryReadUInt16(reader, out versionNumber))
-                  continue;
-
-               if (versionNumber == version.VersionNumber)
-               {
-                  detectedVersion = version;
-                  break;
-               }
-            }
-         }
-
-         return detectedVersion;
       }
    }
 }

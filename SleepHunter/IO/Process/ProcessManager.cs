@@ -150,8 +150,7 @@ namespace SleepHunter.IO.Process
             foundClients[processId] = process;
 
             // Callback
-            if (enumProcessCallback != null)
-               enumProcessCallback(process);
+            enumProcessCallback?.Invoke(process);
 
             return true;
 
@@ -187,10 +186,7 @@ namespace SleepHunter.IO.Process
          if (process == null)
             throw new ArgumentNullException("process");
 
-         var handler = this.ProcessCreated;
-
-         if (handler != null)
-            handler(this, new ClientProcessEventArgs(process));
+          ProcessCreated?.Invoke(this, new ClientProcessEventArgs(process));
       }
 
       void OnProcessTerminated(ClientProcess process)
@@ -198,10 +194,7 @@ namespace SleepHunter.IO.Process
          if (process == null)
             throw new ArgumentNullException("process");
 
-         var handler = this.ProcessTerminated;
-
-         if (handler != null)
-            handler(this, new ClientProcessEventArgs(process));
+         ProcessTerminated?.Invoke(this, new ClientProcessEventArgs(process));
       }
       #endregion
    }

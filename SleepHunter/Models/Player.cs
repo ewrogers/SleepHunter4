@@ -300,14 +300,7 @@ namespace SleepHunter.Models
 
       public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
       {
-         if (version == null)
-            Version = ClientState.DetectVersion(accessor);
-
-         if (version != null)
-         {
-            GameClient.VersionNumber = Version.VersionNumber;
-            GameClient.VersionKey = Version.Key;
-         }
+         GameClient.VersionKey = Version?.Key ?? "Unknown";         
 
          try
          {

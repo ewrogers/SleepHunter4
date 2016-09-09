@@ -213,7 +213,7 @@ namespace SleepHunter.Views
          var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
          var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
          var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
-
+  
          // Patch Process
          try
          {
@@ -236,9 +236,9 @@ namespace SleepHunter.Views
                if (patchIntroVideo && version.IntroVideoAddress > 0)
                {
                   patchStream.Position = version.IntroVideoAddress;
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
+                  writer.Write((byte)0x83);        // CMP
+                  writer.Write((byte)0xFA);        // EDX
+                  writer.Write((byte)0x00);        // 0
                   writer.Write((byte)0x90);        // NOP
                   writer.Write((byte)0x90);        // NOP
                   writer.Write((byte)0x90);        // NOP
@@ -247,11 +247,8 @@ namespace SleepHunter.Views
                if (patchNoWalls && version.NoWallAddress > 0)
                {
                   patchStream.Position = version.NoWallAddress;
-                  writer.Write((byte)0x5D);        // POP EBP
-                  writer.Write((byte)0xC3);        // RETN
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
+                  writer.Write((byte)0xEB);        // JMP SHORT
+                  writer.Write((byte)0x17);        // +0x17
                   writer.Write((byte)0x90);        // NOP
                }
 

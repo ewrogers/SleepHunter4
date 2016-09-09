@@ -152,14 +152,13 @@ namespace SleepHunter.Settings
          if (!clientVersions.ContainsKey("Auto-Detect"))
             AddVersion(ClientVersion.AutoDetect);
 
-         var version = new ClientVersion("7.40");
-         version.Hash = @"9DC6FB13D0470331BF5BA230343FCE42";
-         version.VersionNumber = 740;
-         version.MultipleInstanceAddress = 0x5912AE;
-         version.IntroVideoAddress = 0x42F495;
-         version.NoWallAddress = 0x624BD5;
-         version.Variables.Add(new MemoryVariable("VersionNumber", 0x772534)); 
-         version.Variables.Add(new MemoryVariable("CharacterName", 0x75F890, maxLength: 13));
+         var version = new ClientVersion("7.41");
+         version.Hash = @"3244DC0E68CD26F4FB1626DA3673FDA8";
+         version.VersionNumber = 741;
+         version.MultipleInstanceAddress = 0x57A7CE;
+         version.IntroVideoAddress = 0x42E61F;
+         version.NoWallAddress = 0x5FD874;
+         version.Variables.Add(new MemoryVariable("CharacterName", 0x73D910, maxLength: 13));
          version.Variables.Add(new DynamicMemoryVariable("CurrentHealth", 0x777A24, maxLength: 10, offsets: 0x4C6));
          version.Variables.Add(new DynamicMemoryVariable("MaximumHealth", 0x777A24, maxLength: 10, offsets: 0x546));
          version.Variables.Add(new DynamicMemoryVariable("CurrentMana", 0x777A24, maxLength: 10, offsets: 0x5C6));
