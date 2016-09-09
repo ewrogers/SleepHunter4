@@ -25,56 +25,67 @@
         <Border Grid.ColumnSpan="3" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
                 BorderThickness="0,0,0,1">
-            <WrapPanel Orientation="Horizontal">
-                <Button Name="startNewClientButton"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Button Name="startNewClientButton"
                         Style="{StaticResource ObsidianToolBarButton}"
                         Padding="16,2"
                         Tag="Start New Client"
                         Click="startNewClientButton_Click">
-                    <Path Stroke="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                        <Path Stroke="{Binding ElementName=startNewClientButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 8,0 h 6 v 8 h 8 v 6 h -8 v 8 h -6 v -8 h -8 v -6 h 8 v -8 z"/>
-                </Button>
-                <Button Name="startMacroButton"
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Name="startMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
                         Padding="16,2"
                         Tag="Start Macro"
                         IsEnabled="False"
                         Click="startMacroButton_Click">
-                    <Path Stroke="{Binding ElementName=startMacroButton, Path=Foreground}"
+                        <Path Stroke="{Binding ElementName=startMacroButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 0,0 v 22 l 16,-11 z"/>
-                </Button>
-                <Button Name="pauseMacroButton"
+                    </Button>
+                    <Button Name="pauseMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
                         Padding="16,2"
                         Tag="Pause Macro"
                         IsEnabled="False"
                         Click="pauseMacroButton_Click">
-                    <Path Stroke="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                        <Path Stroke="{Binding ElementName=pauseMacroButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 0,0 h 10 v 22 h -10 z m 14,0 h 10 v 22 h -10 z"/>
-                </Button>
-                <Button Name="stopMacroButton"
+                    </Button>
+                    <Button Name="stopMacroButton"
                         Style="{StaticResource ObsidianToolBarButton}"
                         Padding="16,2"
                         Tag="Stop Macro"
                         IsEnabled="False"
                         Click="stopMacroButton_Click">
-                    <Path Stroke="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                        <Path Stroke="{Binding ElementName=stopMacroButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 0,0 h 22 v 22 h -22 z"/>
-                </Button>
-                <Button Name="settingsButton"
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Name="settingsButton"
                         Style="{StaticResource ObsidianToolBarButton}"
                         Padding="16,2"
                         Tag="Settings"
                         Click="settingsButton_Click">
-                    <Path Stroke="{Binding ElementName=settingsButton, Path=Foreground}"
+                        <Path Stroke="{Binding ElementName=settingsButton, Path=Foreground}"
                           StrokeThickness="2"
                           Data="M 0,0 h 10 v 10 h -10 z m 0, 14 h 10 v 10 h -10 z m 14,-8 h 12 m -12,14 h 12 m -24,-4 l 6,6 m -6,0 l 6,-6"/>
-                </Button>
-            </WrapPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Border>       
  
         <!-- Client List Box -->
