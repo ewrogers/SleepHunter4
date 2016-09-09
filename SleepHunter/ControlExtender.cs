@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 
 namespace SleepHunter
 {
-   public static class ControlExtender
+    public static class ControlExtender
    {
       public static T FindItem<T>(this ItemsControl control, Func<T, bool> selector) where T : class
       {

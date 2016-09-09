@@ -1,4 +1,4 @@
-﻿<Window x:Class="SleepHunter.FlowerTargetWindow"
+﻿<Window x:Class="SleepHunter.Views.FlowerTargetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"

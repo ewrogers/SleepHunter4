@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 
+using SleepHunter.Views;
+
 namespace SleepHunter
 {
-   public static class WindowExtender
+    public static class WindowExtender
    {
       public static T InvokeIfRequired<T>(this Dispatcher dispatcher, Func<T> action, T value, DispatcherPriority priority = DispatcherPriority.Normal)
       {

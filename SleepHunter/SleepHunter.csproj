@@ -65,17 +65,17 @@
     <Compile Include="App.xaml.cs" />
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="ControlExtender.cs" />
-    <Compile Include="FlowerTargetWindow.xaml.cs" />
+    <Compile Include="Views\FlowerTargetWindow.xaml.cs" />
     <Compile Include="Input\AsyncDelegateCommand.cs" />
     <Compile Include="Input\DelegateCommand.cs" />
     <Compile Include="Input\IAsyncCommand.cs" />
     <Compile Include="Input\IRaiseCanExecuteChanged.cs" />
-    <Compile Include="LineModifiersEditorWindow.xaml.cs" />
-    <Compile Include="MainWindow.xaml.cs" />
-    <Compile Include="MessageBoxWindow.xaml.cs" />
-    <Compile Include="MetadataEditorWindow.xaml.cs" />
+    <Compile Include="Views\LineModifiersEditorWindow.xaml.cs" />
+    <Compile Include="Views\MainWindow.xaml.cs" />
+    <Compile Include="Views\MessageBoxWindow.xaml.cs" />
+    <Compile Include="Views\MetadataEditorWindow.xaml.cs" />
     <Compile Include="Obsidian.xaml.cs" />
-    <Compile Include="SettingsWindow.xaml.cs" />
+    <Compile Include="Views\SettingsWindow.xaml.cs" />
     <Compile Include="Settings\ClientVersion.cs" />
     <Compile Include="Settings\ClientVersionCollection.cs" />
     <Compile Include="Settings\ClientVersionEventArgs.cs" />
@@ -88,10 +88,10 @@
     <Compile Include="Settings\UserSetting.cs" />
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />
-    <Compile Include="SkillEditorWindow.xaml.cs" />
-    <Compile Include="SpellEditorWindow.xaml.cs" />
-    <Compile Include="SpellTargetWindow.xaml.cs" />
-    <Compile Include="StaffEditorWindow.xaml.cs" />
+    <Compile Include="Views\SkillEditorWindow.xaml.cs" />
+    <Compile Include="Views\SpellEditorWindow.xaml.cs" />
+    <Compile Include="Views\SpellTargetWindow.xaml.cs" />
+    <Compile Include="Views\StaffEditorWindow.xaml.cs" />
     <Compile Include="StringExtender.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Win32\MemoryBasicInformation.cs" />
@@ -183,23 +183,23 @@
     <Compile Include="Macro\SavedSpellState.cs" />
     <Compile Include="Macro\SpellRotationMode.cs" />
     <Compile Include="Macro\WindowAutomator.cs" />
-    <Page Include="FlowerTargetWindow.xaml">
+    <Page Include="Views\FlowerTargetWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="LineModifiersEditorWindow.xaml">
+    <Page Include="Views\LineModifiersEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MessageBoxWindow.xaml">
+    <Page Include="Views\MessageBoxWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MetadataEditorWindow.xaml">
+    <Page Include="Views\MetadataEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -207,23 +207,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SettingsWindow.xaml">
+    <Page Include="Views\SettingsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SkillEditorWindow.xaml">
+    <Page Include="Views\SkillEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SpellEditorWindow.xaml">
+    <Page Include="Views\SpellEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SpellTargetWindow.xaml">
+    <Page Include="Views\SpellTargetWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="StaffEditorWindow.xaml">
+    <Page Include="Views\StaffEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

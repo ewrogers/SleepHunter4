@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace SleepHunter
 {
-   public static class StringExtender
+    public static class StringExtender
    {
       public static string StripNumbers(this string text)
       {

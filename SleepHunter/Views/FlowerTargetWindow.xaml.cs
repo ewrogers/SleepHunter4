@@ -1,39 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 using SleepHunter.Data;
-using SleepHunter.Metadata;
 using SleepHunter.Settings;
 
-namespace SleepHunter
+namespace SleepHunter.Views
 {
-   public partial class SpellTargetWindow : Window
+    public partial class FlowerTargetWindow : Window
    {
-      SpellQueueItem spellQueueItem = new SpellQueueItem();
+      FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
 
-      public SpellQueueItem SpellQueueItem
+      public FlowerQueueItem FlowerQueueItem
       {
-         get { return spellQueueItem; }
-         private set { spellQueueItem = value; }
-      }
-
-      public Spell Spell
-      {
-         get { return (Spell)GetValue(SpellProperty); }
-         set { SetValue(SpellProperty, value); }
+         get { return flowerQueueItem; }
+         private set { flowerQueueItem = value; }
       }
 
       public bool IsEditMode
@@ -43,13 +27,10 @@ namespace SleepHunter
       }
 
       public static readonly DependencyProperty IsEditModeProperty =
-          DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
+          DependencyProperty.Register("IsEditMode", typeof(bool), typeof(FlowerTargetWindow), new PropertyMetadata(false));
 
-      public static readonly DependencyProperty SpellProperty =
-          DependencyProperty.Register("Spell", typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
-
-      public SpellTargetWindow(Spell spell, SpellQueueItem item, bool isEditMode = true)
-         : this(spell)
+      public FlowerTargetWindow(FlowerQueueItem item, bool isEditMode = true)
+         : this()
       {
          if (isEditMode)
          {
@@ -57,42 +38,33 @@ namespace SleepHunter
             okButton.Content = "_Save Changes";
          }
 
-         this.SpellQueueItem.Id = item.Id;
+         this.FlowerQueueItem.Id = item.Id;
          SetTargetForMode(item.Target);
 
-         maxLevelCheckBox.IsChecked = item.HasTargetLevel;
+         if (item.Interval.HasValue)
+            intervalTextBox.Text = item.Interval.Value.ToShortEnglish();
+         else
+            intervalTextBox.Text = string.Empty;
 
-         if (item.HasTargetLevel)
-            maxLevelUpDown.Value = item.TargetLevel.Value;
+         intervalCheckBox.IsChecked = item.Interval.HasValue;
 
-         this.IsEditMode = isEditMode;         
+
+         if (item.ManaThreshold.HasValue)
+            manaThresholdUpDown.Value = item.ManaThreshold.Value;
+         else
+            manaThresholdUpDown.Value = 1000;
+
+         manaThresholdCheckBox.IsChecked = item.ManaThreshold.HasValue;
+
+         this.IsEditMode = isEditMode;
       }
 
-      public SpellTargetWindow(Spell spell)
-         : this()
-      {
-         this.Spell = spell;
-
-         maxLevelUpDown.Value = spell.MaximumLevel;
-         maxLevelCheckBox.IsChecked = spell.CurrentLevel < spell.MaximumLevel;
-
-         if (spell.TargetMode == SpellTargetMode.None)
-         {
-            targetModeComboBox.SelectedValue = "None";
-            targetModeComboBox.IsEnabled = false;
-         }
-         else targetModeComboBox.SelectedValue = "Self";
-
-         WarningBorder.Visibility = !SpellMetadataManager.Instance.ContainsSpell(spell.Name) ? Visibility.Visible : Visibility.Collapsed;
-      }
-
-      public SpellTargetWindow()
+      public FlowerTargetWindow()
       {
          InitializeComponent();
          InitializeViews();
 
-         ToggleTargetMode(TargetCoordinateUnits.None);
-         WarningBorder.Visibility = Visibility.Collapsed;
+         ToggleTargetMode(TargetCoordinateUnits.Character);
       }
 
       void InitializeViews()
@@ -130,28 +102,16 @@ namespace SleepHunter
          }
       }
 
-      bool ValidateSpellTarget()
+      bool ValidateFlowerTarget()
       {
-         #region Spell Check
-         if (this.Spell == null)
-         {
-            this.ShowMessageBox("Invalid Spell",
-               "This spell is no longer valid.",
-               "This spell window will now close, please try again.",
-               MessageBoxButton.OK);
-
-            this.Close();
-            return false;
-         }
-         #endregion
-
          var selectedMode = GetSelectedMode();
+         TimeSpan interval = TimeSpan.Zero;
 
          #region Check Target Mode
-         if (this.Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
+         if (selectedMode == TargetCoordinateUnits.None)
          {
             this.ShowMessageBox("Target Required",
-               "This spell requires a target.",
+               "Lyliac Plant requires a target.",
                "You must select a target mode from the dropdown list.",
                MessageBoxButton.OK);
 
@@ -181,44 +141,73 @@ namespace SleepHunter
                "The inner radius must be less than or equal to the outer radius.",
                "You may use zero inner radius to include yourself, one to start from adjacent tiles",
                MessageBoxButton.OK,
-               440,220);
+               440, 220);
 
             return false;
          }
 
-         spellQueueItem.Icon = this.Spell.Icon;
-         spellQueueItem.Name = this.Spell.Name;
-         spellQueueItem.CurrentLevel = this.Spell.CurrentLevel;
-         spellQueueItem.MaximumLevel = this.Spell.MaximumLevel;
+         if (intervalCheckBox.IsChecked.Value)
+         {
+            double intervalSeconds;
+            if (string.IsNullOrWhiteSpace(intervalTextBox.Text.Trim()))
+               interval = TimeSpan.Zero;
+            else if (double.TryParse(intervalTextBox.Text.Trim(), out intervalSeconds) && intervalSeconds >= 0)
+               interval = TimeSpan.FromSeconds(intervalSeconds);
+            else if (!TimeSpanExtender.TryParse(intervalTextBox.Text.Trim(), out interval) || interval < TimeSpan.Zero)
+            {
+               this.ShowMessageBox("Invalid Interval",
+                  "Interval must be a valid positive timespan value.",
+                  "You may use fractional units of days, hours, minutes, and seconds.\nYou may also leave it blank for continuous.",
+                  MessageBoxButton.OK,
+                  420, 240);
 
-         if (!this.IsEditMode)
-            spellQueueItem.StartingLevel = this.Spell.CurrentLevel;
+               intervalTextBox.Focus();
+               intervalTextBox.SelectAll();
+               return false;
+            }
+         }
 
-         spellQueueItem.Target.Units = selectedMode;
+         if (!intervalCheckBox.IsChecked.Value && !manaThresholdCheckBox.IsChecked.Value)
+         {
+            this.ShowMessageBox("Missing Condition",
+               "You must specify at least one condition to flower on.\nYou may use the time interval or mana conditions, or both.",
+               "If you specify both, it will flower if either condition is reached.",
+               MessageBoxButton.OK,
+               480, 240);
+
+            return false;
+         }
+
+         flowerQueueItem.Target.Units = selectedMode;
 
          if (selectedMode == TargetCoordinateUnits.Character)
-            spellQueueItem.Target.CharacterName = characterName;
+            flowerQueueItem.Target.CharacterName = characterName;
          else
-            spellQueueItem.Target.CharacterName = null;
+            flowerQueueItem.Target.CharacterName = null;
 
-         spellQueueItem.Target.Location = GetLocationForMode(selectedMode);
-         spellQueueItem.Target.Offset = new Point(offsetXUpDown.Value, offsetYUpDown.Value);
+         flowerQueueItem.Target.Location = GetLocationForMode(selectedMode);
+         flowerQueueItem.Target.Offset = new Point(offsetXUpDown.Value, offsetYUpDown.Value);
 
          if (selectedMode == TargetCoordinateUnits.AbsoluteRadius || selectedMode == TargetCoordinateUnits.RelativeRadius)
          {
-            spellQueueItem.Target.InnerRadius = (int)innerRadiusUpDown.Value;
-            spellQueueItem.Target.OuterRadius = (int)outerRadiusUpDown.Value;
+            flowerQueueItem.Target.InnerRadius = (int)innerRadiusUpDown.Value;
+            flowerQueueItem.Target.OuterRadius = (int)outerRadiusUpDown.Value;
          }
          else
          {
-            spellQueueItem.Target.InnerRadius = 0;
-            spellQueueItem.Target.OuterRadius = 0;
+            flowerQueueItem.Target.InnerRadius = 0;
+            flowerQueueItem.Target.OuterRadius = 0;
          }
-
-         if (!maxLevelCheckBox.IsChecked.Value)
-            spellQueueItem.TargetLevel = null;
+         
+         if (intervalCheckBox.IsChecked.Value)
+            flowerQueueItem.Interval = interval;
          else
-            spellQueueItem.TargetLevel = (int)maxLevelUpDown.Value;
+            flowerQueueItem.Interval = null;
+
+         if (manaThresholdUpDown.IsEnabled && manaThresholdCheckBox.IsChecked.Value)
+            flowerQueueItem.ManaThreshold = (int)manaThresholdUpDown.Value;
+         else
+            flowerQueueItem.ManaThreshold = null;
 
          return true;
       }
@@ -343,7 +332,15 @@ namespace SleepHunter
          if (outerRadiusUpDown != null)
             outerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
 
-         var height = 330;
+         if (manaThresholdCheckBox != null)
+         {
+            manaThresholdCheckBox.IsEnabled = (units == TargetCoordinateUnits.Character);
+
+            if (!manaThresholdCheckBox.IsEnabled)
+               manaThresholdCheckBox.IsChecked = false;
+         }
+
+         var height = 300;
 
          if (requiresTarget)
             height += 40;
@@ -378,11 +375,11 @@ namespace SleepHunter
             mode = TargetCoordinateUnits.None;
 
          ToggleTargetMode(mode);
-      } 
+      }
 
       void okButton_Click(object sender, RoutedEventArgs e)
       {
-         if (!ValidateSpellTarget())
+         if (!ValidateFlowerTarget())
             return;
 
          this.DialogResult = true;

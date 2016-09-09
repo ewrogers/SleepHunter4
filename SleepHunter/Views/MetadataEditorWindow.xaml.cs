@@ -1,25 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
-using SleepHunter.Data;
 using SleepHunter.Metadata;
 
-namespace SleepHunter
+namespace SleepHunter.Views
 {
-   public partial class MetadataEditorWindow : Window
+    public partial class MetadataEditorWindow : Window
    {
       public static readonly int SkillsTabIndex = 0;
       public static readonly int SpellsTabIndex = 1;
