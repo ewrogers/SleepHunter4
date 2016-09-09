@@ -24,37 +24,37 @@ namespace SleepHunter.Models
       public Player Owner
       {
          get { return owner; }
-         set { SetProperty(ref owner, value, "Owner"); }
+         set { SetProperty(ref owner, value); }
       }
 
       public int MapNumber
       {
          get { return mapNumber; }
-         set { SetProperty(ref mapNumber, value, "MapNumber"); }
+         set { SetProperty(ref mapNumber, value); }
       }
 
       public int X
       {
          get { return x; }
-         set { SetProperty(ref x, value, "X"); }
+         set { SetProperty(ref x, value); }
       }
 
       public int Y
       {
          get { return y; }
-         set { SetProperty(ref y, value, "Y"); }
+         set { SetProperty(ref y, value); }
       }
 
       public string MapName
       {
          get { return mapName; }
-         set { SetProperty(ref mapName, value, "MapName"); }
+         set { SetProperty(ref mapName, value); }
       }
 
       public string MapHash
       {
          get { return mapHash; }
-         set { SetProperty(ref mapHash, value, "MapHash"); }
+         set { SetProperty(ref mapHash, value); }
       }
 
       public MapLocation()
@@ -67,16 +67,16 @@ namespace SleepHunter.Models
 
       public bool IsSameMap(MapLocation other)
       {
-         return this.MapNumber == other.MapNumber && string.Equals(this.MapName, other.MapName, StringComparison.Ordinal);
+         return MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
       }
 
       public bool IsWithinRange(MapLocation other, int maxX = 10, int maxY = 10)
       {
-         if (!this.IsSameMap(other))
+         if (!IsSameMap(other))
             return false;
 
-         var deltaX = Math.Abs(this.X - other.X);
-         var deltaY = Math.Abs(this.Y - other.Y);
+         var deltaX = Math.Abs(X - other.X);
+         var deltaY = Math.Abs(Y - other.Y);
 
          return deltaX <= maxX && deltaY <= maxY;
       }
@@ -94,7 +94,7 @@ namespace SleepHunter.Models
          if (accessor == null)
             throw new ArgumentNullException("accessor");
 
-         var version = this.Owner.Version;
+         var version = Owner.Version;
 
          if (version == null)
          {
@@ -115,42 +115,42 @@ namespace SleepHunter.Models
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
-               this.MapNumber = mapNumber;
+               MapNumber = mapNumber;
             else
-               this.MapNumber = 0;
+               MapNumber = 0;
 
             if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out mapX))
-               this.X = mapX;
+               X = mapX;
             else
-               this.X = 0;
+               X = 0;
 
             if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out mapY))
-               this.Y = mapY;
+               Y = mapY;
             else
-               this.Y = 0;
+               Y = 0;
 
             if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out mapName))
-               this.MapName = mapName;
+               MapName = mapName;
             else
-               this.MapName = null;
+               MapName = null;
          }
       }
 
       public void ResetDefaults()
       {
-         this.MapNumber = 0;
-         this.X = 0;
-         this.Y = 0;
-         this.MapName = null;
-         this.MapHash = null;
+         MapNumber = 0;
+         X = 0;
+         Y = 0;
+         MapName = null;
+         MapHash = null;
       }
 
       public override string ToString()
       {
-         return string.Format("{0} [{1}] @ {2}, {3}", this.MapName ?? "Unknown Map",
-            this.MapNumber.ToString(),
-            this.X.ToString(),
-            this.Y.ToString());
+         return string.Format("{0} [{1}] @ {2}, {3}", MapName ?? "Unknown Map",
+            MapNumber.ToString(),
+            X.ToString(),
+            Y.ToString());
       } 
    }
 }

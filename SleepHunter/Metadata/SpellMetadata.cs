@@ -22,7 +22,7 @@ namespace SleepHunter.Metadata
       public string Name
       {
          get { return name; }
-         set { SetProperty(ref name, value, "Name"); }
+         set { SetProperty(ref name, value); }
       }
 
       [XmlAttribute("Class")]
@@ -30,7 +30,7 @@ namespace SleepHunter.Metadata
       public PlayerClass Class
       {
          get { return playerClass; }
-         set { SetProperty(ref playerClass, value, "Class"); }
+         set { SetProperty(ref playerClass, value); }
       }
 
       [XmlAttribute("Group")]
@@ -38,7 +38,7 @@ namespace SleepHunter.Metadata
       public string GroupName
       {
          get { return groupName; }
-         set { SetProperty(ref groupName, value, "GroupName"); }
+         set { SetProperty(ref groupName, value); }
       }
 
       [XmlAttribute("Mana")]
@@ -46,7 +46,7 @@ namespace SleepHunter.Metadata
       public int ManaCost
       {
          get { return manaCost; }
-         set { SetProperty(ref manaCost, value, "ManaCost"); }
+         set { SetProperty(ref manaCost, value); }
       }
 
       [XmlAttribute("Lines")]
@@ -54,14 +54,14 @@ namespace SleepHunter.Metadata
       public int NumberOfLines
       {
          get { return numberOfLines; }
-         set { SetProperty(ref numberOfLines, value, "NumberOfLines"); }
+         set { SetProperty(ref numberOfLines, value); }
       }
 
       [XmlIgnore]
       public TimeSpan Cooldown
       {
          get { return cooldown; }
-         set { SetProperty(ref cooldown, value, "Cooldown"); }
+         set { SetProperty(ref cooldown, value); }
       }
 
       [XmlAttribute("Cooldown")]
@@ -69,7 +69,7 @@ namespace SleepHunter.Metadata
       public double CooldownSeconds
       {
          get { return cooldown.TotalSeconds; }
-         set { this.Cooldown = TimeSpan.FromSeconds(value); }
+         set { Cooldown = TimeSpan.FromSeconds(value); }
       }
 
       [XmlAttribute("CanImprove")]
@@ -77,28 +77,25 @@ namespace SleepHunter.Metadata
       public bool CanImprove
       {
          get { return canImprove; }
-         set { SetProperty(ref canImprove, value, "CanImprove"); }
+         set { SetProperty(ref canImprove, value); }
       }
 
-      public SpellMetadata()
-      {
-
-      }
-
+      public SpellMetadata() { }
+  
       public override string ToString()
       {
-         return this.Name ?? "Unknown Spell";
+         return Name ?? "Unknown Spell";
       }
 
       public void CopyTo(SpellMetadata other)
       {
-         other.Name = this.Name;
-         other.Class = this.Class;
-         other.GroupName = this.GroupName;
-         other.ManaCost = this.ManaCost;
-         other.NumberOfLines = this.NumberOfLines;
-         other.Cooldown = this.Cooldown;         
-         other.CanImprove = this.CanImprove;
+         other.Name = Name;
+         other.Class = Class;
+         other.GroupName = GroupName;
+         other.ManaCost = ManaCost;
+         other.NumberOfLines = NumberOfLines;
+         other.Cooldown = Cooldown;         
+         other.CanImprove = CanImprove;
       }
    }
 }

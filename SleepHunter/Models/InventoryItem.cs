@@ -12,31 +12,28 @@ namespace SleepHunter.Models
       public bool IsEmpty
       {
          get { return isEmpty; }
-         set { SetProperty(ref isEmpty, value, "IsEmpty"); }
+         set { SetProperty(ref isEmpty, value); }
       }
 
       public int Slot
       {
          get { return slot; }
-         set { SetProperty(ref slot, value, "Slot"); }
+         set { SetProperty(ref slot, value); }
       }
 
       public int IconIndex
       {
          get { return iconIndex; }
-         set { SetProperty(ref iconIndex, value, "IconIndex"); }
+         set { SetProperty(ref iconIndex, value); }
       }
 
       public string Name
       {
          get { return name; }
-         set { SetProperty(ref name, value, "Name"); }
+         set { SetProperty(ref name, value); }
       }
 
-      private InventoryItem()
-      {
-
-      }
+      private InventoryItem() { }
 
       public InventoryItem(int slot, string name, int iconIndex = 0)
       {
@@ -44,12 +41,12 @@ namespace SleepHunter.Models
          this.name = name;
          this.iconIndex = iconIndex;
 
-         this.isEmpty = false;
+         isEmpty = false;
       }
 
       public override string ToString()
       {
-         return this.Name ?? "Unknown Item";
+         return Name ?? "Unknown Item";
       }
 
       public static InventoryItem MakeEmpty(int slot)

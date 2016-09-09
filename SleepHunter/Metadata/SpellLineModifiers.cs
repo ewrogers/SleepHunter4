@@ -38,14 +38,14 @@ namespace SleepHunter.Metadata
       public ModifierAction Action
       {
          get { return action; }
-         set { SetProperty(ref action, value, "Action"); }
+         set { SetProperty(ref action, value); }
       }
 
       [XmlAttribute("Scope")]
       public ModifierScope Scope
       {
          get { return scope; }
-         set { SetProperty(ref scope, value, "Scope"); }
+         set { SetProperty(ref scope, value); }
       }
 
       [XmlAttribute("Name")]
@@ -53,14 +53,14 @@ namespace SleepHunter.Metadata
       public string ScopeName
       {
          get { return scopeName; }
-         set { SetProperty(ref scopeName, value, "ScopeName"); }
+         set { SetProperty(ref scopeName, value); }
       }
 
       [XmlAttribute("Value")]
       public int Value
       {
          get { return value; }
-         set { SetProperty(ref this.value, value, "Value"); }
+         set { SetProperty(ref this.value, value); }
       }
 
       [XmlAttribute("MinThreshold")]
@@ -68,7 +68,7 @@ namespace SleepHunter.Metadata
       public int MinThreshold
       {
          get { return minThreshold; }
-         set { SetProperty(ref minThreshold, value, "MinThreshold"); }
+         set { SetProperty(ref minThreshold, value); }
       }
 
       [XmlAttribute("MaxThreshold")]
@@ -76,64 +76,61 @@ namespace SleepHunter.Metadata
       public int MaxThreshold
       {
          get { return maxThreshold; }
-         set { SetProperty(ref maxThreshold, value, "MaxThreshold"); }
+         set { SetProperty(ref maxThreshold, value); }
       }
 
-      public SpellLineModifiers()
-      {
-
-      }
+      public SpellLineModifiers() { }
 
       public override string ToString()
       {
          var sb = new StringBuilder(256);
 
-         sb.Append(this.Action.ToString());
+         sb.Append(Action.ToString());
 
-         switch (this.Scope)
+         switch (Scope)
          {
             case ModifierScope.All:
                sb.Append(" all");
                break;
 
             case ModifierScope.Group:
-               sb.AppendFormat(" all {0}", this.ScopeName);
+               sb.AppendFormat(" all {0}", ScopeName);
                break;
 
             case ModifierScope.Single:
-               sb.AppendFormat(" {0}", this.ScopeName);
+               sb.AppendFormat(" {0}", ScopeName);
                break;
          }
 
-         if (this.Scope != ModifierScope.Single)
+         if (Scope != ModifierScope.Single)
          {
-            if (this.MinThreshold <= 0 && this.MaxThreshold <= 0)
+            if (MinThreshold <= 0 && MaxThreshold <= 0)
                sb.Append(" spells");
-            else if (this.MinThreshold == this.MaxThreshold && (this.MinThreshold > 0))
-               sb.AppendFormat(" {0} line spells", this.MaxThreshold.ToString());
-            else if (this.MinThreshold > 0 && this.MaxThreshold > 0)
-               sb.AppendFormat(" spells between {0} and {1} lines", this.MinThreshold.ToString(), this.MaxThreshold.ToString());
-            else if (this.MinThreshold > 0)
-               sb.AppendFormat(" spells {0} and over", this.MinThreshold.ToPluralString(" lines", " line"));
-            else if (this.MaxThreshold > 0)
-               sb.AppendFormat(" spells {0} and under", this.MaxThreshold.ToPluralString(" lines", " line"));
+            else if (MinThreshold == MaxThreshold && (MinThreshold > 0))
+               sb.AppendFormat(" {0} line spells", MaxThreshold.ToString());
+            else if (MinThreshold > 0 && MaxThreshold > 0)
+               sb.AppendFormat(" spells between {0} and {1} lines", MinThreshold.ToString(), MaxThreshold.ToString());
+            else if (MinThreshold > 0)
+               sb.AppendFormat(" spells {0} and over", MinThreshold.ToPluralString(" lines", " line"));
+            else if (MaxThreshold > 0)
+               sb.AppendFormat(" spells {0} and under", MaxThreshold.ToPluralString(" lines", " line"));
          }
          
-         if (this.Action == ModifierAction.Set)
-            sb.AppendFormat(" to {0}", this.Value.ToPluralString(" lines", " line"));
+         if (Action == ModifierAction.Set)
+            sb.AppendFormat(" to {0}", Value.ToPluralString(" lines", " line"));
          else
-            sb.AppendFormat(" by {0}", this.Value.ToPluralString(" lines", " line"));
+            sb.AppendFormat(" by {0}", Value.ToPluralString(" lines", " line"));
 
-         if (this.Scope == ModifierScope.Single)
+         if (Scope == ModifierScope.Single)
          {
-            if (this.MinThreshold == this.MaxThreshold && (this.MinThreshold > 0))
-               sb.AppendFormat(" if exactly {0}", this.MaxThreshold.ToPluralString(" lines", " line"));
-            else if (this.MinThreshold > 0 && this.MaxThreshold > 0)
-               sb.AppendFormat(" when between {0} and {1} lines", this.MinThreshold.ToString(), this.MaxThreshold.ToString());
-            else if (this.MinThreshold > 0)
-               sb.AppendFormat(" when {0} and over", this.MinThreshold.ToPluralString(" lines", " line"));
-            else if (this.MaxThreshold > 0)
-               sb.AppendFormat(" when {0} and under", this.MaxThreshold.ToPluralString(" lines", " line"));
+            if (MinThreshold == MaxThreshold && (MinThreshold > 0))
+               sb.AppendFormat(" if exactly {0}", MaxThreshold.ToPluralString(" lines", " line"));
+            else if (MinThreshold > 0 && MaxThreshold > 0)
+               sb.AppendFormat(" when between {0} and {1} lines", MinThreshold.ToString(), MaxThreshold.ToString());
+            else if (MinThreshold > 0)
+               sb.AppendFormat(" when {0} and over", MinThreshold.ToPluralString(" lines", " line"));
+            else if (MaxThreshold > 0)
+               sb.AppendFormat(" when {0} and under", MaxThreshold.ToPluralString(" lines", " line"));
          }
 
          sb.Append(".");
@@ -142,12 +139,12 @@ namespace SleepHunter.Metadata
 
       public void CopyTo(SpellLineModifiers other)
       {
-         other.Action = this.Action;
-         other.Scope = this.Scope;
-         other.ScopeName = this.ScopeName;
-         other.Value = this.Value;
-         other.MinThreshold = this.MinThreshold;
-         other.MaxThreshold = this.MaxThreshold;
+         other.Action = Action;
+         other.Scope = Scope;
+         other.ScopeName = ScopeName;
+         other.Value = Value;
+         other.MinThreshold = MinThreshold;
+         other.MaxThreshold = MaxThreshold;
       }
    }
 }

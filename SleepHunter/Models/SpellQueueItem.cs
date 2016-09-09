@@ -24,31 +24,31 @@ namespace SleepHunter.Models
       public int Id
       {
          get { return id; }
-         set { SetProperty(ref id, value, "Id"); }
+         set { SetProperty(ref id, value); }
       }
 
       public ImageSource Icon
       {
          get { return icon; }
-         set { SetProperty(ref icon, value, "Icon"); }
+         set { SetProperty(ref icon, value); }
       }
 
       public string Name
       {
          get { return name; }
-         set { SetProperty(ref name, value, "Name"); }
+         set { SetProperty(ref name, value); }
       }
 
       public SpellTarget Target
       {
          get { return target; }
-         set { SetProperty(ref target, value, "Target"); }
+         set { SetProperty(ref target, value); }
       }
 
       public DateTime LastUsedTimestamp
       {
          get { return lastUsedTimestamp; }
-         set { SetProperty(ref lastUsedTimestamp, value, "LastUsedTimestamp"); }
+         set { SetProperty(ref lastUsedTimestamp, value); }
       }
 
       public int StartingLevel
@@ -56,7 +56,7 @@ namespace SleepHunter.Models
          get { return startingLevel; }
          set
          {
-            SetProperty(ref startingLevel, value, "StartingLevel", onChanged: (s) => { OnPropertyChanged("PercentCompleted"); });
+            SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged("PercentCompleted"); });
          }
       }
 
@@ -65,7 +65,7 @@ namespace SleepHunter.Models
          get { return currentLevel; }
          set
          {
-            SetProperty(ref currentLevel, value, "CurrentLevel", onChanged: (s) => { OnPropertyChanged("IsDone"); OnPropertyChanged("PercentCompleted"); });
+            SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
          }
       }
 
@@ -74,7 +74,7 @@ namespace SleepHunter.Models
          get { return maximumLevel; }
          set
          {
-            SetProperty(ref maximumLevel, value, "MaximumLevel", onChanged: (s) => { OnPropertyChanged("IsDone"); OnPropertyChanged("PercentCompleted"); });
+            SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
          }
       }
 
@@ -83,7 +83,7 @@ namespace SleepHunter.Models
          get { return targetLevel; }
          set
          {
-            SetProperty(ref targetLevel, value, "TargetLevel", onChanged: (s) => { OnPropertyChanged("IsDone"); OnPropertyChanged("HasTargetLevel"); OnPropertyChanged("PercentCompleted"); });
+            SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("HasTargetLevel"); RaisePropertyChanged("PercentCompleted"); });
          }
       }
 
@@ -117,32 +117,29 @@ namespace SleepHunter.Models
       public bool IsUndefined
       {
          get { return isUndefined; }
-         set { SetProperty(ref isUndefined, value, "IsUndefined"); }
+         set { SetProperty(ref isUndefined, value); }
       }
 
       public bool IsActive
       {
          get { return isActive; }
-         set { SetProperty(ref isActive, value, "IsActive"); }
+         set { SetProperty(ref isActive, value); }
       }
 
-      public SpellQueueItem()
-      {
-
-      }
+      public SpellQueueItem() { }
 
       public SpellQueueItem(Spell spellInfo, SavedSpellState spell)
       {
-         this.Icon = spellInfo.Icon;
-         this.Name = spell.SpellName;
-         this.Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
-         this.Target.CharacterName = spell.CharacterName;
-         this.Target.OuterRadius = spell.OuterRadius;
-         this.Target.InnerRadius = spell.InnerRadius;
-         this.TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
+         Icon = spellInfo.Icon;
+         Name = spell.SpellName;
+         Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
+         Target.CharacterName = spell.CharacterName;
+         Target.OuterRadius = spell.OuterRadius;
+         Target.InnerRadius = spell.InnerRadius;
+         TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
 
-         this.CurrentLevel = spellInfo.CurrentLevel;
-         this.MaximumLevel = spellInfo.MaximumLevel;
+         CurrentLevel = spellInfo.CurrentLevel;
+         MaximumLevel = spellInfo.MaximumLevel;
       }
 
       public void CopyTo(SpellQueueItem other)
@@ -158,23 +155,22 @@ namespace SleepHunter.Models
       public void CopyTo(SpellQueueItem other, bool copyId = true, bool copyTimestamp = false)
       {
          if (copyId)
-            other.Id = this.Id;
+            other.Id = Id;
 
-         other.Icon = this.Icon;
-         other.Name = this.Name;
-         other.Target = this.Target;
-         other.StartingLevel = this.StartingLevel;
-         other.CurrentLevel = this.CurrentLevel;
-         other.MaximumLevel = this.MaximumLevel;
-         other.TargetLevel = this.TargetLevel;
-         other.IsUndefined = this.IsUndefined;
-         other.IsActive = this.IsActive;
+         other.Icon = Icon;
+         other.Name = Name;
+         other.Target = Target;
+         other.StartingLevel = StartingLevel;
+         other.CurrentLevel = CurrentLevel;
+         other.MaximumLevel = MaximumLevel;
+         other.TargetLevel = TargetLevel;
+         other.IsUndefined = IsUndefined;
+         other.IsActive = IsActive;
       }
 
       public override string ToString()
       {
-         return string.Format("{0} on {1}",
-            name, target.ToString());
+         return string.Format("{0} on {1}", name, target.ToString());
       }
    }
 }

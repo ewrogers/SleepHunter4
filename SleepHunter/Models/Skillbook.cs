@@ -11,7 +11,6 @@ using SleepHunter.Extensions;
 using SleepHunter.IO.Process;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
-using SleepHunter.Models;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Models
@@ -35,7 +34,7 @@ namespace SleepHunter.Models
       public Player Owner
       {
          get { return owner; }
-         set { SetProperty(ref owner, value, "Owner"); }
+         set { SetProperty(ref owner, value); }
       }
 
       public int Count { get { return skills.Count((skill) => { return !skill.IsEmpty; }); } }
@@ -156,7 +155,7 @@ namespace SleepHunter.Models
          if (accessor == null)
             throw new ArgumentNullException("accessor");
 
-         var version = this.Owner.Version;
+         var version = Owner.Version;
 
          if (version == null)
          {
@@ -350,7 +349,7 @@ namespace SleepHunter.Models
 
       IEnumerator IEnumerable.GetEnumerator()
       {
-         return this.GetEnumerator();
+         return GetEnumerator();
       }
       #endregion
    }

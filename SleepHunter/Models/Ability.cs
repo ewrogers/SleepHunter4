@@ -30,7 +30,7 @@ namespace SleepHunter.Models
       public bool IsEmpty
       {
          get { return isEmpty; }
-         set { SetProperty(ref isEmpty, value, "IsEmpty"); }
+         set { SetProperty(ref isEmpty, value); }
       }
 
       public int Slot
@@ -38,7 +38,7 @@ namespace SleepHunter.Models
          get { return slot; }
          set
          {
-            SetProperty(ref slot, value, "Slot", onChanged: (s) => { OnPropertyChanged("RelativeSlot"); });
+            SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged("RelativeSlot"); });
          }
       }
 
@@ -52,7 +52,7 @@ namespace SleepHunter.Models
          get { return panel; }
          set
          {
-            SetProperty(ref panel, value, "Panel", onChanged: (s) => { OnPropertyChanged("IsSkill"); OnPropertyChanged("IsSpell"); });
+            SetProperty(ref panel, value, onChanged: (s) => { RaisePropertyChanged("IsSkill"); RaisePropertyChanged("IsSpell"); });
          }
       }
 
@@ -69,67 +69,67 @@ namespace SleepHunter.Models
       public bool IsActive
       {
          get { return isActive; }
-         set { SetProperty(ref isActive, value, "IsActive"); }
+         set { SetProperty(ref isActive, value); }
       }
 
       public string Name
       {
          get { return name; }
-         set { SetProperty(ref name, value, "Name"); }
+         set { SetProperty(ref name, value); }
       }
 
       public int IconIndex
       {
          get { return iconIndex; }
-         set { SetProperty(ref iconIndex, value, "IconIndex"); }
+         set { SetProperty(ref iconIndex, value); }
       }
 
       public ImageSource Icon
       {
          get { return icon; }
-         set { SetProperty(ref icon, value, "Icon"); }
+         set { SetProperty(ref icon, value); }
       }
 
       public bool IsOnCooldown
       {
          get { return isOnCooldown; }
-         set { SetProperty(ref isOnCooldown, value, "IsOnCooldown"); }
+         set { SetProperty(ref isOnCooldown, value); }
       }
 
       public TimeSpan Cooldown
       {
          get { return cooldown; }
-         set { SetProperty(ref cooldown, value, "Cooldown"); }
+         set { SetProperty(ref cooldown, value); }
       }
 
       public int CurrentLevel
       {
          get { return currentLevel; }
-         set { SetProperty(ref currentLevel, value, "CurrentLevel"); }
+         set { SetProperty(ref currentLevel, value); }
       }
 
       public int MaximumLevel
       {
          get { return maximumLevel; }
-         set { SetProperty(ref maximumLevel, value, "MaximumLevel"); }
+         set { SetProperty(ref maximumLevel, value); }
       }
 
       public int NumberOfLines
       {
          get { return numberOfLines; }
-         set { SetProperty(ref numberOfLines, value, "NumberOfLines"); }
+         set { SetProperty(ref numberOfLines, value); }
       }
 
       public int ManaCost
       {
          get { return manaCost; }
-         set { SetProperty(ref manaCost, value, "ManaCost"); }
+         set { SetProperty(ref manaCost, value); }
       }
 
       public bool CanImprove
       {
          get { return canImprove; }
-         set { SetProperty(ref canImprove, value, "CanImprove"); }
+         set { SetProperty(ref canImprove, value); }
       }
 
       public static InterfacePanel GetSkillPanelForSlot(int slot)

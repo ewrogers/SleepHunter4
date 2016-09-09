@@ -30,7 +30,7 @@ namespace SleepHunter.Models
       public Player Owner
       {
          get { return owner; }
-         set { SetProperty(ref owner, value, "Owner"); }
+         set { SetProperty(ref owner, value); }
       }
 
       public int Count { get { return spells.Count((spell) => { return !spell.IsEmpty; }); } }
@@ -58,7 +58,7 @@ namespace SleepHunter.Models
       public string ActiveSpell
       {
          get { return activeSpell; }
-         set { SetProperty(ref activeSpell, value, "ActiveSpell"); }
+         set { SetProperty(ref activeSpell, value); }
       }
 
       public Spellbook()
@@ -142,7 +142,7 @@ namespace SleepHunter.Models
          if (accessor == null)
             throw new ArgumentNullException("accessor");
 
-         var version = this.Owner.Version;
+         var version = Owner.Version;
 
          if (version == null)
          {
@@ -247,7 +247,7 @@ namespace SleepHunter.Models
 
       public void ResetDefaults()
       {
-         this.ActiveSpell = null;
+         ActiveSpell = null;
 
          for (int i = 0; i < spells.Capacity; i++)
          {
@@ -266,7 +266,7 @@ namespace SleepHunter.Models
 
       IEnumerator IEnumerable.GetEnumerator()
       {
-         return this.GetEnumerator();
+         return GetEnumerator();
       }
       #endregion
    }

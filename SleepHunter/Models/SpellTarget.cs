@@ -35,37 +35,37 @@ namespace SleepHunter.Models
       public TargetCoordinateUnits Units
       {
          get { return unitType; }
-         set { SetProperty(ref unitType, value, "Units", onChanged: (p) => { RecalculatePoints(); }); }
+         set { SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); }); }
       }
 
       public string CharacterName
       {
          get { return characterName; }
-         set { SetProperty(ref characterName, value, "CharacterName"); }
+         set { SetProperty(ref characterName, value); }
       }
 
       public Point Location
       {
          get { return location; }
-         set { SetProperty(ref location, value, "Location", onChanged: (p) => { RecalculatePoints(); }); }
+         set { SetProperty(ref location, value, onChanged: (p) => { RecalculatePoints(); }); }
       }
 
       public Point Offset
       {
          get { return offset; }
-         set { SetProperty(ref offset, value, "Offset"); }
+         set { SetProperty(ref offset, value); }
       }
 
       public int InnerRadius
       {
          get { return innerRadius; }
-         set { SetProperty(ref innerRadius, value, "InnerRadius", onChanged: (p) => { RecalculatePoints(); }); }
+         set { SetProperty(ref innerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
       }
 
       public int OuterRadius
       {
          get { return outerRadius; }
-         set { SetProperty(ref outerRadius, value, "OuterRadius", onChanged: (p) => { RecalculatePoints(); }); }
+         set { SetProperty(ref outerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
       }
 
       public IList<Point> RadiusPoints
@@ -76,7 +76,7 @@ namespace SleepHunter.Models
       public int RadiusIndex
       {
          get { return radiusIndex; }
-         set { SetProperty(ref radiusIndex, value, "RadiusIndex"); }
+         set { SetProperty(ref radiusIndex, value); }
       }
 
       public SpellTarget()
@@ -103,8 +103,8 @@ namespace SleepHunter.Models
          }
          else radiusPoints = null;
 
-         OnPropertyChanged("RadiusPoints");
-         this.RadiusIndex = 0;
+         RaisePropertyChanged("RadiusPoints");
+         RadiusIndex = 0;
       }
 
       public Point GetNextRadiusPoint()
@@ -112,13 +112,13 @@ namespace SleepHunter.Models
          if (radiusPoints == null || radiusPoints.Count == 0)
             return location;
 
-         if (this.RadiusIndex >= radiusPoints.Count)
-            this.RadiusIndex = 0;
+         if (RadiusIndex >= radiusPoints.Count)
+            RadiusIndex = 0;
 
-         var point = radiusPoints[this.RadiusIndex++];
+         var point = radiusPoints[RadiusIndex++];
 
-         if (this.RadiusIndex >= radiusPoints.Count)
-            this.RadiusIndex = 0;
+         if (RadiusIndex >= radiusPoints.Count)
+            RadiusIndex = 0;
 
          return point;
       }
@@ -287,13 +287,13 @@ namespace SleepHunter.Models
 
             case TargetCoordinateUnits.RelativeRadius:
                return string.Format("{0} Tile Radius from {1}",
-                  (this.OuterRadius - this.InnerRadius + 1).ToString(),
-                  ToRelativeString(this.Location));
+                  (OuterRadius - InnerRadius + 1).ToString(),
+                  ToRelativeString(Location));
 
             case  TargetCoordinateUnits.AbsoluteRadius:
                return string.Format("{0} Tile Radius from {1}, {2}",
-                  (this.OuterRadius - this.InnerRadius + 1).ToString(),
-                  this.Location.X.ToString(), this.Location.Y.ToString());
+                  (OuterRadius - InnerRadius + 1).ToString(),
+                  Location.X.ToString(), Location.Y.ToString());
          }
 
          return string.Empty;

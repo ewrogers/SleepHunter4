@@ -17,14 +17,14 @@ namespace SleepHunter.Settings
       public string Key
       {
          get { return key; }
-         set { SetProperty(ref key, value, "Key"); }
+         set { SetProperty(ref key, value); }
       }
 
       [XmlIgnore]
       public string DisplayText
       {
          get { return displayText; }
-         set { SetProperty(ref displayText, value, "DisplayText"); }
+         set { SetProperty(ref displayText, value); }
       }
 
       [XmlAttribute("Value")]
@@ -32,7 +32,7 @@ namespace SleepHunter.Settings
       public object Value
       {
          get { return value; }
-         set { SetProperty(ref this.value, value, "Value"); }
+         set { SetProperty(ref this.value, value); }
       }
 
       public UserSetting()
@@ -47,7 +47,7 @@ namespace SleepHunter.Settings
 
       public override string ToString()
       {
-         return this.DisplayText ?? this.Key;
+         return DisplayText ?? this.Key;
       }
    }
 }

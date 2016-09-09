@@ -12,7 +12,7 @@ namespace SleepHunter.Models
       public Player Owner
       {
          get { return owner; }
-         set { SetProperty(ref owner, value, "Owner"); }
+         set { SetProperty(ref owner, value); }
       }
 
       public PlayerModifiers()

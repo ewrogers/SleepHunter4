@@ -26,7 +26,7 @@ namespace SleepHunter.Macro
       public string CharacterName
       {
          get { return characterName; }
-         set { SetProperty(ref characterName, value, "CharacterName"); }
+         set { SetProperty(ref characterName, value); }
       }
 
       [XmlAttribute("HotkeyModifiers")]
@@ -34,7 +34,7 @@ namespace SleepHunter.Macro
       public ModifierKeys HotkeyModifiers
       {
          get { return hotkeyModifiers; }
-         set { SetProperty(ref hotkeyModifiers, value, "HotkeyModifiers"); }
+         set { SetProperty(ref hotkeyModifiers, value); }
       }
 
       [XmlAttribute("Hotkey")]
@@ -42,7 +42,7 @@ namespace SleepHunter.Macro
       public Key HotkeyKey
       {
          get { return hotkeyKey; }
-         set { SetProperty(ref hotkeyKey, value, "HotkeyKey"); }
+         set { SetProperty(ref hotkeyKey, value); }
       }
 
       [XmlAttribute("UseLyliacVineyard")]
@@ -50,7 +50,7 @@ namespace SleepHunter.Macro
       public bool UseLyliacVineyard
       {
          get { return useLyliacVineyard; }
-         set { SetProperty(ref useLyliacVineyard, value, "UseLyliacVineyard"); }
+         set { SetProperty(ref useLyliacVineyard, value); }
       }
 
       [XmlAttribute("FlowerAlternateCharacters")]
@@ -58,7 +58,7 @@ namespace SleepHunter.Macro
       public bool FlowerAlternateCharacters
       {
          get { return flowerAlternateCharacters; }
-         set { SetProperty(ref flowerAlternateCharacters, value, "FlowerAlternateCharacters"); }
+         set { SetProperty(ref flowerAlternateCharacters, value); }
       }
 
       [XmlArray("Skills")]
@@ -66,7 +66,7 @@ namespace SleepHunter.Macro
       public List<SavedSkillState> Skills
       {
          get { return skills; }
-         private set { SetProperty(ref skills, value, "Skills"); }
+         private set { SetProperty(ref skills, value); }
       }
 
       [XmlArray("Spells")]
@@ -74,7 +74,7 @@ namespace SleepHunter.Macro
       public List<SavedSpellState> Spells
       {
          get { return spells; }
-         private set { SetProperty(ref spells, value, "Spells"); }
+         private set { SetProperty(ref spells, value); }
       }
 
       [XmlArray("Flowers")]
@@ -82,29 +82,26 @@ namespace SleepHunter.Macro
       public List<SavedFlowerState> Flowers
       {
          get { return flowers; }
-         private set { SetProperty(ref flowers, value, "Flowers"); }
+         private set { SetProperty(ref flowers, value); }
       }
 
-      public SavedMacroState()
-      {
-
-      }
+      public SavedMacroState() { }
 
       public SavedMacroState(PlayerMacroState macroState)
       {
          if (macroState == null)
             throw new ArgumentNullException("macroState");
 
-         this.CharacterName = macroState.Client.Name;
+         CharacterName = macroState.Client.Name;
 
          if (macroState.Client.HasHotkey)
          {
-            this.HotkeyModifiers = macroState.Client.Hotkey.Modifiers;
-            this.HotkeyKey = macroState.Client.Hotkey.Key;
+            HotkeyModifiers = macroState.Client.Hotkey.Modifiers;
+            HotkeyKey = macroState.Client.Hotkey.Key;
          }
 
-         this.UseLyliacVineyard = macroState.UseLyliacVineyard;
-         this.FlowerAlternateCharacters = macroState.FlowerAlternateCharacters;
+         UseLyliacVineyard = macroState.UseLyliacVineyard;
+         FlowerAlternateCharacters = macroState.FlowerAlternateCharacters;
 
          foreach (var skillName in macroState.Client.Skillbook.ActiveSkills)
             skills.Add(new SavedSkillState(skillName));

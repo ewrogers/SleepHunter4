@@ -32,7 +32,7 @@ namespace SleepHunter.Models
          get { return lastUsedTimestamp; }
          set
          {
-            SetProperty(ref lastUsedTimestamp, value, "LastUsedTimestamp");
+            SetProperty(ref lastUsedTimestamp, value);
             Tick();
          }
       }
@@ -52,7 +52,7 @@ namespace SleepHunter.Models
 
             var deltaTime = originalTime - newTime;
 
-            SetProperty(ref interval, value, "Interval", onChanged: (s) => { OnPropertyChanged("IntervalSeconds"); Tick(deltaTime); });
+            SetProperty(ref interval, value, onChanged: (s) => { RaisePropertyChanged("IntervalSeconds"); Tick(deltaTime); });
          }
       }
 
@@ -69,7 +69,7 @@ namespace SleepHunter.Models
 
       public double ElapsedTimeSeconds
       {
-         get { return this.ElapsedTime.TotalSeconds; }
+         get { return ElapsedTime.TotalSeconds; }
       }
 
       public TimeSpan RemainingTime
@@ -79,7 +79,7 @@ namespace SleepHunter.Models
             if (!interval.HasValue)
                return TimeSpan.Zero;
 
-            var elapsed = this.ElapsedTime;
+            var elapsed = ElapsedTime;
             var remaining = interval.Value - elapsed;
 
             if (remaining <= TimeSpan.Zero)
@@ -91,7 +91,7 @@ namespace SleepHunter.Models
 
       public double RemainingTimeSeconds
       {
-         get { return this.RemainingTime.TotalSeconds; }
+         get { return RemainingTime.TotalSeconds; }
       }
 
       public bool IsReady
@@ -99,7 +99,7 @@ namespace SleepHunter.Models
          get
          {
             if (interval.HasValue)
-               return this.RemainingTime <= TimeSpan.Zero;
+               return RemainingTime <= TimeSpan.Zero;
             else
                return false;
          }
@@ -108,23 +108,20 @@ namespace SleepHunter.Models
       public int? ManaThreshold
       {
          get { return manaThreshold; }
-         set { SetProperty(ref manaThreshold, value, "ManaThreshold"); }
+         set { SetProperty(ref manaThreshold, value); }
       }
 
-      public FlowerQueueItem()
-      {
-
-      }
+      public FlowerQueueItem() { }
 
       public FlowerQueueItem(SavedFlowerState flower)
       {
-         this.Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
-         this.Target.CharacterName = flower.CharacterName;
-         this.Target.OuterRadius = flower.OuterRadius;
-         this.Target.InnerRadius = flower.InnerRadius;
+         Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
+         Target.CharacterName = flower.CharacterName;
+         Target.OuterRadius = flower.OuterRadius;
+         Target.InnerRadius = flower.InnerRadius;
 
-         this.Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
-         this.ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;
+         Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
+         ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;
       }
 
       public void ResetTimer()
@@ -144,11 +141,11 @@ namespace SleepHunter.Models
       {
          intervalRemaining -= deltaTime;
          
-         OnPropertyChanged("ElapsedTime");
-         OnPropertyChanged("ElapsedTimeSeconds");
-         OnPropertyChanged("RemainingTime");
-         OnPropertyChanged("RemainingTimeSeconds");
-         OnPropertyChanged("IsReady");
+         RaisePropertyChanged("ElapsedTime");
+         RaisePropertyChanged("ElapsedTimeSeconds");
+         RaisePropertyChanged("RemainingTime");
+         RaisePropertyChanged("RemainingTimeSeconds");
+         RaisePropertyChanged("IsReady");
       }
 
       public void CopyTo(FlowerQueueItem other)
@@ -164,14 +161,14 @@ namespace SleepHunter.Models
       public void CopyTo(FlowerQueueItem other, bool copyId = true, bool copyTimestamp = false)
       {
          if (copyId)
-            other.Id = this.Id;
+            other.Id = Id;
 
-         other.Target = this.Target;
-         other.Interval = this.Interval;
-         other.ManaThreshold = this.ManaThreshold;
+         other.Target = Target;
+         other.Interval = Interval;
+         other.ManaThreshold = ManaThreshold;
 
          if (copyTimestamp)
-            other.LastUsedTimestamp = this.LastUsedTimestamp;
+            other.LastUsedTimestamp = LastUsedTimestamp;
       }
 
       public override string ToString()

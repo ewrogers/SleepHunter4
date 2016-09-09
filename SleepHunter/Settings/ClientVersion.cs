@@ -26,28 +26,28 @@ namespace SleepHunter.Settings
       public string Key
       {
          get { return key; }
-         set { SetProperty(ref key, value, "Key"); }
+         set { SetProperty(ref key, value); }
       }
 
       [XmlAttribute("Hash")]
       public string Hash
       {
          get { return hash; }
-         set { SetProperty(ref hash, value, "Hash"); }
+         set { SetProperty(ref hash, value); }
       }
 
       [XmlAttribute("Value")]
       public int VersionNumber
       {
          get { return versionNumber; }
-         set { SetProperty(ref versionNumber, value, "VersionNumber"); }
+         set { SetProperty(ref versionNumber, value); }
       }
 
       [XmlIgnore]
       public long MultipleInstanceAddress
       {
          get { return multipleInstanceAddress; }
-         set { SetProperty(ref multipleInstanceAddress, value, "MultipleInstanceAddress", onChanged: (s) => { OnPropertyChanged("MultipleInstanceAddressHex"); }); }
+         set { SetProperty(ref multipleInstanceAddress, value, onChanged: (s) => { RaisePropertyChanged("MultipleInstanceAddressHex"); }); }
       }
 
       [XmlElement("MultipleInstanceAddress")]
@@ -60,7 +60,7 @@ namespace SleepHunter.Settings
             long parsedLong;
 
             if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
-               this.MultipleInstanceAddress = parsedLong;
+               MultipleInstanceAddress = parsedLong;
          }
       }
 
@@ -68,7 +68,7 @@ namespace SleepHunter.Settings
       public long IntroVideoAddress
       {
          get { return introVideoAddress; }
-         set { SetProperty(ref introVideoAddress, value, "IntroVideoAddress", onChanged: (s) => { OnPropertyChanged("IntroVideoAddressHex"); }); }
+         set { SetProperty(ref introVideoAddress, value, onChanged: (s) => { RaisePropertyChanged("IntroVideoAddressHex"); }); }
       }
 
       [XmlElement("IntroVideoAddress")]
@@ -81,7 +81,7 @@ namespace SleepHunter.Settings
             long parsedLong;
 
             if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
-               this.IntroVideoAddress = parsedLong;
+               IntroVideoAddress = parsedLong;
          }
       }
 
@@ -89,7 +89,7 @@ namespace SleepHunter.Settings
       public long NoWallAddress
       {
          get { return noWallAddress; }
-         set { SetProperty(ref noWallAddress, value, "NoWallAddress", onChanged: (s) => { OnPropertyChanged("NoWallAddressHex"); }); }
+         set { SetProperty(ref noWallAddress, value, onChanged: (s) => { RaisePropertyChanged("NoWallAddressHex"); }); }
       }
 
       [XmlElement("NoWallAddress")]
@@ -102,7 +102,7 @@ namespace SleepHunter.Settings
             long parsedLong;
 
             if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
-               this.NoWallAddress = parsedLong;
+               NoWallAddress = parsedLong;
          }
       }
 
@@ -113,7 +113,7 @@ namespace SleepHunter.Settings
       public List<MemoryVariable> Variables
       {
          get { return variables; }
-         set { SetProperty(ref variables, value, "Variables"); }
+         set { SetProperty(ref variables, value); }
       }
 
       private ClientVersion() :
@@ -147,7 +147,7 @@ namespace SleepHunter.Settings
 
       public override string ToString()
       {
-         return this.Key ?? string.Empty;
+         return Key ?? string.Empty;
       }
    }
 }

@@ -24,7 +24,7 @@ namespace SleepHunter.Metadata
       public string Name
       {
          get { return name; }
-         set { SetProperty(ref name, value, "Name"); }
+         set { SetProperty(ref name, value); }
       }
 
       [XmlAttribute("Class")]
@@ -32,7 +32,7 @@ namespace SleepHunter.Metadata
       public PlayerClass Class
       {
          get { return playerClass; }
-         set { SetProperty(ref playerClass, value, "Class"); }
+         set { SetProperty(ref playerClass, value); }
       }
 
       [XmlAttribute("Group")]
@@ -40,7 +40,7 @@ namespace SleepHunter.Metadata
       public string GroupName
       {
          get { return groupName; }
-         set { SetProperty(ref groupName, value, "GroupName"); }
+         set { SetProperty(ref groupName, value); }
       }
 
       [XmlAttribute("Mana")]
@@ -48,7 +48,7 @@ namespace SleepHunter.Metadata
       public int ManaCost
       {
          get { return manaCost; }
-         set { SetProperty(ref manaCost, value, "Mana"); }
+         set { SetProperty(ref manaCost, value); }
       }
 
       [XmlAttribute("IsAssail")]
@@ -56,7 +56,7 @@ namespace SleepHunter.Metadata
       public bool IsAssail
       {
          get { return isAssail; }
-         set { SetProperty(ref isAssail, value, "IsAssail"); }
+         set { SetProperty(ref isAssail, value); }
       }
 
       [XmlAttribute("OpensDialog")]
@@ -64,7 +64,7 @@ namespace SleepHunter.Metadata
       public bool OpensDialog
       {
          get { return opensDialog; }
-         set { SetProperty(ref opensDialog, value, "OpensDialog"); }
+         set { SetProperty(ref opensDialog, value); }
       }
 
       [XmlAttribute("CanImprove")]
@@ -72,14 +72,14 @@ namespace SleepHunter.Metadata
       public bool CanImprove
       {
          get { return canImprove; }
-         set { SetProperty(ref canImprove, value, "CanImprove"); }
+         set { SetProperty(ref canImprove, value); }
       }
 
       [XmlIgnore]
       public TimeSpan Cooldown
       {
          get { return cooldown; }
-         set { SetProperty(ref cooldown, value, "Cooldown", onChanged: (s) => { OnPropertyChanged("CooldownSeconds"); }); }
+         set { SetProperty(ref cooldown, value, onChanged: (s) => { RaisePropertyChanged("CooldownSeconds"); }); }
       }
 
       [XmlAttribute("Cooldown")]
@@ -87,7 +87,7 @@ namespace SleepHunter.Metadata
       public double CooldownSeconds
       {
          get { return cooldown.TotalSeconds; }
-         set { this.Cooldown = TimeSpan.FromSeconds(value); }
+         set { Cooldown = TimeSpan.FromSeconds(value); }
       }
 
       [XmlAttribute("RequiresDisarm")]
@@ -95,30 +95,27 @@ namespace SleepHunter.Metadata
       public bool RequiresDisarm
       {
          get { return requiresDisarm; }
-         set { SetProperty(ref requiresDisarm, value, "RequiresDisarm"); }
+         set { SetProperty(ref requiresDisarm, value); }
       }
 
-      public SkillMetadata()
-      {
-
-      }
+      public SkillMetadata() { }
 
       public override string ToString()
       {
-         return this.Name ?? "Unknown Skill";
+         return Name ?? "Unknown Skill";
       }
 
       public void CopyTo(SkillMetadata other)
       {
-         other.Name = this.Name;
-         other.Class = this.Class;
-         other.GroupName = this.GroupName;
-         other.ManaCost = this.ManaCost;
-         other.Cooldown = this.Cooldown;
-         other.IsAssail = this.IsAssail;
-         other.OpensDialog = this.OpensDialog;
-         other.CanImprove = this.CanImprove;
-         other.RequiresDisarm = this.RequiresDisarm;
+         other.Name = Name;
+         other.Class = Class;
+         other.GroupName = GroupName;
+         other.ManaCost = ManaCost;
+         other.Cooldown = Cooldown;
+         other.IsAssail = IsAssail;
+         other.OpensDialog = OpensDialog;
+         other.CanImprove = CanImprove;
+         other.RequiresDisarm = RequiresDisarm;
       }
    }
 }

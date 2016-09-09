@@ -26,7 +26,7 @@ namespace SleepHunter.Macro
       public TargetCoordinateUnits TargetMode
       {
          get { return targetMode; }
-         set { SetProperty(ref targetMode, value, "TargetMode"); }
+         set { SetProperty(ref targetMode, value); }
       }
 
       [XmlAttribute("TargetName")]
@@ -34,7 +34,7 @@ namespace SleepHunter.Macro
       public string CharacterName
       {
          get { return characterName; }
-         set { SetProperty(ref characterName, value, "CharacterName"); }
+         set { SetProperty(ref characterName, value); }
       }
 
       [XmlAttribute("X")]
@@ -42,7 +42,7 @@ namespace SleepHunter.Macro
       public double LocationX
       {
          get { return locationX; }
-         set { SetProperty(ref locationX, value, "LocationX"); }
+         set { SetProperty(ref locationX, value); }
       }
 
       [XmlAttribute("Y")]
@@ -50,7 +50,7 @@ namespace SleepHunter.Macro
       public double LocationY
       {
          get { return locationY; }
-         set { SetProperty(ref locationY, value, "LocationY"); }
+         set { SetProperty(ref locationY, value); }
       }
 
       [XmlAttribute("OffsetX")]
@@ -58,7 +58,7 @@ namespace SleepHunter.Macro
       public double OffsetX
       {
          get { return offsetX; }
-         set { SetProperty(ref offsetX, value, "OffsetX"); }
+         set { SetProperty(ref offsetX, value); }
       }
 
       [XmlAttribute("OffsetY")]
@@ -66,7 +66,7 @@ namespace SleepHunter.Macro
       public double OffsetY
       {
          get { return offsetY; }
-         set { SetProperty(ref offsetY, value, "OffsetY"); }
+         set { SetProperty(ref offsetY, value); }
       }
 
       [XmlAttribute("InnerRadius")]
@@ -74,7 +74,7 @@ namespace SleepHunter.Macro
       public int InnerRadius
       {
          get { return innerRadius; }
-         set { SetProperty(ref innerRadius, value, "InnerRadius"); }
+         set { SetProperty(ref innerRadius, value); }
       }
 
       [XmlAttribute("OuterRadius")]
@@ -82,14 +82,14 @@ namespace SleepHunter.Macro
       public int OuterRadius
       {
          get { return outerRadius; }
-         set { SetProperty(ref outerRadius, value, "OuterRadius"); }
+         set { SetProperty(ref outerRadius, value); }
       }
 
       [XmlIgnore]
       public TimeSpan Interval
       {
          get { return interval; }
-         set { SetProperty(ref interval, value, "Interval", onChanged: (p) => { OnPropertyChanged("IntervalSeconds"); OnPropertyChanged("HasInterval"); }); }
+         set { SetProperty(ref interval, value, onChanged: (p) =>{ RaisePropertyChanged("IntervalSeconds"); RaisePropertyChanged("HasInterval"); }); }
       }
 
       [XmlAttribute("HasInterval")]
@@ -97,7 +97,7 @@ namespace SleepHunter.Macro
       public bool HasInterval
       {
          get { return hasInterval; }
-         set { SetProperty(ref hasInterval, value, "HasInterval"); }
+         set { SetProperty(ref hasInterval, value); }
       }
 
       [XmlAttribute("Interval")]
@@ -113,33 +113,30 @@ namespace SleepHunter.Macro
       public int ManaThreshold
       {
          get { return manaThreshold; }
-         set { SetProperty(ref manaThreshold, value, "ManaThreshold"); }
+         set { SetProperty(ref manaThreshold, value); }
       }
 
-      public SavedFlowerState()
-      {
-
-      }
+      public SavedFlowerState() { }
 
       public SavedFlowerState(SpellTarget target, TimeSpan? interval, int? manaThreshold = null)
       {
          if (target == null)
             throw new ArgumentNullException("target");
 
-         this.TargetMode = target.Units;
-         this.CharacterName = target.CharacterName;
-         this.LocationX = target.Location.X;
-         this.LocationY = target.Location.Y;
-         this.OffsetX = target.Offset.X;
-         this.OffsetY = target.Offset.Y;
-         this.InnerRadius = target.InnerRadius;
-         this.OuterRadius = target.OuterRadius;
+         TargetMode = target.Units;
+         CharacterName = target.CharacterName;
+         LocationX = target.Location.X;
+         LocationY = target.Location.Y;
+         OffsetX = target.Offset.X;
+         OffsetY = target.Offset.Y;
+         InnerRadius = target.InnerRadius;
+         OuterRadius = target.OuterRadius;
 
          if (interval.HasValue)
-            this.Interval = interval.Value;
+            Interval = interval.Value;
 
          if (manaThreshold.HasValue)
-            this.ManaThreshold = manaThreshold.Value;
+            ManaThreshold = manaThreshold.Value;
       }
 
       public SavedFlowerState(FlowerQueueItem item)

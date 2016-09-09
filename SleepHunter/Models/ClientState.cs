@@ -28,49 +28,49 @@ namespace SleepHunter.Models
       public Player Owner
       {
          get { return owner; }
-         set { SetProperty(ref owner, value, "Owner"); }
+         set { SetProperty(ref owner, value); }
       }
 
       public int VersionNumber
       {
          get { return versionNumber; }
-         set { SetProperty(ref versionNumber, value, "VersionNumber"); }
+         set { SetProperty(ref versionNumber, value); }
       }
 
       public string VersionKey
       {
          get { return versionKey; }
-         set { SetProperty(ref versionKey, value, "VersionKey"); }
+         set { SetProperty(ref versionKey, value); }
       }
 
       public InterfacePanel ActivePanel
       {
          get { return activePanel; }
-         set { SetProperty(ref activePanel, value, "ActivePanel"); }
+         set { SetProperty(ref activePanel, value); }
       }
 
       public bool IsInventoryExpanded
       {
          get { return isInventoryExpanded; }
-         set { SetProperty(ref isInventoryExpanded, value, "IsInventoryExpanded"); }
+         set { SetProperty(ref isInventoryExpanded, value); }
       }
 
       public bool IsMinimizedMode
       {
          get { return isMinimizedMode; }
-         set { SetProperty(ref isMinimizedMode, value, "IsMinimizedMode"); }
+         set { SetProperty(ref isMinimizedMode, value); }
       }
 
       public bool IsDialogOpen
       {
          get { return isDialogOpen; }
-         set { SetProperty(ref isDialogOpen, value, "IsDialogOpen"); }
+         set { SetProperty(ref isDialogOpen, value); }
       }
 
       public bool IsUserChatting
       {
          get { return isUserChatting; }
-         set { SetProperty(ref isUserChatting, value, "IsUserChatting"); }
+         set { SetProperty(ref isUserChatting, value); }
       }
 
       public ClientState()
@@ -94,7 +94,7 @@ namespace SleepHunter.Models
          if (accessor == null)
             throw new ArgumentNullException("accessor");
 
-         var version = this.Owner.Version;
+         var version = Owner.Version;
 
          if (version == null)
          {
@@ -118,39 +118,39 @@ namespace SleepHunter.Models
          using (var reader = new BinaryReader(stream, Encoding.ASCII))
          {
             if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
-               this.ActivePanel = (InterfacePanel)activePanelByte;
+               ActivePanel = (InterfacePanel)activePanelByte;
             else
-               this.ActivePanel = InterfacePanel.Unknown;
+               ActivePanel = InterfacePanel.Unknown;
 
             if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out isInventoryExpanded))
-               this.IsInventoryExpanded = isInventoryExpanded;
+               IsInventoryExpanded = isInventoryExpanded;
             else
-               this.IsInventoryExpanded = false;
+               IsInventoryExpanded = false;
 
             if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out isMinimizedMode))
-               this.IsMinimizedMode = isMinimizedMode;
+               IsMinimizedMode = isMinimizedMode;
             else
-               this.IsMinimizedMode = false;
+               IsMinimizedMode = false;
 
             if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out isDialogOpen))
-               this.IsDialogOpen = isDialogOpen;
+               IsDialogOpen = isDialogOpen;
             else
-               this.IsDialogOpen = false;
+               IsDialogOpen = false;
 
             if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
-               this.IsUserChatting = isUserChatting;
+               IsUserChatting = isUserChatting;
             else
-               this.IsUserChatting = false;
+               IsUserChatting = false;
          }
       }
 
       public void ResetDefaults()
       {
-         this.ActivePanel = InterfacePanel.Unknown;
-         this.IsInventoryExpanded = false;
-         this.IsMinimizedMode = false;
-         this.IsDialogOpen = false;
-         this.IsUserChatting = false;
+         ActivePanel = InterfacePanel.Unknown;
+         IsInventoryExpanded = false;
+         IsMinimizedMode = false;
+         IsDialogOpen = false;
+         IsUserChatting = false;
       }
 
       public static ClientVersion DetectVersion(ProcessMemoryAccessor accessor)
