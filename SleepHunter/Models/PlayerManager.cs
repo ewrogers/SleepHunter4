@@ -9,172 +9,173 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerManager
-   {
-      #region Singleton
-      static readonly PlayerManager instance = new PlayerManager();
+  public sealed class PlayerManager
+  {
+    #region Singleton
+    static readonly PlayerManager instance = new PlayerManager();
 
-      public static PlayerManager Instance
+    public static PlayerManager Instance
+    {
+      get { return instance; }
+    }
+
+    private PlayerManager() { }
+    #endregion
+
+    ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
+
+    public event PlayerEventHandler PlayerAdded;
+    public event PropertyChangedEventHandler PlayerPropertyChanged;
+    public event PlayerEventHandler PlayerUpdated;
+    public event PlayerEventHandler PlayerRemoved;
+
+    public int Count { get { return players.Count; } }
+
+    public IEnumerable<Player> Players
+    {
+      get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
+    }
+
+    public IEnumerable<Player> LoggedInPlayers
+    {
+      get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
+    }
+
+    public void AddNewClient(ClientProcess process, ClientVersion version = null)
+    {
+      var player = new Player(process) { Version = version };
+      player.PropertyChanged += Player_PropertyChanged;
+
+      if (player.Version == null)
       {
-         get { return instance; }
+        player.Version = ClientVersionManager.Instance.Versions.First(v => v.Key != "Auto-Detect");
       }
 
-      private PlayerManager() { }
-      #endregion
+      AddPlayer(player);
+      player.Update();
+    }
 
-      ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
+    public void AddPlayer(Player player)
+    {
+      if (player == null)
+        throw new ArgumentNullException("player");
 
-      public event PlayerEventHandler PlayerAdded;
-      public event PropertyChangedEventHandler PlayerPropertyChanged;
-      public event PlayerEventHandler PlayerUpdated;
-      public event PlayerEventHandler PlayerRemoved;
+      var alreadyExists = players.ContainsKey(player.Process.ProcessId);
 
-      public int Count { get { return players.Count; } }
+      players[player.Process.ProcessId] = player;
 
-      public IEnumerable<Player> Players
+      if (alreadyExists)
+        OnPlayerUpdated(player);
+      else
+        OnPlayerAdded(player);
+    }
+
+    public bool ContainsPlayer(int processId)
+    {
+      return players.ContainsKey(processId);
+    }
+
+    public Player GetPlayer(int processId)
+    {
+      Player player = null;
+
+      players.TryGetValue(processId, out player);
+
+      return player;
+    }
+
+    public Player GetPlayerByName(string playerName)
+    {
+      foreach (var player in players.Values)
+        if (string.Equals(player.Name, playerName, StringComparison.OrdinalIgnoreCase))
+          return player;
+
+      return null;
+    }
+
+    public bool RemovePlayer(int processId)
+    {
+      Player removedPlayer;
+
+      var wasRemoved = players.TryRemove(processId, out removedPlayer);
+
+      if (wasRemoved)
       {
-         get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
+        OnPlayerRemoved(removedPlayer);
+        removedPlayer.Dispose();
       }
 
-      public IEnumerable<Player> LoggedInPlayers
-      {
-         get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
-      }
+      return wasRemoved;
+    }
 
-      public void AddNewClient(ClientProcess process, ClientVersion version = null)
+    public void ClearPlayers()
+    {
+      var keys = players.Keys.ToList();
+
+      foreach (var key in keys)
+        RemovePlayer(key);
+
+      players.Clear();
+    }
+
+    public void UpdateClients(Predicate<Player> predicate = null)
+    {
+      foreach (var client in players.Values)
       {
-         var player = new Player(process) { Version = version };
-         player.PropertyChanged += Player_PropertyChanged;
-        
-        if (player.Version == null)
+        try
         {
-            player.Version = ClientVersionManager.Instance.Versions.First(v => v.Key != "Auto-Detect");
+          if (predicate == null || predicate(client))
+            client.Update();
         }
-
-         AddPlayer(player);
-         player.Update();
+        catch { }
       }
+    }
 
-      public void AddPlayer(Player player)
-      {
-         if (player == null)
-            throw new ArgumentNullException("player");
+    void OnPlayerAdded(Player player)
+    {
+      player.PropertyChanged += Player_PropertyChanged;
 
-         var alreadyExists = players.ContainsKey(player.Process.ProcessId);
+      var handler = this.PlayerAdded;
 
-         players[player.Process.ProcessId] = player;
+      if (handler != null)
+        handler(this, new PlayerEventArgs(player));
+    }
 
-         if (alreadyExists)
-            OnPlayerUpdated(player);
-         else
-            OnPlayerAdded(player);
-      }
+    void OnPlayerPropertyChanged(Player player, string propertyName)
+    {
+      var handler = this.PlayerPropertyChanged;
 
-      public bool ContainsPlayer(int processId)
-      {
-         return players.ContainsKey(processId);
-      }
+      if (handler != null)
+        handler(player, new PropertyChangedEventArgs(propertyName));
+    }
 
-      public Player GetPlayer(int processId)
-      {
-         Player player = null;
+    void OnPlayerUpdated(Player player)
+    {
+      player.PropertyChanged += Player_PropertyChanged;
 
-         players.TryGetValue(processId, out player);
+      var handler = this.PlayerUpdated;
 
-         return player;
-      }
+      if (handler != null)
+        handler(this, new PlayerEventArgs(player));
+    }
 
-      public Player GetPlayerByName(string playerName)
-      {
-         foreach (var player in players.Values)
-            if (string.Equals(player.Name, playerName, StringComparison.OrdinalIgnoreCase))
-               return player;
+    void OnPlayerRemoved(Player player)
+    {
+      player.PropertyChanged -= Player_PropertyChanged;
 
-         return null;
-      }
+      var handler = this.PlayerRemoved;
 
-      public bool RemovePlayer(int processId)
-      {
-         Player removedPlayer;
+      if (handler != null)
+        handler(this, new PlayerEventArgs(player));
+    }
 
-         var wasRemoved = players.TryRemove(processId, out removedPlayer);
+    void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+      var player = sender as Player;
+      if (player == null)
+        return;
 
-         if (wasRemoved)
-         {
-            OnPlayerRemoved(removedPlayer);
-            removedPlayer.Dispose();
-         }
-
-         return wasRemoved;
-      }
-
-      public void ClearPlayers()
-      {
-         var keys = players.Keys.ToList();
-
-         foreach (var key in keys)
-            RemovePlayer(key);
-
-         players.Clear();
-      }
-
-      public void UpdateClients(Predicate<Player> predicate = null)
-      {
-         foreach (var client in players.Values)
-         {
-            try
-            {
-               if (predicate == null || predicate(client))
-                  client.Update();
-            }
-            catch { }
-         }
-      }
-      
-      void OnPlayerAdded(Player player)
-      {
-         player.PropertyChanged += Player_PropertyChanged;
-
-         var handler = this.PlayerAdded;
-
-         if (handler != null)
-            handler(this, new PlayerEventArgs(player));
-      }
-
-      void OnPlayerPropertyChanged(Player player, string propertyName)
-      {
-         var handler = this.PlayerPropertyChanged;
-
-         if (handler != null)
-            handler(player, new PropertyChangedEventArgs(propertyName));
-      }
-
-      void OnPlayerUpdated(Player player)
-      {
-         player.PropertyChanged += Player_PropertyChanged;
-
-         var handler = this.PlayerUpdated;
-
-         if (handler != null)
-            handler(this, new PlayerEventArgs(player));
-      }
-
-      void OnPlayerRemoved(Player player)
-      {
-         player.PropertyChanged -= Player_PropertyChanged;
-
-         var handler = this.PlayerRemoved;
-
-         if (handler != null)
-            handler(this, new PlayerEventArgs(player));
-      }
-
-      void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
-      {
-         var player = sender as Player;
-         if (player == null) return;
-
-         OnPlayerPropertyChanged(player, e.PropertyName);
-      }
-   }
+      OnPlayerPropertyChanged(player, e.PropertyName);
+    }
+  }
 }

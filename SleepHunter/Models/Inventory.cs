@@ -11,74 +11,74 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-   public sealed class Inventory : IEnumerable<InventoryItem>
-   {
-      static readonly string InventoryKey = @"Inventory";
+  public sealed class Inventory : IEnumerable<InventoryItem>
+  {
+    static readonly string InventoryKey = @"Inventory";
 
-      public static readonly int InventoryCount = 60;
+    public static readonly int InventoryCount = 60;
 
-      Player owner;
-      List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
+    Player owner;
+    List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
 
-      public Player Owner
-      {
-         get { return owner; }
-         set { owner = value; }
-      }
+    public Player Owner
+    {
+      get { return owner; }
+      set { owner = value; }
+    }
 
-      public int Count { get { return inventory.Count((item) => { return !item.IsEmpty; }); } }
+    public int Count { get { return inventory.Count((item) => { return !item.IsEmpty; }); } }
 
-      public IEnumerable<string> ItemNames
-      {
-         get { return from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name; }
-      }
+    public IEnumerable<string> ItemNames
+    {
+      get { return from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name; }
+    }
 
-      public Inventory()
-         : this(null) { }
+    public Inventory()
+       : this(null) { }
 
-      public Inventory(Player owner)
-      {
-         this.owner = owner;
-         InitializeInventory();
-      }
+    public Inventory(Player owner)
+    {
+      this.owner = owner;
+      InitializeInventory();
+    }
 
-      void InitializeInventory()
-      {
-         inventory.Clear();
+    void InitializeInventory()
+    {
+      inventory.Clear();
 
-         for (int i = 0; i < inventory.Capacity; i++)
-            inventory.Add(InventoryItem.MakeEmpty(i + 1));
-      }
+      for (int i = 0; i < inventory.Capacity; i++)
+        inventory.Add(InventoryItem.MakeEmpty(i + 1));
+    }
 
-      public InventoryItem GetItem(string itemName)
-      {
-         itemName = itemName.Trim();
+    public InventoryItem GetItem(string itemName)
+    {
+      itemName = itemName.Trim();
 
-         foreach (var item in inventory)
-            if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-               return item;
+      foreach (var item in inventory)
+        if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
+          return item;
 
-         return null;
-      }
+      return null;
+    }
 
-      public int FindItemSlot(string itemName)
-      {
-         itemName = itemName.Trim();
+    public int FindItemSlot(string itemName)
+    {
+      itemName = itemName.Trim();
 
-         foreach (var item in inventory)
-            if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-               return item.Slot;
+      foreach (var item in inventory)
+        if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
+          return item.Slot;
 
-         return -1;
-      }
+      return -1;
+    }
 
-      public void Update()
-      {
-         if (owner == null)
-            throw new InvalidOperationException("Player owner is null, cannot update.");
+    public void Update()
+    {
+      if (owner == null)
+        throw new InvalidOperationException("Player owner is null, cannot update.");
 
-         Update(owner.Accessor);
-      }
+      Update(owner.Accessor);
+    }
 
     public void Update(ProcessMemoryAccessor accessor)
     {
@@ -144,27 +144,27 @@ namespace SleepHunter.Models
       finally { stream?.Dispose(); }
     }
 
-      public void ResetDefaults()
+    public void ResetDefaults()
+    {
+      for (int i = 0; i < inventory.Capacity; i++)
       {
-         for (int i = 0; i < inventory.Capacity; i++)
-         {
-            inventory[i].IsEmpty = true;
-            inventory[i].Name = null;
-         }
+        inventory[i].IsEmpty = true;
+        inventory[i].Name = null;
       }
+    }
 
-      #region IEnumerable Methods
-      public IEnumerator<InventoryItem> GetEnumerator()
-      {
-         foreach (var item in inventory)
-            if (!item.IsEmpty)
-               yield return item;
-      }
+    #region IEnumerable Methods
+    public IEnumerator<InventoryItem> GetEnumerator()
+    {
+      foreach (var item in inventory)
+        if (!item.IsEmpty)
+          yield return item;
+    }
 
-      IEnumerator IEnumerable.GetEnumerator()
-      {
-         return this.GetEnumerator();
-      }
-      #endregion
-   }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return this.GetEnumerator();
+    }
+    #endregion
+  }
 }

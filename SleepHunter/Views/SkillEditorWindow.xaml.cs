@@ -7,170 +7,170 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
-    public partial class SkillEditorWindow : Window
-   {
-      string originalName;
-      SkillMetadata skill = new SkillMetadata();
+  public partial class SkillEditorWindow : Window
+  {
+    string originalName;
+    SkillMetadata skill = new SkillMetadata();
 
-      public SkillMetadata Skill
+    public SkillMetadata Skill
+    {
+      get { return skill; }
+      private set { skill = value; }
+    }
+
+    public bool IsEditMode
+    {
+      get { return (bool)GetValue(IsEditModeProperty); }
+      set { SetValue(IsEditModeProperty, value); }
+    }
+
+    public static readonly DependencyProperty IsEditModeProperty =
+        DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SkillEditorWindow), new PropertyMetadata(false));
+
+    public SkillEditorWindow(SkillMetadata skill, bool isEditMode = true)
+       : this()
+    {
+      nameTextBox.Text = originalName = skill.Name;
+      groupNameTextBox.Text = skill.GroupName;
+      manaUpDown.Value = skill.ManaCost;
+      cooldownTextBox.Text = skill.Cooldown.ToShortEnglish();
+      assailCheckBox.IsChecked = skill.IsAssail;
+      dialogCheckBox.IsChecked = skill.OpensDialog;
+      improveCheckBox.IsChecked = !skill.CanImprove;
+      disarmCheckBox.IsChecked = skill.RequiresDisarm;
+
+      SetPlayerClass(skill.Class);
+
+      this.IsEditMode = isEditMode;
+
+      if (isEditMode)
+        this.Title = "Edit Skill";
+    }
+
+    public SkillEditorWindow()
+    {
+      InitializeComponent();
+      this.Title = "Add Skill";
+    }
+
+    void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+      nameTextBox.Focus();
+      nameTextBox.SelectAll();
+    }
+
+    bool ValidateSkill()
+    {
+      string skillName = nameTextBox.Text.Trim();
+      string groupName = groupNameTextBox.Text.Trim();
+      int manaCost = (int)manaUpDown.Value;
+      TimeSpan cooldown;
+      bool isAssail = assailCheckBox.IsChecked.Value;
+      bool opensDialog = dialogCheckBox.IsChecked.Value;
+      bool doesNotLevel = improveCheckBox.IsChecked.Value;
+      bool requiresDisarm = disarmCheckBox.IsChecked.Value;
+      bool nameChanged = originalName == null || !string.Equals(originalName, skillName, StringComparison.OrdinalIgnoreCase);
+
+      if (string.IsNullOrWhiteSpace(skillName))
       {
-         get { return skill; }
-         private set { skill = value; }
+        this.ShowMessageBox("Invalid Name",
+           "Skill names must not be null or empty.",
+           "This includes whitespace characters.",
+           MessageBoxButton.OK,
+           420, 220);
+
+        nameTextBox.Focus();
+        nameTextBox.SelectAll();
+        return false;
       }
 
-      public bool IsEditMode
+      if (nameChanged && SkillMetadataManager.Instance.ContainsSkill(skillName))
       {
-         get { return (bool)GetValue(IsEditModeProperty); }
-         set { SetValue(IsEditModeProperty, value); }
+        this.ShowMessageBox("Duplicate Name",
+           "A skill already exists with the same name.",
+           "Skill names are case-insenstive.",
+           MessageBoxButton.OK,
+           420, 220);
+
+        nameTextBox.Focus();
+        nameTextBox.SelectAll();
+        return false;
       }
 
-      public static readonly DependencyProperty IsEditModeProperty =
-          DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SkillEditorWindow), new PropertyMetadata(false));
-
-      public SkillEditorWindow(SkillMetadata skill, bool isEditMode = true)
-         : this()
+      double cooldownSeconds;
+      if (string.IsNullOrWhiteSpace(cooldownTextBox.Text.Trim()))
+        cooldown = TimeSpan.Zero;
+      else if (double.TryParse(cooldownTextBox.Text.Trim(), out cooldownSeconds) && cooldownSeconds >= 0)
+        cooldown = TimeSpan.FromSeconds(cooldownSeconds);
+      else if (!TimeSpanExtender.TryParse(cooldownTextBox.Text.Trim(), out cooldown) || cooldown < TimeSpan.Zero)
       {
-         nameTextBox.Text = originalName = skill.Name;
-         groupNameTextBox.Text = skill.GroupName;
-         manaUpDown.Value = skill.ManaCost;
-         cooldownTextBox.Text = skill.Cooldown.ToShortEnglish();
-         assailCheckBox.IsChecked = skill.IsAssail;
-         dialogCheckBox.IsChecked = skill.OpensDialog;
-         improveCheckBox.IsChecked = !skill.CanImprove;
-         disarmCheckBox.IsChecked = skill.RequiresDisarm;
+        this.ShowMessageBox("Invalid Cooldown",
+           "Cooldown must be a valid positive timespan value.",
+           "You may use fractional units of days, hours, minutes, and seconds.\nYou may also leave it blank for zero cooldown.",
+           MessageBoxButton.OK,
+           420, 240);
 
-         SetPlayerClass(skill.Class);
-
-         this.IsEditMode = isEditMode;
-
-         if (isEditMode)
-            this.Title = "Edit Skill";
+        cooldownTextBox.Focus();
+        cooldownTextBox.SelectAll();
+        return false;
       }
 
-      public SkillEditorWindow()
-      {
-         InitializeComponent();
-         this.Title = "Add Skill";
-      }
+      skill.Name = skillName;
+      skill.GroupName = string.IsNullOrWhiteSpace(groupName) ? null : groupName;
+      skill.Class = GetPlayerClass();
+      skill.ManaCost = manaCost;
+      skill.Cooldown = cooldown;
+      skill.IsAssail = isAssail;
+      skill.OpensDialog = opensDialog;
+      skill.CanImprove = !doesNotLevel;
+      skill.RequiresDisarm = requiresDisarm;
+      return true;
+    }
 
-      void Window_Loaded(object sender, RoutedEventArgs e)
-      {
-         nameTextBox.Focus();
-         nameTextBox.SelectAll();
-      }
+    PlayerClass GetPlayerClass()
+    {
+      var playerClass = PlayerClass.Peasant;
 
-      bool ValidateSkill()
-      {
-         string skillName = nameTextBox.Text.Trim();
-         string groupName = groupNameTextBox.Text.Trim();
-         int manaCost = (int)manaUpDown.Value;
-         TimeSpan cooldown;
-         bool isAssail = assailCheckBox.IsChecked.Value;
-         bool opensDialog = dialogCheckBox.IsChecked.Value;
-         bool doesNotLevel = improveCheckBox.IsChecked.Value;
-         bool requiresDisarm = disarmCheckBox.IsChecked.Value;
-         bool nameChanged = originalName == null || !string.Equals(originalName, skillName, StringComparison.OrdinalIgnoreCase);
+      if (warriorCheckBox.IsChecked.Value)
+        playerClass |= PlayerClass.Warrior;
 
-         if (string.IsNullOrWhiteSpace(skillName))
-         {
-            this.ShowMessageBox("Invalid Name",
-               "Skill names must not be null or empty.",
-               "This includes whitespace characters.",
-               MessageBoxButton.OK,
-               420, 220);
+      if (wizardCheckBox.IsChecked.Value)
+        playerClass |= PlayerClass.Wizard;
 
-            nameTextBox.Focus();
-            nameTextBox.SelectAll();
-            return false;
-         }
+      if (priestCheckBox.IsChecked.Value)
+        playerClass |= PlayerClass.Priest;
 
-         if (nameChanged && SkillMetadataManager.Instance.ContainsSkill(skillName))
-         {
-            this.ShowMessageBox("Duplicate Name",
-               "A skill already exists with the same name.",
-               "Skill names are case-insenstive.",
-               MessageBoxButton.OK,
-               420, 220);
+      if (rogueCheckBox.IsChecked.Value)
+        playerClass |= PlayerClass.Rogue;
 
-            nameTextBox.Focus();
-            nameTextBox.SelectAll();
-            return false;
-         }
+      if (monkCheckBox.IsChecked.Value)
+        playerClass |= PlayerClass.Monk;
 
-         double cooldownSeconds;
-         if (string.IsNullOrWhiteSpace(cooldownTextBox.Text.Trim()))
-            cooldown = TimeSpan.Zero;
-         else if (double.TryParse(cooldownTextBox.Text.Trim(), out cooldownSeconds) && cooldownSeconds >= 0)
-            cooldown = TimeSpan.FromSeconds(cooldownSeconds);
-         else if (!TimeSpanExtender.TryParse(cooldownTextBox.Text.Trim(), out cooldown) || cooldown < TimeSpan.Zero)
-         {
-            this.ShowMessageBox("Invalid Cooldown",
-               "Cooldown must be a valid positive timespan value.",
-               "You may use fractional units of days, hours, minutes, and seconds.\nYou may also leave it blank for zero cooldown.",
-               MessageBoxButton.OK,
-               420, 240);
+      return playerClass;
+    }
 
-            cooldownTextBox.Focus();
-            cooldownTextBox.SelectAll();
-            return false;
-         }
+    void SetPlayerClass(PlayerClass playerClass)
+    {
+      warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
+      wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
+      priestCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Priest);
+      rogueCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Rogue);
+      monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
+    }
 
-         skill.Name = skillName;
-         skill.GroupName = string.IsNullOrWhiteSpace(groupName) ? null : groupName;
-         skill.Class = GetPlayerClass();
-         skill.ManaCost = manaCost;
-         skill.Cooldown = cooldown;
-         skill.IsAssail = isAssail;
-         skill.OpensDialog = opensDialog;
-         skill.CanImprove = !doesNotLevel;
-         skill.RequiresDisarm = requiresDisarm;
-         return true;
-      }
+    void okButton_Click(object sender, RoutedEventArgs e)
+    {
+      if (!ValidateSkill())
+        return;
 
-      PlayerClass GetPlayerClass()
-      {
-         var playerClass = PlayerClass.Peasant;
+      this.DialogResult = true;
+      this.Close();
+    }
 
-         if (warriorCheckBox.IsChecked.Value)
-            playerClass |= PlayerClass.Warrior;
-
-         if (wizardCheckBox.IsChecked.Value)
-            playerClass |= PlayerClass.Wizard;
-
-         if (priestCheckBox.IsChecked.Value)
-            playerClass |= PlayerClass.Priest;
-
-         if (rogueCheckBox.IsChecked.Value)
-            playerClass |= PlayerClass.Rogue;
-
-         if (monkCheckBox.IsChecked.Value)
-            playerClass |= PlayerClass.Monk;
-
-         return playerClass;
-      }
-
-      void SetPlayerClass(PlayerClass playerClass)
-      {
-         warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
-         wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
-         priestCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Priest);
-         rogueCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Rogue);
-         monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
-      }
-
-      void okButton_Click(object sender, RoutedEventArgs e)
-      {
-         if (!ValidateSkill())
-            return;
-
-         this.DialogResult = true;
-         this.Close();
-      }
-
-      void cancelButton_Click(object sender, RoutedEventArgs e)
-      {
-         this.DialogResult = false;
-         this.Close();
-      }
-   }
+    void cancelButton_Click(object sender, RoutedEventArgs e)
+    {
+      this.DialogResult = false;
+      this.Close();
+    }
+  }
 }

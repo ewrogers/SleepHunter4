@@ -67,7 +67,8 @@ namespace SleepHunter.Macro
 
     protected virtual void Dispose(bool isDisposing)
     {
-      if (isDisposed) return;
+      if (isDisposed)
+        return;
 
       if (isDisposing)
       {
@@ -137,7 +138,8 @@ namespace SleepHunter.Macro
               CheckKnownState();
               MacroLoop(arg);
             }
-            else Thread.Sleep(100);
+            else
+              Thread.Sleep(100);
           }
           finally
           {
@@ -220,12 +222,26 @@ namespace SleepHunter.Macro
     {
       switch (action)
       {
-        case MacroAction.Start: Start(); break;
-        case MacroAction.Resume: Start(); break;
-        case MacroAction.Restart: Stop(); Start(); break;
-        case MacroAction.Pause: Pause(); break;
-        case MacroAction.Stop: Stop(); break;
-        case MacroAction.ForceQuit: Stop(); client.Terminate(); break;
+        case MacroAction.Start:
+          Start();
+          break;
+        case MacroAction.Resume:
+          Start();
+          break;
+        case MacroAction.Restart:
+          Stop();
+          Start();
+          break;
+        case MacroAction.Pause:
+          Pause();
+          break;
+        case MacroAction.Stop:
+          Stop();
+          break;
+        case MacroAction.ForceQuit:
+          Stop();
+          client.Terminate();
+          break;
       }
     }
 

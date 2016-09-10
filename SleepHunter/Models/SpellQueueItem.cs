@@ -7,170 +7,170 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
-   {
-      int id;
-      ImageSource icon;
-      string name;
-      SpellTarget target = new SpellTarget();
-      DateTime lastUsedTimestamp;
-      int startingLevel;
-      int currentLevel;
-      int maximumLevel;
-      int? targetLevel;
-      bool isUndefined;
-      bool isActive;
+  public sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
+  {
+    int id;
+    ImageSource icon;
+    string name;
+    SpellTarget target = new SpellTarget();
+    DateTime lastUsedTimestamp;
+    int startingLevel;
+    int currentLevel;
+    int maximumLevel;
+    int? targetLevel;
+    bool isUndefined;
+    bool isActive;
 
-      public int Id
+    public int Id
+    {
+      get { return id; }
+      set { SetProperty(ref id, value); }
+    }
+
+    public ImageSource Icon
+    {
+      get { return icon; }
+      set { SetProperty(ref icon, value); }
+    }
+
+    public string Name
+    {
+      get { return name; }
+      set { SetProperty(ref name, value); }
+    }
+
+    public SpellTarget Target
+    {
+      get { return target; }
+      set { SetProperty(ref target, value); }
+    }
+
+    public DateTime LastUsedTimestamp
+    {
+      get { return lastUsedTimestamp; }
+      set { SetProperty(ref lastUsedTimestamp, value); }
+    }
+
+    public int StartingLevel
+    {
+      get { return startingLevel; }
+      set
       {
-         get { return id; }
-         set { SetProperty(ref id, value); }
+        SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged("PercentCompleted"); });
       }
+    }
 
-      public ImageSource Icon
+    public int CurrentLevel
+    {
+      get { return currentLevel; }
+      set
       {
-         get { return icon; }
-         set { SetProperty(ref icon, value); }
+        SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
       }
+    }
 
-      public string Name
+    public int MaximumLevel
+    {
+      get { return maximumLevel; }
+      set
       {
-         get { return name; }
-         set { SetProperty(ref name, value); }
+        SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
       }
+    }
 
-      public SpellTarget Target
+    public int? TargetLevel
+    {
+      get { return targetLevel; }
+      set
       {
-         get { return target; }
-         set { SetProperty(ref target, value); }
+        SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("HasTargetLevel"); RaisePropertyChanged("PercentCompleted"); });
       }
+    }
 
-      public DateTime LastUsedTimestamp
+    public double PercentCompleted
+    {
+      get
       {
-         get { return lastUsedTimestamp; }
-         set { SetProperty(ref lastUsedTimestamp, value); }
-      }
+        if (!HasTargetLevel || CurrentLevel >= TargetLevel.Value)
+          return 100;
 
-      public int StartingLevel
+        return currentLevel * 100.0 / targetLevel.Value;
+      }
+    }
+
+    public bool HasTargetLevel
+    {
+      get { return targetLevel.HasValue; }
+    }
+
+    public bool IsDone
+    {
+      get
       {
-         get { return startingLevel; }
-         set
-         {
-            SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged("PercentCompleted"); });
-         }
+        if (!targetLevel.HasValue)
+          return false;
+
+        return currentLevel >= targetLevel.Value;
       }
+    }
 
-      public int CurrentLevel
-      {
-         get { return currentLevel; }
-         set
-         {
-            SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-         }
-      }
+    public bool IsUndefined
+    {
+      get { return isUndefined; }
+      set { SetProperty(ref isUndefined, value); }
+    }
 
-      public int MaximumLevel
-      {
-         get { return maximumLevel; }
-         set
-         {
-            SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-         }
-      }
+    public bool IsActive
+    {
+      get { return isActive; }
+      set { SetProperty(ref isActive, value); }
+    }
 
-      public int? TargetLevel
-      {
-         get { return targetLevel; }
-         set
-         {
-            SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("HasTargetLevel"); RaisePropertyChanged("PercentCompleted"); });
-         }
-      }
+    public SpellQueueItem() { }
 
-      public double PercentCompleted
-      {
-         get
-         {
-            if (!HasTargetLevel || CurrentLevel >= TargetLevel.Value)
-               return 100;
+    public SpellQueueItem(Spell spellInfo, SavedSpellState spell)
+    {
+      Icon = spellInfo.Icon;
+      Name = spell.SpellName;
+      Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
+      Target.CharacterName = spell.CharacterName;
+      Target.OuterRadius = spell.OuterRadius;
+      Target.InnerRadius = spell.InnerRadius;
+      TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
 
-            return currentLevel * 100.0 / targetLevel.Value;
-         }
-      }
+      CurrentLevel = spellInfo.CurrentLevel;
+      MaximumLevel = spellInfo.MaximumLevel;
+    }
 
-      public bool HasTargetLevel
-      {
-         get { return targetLevel.HasValue; }
-      }
+    public void CopyTo(SpellQueueItem other)
+    {
+      CopyTo(other, true, false);
+    }
 
-      public bool IsDone
-      {
-         get
-         {
-            if (!targetLevel.HasValue)
-               return false;
+    public void CopyTo(SpellQueueItem other, bool copyId)
+    {
+      CopyTo(other, copyId, false);
+    }
 
-            return currentLevel >= targetLevel.Value;
-         }
-      }
+    public void CopyTo(SpellQueueItem other, bool copyId = true, bool copyTimestamp = false)
+    {
+      if (copyId)
+        other.Id = Id;
 
-      public bool IsUndefined
-      {
-         get { return isUndefined; }
-         set { SetProperty(ref isUndefined, value); }
-      }
+      other.Icon = Icon;
+      other.Name = Name;
+      other.Target = Target;
+      other.StartingLevel = StartingLevel;
+      other.CurrentLevel = CurrentLevel;
+      other.MaximumLevel = MaximumLevel;
+      other.TargetLevel = TargetLevel;
+      other.IsUndefined = IsUndefined;
+      other.IsActive = IsActive;
+    }
 
-      public bool IsActive
-      {
-         get { return isActive; }
-         set { SetProperty(ref isActive, value); }
-      }
-
-      public SpellQueueItem() { }
-
-      public SpellQueueItem(Spell spellInfo, SavedSpellState spell)
-      {
-         Icon = spellInfo.Icon;
-         Name = spell.SpellName;
-         Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
-         Target.CharacterName = spell.CharacterName;
-         Target.OuterRadius = spell.OuterRadius;
-         Target.InnerRadius = spell.InnerRadius;
-         TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
-
-         CurrentLevel = spellInfo.CurrentLevel;
-         MaximumLevel = spellInfo.MaximumLevel;
-      }
-
-      public void CopyTo(SpellQueueItem other)
-      {
-         CopyTo(other, true, false);
-      }
-
-      public void CopyTo(SpellQueueItem other, bool copyId)
-      {
-         CopyTo(other, copyId, false);
-      }
-
-      public void CopyTo(SpellQueueItem other, bool copyId = true, bool copyTimestamp = false)
-      {
-         if (copyId)
-            other.Id = Id;
-
-         other.Icon = Icon;
-         other.Name = Name;
-         other.Target = Target;
-         other.StartingLevel = StartingLevel;
-         other.CurrentLevel = CurrentLevel;
-         other.MaximumLevel = MaximumLevel;
-         other.TargetLevel = TargetLevel;
-         other.IsUndefined = IsUndefined;
-         other.IsActive = IsActive;
-      }
-
-      public override string ToString()
-      {
-         return string.Format("{0} on {1}", name, target.ToString());
-      }
-   }
+    public override string ToString()
+    {
+      return string.Format("{0} on {1}", name, target.ToString());
+    }
+  }
 }

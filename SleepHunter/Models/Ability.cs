@@ -6,170 +6,170 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    public delegate void AbilityCallback(Ability ability);
+  public delegate void AbilityCallback(Ability ability);
 
-   public abstract class Ability : ObservableObject
-   {
-      static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
+  public abstract class Ability : ObservableObject
+  {
+    static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
 
-      bool isEmpty;
-      int slot;
-      InterfacePanel panel;
-      string name;
-      int iconIndex;
-      ImageSource icon;
-      TimeSpan cooldown;
-      bool isOnCooldown;
-      int currentLevel;
-      int maximumLevel;
-      int numberOfLines;
-      int manaCost;
-      bool canImprove;
-      bool isActive;
+    bool isEmpty;
+    int slot;
+    InterfacePanel panel;
+    string name;
+    int iconIndex;
+    ImageSource icon;
+    TimeSpan cooldown;
+    bool isOnCooldown;
+    int currentLevel;
+    int maximumLevel;
+    int numberOfLines;
+    int manaCost;
+    bool canImprove;
+    bool isActive;
 
-      public bool IsEmpty
+    public bool IsEmpty
+    {
+      get { return isEmpty; }
+      set { SetProperty(ref isEmpty, value); }
+    }
+
+    public int Slot
+    {
+      get { return slot; }
+      set
       {
-         get { return isEmpty; }
-         set { SetProperty(ref isEmpty, value); }
+        SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged("RelativeSlot"); });
       }
+    }
 
-      public int Slot
+    public int RelativeSlot
+    {
+      get { return slot % 36; }
+    }
+
+    public InterfacePanel Panel
+    {
+      get { return panel; }
+      set
       {
-         get { return slot; }
-         set
-         {
-            SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged("RelativeSlot"); });
-         }
+        SetProperty(ref panel, value, onChanged: (s) => { RaisePropertyChanged("IsSkill"); RaisePropertyChanged("IsSpell"); });
       }
+    }
 
-      public int RelativeSlot
-      {
-         get { return slot % 36; }
-      }
+    public bool IsSkill
+    {
+      get { return panel.IsSkillPanel(); }
+    }
 
-      public InterfacePanel Panel
-      {
-         get { return panel; }
-         set
-         {
-            SetProperty(ref panel, value, onChanged: (s) => { RaisePropertyChanged("IsSkill"); RaisePropertyChanged("IsSpell"); });
-         }
-      }
+    public bool IsSpell
+    {
+      get { return panel.IsSpellPanel(); }
+    }
 
-      public bool IsSkill
-      {
-         get { return panel.IsSkillPanel(); }
-      }
+    public bool IsActive
+    {
+      get { return isActive; }
+      set { SetProperty(ref isActive, value); }
+    }
 
-      public bool IsSpell
-      {
-         get { return panel.IsSpellPanel(); }
-      }
+    public string Name
+    {
+      get { return name; }
+      set { SetProperty(ref name, value); }
+    }
 
-      public bool IsActive
-      {
-         get { return isActive; }
-         set { SetProperty(ref isActive, value); }
-      }
+    public int IconIndex
+    {
+      get { return iconIndex; }
+      set { SetProperty(ref iconIndex, value); }
+    }
 
-      public string Name
-      {
-         get { return name; }
-         set { SetProperty(ref name, value); }
-      }
+    public ImageSource Icon
+    {
+      get { return icon; }
+      set { SetProperty(ref icon, value); }
+    }
 
-      public int IconIndex
-      {
-         get { return iconIndex; }
-         set { SetProperty(ref iconIndex, value); }
-      }
+    public bool IsOnCooldown
+    {
+      get { return isOnCooldown; }
+      set { SetProperty(ref isOnCooldown, value); }
+    }
 
-      public ImageSource Icon
-      {
-         get { return icon; }
-         set { SetProperty(ref icon, value); }
-      }
+    public TimeSpan Cooldown
+    {
+      get { return cooldown; }
+      set { SetProperty(ref cooldown, value); }
+    }
 
-      public bool IsOnCooldown
-      {
-         get { return isOnCooldown; }
-         set { SetProperty(ref isOnCooldown, value); }
-      }
+    public int CurrentLevel
+    {
+      get { return currentLevel; }
+      set { SetProperty(ref currentLevel, value); }
+    }
 
-      public TimeSpan Cooldown
-      {
-         get { return cooldown; }
-         set { SetProperty(ref cooldown, value); }
-      }
+    public int MaximumLevel
+    {
+      get { return maximumLevel; }
+      set { SetProperty(ref maximumLevel, value); }
+    }
 
-      public int CurrentLevel
-      {
-         get { return currentLevel; }
-         set { SetProperty(ref currentLevel, value); }
-      }
+    public int NumberOfLines
+    {
+      get { return numberOfLines; }
+      set { SetProperty(ref numberOfLines, value); }
+    }
 
-      public int MaximumLevel
-      {
-         get { return maximumLevel; }
-         set { SetProperty(ref maximumLevel, value); }
-      }
+    public int ManaCost
+    {
+      get { return manaCost; }
+      set { SetProperty(ref manaCost, value); }
+    }
 
-      public int NumberOfLines
-      {
-         get { return numberOfLines; }
-         set { SetProperty(ref numberOfLines, value); }
-      }
+    public bool CanImprove
+    {
+      get { return canImprove; }
+      set { SetProperty(ref canImprove, value); }
+    }
 
-      public int ManaCost
-      {
-         get { return manaCost; }
-         set { SetProperty(ref manaCost, value); }
-      }
+    public static InterfacePanel GetSkillPanelForSlot(int slot)
+    {
+      if (slot <= 36)
+        return InterfacePanel.TemuairSkills;
 
-      public bool CanImprove
-      {
-         get { return canImprove; }
-         set { SetProperty(ref canImprove, value); }
-      }
+      if (slot <= 72)
+        return InterfacePanel.MedeniaSkills;
 
-      public static InterfacePanel GetSkillPanelForSlot(int slot)
-      {
-         if (slot <= 36)
-            return InterfacePanel.TemuairSkills;
+      return InterfacePanel.WorldSkills;
+    }
 
-         if (slot <= 72)
-            return InterfacePanel.MedeniaSkills;
+    public static InterfacePanel GetSpellPanelForSlot(int slot)
+    {
+      if (slot <= 36)
+        return InterfacePanel.TemuairSpells;
 
-         return InterfacePanel.WorldSkills;
-      }
+      if (slot <= 72)
+        return InterfacePanel.MedeniaSpells;
 
-      public static InterfacePanel GetSpellPanelForSlot(int slot)
-      {
-         if (slot <= 36)
-            return InterfacePanel.TemuairSpells;
+      return InterfacePanel.WorldSpells;
+    }
 
-         if (slot <= 72)
-            return InterfacePanel.MedeniaSpells;
+    public static bool TryParseLevels(string skillSpellText, out string name, out int currentLevel, out int maximumLevel)
+    {
+      name = null;
+      currentLevel = 0;
+      maximumLevel = 0;
 
-         return InterfacePanel.WorldSpells;
-      }
-      
-      public static bool TryParseLevels(string skillSpellText, out string name, out int currentLevel, out int maximumLevel)
-      {
-         name = null;
-         currentLevel = 0;
-         maximumLevel = 0;
+      var match = TrimLevelRegex.Match(skillSpellText);
 
-         var match = TrimLevelRegex.Match(skillSpellText);
+      if (!match.Success)
+        return false;
 
-         if (!match.Success)
-            return false;
+      name = match.Groups["name"].Value.Trim();
+      int.TryParse(match.Groups["current"].Value, out currentLevel);
+      int.TryParse(match.Groups["max"].Value, out maximumLevel);
 
-         name = match.Groups["name"].Value.Trim();
-         int.TryParse(match.Groups["current"].Value, out currentLevel);
-         int.TryParse(match.Groups["max"].Value, out maximumLevel);
-
-         return true;
-      }
-   }
+      return true;
+    }
+  }
 }

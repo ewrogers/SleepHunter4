@@ -6,174 +6,174 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
-   {
-      int id;
-      SpellTarget target = new SpellTarget();
-      DateTime lastUsedTimestamp = DateTime.Now;
-      TimeSpan? interval;
-      TimeSpan intervalRemaining;
-      int? manaThreshold;
+  public sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
+  {
+    int id;
+    SpellTarget target = new SpellTarget();
+    DateTime lastUsedTimestamp = DateTime.Now;
+    TimeSpan? interval;
+    TimeSpan intervalRemaining;
+    int? manaThreshold;
 
-      public int Id
+    public int Id
+    {
+      get { return id; }
+      set { SetProperty(ref id, value); }
+    }
+
+    public SpellTarget Target
+    {
+      get { return target; }
+      set { SetProperty(ref target, value); }
+    }
+
+    public DateTime LastUsedTimestamp
+    {
+      get { return lastUsedTimestamp; }
+      set
       {
-         get { return id; }
-         set { SetProperty(ref id, value); }
+        SetProperty(ref lastUsedTimestamp, value);
+        Tick();
       }
+    }
 
-      public SpellTarget Target
+    public double IntervalSeconds
+    {
+      get { return interval.HasValue ? interval.Value.TotalSeconds : 0; }
+    }
+
+    public TimeSpan? Interval
+    {
+      get { return interval; }
+      set
       {
-         get { return target; }
-         set { SetProperty(ref target, value); }
-      }
+        var originalTime = interval.HasValue ? interval.Value : TimeSpan.Zero;
+        var newTime = value.HasValue ? value.Value : TimeSpan.Zero;
 
-      public DateTime LastUsedTimestamp
+        var deltaTime = originalTime - newTime;
+
+        SetProperty(ref interval, value, onChanged: (s) => { RaisePropertyChanged("IntervalSeconds"); Tick(deltaTime); });
+      }
+    }
+
+    public TimeSpan ElapsedTime
+    {
+      get
       {
-         get { return lastUsedTimestamp; }
-         set
-         {
-            SetProperty(ref lastUsedTimestamp, value);
-            Tick();
-         }
+        if (interval.HasValue)
+          return interval.Value - intervalRemaining;
+        else
+          return TimeSpan.Zero;
       }
+    }
 
-      public double IntervalSeconds
+    public double ElapsedTimeSeconds
+    {
+      get { return ElapsedTime.TotalSeconds; }
+    }
+
+    public TimeSpan RemainingTime
+    {
+      get
       {
-         get { return interval.HasValue ? interval.Value.TotalSeconds : 0; }
-      }
+        if (!interval.HasValue)
+          return TimeSpan.Zero;
 
-      public TimeSpan? Interval
+        var elapsed = ElapsedTime;
+        var remaining = interval.Value - elapsed;
+
+        if (remaining <= TimeSpan.Zero)
+          return TimeSpan.Zero;
+
+        return remaining;
+      }
+    }
+
+    public double RemainingTimeSeconds
+    {
+      get { return RemainingTime.TotalSeconds; }
+    }
+
+    public bool IsReady
+    {
+      get
       {
-         get { return interval; }
-         set
-         {
-            var originalTime = interval.HasValue ? interval.Value : TimeSpan.Zero;
-            var newTime = value.HasValue ? value.Value : TimeSpan.Zero;
-
-            var deltaTime = originalTime - newTime;
-
-            SetProperty(ref interval, value, onChanged: (s) => { RaisePropertyChanged("IntervalSeconds"); Tick(deltaTime); });
-         }
+        if (interval.HasValue)
+          return RemainingTime <= TimeSpan.Zero;
+        else
+          return false;
       }
+    }
 
-      public TimeSpan ElapsedTime
-      {
-         get
-         {
-            if (interval.HasValue)
-               return interval.Value - intervalRemaining;
-            else
-               return TimeSpan.Zero;
-         }
-      }
+    public int? ManaThreshold
+    {
+      get { return manaThreshold; }
+      set { SetProperty(ref manaThreshold, value); }
+    }
 
-      public double ElapsedTimeSeconds
-      {
-         get { return ElapsedTime.TotalSeconds; }
-      }
+    public FlowerQueueItem() { }
 
-      public TimeSpan RemainingTime
-      {
-         get
-         {
-            if (!interval.HasValue)
-               return TimeSpan.Zero;
+    public FlowerQueueItem(SavedFlowerState flower)
+    {
+      Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
+      Target.CharacterName = flower.CharacterName;
+      Target.OuterRadius = flower.OuterRadius;
+      Target.InnerRadius = flower.InnerRadius;
 
-            var elapsed = ElapsedTime;
-            var remaining = interval.Value - elapsed;
+      Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
+      ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;
+    }
 
-            if (remaining <= TimeSpan.Zero)
-               return TimeSpan.Zero;
+    public void ResetTimer()
+    {
+      if (interval.HasValue)
+        intervalRemaining = interval.Value;
+      else
+        intervalRemaining = TimeSpan.Zero;
+    }
 
-            return remaining;
-         }
-      }
+    public void Tick()
+    {
+      Tick(TimeSpan.Zero);
+    }
 
-      public double RemainingTimeSeconds
-      {
-         get { return RemainingTime.TotalSeconds; }
-      }
+    public void Tick(TimeSpan deltaTime)
+    {
+      intervalRemaining -= deltaTime;
 
-      public bool IsReady
-      {
-         get
-         {
-            if (interval.HasValue)
-               return RemainingTime <= TimeSpan.Zero;
-            else
-               return false;
-         }
-      }
+      RaisePropertyChanged("ElapsedTime");
+      RaisePropertyChanged("ElapsedTimeSeconds");
+      RaisePropertyChanged("RemainingTime");
+      RaisePropertyChanged("RemainingTimeSeconds");
+      RaisePropertyChanged("IsReady");
+    }
 
-      public int? ManaThreshold
-      {
-         get { return manaThreshold; }
-         set { SetProperty(ref manaThreshold, value); }
-      }
+    public void CopyTo(FlowerQueueItem other)
+    {
+      CopyTo(other, true);
+    }
 
-      public FlowerQueueItem() { }
+    public void CopyTo(FlowerQueueItem other, bool copyId)
+    {
+      CopyTo(other, copyId, false);
+    }
 
-      public FlowerQueueItem(SavedFlowerState flower)
-      {
-         Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
-         Target.CharacterName = flower.CharacterName;
-         Target.OuterRadius = flower.OuterRadius;
-         Target.InnerRadius = flower.InnerRadius;
+    public void CopyTo(FlowerQueueItem other, bool copyId = true, bool copyTimestamp = false)
+    {
+      if (copyId)
+        other.Id = Id;
 
-         Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
-         ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;
-      }
+      other.Target = Target;
+      other.Interval = Interval;
+      other.ManaThreshold = ManaThreshold;
 
-      public void ResetTimer()
-      {
-         if (interval.HasValue)
-            intervalRemaining = interval.Value;
-         else
-            intervalRemaining = TimeSpan.Zero;
-      }
+      if (copyTimestamp)
+        other.LastUsedTimestamp = LastUsedTimestamp;
+    }
 
-      public void Tick()
-      {
-         Tick(TimeSpan.Zero);
-      }
-
-      public void Tick(TimeSpan deltaTime)
-      {
-         intervalRemaining -= deltaTime;
-         
-         RaisePropertyChanged("ElapsedTime");
-         RaisePropertyChanged("ElapsedTimeSeconds");
-         RaisePropertyChanged("RemainingTime");
-         RaisePropertyChanged("RemainingTimeSeconds");
-         RaisePropertyChanged("IsReady");
-      }
-
-      public void CopyTo(FlowerQueueItem other)
-      {
-         CopyTo(other, true);
-      }
-
-      public void CopyTo(FlowerQueueItem other, bool copyId)
-      {
-         CopyTo(other, copyId, false);
-      }
-
-      public void CopyTo(FlowerQueueItem other, bool copyId = true, bool copyTimestamp = false)
-      {
-         if (copyId)
-            other.Id = Id;
-
-         other.Target = Target;
-         other.Interval = Interval;
-         other.ManaThreshold = ManaThreshold;
-
-         if (copyTimestamp)
-            other.LastUsedTimestamp = LastUsedTimestamp;
-      }
-
-      public override string ToString()
-      {
-         return string.Format("Flowering on {0}", target.ToString());
-      }
-   }
+    public override string ToString()
+    {
+      return string.Format("Flowering on {0}", target.ToString());
+    }
+  }
 }

@@ -7,95 +7,95 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
 {
-    [Serializable]
-   public sealed class SpellMetadata : ObservableObject
+  [Serializable]
+  public sealed class SpellMetadata : ObservableObject
+  {
+    string name;
+    PlayerClass playerClass;
+    string groupName;
+    int manaCost;
+    int numberOfLines;
+    TimeSpan cooldown;
+    bool canImprove = true;
+
+    [XmlAttribute("Name")]
+    public string Name
     {
-      string name;
-      PlayerClass playerClass;
-      string groupName;
-      int manaCost;
-      int numberOfLines;
-      TimeSpan cooldown;
-      bool canImprove = true;
+      get { return name; }
+      set { SetProperty(ref name, value); }
+    }
 
-      [XmlAttribute("Name")]
-      public string Name
-      {
-         get { return name; }
-         set { SetProperty(ref name, value); }
-      }
+    [XmlAttribute("Class")]
+    [DefaultValue(PlayerClass.Peasant)]
+    public PlayerClass Class
+    {
+      get { return playerClass; }
+      set { SetProperty(ref playerClass, value); }
+    }
 
-      [XmlAttribute("Class")]
-      [DefaultValue(PlayerClass.Peasant)]
-      public PlayerClass Class
-      {
-         get { return playerClass; }
-         set { SetProperty(ref playerClass, value); }
-      }
+    [XmlAttribute("Group")]
+    [DefaultValue(null)]
+    public string GroupName
+    {
+      get { return groupName; }
+      set { SetProperty(ref groupName, value); }
+    }
 
-      [XmlAttribute("Group")]
-      [DefaultValue(null)]
-      public string GroupName
-      {
-         get { return groupName; }
-         set { SetProperty(ref groupName, value); }
-      }
+    [XmlAttribute("Mana")]
+    [DefaultValue(0)]
+    public int ManaCost
+    {
+      get { return manaCost; }
+      set { SetProperty(ref manaCost, value); }
+    }
 
-      [XmlAttribute("Mana")]
-      [DefaultValue(0)]
-      public int ManaCost
-      {
-         get { return manaCost; }
-         set { SetProperty(ref manaCost, value); }
-      }
+    [XmlAttribute("Lines")]
+    [DefaultValue(0)]
+    public int NumberOfLines
+    {
+      get { return numberOfLines; }
+      set { SetProperty(ref numberOfLines, value); }
+    }
 
-      [XmlAttribute("Lines")]
-      [DefaultValue(0)]
-      public int NumberOfLines
-      {
-         get { return numberOfLines; }
-         set { SetProperty(ref numberOfLines, value); }
-      }
+    [XmlIgnore]
+    public TimeSpan Cooldown
+    {
+      get { return cooldown; }
+      set { SetProperty(ref cooldown, value); }
+    }
 
-      [XmlIgnore]
-      public TimeSpan Cooldown
-      {
-         get { return cooldown; }
-         set { SetProperty(ref cooldown, value); }
-      }
+    [XmlAttribute("Cooldown")]
+    [DefaultValue(0.0)]
+    public double CooldownSeconds
+    {
+      get { return cooldown.TotalSeconds; }
+      set { Cooldown = TimeSpan.FromSeconds(value); }
+    }
 
-      [XmlAttribute("Cooldown")]
-      [DefaultValue(0.0)]
-      public double CooldownSeconds
-      {
-         get { return cooldown.TotalSeconds; }
-         set { Cooldown = TimeSpan.FromSeconds(value); }
-      }
+    [XmlAttribute("CanImprove")]
+    [DefaultValue(true)]
+    public bool CanImprove
+    {
+      get { return canImprove; }
+      set { SetProperty(ref canImprove, value); }
+    }
 
-      [XmlAttribute("CanImprove")]
-      [DefaultValue(true)]
-      public bool CanImprove
-      {
-         get { return canImprove; }
-         set { SetProperty(ref canImprove, value); }
-      }
+    public SpellMetadata() { }
 
-      public SpellMetadata() { }
-  
-      public override string ToString()
-      {
-         return Name ?? "Unknown Spell";
-      }
+    public override string ToString()
+    {
+      return Name ?? "Unknown Spell";
+    }
 
-      public void CopyTo(SpellMetadata other)
-      {
-         other.Name = Name;
-         other.Class = Class;
-         other.GroupName = GroupName;
-         other.ManaCost = ManaCost;
-         other.NumberOfLines = NumberOfLines;
-         other.Cooldown = Cooldown;         
-         other.CanImprove = CanImprove;
-      }
-   }
+    public void CopyTo(SpellMetadata other)
+    {
+      other.Name = Name;
+      other.Class = Class;
+      other.GroupName = GroupName;
+      other.ManaCost = ManaCost;
+      other.NumberOfLines = NumberOfLines;
+      other.Cooldown = Cooldown;
+      other.CanImprove = CanImprove;
+    }
+  }
 }

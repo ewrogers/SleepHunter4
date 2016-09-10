@@ -4,83 +4,84 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    public sealed class RenderManager
-   {  
-      #region Singleton
-      static readonly RenderManager instance = new RenderManager();
+  public sealed class RenderManager
+  {
+    #region Singleton
+    static readonly RenderManager instance = new RenderManager();
 
-      public static RenderManager Instance { get { return instance; } }
+    public static RenderManager Instance { get { return instance; } }
 
-      private RenderManager() { }
-      #endregion
-      
-      public IEnumerable<RenderedBitmap> Render(EpfImage image, ColorPalette palette)
-      {
-         if (image == null)
-            throw new ArgumentNullException("image");
+    private RenderManager() { }
+    #endregion
 
-         if (palette == null)
-            throw new ArgumentNullException("palette");
+    public IEnumerable<RenderedBitmap> Render(EpfImage image, ColorPalette palette)
+    {
+      if (image == null)
+        throw new ArgumentNullException("image");
 
-         foreach (var frame in image.Frames)
-            yield return Render(frame, palette);
-      }
+      if (palette == null)
+        throw new ArgumentNullException("palette");
 
-      public RenderedBitmap Render(EpfFrame frame, ColorPalette palette)
-      {
-         if (frame == null)
-            throw new ArgumentNullException("frame");
+      foreach (var frame in image.Frames)
+        yield return Render(frame, palette);
+    }
 
-         if (palette == null)
-            throw new ArgumentNullException("palette");
+    public RenderedBitmap Render(EpfFrame frame, ColorPalette palette)
+    {
+      if (frame == null)
+        throw new ArgumentNullException("frame");
 
-         palette = palette.MakeGrayscale();
-         var format = PixelFormats.Bgra32;
-    
-         var width = frame.Width;
-         var height = frame.Height;
-         var stride = (width * 4) + (width % 4);
+      if (palette == null)
+        throw new ArgumentNullException("palette");
 
-         var bits = new byte[height * stride];
+      palette = palette.MakeGrayscale();
+      var format = PixelFormats.Bgra32;
 
-         for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-            {
-               var fixedX = x;
-               var fixedY = y;
+      var width = frame.Width;
+      var height = frame.Height;
+      var stride = (width * 4) + (width % 4);
 
-               var threshold = 12;
+      var bits = new byte[height * stride];
 
-               if (fixedX < threshold)
-               {
-                  if (width >= threshold)
-                     fixedX = width - (threshold - fixedX);
+      for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+        {
+          var fixedX = x;
+          var fixedY = y;
 
-                  if (fixedY > 0)
-                     fixedY--;
-               }
-               else fixedX -= threshold;
+          var threshold = 12;
 
-               var pixel = frame.RawData[x + y * width];
+          if (fixedX < threshold)
+          {
+            if (width >= threshold)
+              fixedX = width - (threshold - fixedX);
 
-               if (pixel > 0)
-                  SetPixel(bits, fixedX, fixedY, stride, palette[pixel]);
-               else
-                  SetPixel(bits, fixedX, fixedY, stride, Colors.Transparent);
-            }
+            if (fixedY > 0)
+              fixedY--;
+          }
+          else
+            fixedX -= threshold;
 
-         var bitmap = new RenderedBitmap(width, height, stride, format, bits);
-         return bitmap;
-      }
+          var pixel = frame.RawData[x + y * width];
 
-      static void SetPixel(byte[] bits, int x, int y, int stride, Color c)
-      {
-         var i = (x * 4) + (y * stride);
+          if (pixel > 0)
+            SetPixel(bits, fixedX, fixedY, stride, palette[pixel]);
+          else
+            SetPixel(bits, fixedX, fixedY, stride, Colors.Transparent);
+        }
 
-         bits[i] = c.B;
-         bits[i + 1] = c.G;
-         bits[i + 2] = c.R;
-         bits[i + 3] = c.A;
-      }
-   }
+      var bitmap = new RenderedBitmap(width, height, stride, format, bits);
+      return bitmap;
+    }
+
+    static void SetPixel(byte[] bits, int x, int y, int stride, Color c)
+    {
+      var i = (x * 4) + (y * stride);
+
+      bits[i] = c.B;
+      bits[i + 1] = c.G;
+      bits[i + 2] = c.R;
+      bits[i + 3] = c.A;
+    }
+  }
 }

@@ -7,171 +7,171 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    public sealed class SpellMetadataManager
-   {
-      public static readonly string SpellMetadataFile = @"Spells.xml";
+  public sealed class SpellMetadataManager
+  {
+    public static readonly string SpellMetadataFile = @"Spells.xml";
 
-      #region Singleton
-      static readonly SpellMetadataManager instance = new SpellMetadataManager();
+    #region Singleton
+    static readonly SpellMetadataManager instance = new SpellMetadataManager();
 
-      public static SpellMetadataManager Instance { get { return instance; } }
+    public static SpellMetadataManager Instance { get { return instance; } }
 
-      private SpellMetadataManager() { }
-      #endregion
+    private SpellMetadataManager() { }
+    #endregion
 
-      ConcurrentDictionary<string, SpellMetadata> spells = new ConcurrentDictionary<string, SpellMetadata>(StringComparer.OrdinalIgnoreCase);
+    ConcurrentDictionary<string, SpellMetadata> spells = new ConcurrentDictionary<string, SpellMetadata>(StringComparer.OrdinalIgnoreCase);
 
-      public event SpellMetadataEventHandler SpellAdded;
-      public event SpellMetadataEventHandler SpellChanged;
-      public event SpellMetadataEventHandler SpellRemoved;
+    public event SpellMetadataEventHandler SpellAdded;
+    public event SpellMetadataEventHandler SpellChanged;
+    public event SpellMetadataEventHandler SpellRemoved;
 
-      #region Collection Properties
-      public int Count { get { return spells.Count; } }
+    #region Collection Properties
+    public int Count { get { return spells.Count; } }
 
-      public IEnumerable<SpellMetadata> Spells
+    public IEnumerable<SpellMetadata> Spells
+    {
+      get { return from s in spells.Values orderby s.Name select s; }
+    }
+    #endregion
+
+    #region Collection Methods
+    public void AddSpell(SpellMetadata spell)
+    {
+      if (spell == null)
+        throw new ArgumentNullException("spell");
+
+      string spellName = spell.Name.Trim();
+      bool wasUpdated = false;
+
+      if (spells.ContainsKey(spellName))
+        wasUpdated = true;
+
+      spells[spellName] = spell;
+
+      if (wasUpdated)
+        OnSpellChanged(spell);
+      else
+        OnSpellAdded(spell);
+    }
+
+    public bool ContainsSpell(string spellName)
+    {
+      spellName = spellName.Trim();
+
+      return spells.ContainsKey(spellName);
+    }
+
+    public SpellMetadata GetSpell(string spellName)
+    {
+      spellName = spellName.Trim();
+
+      SpellMetadata spell;
+      spells.TryGetValue(spellName, out spell);
+
+      return spell;
+    }
+
+    public bool RemoveSpell(string spellName)
+    {
+      spellName = spellName.Trim();
+
+      SpellMetadata removedSpell;
+
+      var wasRemoved = spells.TryRemove(spellName, out removedSpell);
+
+      if (wasRemoved)
+        OnSpellRemoved(removedSpell);
+
+      return wasRemoved;
+    }
+
+    public bool RenameSpell(string originalName, string newName)
+    {
+      SpellMetadata spell = null;
+      var wasFound = spells.TryRemove(originalName, out spell);
+
+      if (wasFound)
       {
-         get { return from s in spells.Values orderby s.Name select s; }
-      }
-      #endregion
-
-      #region Collection Methods
-      public void AddSpell(SpellMetadata spell)
-      {
-         if (spell == null)
-            throw new ArgumentNullException("spell");
-
-         string spellName = spell.Name.Trim();
-         bool wasUpdated = false;
-
-         if (spells.ContainsKey(spellName))
-            wasUpdated = true;
-
-         spells[spellName] = spell;
-
-         if (wasUpdated)
-            OnSpellChanged(spell);
-         else
-            OnSpellAdded(spell);
-      }
-
-      public bool ContainsSpell(string spellName)
-      {
-         spellName = spellName.Trim();
-
-         return spells.ContainsKey(spellName);
-      }
-
-      public SpellMetadata GetSpell(string spellName)
-      {
-         spellName = spellName.Trim();
-
-         SpellMetadata spell;
-         spells.TryGetValue(spellName, out spell);
-
-         return spell;
-      }
-
-      public bool RemoveSpell(string spellName)
-      {
-         spellName = spellName.Trim();
-
-         SpellMetadata removedSpell;
-
-         var wasRemoved = spells.TryRemove(spellName, out removedSpell);
-
-         if (wasRemoved)
-            OnSpellRemoved(removedSpell);
-
-         return wasRemoved;
-      }
-
-      public bool RenameSpell(string originalName, string newName)
-      {
-         SpellMetadata spell = null;
-         var wasFound = spells.TryRemove(originalName, out spell);
-
-         if (wasFound)
-         {
-            OnSpellRemoved(spell);
-            spells[newName] = spell;
-            OnSpellAdded(spell);
-         }
-
-         return wasFound;
+        OnSpellRemoved(spell);
+        spells[newName] = spell;
+        OnSpellAdded(spell);
       }
 
-      public void ClearSpells()
+      return wasFound;
+    }
+
+    public void ClearSpells()
+    {
+      foreach (var spell in spells.Values)
+        OnSpellRemoved(spell);
+
+      spells.Clear();
+    }
+    #endregion
+
+    #region File Load/Save Methods
+    public void LoadFromFile(string filename)
+    {
+      using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
       {
-         foreach (var spell in spells.Values)
-            OnSpellRemoved(spell);
-
-         spells.Clear();
+        LoadFromStream(inputStream);
       }
-      #endregion
+    }
 
-      #region File Load/Save Methods
-      public void LoadFromFile(string filename)
+    public void LoadFromStream(Stream stream)
+    {
+      var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
+      var collection = serializer.Deserialize(stream) as SpellMetadataCollection;
+
+      if (collection != null)
+        foreach (var spell in collection.Spells)
+          AddSpell(spell);
+    }
+
+    public void SaveToFile(string filename)
+    {
+      using (var outputStream = File.Create(filename))
       {
-         using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-         {
-            LoadFromStream(inputStream);
-         }
+        SaveToStream(outputStream);
+        outputStream.Flush();
       }
+    }
 
-      public void LoadFromStream(Stream stream)
-      {
-         var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
-         var collection = serializer.Deserialize(stream) as SpellMetadataCollection;
+    public void SaveToStream(Stream stream)
+    {
+      var collection = new SpellMetadataCollection(this.Spells);
+      var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
+      var namespaces = new XmlSerializerNamespaces();
+      namespaces.Add("", "");
 
-         if (collection != null)
-            foreach (var spell in collection.Spells)
-               AddSpell(spell);
-      }
+      serializer.Serialize(stream, collection, namespaces);
+    }
+    #endregion
 
-      public void SaveToFile(string filename)
-      {
-         using (var outputStream = File.Create(filename))
-         {
-            SaveToStream(outputStream);
-            outputStream.Flush();
-         }
-      }
+    #region Event Handler Methods
+    void OnSpellAdded(SpellMetadata spell)
+    {
+      var handler = this.SpellAdded;
 
-      public void SaveToStream(Stream stream)
-      {
-         var collection = new SpellMetadataCollection(this.Spells);
-         var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
-         var namespaces = new XmlSerializerNamespaces();
-         namespaces.Add("", "");
+      if (handler != null)
+        handler(this, new SpellMetadataEventArgs(spell));
+    }
 
-         serializer.Serialize(stream, collection, namespaces);
-      }
-      #endregion
+    void OnSpellChanged(SpellMetadata spell)
+    {
+      var handler = this.SpellChanged;
 
-      #region Event Handler Methods
-      void OnSpellAdded(SpellMetadata spell)
-      {
-         var handler = this.SpellAdded;
+      if (handler != null)
+        handler(this, new SpellMetadataEventArgs(spell));
+    }
 
-         if (handler != null)
-            handler(this, new SpellMetadataEventArgs(spell));
-      }
+    void OnSpellRemoved(SpellMetadata spell)
+    {
+      var handler = this.SpellRemoved;
 
-      void OnSpellChanged(SpellMetadata spell)
-      {
-         var handler = this.SpellChanged;
-
-         if (handler != null)
-            handler(this, new SpellMetadataEventArgs(spell));
-      }
-
-      void OnSpellRemoved(SpellMetadata spell)
-      {
-         var handler = this.SpellRemoved;
-
-         if (handler != null)
-            handler(this, new SpellMetadataEventArgs(spell));
-      }
-      #endregion
-   }
+      if (handler != null)
+        handler(this, new SpellMetadataEventArgs(spell));
+    }
+    #endregion
+  }
 }

@@ -8,171 +8,171 @@ using SleepHunter.Media;
 
 namespace SleepHunter.Settings
 {
-    [Serializable]
-   public sealed class ColorTheme : ObservableObject
+  [Serializable]
+  public sealed class ColorTheme : ObservableObject
+  {
+    string name;
+
+    [NonSerialized]
+    SolidColorBrush background;
+
+    HueSaturationValue backgroundHsv;
+
+    [NonSerialized]
+    SolidColorBrush foreground;
+
+    HueSaturationValue foregroundHsv;
+    bool isDefault;
+
+    [XmlAttribute("Name")]
+    public string Name
     {
-      string name;
+      get { return name; }
+      set { SetProperty(ref name, value); }
+    }
 
-    [NonSerialized]
-      SolidColorBrush background;
-    
-      HueSaturationValue backgroundHsv;
-
-    [NonSerialized]
-      SolidColorBrush foreground;
-
-      HueSaturationValue foregroundHsv;
-      bool isDefault;
-
-      [XmlAttribute("Name")]
-      public string Name
+    [XmlIgnore]
+    public SolidColorBrush Background
+    {
+      get { return background; }
+      set
       {
-         get { return name; }
-         set { SetProperty(ref name, value); }
-      }
+        if (value == null)
+          throw new ArgumentNullException("value");
 
-      [XmlIgnore]
-      public SolidColorBrush Background
+        SetProperty(ref background, value);
+        SetProperty(ref backgroundHsv, new HueSaturationValue(value.Color), "BackgroundHsv");
+      }
+    }
+
+    [XmlAttribute("Background")]
+    public string BackgroundHexColor
+    {
+      get { return background.Color.ToString(); }
+      set
       {
-         get { return background; }
-         set
-         {
-            if (value == null)
-               throw new ArgumentNullException("value");
+        if (value == null)
+          throw new ArgumentNullException("value");
 
-            SetProperty(ref background, value);
-            SetProperty(ref backgroundHsv, new HueSaturationValue(value.Color), "BackgroundHsv");
-         }
+        var color = ColorConverter.ConvertFromString(value);
+
+        if (color is Color)
+          Background = new SolidColorBrush((Color)color);
+        else
+          throw new FormatException("Invalid hex color format.");
       }
+    }
 
-      [XmlAttribute("Background")]
-      public string BackgroundHexColor
+    [XmlIgnore]
+    public byte BackgroundColorRed
+    {
+      get { return background.Color.R; }
+    }
+
+    [XmlIgnore]
+    public byte BackgroundColorGreen
+    {
+      get { return background.Color.G; }
+    }
+
+    [XmlIgnore]
+    public byte BackgroundColorBlue
+    {
+      get { return background.Color.B; }
+    }
+
+    [XmlIgnore]
+    public HueSaturationValue BackgroundHsv
+    {
+      get { return backgroundHsv; }
+    }
+
+    [XmlIgnore]
+    public HueSaturationValue ForegroundHsv
+    {
+      get { return foregroundHsv; }
+    }
+
+    [XmlIgnore]
+    public double BackgroundValue
+    {
+      get { return Math.Max(Math.Max(background.Color.R, background.Color.G), background.Color.B); }
+    }
+
+    [XmlIgnore]
+    public SolidColorBrush Foreground
+    {
+      get { return foreground; }
+      set
       {
-         get { return background.Color.ToString(); }
-         set
-         {
-            if (value == null)
-               throw new ArgumentNullException("value");
+        if (value == null)
+          throw new ArgumentNullException("value");
 
-            var color = ColorConverter.ConvertFromString(value);
-
-            if (color is Color)
-               Background = new SolidColorBrush((Color)color);
-            else
-               throw new FormatException("Invalid hex color format.");
-         }
+        SetProperty(ref foreground, value);
+        SetProperty(ref foregroundHsv, new HueSaturationValue(value.Color), "ForegroundHsv");
       }
+    }
 
-      [XmlIgnore]
-      public byte BackgroundColorRed
+    [XmlAttribute("Foreground")]
+    public string ForegroundHexColor
+    {
+      get { return foreground.Color.ToString(); }
+      set
       {
-         get { return background.Color.R; }
+        if (value == null)
+          throw new ArgumentNullException("value");
+
+        var color = ColorConverter.ConvertFromString(value);
+
+        if (color is Color)
+          Foreground = new SolidColorBrush((Color)color);
+        else
+          throw new FormatException("Invalid hex color format.");
       }
+    }
 
-      [XmlIgnore]
-      public byte BackgroundColorGreen
-      {
-         get { return background.Color.G; }
-      }
+    [XmlAttribute("IsDefault")]
+    [DefaultValue(false)]
+    public bool IsDefault
+    {
+      get { return isDefault; }
+      set { SetProperty(ref isDefault, value); }
+    }
 
-      [XmlIgnore]
-      public byte BackgroundColorBlue
-      {
-         get { return background.Color.B; }
-      }
+    private ColorTheme()
+       : this(string.Empty, Brushes.Black, Brushes.White, false) { }
 
-      [XmlIgnore]
-      public HueSaturationValue BackgroundHsv
-      {
-         get { return backgroundHsv; }
-      }
+    public ColorTheme(string key)
+       : this(key, Brushes.Black, Brushes.White, false) { }
 
-      [XmlIgnore]
-      public HueSaturationValue ForegroundHsv
-      {
-         get { return foregroundHsv; }
-      }
+    public ColorTheme(string name, string backgroundHexColor, string foregroundHexColor, bool isDefault = false)
+    {
+      this.name = name;
+      BackgroundHexColor = backgroundHexColor;
+      ForegroundHexColor = foregroundHexColor;
+      this.isDefault = isDefault;
+    }
 
-      [XmlIgnore]
-      public double BackgroundValue
-      {
-         get { return Math.Max(Math.Max(background.Color.R, background.Color.G), background.Color.B); }
-      }
+    public ColorTheme(string name, SolidColorBrush background, SolidColorBrush foreground, bool isDefault = false)
+    {
+      if (name == null)
+        throw new ArgumentNullException("name");
 
-      [XmlIgnore]
-      public SolidColorBrush Foreground
-      {
-         get { return foreground; }
-         set
-         {
-            if (value == null)
-               throw new ArgumentNullException("value");
+      if (background == null)
+        throw new ArgumentNullException("background");
 
-            SetProperty(ref foreground, value);
-            SetProperty(ref foregroundHsv, new HueSaturationValue(value.Color), "ForegroundHsv");
-         }
-      }
+      if (foreground == null)
+        throw new ArgumentNullException("foreground");
 
-      [XmlAttribute("Foreground")]
-      public string ForegroundHexColor
-      {
-         get { return foreground.Color.ToString(); }
-         set
-         {
-            if (value == null)
-               throw new ArgumentNullException("value");
+      this.name = name;
+      this.background = background;
+      this.foreground = foreground;
+      this.isDefault = isDefault;
+    }
 
-            var color = ColorConverter.ConvertFromString(value);
-
-            if (color is Color)
-               Foreground = new SolidColorBrush((Color)color);
-            else
-               throw new FormatException("Invalid hex color format.");
-         }
-      }
-
-      [XmlAttribute("IsDefault")]
-      [DefaultValue(false)]
-      public bool IsDefault
-      {
-         get { return isDefault; }
-         set { SetProperty(ref isDefault, value); }
-      }
-
-      private ColorTheme()
-         : this(string.Empty, Brushes.Black, Brushes.White, false) { }
-
-      public ColorTheme(string key)
-         : this(key, Brushes.Black, Brushes.White, false) { }
-
-      public ColorTheme(string name, string backgroundHexColor, string foregroundHexColor, bool isDefault = false)
-      {
-         this.name = name;
-         BackgroundHexColor = backgroundHexColor;
-         ForegroundHexColor = foregroundHexColor;
-         this.isDefault = isDefault;
-      }
-
-      public ColorTheme(string name, SolidColorBrush background, SolidColorBrush foreground, bool isDefault = false)
-      {
-         if (name == null)
-            throw new ArgumentNullException("name");
-
-         if (background == null)
-            throw new ArgumentNullException("background");
-
-         if (foreground == null)
-            throw new ArgumentNullException("foreground");
-
-         this.name = name;
-         this.background = background;
-         this.foreground = foreground;
-         this.isDefault = isDefault;
-      }
-
-      public override string ToString()
-      {
-         return Name ?? string.Empty;
-      }
-   }
+    public override string ToString()
+    {
+      return Name ?? string.Empty;
+    }
+  }
 }

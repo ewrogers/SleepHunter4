@@ -15,128 +15,128 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Models
 {
-    public sealed class Spellbook : ObservableObject, IEnumerable<Spell>
-   {
-      static readonly string SpellbookKey = @"Spellbook";
+  public sealed class Spellbook : ObservableObject, IEnumerable<Spell>
+  {
+    static readonly string SpellbookKey = @"Spellbook";
 
-      public static readonly int TemuairSpellCount = 36;
-      public static readonly int MedeniaSpellCount = 36;
-      public static readonly int WorldSpellCount = 18;
+    public static readonly int TemuairSpellCount = 36;
+    public static readonly int MedeniaSpellCount = 36;
+    public static readonly int WorldSpellCount = 18;
 
-      Player owner;
-      List<Spell> spells = new List<Spell>(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
-      ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new ConcurrentDictionary<string, DateTime>();
-      string activeSpell;
+    Player owner;
+    List<Spell> spells = new List<Spell>(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
+    ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new ConcurrentDictionary<string, DateTime>();
+    string activeSpell;
 
-      public Player Owner
-      {
-         get { return owner; }
-         set { SetProperty(ref owner, value); }
-      }
+    public Player Owner
+    {
+      get { return owner; }
+      set { SetProperty(ref owner, value); }
+    }
 
-      public int Count { get { return spells.Count((spell) => { return !spell.IsEmpty; }); } }
+    public int Count { get { return spells.Count((spell) => { return !spell.IsEmpty; }); } }
 
-      public IEnumerable<Spell> Spells
-      {
-         get { return from s in spells select s; }
-      }
+    public IEnumerable<Spell> Spells
+    {
+      get { return from s in spells select s; }
+    }
 
-      public IEnumerable<Spell> TemuairSpells
-      {
-         get { return from s in spells where s.Panel == InterfacePanel.TemuairSpells && s.Slot < TemuairSpellCount select s; }
-      }
+    public IEnumerable<Spell> TemuairSpells
+    {
+      get { return from s in spells where s.Panel == InterfacePanel.TemuairSpells && s.Slot < TemuairSpellCount select s; }
+    }
 
-      public IEnumerable<Spell> MedeniaSpells
-      {
-         get { return from s in spells where s.Panel == InterfacePanel.MedeniaSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount) select s; }
-      }
+    public IEnumerable<Spell> MedeniaSpells
+    {
+      get { return from s in spells where s.Panel == InterfacePanel.MedeniaSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount) select s; }
+    }
 
-      public IEnumerable<Spell> WorldSpells
-      {
-         get { return from s in spells where s.Panel == InterfacePanel.WorldSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount + WorldSpellCount) select s; }
-      }
+    public IEnumerable<Spell> WorldSpells
+    {
+      get { return from s in spells where s.Panel == InterfacePanel.WorldSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount + WorldSpellCount) select s; }
+    }
 
-      public string ActiveSpell
-      {
-         get { return activeSpell; }
-         set { SetProperty(ref activeSpell, value); }
-      }
+    public string ActiveSpell
+    {
+      get { return activeSpell; }
+      set { SetProperty(ref activeSpell, value); }
+    }
 
-      public Spellbook()
-         : this(null) { }
+    public Spellbook()
+       : this(null) { }
 
-      public Spellbook(Player owner)
-      {
-         this.owner = owner;
-         InitialzeSpellbook();
-      }
+    public Spellbook(Player owner)
+    {
+      this.owner = owner;
+      InitialzeSpellbook();
+    }
 
-      void InitialzeSpellbook()
-      {
-         spells.Clear();
+    void InitialzeSpellbook()
+    {
+      spells.Clear();
 
-         for (int i = 0; i < spells.Capacity; i++)
-            spells.Add(Spell.MakeEmpty(i + 1));
-      }
+      for (int i = 0; i < spells.Capacity; i++)
+        spells.Add(Spell.MakeEmpty(i + 1));
+    }
 
-      public bool ContainSpell(string spellName)
-      {
-         spellName = spellName.Trim();
+    public bool ContainSpell(string spellName)
+    {
+      spellName = spellName.Trim();
 
-         foreach (var spell in spells)
-            if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
-               return true;
+      foreach (var spell in spells)
+        if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
+          return true;
 
-         return false;
-      }
+      return false;
+    }
 
-      public Spell GetSpell(string spellName)
-      {
-         spellName = spellName.Trim();
+    public Spell GetSpell(string spellName)
+    {
+      spellName = spellName.Trim();
 
-         foreach (var spell in spells)
-            if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
-               return spell;
+      foreach (var spell in spells)
+        if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
+          return spell;
 
-         return null;
-      }
+      return null;
+    }
 
-      public bool IsActive(string spellName)
-      {
-         if (spellName == null)
-            return false;
+    public bool IsActive(string spellName)
+    {
+      if (spellName == null)
+        return false;
 
-         spellName = spellName.Trim();
+      spellName = spellName.Trim();
 
-         return string.Equals(spellName, activeSpell, StringComparison.OrdinalIgnoreCase);
-      }
+      return string.Equals(spellName, activeSpell, StringComparison.OrdinalIgnoreCase);
+    }
 
-      public void SetCooldownTimestamp(string spellName, DateTime timestamp)
-      {
-         spellName = spellName.Trim();
-         spellCooldownTimestamps[spellName] = timestamp;
-      }
+    public void SetCooldownTimestamp(string spellName, DateTime timestamp)
+    {
+      spellName = spellName.Trim();
+      spellCooldownTimestamps[spellName] = timestamp;
+    }
 
-      public bool ClearCooldown(string spellName)
-      {
-         spellName = spellName.Trim();
+    public bool ClearCooldown(string spellName)
+    {
+      spellName = spellName.Trim();
 
-         DateTime timestamp;
-         return spellCooldownTimestamps.TryRemove(spellName, out timestamp);
-      }
+      DateTime timestamp;
+      return spellCooldownTimestamps.TryRemove(spellName, out timestamp);
+    }
 
-      public void ClearAllCooldowns()
-      {
-         spellCooldownTimestamps.Clear();
-      }
+    public void ClearAllCooldowns()
+    {
+      spellCooldownTimestamps.Clear();
+    }
 
-      public void Update()
-      {
-         if (owner == null)
-            throw new InvalidOperationException("Player owner is null, cannot update.");
+    public void Update()
+    {
+      if (owner == null)
+        throw new InvalidOperationException("Player owner is null, cannot update.");
 
-         Update(owner.Accessor);
-      }
+      Update(owner.Accessor);
+    }
 
     public void Update(ProcessMemoryAccessor accessor)
     {
@@ -257,29 +257,29 @@ namespace SleepHunter.Models
       finally { stream?.Dispose(); }
     }
 
-      public void ResetDefaults()
-      {
-         ActiveSpell = null;
+    public void ResetDefaults()
+    {
+      ActiveSpell = null;
 
-         for (int i = 0; i < spells.Capacity; i++)
-         {
-            spells[i].IsEmpty = true;
-            spells[i].Name = null;
-         }
-      }
-
-      #region IEnumerable Methods
-      public IEnumerator<Spell> GetEnumerator()
+      for (int i = 0; i < spells.Capacity; i++)
       {
-         foreach (var spell in spells)
-            if (!spell.IsEmpty)
-               yield return spell;
+        spells[i].IsEmpty = true;
+        spells[i].Name = null;
       }
+    }
 
-      IEnumerator IEnumerable.GetEnumerator()
-      {
-         return GetEnumerator();
-      }
-      #endregion
-   }
+    #region IEnumerable Methods
+    public IEnumerator<Spell> GetEnumerator()
+    {
+      foreach (var spell in spells)
+        if (!spell.IsEmpty)
+          yield return spell;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return GetEnumerator();
+    }
+    #endregion
+  }
 }

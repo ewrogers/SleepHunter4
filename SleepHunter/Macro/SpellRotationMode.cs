@@ -1,10 +1,10 @@
 ﻿
 namespace SleepHunter.Macro
 {
-    public enum SpellRotationMode
-   {
-      None,
-      Singular,
-      RoundRobin
-   }
+  public enum SpellRotationMode
+  {
+    None,
+    Singular,
+    RoundRobin
+  }
 }

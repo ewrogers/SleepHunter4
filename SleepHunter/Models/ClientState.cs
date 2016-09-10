@@ -8,87 +8,87 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class ClientState : ObservableObject
+  public sealed class ClientState : ObservableObject
+  {
+    static readonly string ActivePanelKey = @"ActivePanel";
+    static readonly string InventoryExpandedKey = @"InventoryExpanded";
+    static readonly string MinimizedModeKey = @"MinimizedMode";
+    static readonly string DialogOpenKey = @"DialogOpen";
+    static readonly string SenseOpenKey = @"SenseOpen";
+    static readonly string UserChattingKey = @"UserChatting";
+
+    Player owner;
+    string versionKey;
+    InterfacePanel activePanel;
+    bool isInventoryExpanded;
+    bool isMinimizedMode;
+    bool isDialogOpen;
+    bool isSenseOpen;
+    bool isUserChatting;
+
+    public Player Owner
     {
-      static readonly string ActivePanelKey = @"ActivePanel";
-      static readonly string InventoryExpandedKey = @"InventoryExpanded";
-      static readonly string MinimizedModeKey = @"MinimizedMode";
-      static readonly string DialogOpenKey = @"DialogOpen";
-      static readonly string SenseOpenKey = @"SenseOpen";
-      static readonly string UserChattingKey = @"UserChatting";
+      get { return owner; }
+      set { SetProperty(ref owner, value); }
+    }
 
-      Player owner;
-      string versionKey;
-      InterfacePanel activePanel;
-      bool isInventoryExpanded;
-      bool isMinimizedMode;
-      bool isDialogOpen;
-      bool isSenseOpen;
-      bool isUserChatting;
+    public string VersionKey
+    {
+      get { return versionKey; }
+      set { SetProperty(ref versionKey, value); }
+    }
 
-      public Player Owner
-      {
-         get { return owner; }
-         set { SetProperty(ref owner, value); }
-      }
+    public InterfacePanel ActivePanel
+    {
+      get { return activePanel; }
+      set { SetProperty(ref activePanel, value); }
+    }
 
-      public string VersionKey
-      {
-         get { return versionKey; }
-         set { SetProperty(ref versionKey, value); }
-      }
+    public bool IsInventoryExpanded
+    {
+      get { return isInventoryExpanded; }
+      set { SetProperty(ref isInventoryExpanded, value); }
+    }
 
-      public InterfacePanel ActivePanel
-      {
-         get { return activePanel; }
-         set { SetProperty(ref activePanel, value); }
-      }
+    public bool IsMinimizedMode
+    {
+      get { return isMinimizedMode; }
+      set { SetProperty(ref isMinimizedMode, value); }
+    }
 
-      public bool IsInventoryExpanded
-      {
-         get { return isInventoryExpanded; }
-         set { SetProperty(ref isInventoryExpanded, value); }
-      }
+    public bool IsDialogOpen
+    {
+      get { return isDialogOpen; }
+      set { SetProperty(ref isDialogOpen, value); }
+    }
 
-      public bool IsMinimizedMode
-      {
-         get { return isMinimizedMode; }
-         set { SetProperty(ref isMinimizedMode, value); }
-      }
+    public bool IsSenseOpen
+    {
+      get { return isSenseOpen; }
+      set { SetProperty(ref isSenseOpen, value); }
+    }
 
-      public bool IsDialogOpen
-      {
-         get { return isDialogOpen; }
-         set { SetProperty(ref isDialogOpen, value); }
-      }
+    public bool IsUserChatting
+    {
+      get { return isUserChatting; }
+      set { SetProperty(ref isUserChatting, value); }
+    }
 
-      public bool IsSenseOpen
-      {
-          get { return isSenseOpen; }
-          set { SetProperty(ref isSenseOpen, value); }
-      }
-    
-        public bool IsUserChatting
-      {
-         get { return isUserChatting; }
-         set { SetProperty(ref isUserChatting, value); }
-      }
+    public ClientState()
+       : this(null) { }
 
-      public ClientState()
-         : this(null) { }
+    public ClientState(Player owner)
+    {
+      this.owner = owner;
+    }
 
-      public ClientState(Player owner)
-      {
-         this.owner = owner;
-      }
+    public void Update()
+    {
+      if (owner == null)
+        throw new InvalidOperationException("Player owner is null, cannot update.");
 
-      public void Update()
-      {
-         if (owner == null)
-            throw new InvalidOperationException("Player owner is null, cannot update.");
-
-         Update(owner.Accessor);
-      }
+      Update(owner.Accessor);
+    }
 
     public void Update(ProcessMemoryAccessor accessor)
     {
@@ -167,13 +167,13 @@ namespace SleepHunter.Models
       Debug.WriteLine($"IsUserChatting = {IsUserChatting}");
     }
 
-      public void ResetDefaults()
-      {
-         ActivePanel = InterfacePanel.Unknown;
-         IsInventoryExpanded = false;
-         IsMinimizedMode = false;
-         IsDialogOpen = false;
-         IsUserChatting = false;
-      }
-   }
+    public void ResetDefaults()
+    {
+      ActivePanel = InterfacePanel.Unknown;
+      IsInventoryExpanded = false;
+      IsMinimizedMode = false;
+      IsDialogOpen = false;
+      IsUserChatting = false;
+    }
+  }
 }

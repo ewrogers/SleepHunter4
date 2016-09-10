@@ -9,35 +9,35 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.IO
 {
-    public sealed class FileArchive : IDisposable
-   {
-      static readonly int NameLength = 13;
+  public sealed class FileArchive : IDisposable
+  {
+    static readonly int NameLength = 13;
 
-      bool isDisposed;
-      string name;
-      Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
-      MemoryMappedFile mappedFile;
-      
-      public string Name
+    bool isDisposed;
+    string name;
+    Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
+    MemoryMappedFile mappedFile;
+
+    public string Name
+    {
+      get { return name; }
+      set { name = value; }
+    }
+
+    public int Count { get { return entries.Count; } }
+
+    public IEnumerable<FileArchiveEntry> Entries { get { return from e in entries.Values select e; } }
+
+    public FileArchive(string filename)
+    {
+      using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
       {
-         get { return name; }
-         set { name = value; }
+        mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, null, HandleInheritability.None, true);
+        ReadTableOfContents();
       }
 
-      public int Count { get { return entries.Count; } }
-
-      public IEnumerable<FileArchiveEntry> Entries { get { return from e in entries.Values select e; } }
-
-      public FileArchive(string filename)
-      {
-         using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-         {
-            mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, null, HandleInheritability.None, true);
-            ReadTableOfContents();
-         }
-
-         name = filename;
-      }
+      name = filename;
+    }
 
     void ReadTableOfContents()
     {
@@ -74,42 +74,43 @@ namespace SleepHunter.IO
       finally { stream?.Dispose(); }
     }
 
-      public bool ContainsFile(string filename)
-      {
-         return entries.ContainsKey(filename);
-      }
+    public bool ContainsFile(string filename)
+    {
+      return entries.ContainsKey(filename);
+    }
 
-      public FileArchiveEntry GetEntry(string filename)
-      {
-         return entries[filename];
-      }
+    public FileArchiveEntry GetEntry(string filename)
+    {
+      return entries[filename];
+    }
 
-      public Stream GetStream(string filename)
-      {
-         var entry = entries[filename];
-         var stream = mappedFile.CreateViewStream(entry.Offset, entry.Size, MemoryMappedFileAccess.Read);
+    public Stream GetStream(string filename)
+    {
+      var entry = entries[filename];
+      var stream = mappedFile.CreateViewStream(entry.Offset, entry.Size, MemoryMappedFileAccess.Read);
 
-         return stream;
-      }
+      return stream;
+    }
 
-      #region IDisposable Methods
-      public void Dispose()
-      {
-         Dispose(true);
-         GC.SuppressFinalize(this);
-      }
+    #region IDisposable Methods
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
 
-      void Dispose(bool isDisposing)
-      {
-         if (isDisposed) return;
+    void Dispose(bool isDisposing)
+    {
+      if (isDisposed)
+        return;
 
-         if (mappedFile != null) 
-            mappedFile.Dispose();
+      if (mappedFile != null)
+        mappedFile.Dispose();
 
-         mappedFile = null;
+      mappedFile = null;
 
-         isDisposed = true;
-      }
-      #endregion
-   }
+      isDisposed = true;
+    }
+    #endregion
+  }
 }

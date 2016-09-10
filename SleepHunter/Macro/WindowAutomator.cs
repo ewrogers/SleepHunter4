@@ -6,278 +6,278 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-    public static class WindowAutomator
-   {
-      public static readonly byte VK_SHIFT = 0x10;
-      public static readonly byte VK_ESCAPE = 0x1B;
-      public static readonly byte VK_SPACE = 0x20;
-      public static readonly byte VK_TILDE = 0xC0;
+  public static class WindowAutomator
+  {
+    public static readonly byte VK_SHIFT = 0x10;
+    public static readonly byte VK_ESCAPE = 0x1B;
+    public static readonly byte VK_SPACE = 0x20;
+    public static readonly byte VK_TILDE = 0xC0;
 
-      public static readonly uint MK_LBUTTON = 0x1;
-      public static readonly uint MK_RBUTTON = 0x2;
-      public static readonly uint MK_MBUTTON = 0x10;
-      public static readonly uint MK_XBUTTON1 = 0x20;
-      public static readonly uint MK_XUBTTON2 = 0x40;
+    public static readonly uint MK_LBUTTON = 0x1;
+    public static readonly uint MK_RBUTTON = 0x2;
+    public static readonly uint MK_MBUTTON = 0x10;
+    public static readonly uint MK_XBUTTON1 = 0x20;
+    public static readonly uint MK_XUBTTON2 = 0x40;
 
-      enum KeyboardCommand : uint
+    enum KeyboardCommand : uint
+    {
+      HotKey = 0x312,
+      KeyDown = 0x100,
+      KeyUp = 0x101,
+      Char = 0x102,
+      DeadChar = 0x103,
+      SysKeyDown = 0x014,
+      SysKeyUp = 0x105,
+      SysDeadChar = 0x107
+    }
+
+    enum MouseCommand : uint
+    {
+      MouseMove = 0x200,
+      LeftButtonDown = 0x201,
+      LeftButtonUp = 0x202,
+      LeftButtonDoubleClick = 203,
+      RightButtonDown = 0x204,
+      RightButtonUp = 0x205,
+      RightButtonDoubleClick = 0x206,
+      MiddleButtonDown = 0x207,
+      MiddleButtonUp = 0x208,
+      MiddleButtonDoubleClick = 0x209
+    }
+
+    enum ControlCommand : uint
+    {
+      WM_CLOSE = 0x10
+    }
+
+    sealed class KeyParameter
+    {
+      short repeatCount;
+      byte scanCode;
+      bool isExtendedKey;
+      bool contextCode;
+      bool previousState;
+      bool transitionState;
+
+      public KeyParameter(uint lParam)
       {
-         HotKey = 0x312,
-         KeyDown = 0x100,
-         KeyUp = 0x101,
-         Char = 0x102,
-         DeadChar = 0x103,
-         SysKeyDown = 0x014,
-         SysKeyUp = 0x105,
-         SysDeadChar = 0x107
+        this.repeatCount = (short)(lParam & 0xFFFF);
+        this.scanCode = (byte)((lParam >> 16) & 0xFF);
+        this.isExtendedKey = (lParam & (1 << 24)) != 0;
+        this.contextCode = (lParam & (1 << 29)) != 0;
+        this.previousState = (lParam & (1 << 30)) != 0;
+        this.transitionState = (lParam & (1 << 31)) != 0;
       }
 
-      enum MouseCommand : uint
+      public KeyParameter(short repeatCount, byte scanCode, bool isExtendedKey = false, bool contextCode = false, bool previousState = false, bool transitionState = true)
       {
-         MouseMove = 0x200,
-         LeftButtonDown = 0x201,
-         LeftButtonUp = 0x202,
-         LeftButtonDoubleClick = 203,
-         RightButtonDown = 0x204,
-         RightButtonUp = 0x205,
-         RightButtonDoubleClick = 0x206,
-         MiddleButtonDown = 0x207,
-         MiddleButtonUp = 0x208,
-         MiddleButtonDoubleClick = 0x209
+        this.repeatCount = repeatCount;
+        this.scanCode = scanCode;
+        this.isExtendedKey = isExtendedKey;
+        this.contextCode = contextCode;
+        this.previousState = previousState;
+        this.transitionState = transitionState;
       }
 
-      enum ControlCommand : uint
+      public uint ToLParam()
       {
-         WM_CLOSE = 0x10
+        uint lParam = (uint)repeatCount;
+
+        lParam |= ((uint)scanCode << 16);
+
+        if (isExtendedKey)
+          lParam |= (1u << 24);
+
+        if (contextCode)
+          lParam |= (1u << 29);
+
+        if (previousState)
+          lParam |= (1u << 30);
+
+        if (transitionState)
+          lParam |= (1u << 31);
+
+        return lParam;
       }
+    }
 
-      sealed class KeyParameter
-      {
-         short repeatCount;
-         byte scanCode;
-         bool isExtendedKey;
-         bool contextCode;
-         bool previousState;
-         bool transitionState;
+    #region Keyboard Actions
+    public static void SendKeyDown(IntPtr windowHandle, char key)
+    {
+      ModifierKeys modifiers;
+      var virtualKey = GetVirtualKey(key, out modifiers);
 
-         public KeyParameter(uint lParam)
-         {
-            this.repeatCount = (short)(lParam & 0xFFFF);
-            this.scanCode = (byte)((lParam >> 16) & 0xFF);
-            this.isExtendedKey = (lParam & (1 << 24)) != 0;
-            this.contextCode = (lParam & (1 << 29)) != 0;
-            this.previousState = (lParam & (1 << 30)) != 0;
-            this.transitionState = (lParam & (1 << 31)) != 0;
-         }
+      SendKeyDown(windowHandle, virtualKey);
+    }
 
-         public KeyParameter(short repeatCount, byte scanCode, bool isExtendedKey = false, bool contextCode = false, bool previousState = false, bool transitionState = true)
-         {
-            this.repeatCount = repeatCount;
-            this.scanCode = scanCode;
-            this.isExtendedKey = isExtendedKey;
-            this.contextCode = contextCode;
-            this.previousState = previousState;
-            this.transitionState = transitionState;
-         }
+    public static void SendKeyChar(IntPtr windowHandle, char key)
+    {
+      ModifierKeys modifiers;
+      var virtualKey = GetVirtualKey(key, out modifiers);
 
-         public uint ToLParam()
-         {
-            uint lParam = (uint)repeatCount;
+      SendKeyChar(windowHandle, virtualKey);
+    }
 
-            lParam |= ((uint)scanCode << 16);
+    public static void SendKeyUp(IntPtr windowHandle, char key)
+    {
+      ModifierKeys modifiers;
+      var virtualKey = GetVirtualKey(key, out modifiers);
 
-            if (isExtendedKey)
-               lParam |= (1u << 24);
+      SendKeyUp(windowHandle, virtualKey);
+    }
 
-            if (contextCode)
-               lParam |= (1u << 29);
+    public static void SendKeyDown(IntPtr windowHandle, byte virtualKey)
+    {
+      var scanCode = GetScanCode(virtualKey);
+      var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-            if (previousState)
-               lParam |= (1u << 30);
+      NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
+    }
 
-            if (transitionState)
-               lParam |= (1u << 31);
+    public static void SendKeyChar(IntPtr windowHandle, byte virtualKey)
+    {
 
-            return lParam;
-         }
-      }
+    }
 
-      #region Keyboard Actions
-      public static void SendKeyDown(IntPtr windowHandle, char key)
-      {
-         ModifierKeys modifiers;
-         var virtualKey = GetVirtualKey(key, out modifiers);
+    public static void SendKeyUp(IntPtr windowHandle, byte virtualKey)
+    {
+      var scanCode = GetScanCode(virtualKey);
+      var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-         SendKeyDown(windowHandle, virtualKey);
-      }
+      NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
+    }
 
-      public static void SendKeyChar(IntPtr windowHandle, char key)
-      {
-         ModifierKeys modifiers;
-         var virtualKey = GetVirtualKey(key, out modifiers);
+    public static void SendShiftKeyDown(IntPtr windowHandle)
+    {
+      var virtualKey = VK_SHIFT;
+      var scanCode = GetScanCode(virtualKey);
+      var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-         SendKeyChar(windowHandle, virtualKey);
-      }
+      NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
+    }
 
-      public static void SendKeyUp(IntPtr windowHandle, char key)
-      {
-         ModifierKeys modifiers;
-         var virtualKey = GetVirtualKey(key, out modifiers);
+    public static void SendShiftKeyUp(IntPtr windowHandle)
+    {
+      var virtualKey = VK_SHIFT;
+      var scanCode = GetScanCode(virtualKey);
+      var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-         SendKeyUp(windowHandle, virtualKey);
-      }
+      NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
+    }
 
-      public static void SendKeyDown(IntPtr windowHandle, byte virtualKey)
-      {
-         var scanCode = GetScanCode(virtualKey);
-         var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
+    public static void SendKeystroke(IntPtr windowHandle, char key, bool includeCharMessage = false)
+    {
+      SendKeyDown(windowHandle, key);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
-      }
+      if (includeCharMessage)
+        SendKeyChar(windowHandle, key);
 
-      public static void SendKeyChar(IntPtr windowHandle, byte virtualKey)
-      {
+      SendKeyUp(windowHandle, key);
+    }
 
-      }
+    public static void SendKeystroke(IntPtr windowHandle, byte virtualKey, bool includeCharMessage = false)
+    {
+      SendKeyDown(windowHandle, virtualKey);
 
-      public static void SendKeyUp(IntPtr windowHandle, byte virtualKey)
-      {
-         var scanCode = GetScanCode(virtualKey);
-         var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
+      if (includeCharMessage)
+        SendKeyChar(windowHandle, virtualKey);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
-      }
+      SendKeyUp(windowHandle, virtualKey);
+    }
+    #endregion
 
-      public static void SendShiftKeyDown(IntPtr windowHandle)
-      {
-         var virtualKey = VK_SHIFT;
-         var scanCode = GetScanCode(virtualKey);
-         var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
+    #region Mouse Actions
+    public static void SendMouseMove(IntPtr windowHandle, int x, int y)
+    {
+      NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, IntPtr.Zero, (IntPtr)MakeXYParameter(new Point(x, y)));
+    }
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
-      }
+    public static void SendMouseDown(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
+    {
+      var xyParam = MakeXYParameter(new Point(x, y));
 
-      public static void SendShiftKeyUp(IntPtr windowHandle)
-      {
-         var virtualKey = VK_SHIFT;
-         var scanCode = GetScanCode(virtualKey);
-         var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
+      if (mouseButton.HasFlag(MouseButton.Left))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
-      }
+      if (mouseButton.HasFlag(MouseButton.Middle))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
 
-      public static void SendKeystroke(IntPtr windowHandle, char key, bool includeCharMessage = false)
-      {
-         SendKeyDown(windowHandle, key);
+      if (mouseButton.HasFlag(MouseButton.Right))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
+    }
 
-         if (includeCharMessage)
-            SendKeyChar(windowHandle, key);
+    public static void SendMouseUp(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
+    {
+      var xyParam = MakeXYParameter(new Point(x, y));
 
-         SendKeyUp(windowHandle, key);
-      }
+      if (mouseButton.HasFlag(MouseButton.Left))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
 
-      public static void SendKeystroke(IntPtr windowHandle, byte virtualKey, bool includeCharMessage = false)
-      {
-         SendKeyDown(windowHandle, virtualKey);
+      if (mouseButton.HasFlag(MouseButton.Middle))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
 
-         if (includeCharMessage)
-            SendKeyChar(windowHandle, virtualKey);
+      if (mouseButton.HasFlag(MouseButton.Right))
+        NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
+    }
 
-         SendKeyUp(windowHandle, virtualKey);
-      }
-      #endregion
+    public static void SendMouseClick(IntPtr windowHandle, MouseButton mouseButton, int x, int y, bool moveFirst = true)
+    {
+      if (moveFirst)
+        SendMouseMove(windowHandle, x, y);
 
-      #region Mouse Actions
-      public static void SendMouseMove(IntPtr windowHandle, int x, int y)
-      {
-         NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, IntPtr.Zero, (IntPtr)MakeXYParameter(new Point(x, y)));
-      }
+      SendMouseDown(windowHandle, mouseButton, x, y);
+      SendMouseUp(windowHandle, mouseButton, x, y);
+    }
+    #endregion
 
-      public static void SendMouseDown(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
-      {
-         var xyParam = MakeXYParameter(new Point(x,y));
+    #region Control Actions
+    public static void SendCloseWindow(IntPtr windowHandle)
+    {
+      NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+    }
+    #endregion
 
-         if (mouseButton.HasFlag(MouseButton.Left))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
+    #region Helper Methods
+    static uint MakeXYParameter(Point pt)
+    {
+      uint parameter = (uint)pt.X;
+      parameter |= ((uint)pt.Y << 16);
 
-         if (mouseButton.HasFlag(MouseButton.Middle))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
+      return parameter;
+    }
 
-         if (mouseButton.HasFlag(MouseButton.Right))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
-      }
+    static byte GetScanCode(char c)
+    {
+      var vkey = GetVirtualKey(c);
+      var scanCode = NativeMethods.MapVirtualKey(vkey, VirtualKeyMapMode.VirtualToScanCode);
 
-      public static void SendMouseUp(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
-      {
-         var xyParam = MakeXYParameter(new Point(x, y));
+      return (byte)scanCode;
+    }
 
-         if (mouseButton.HasFlag(MouseButton.Left))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
+    static byte GetScanCode(byte virtualKey)
+    {
+      var scanCode = NativeMethods.MapVirtualKey(virtualKey, VirtualKeyMapMode.VirtualToScanCode);
 
-         if (mouseButton.HasFlag(MouseButton.Middle))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
+      return (byte)scanCode;
+    }
 
-         if (mouseButton.HasFlag(MouseButton.Right))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
-      }
+    static byte GetVirtualKey(char c)
+    {
+      ModifierKeys modifiers;
+      return GetVirtualKey(c, out modifiers);
+    }
 
-      public static void SendMouseClick(IntPtr windowHandle, MouseButton mouseButton, int x, int y, bool moveFirst = true)
-      {
-         if (moveFirst)
-            SendMouseMove(windowHandle, x, y);
+    static byte GetVirtualKey(char c, out ModifierKeys modifiers)
+    {
+      modifiers = ModifierKeys.None;
+      var keyScan = NativeMethods.VkKeyScan(c);
 
-         SendMouseDown(windowHandle, mouseButton, x, y);
-         SendMouseUp(windowHandle, mouseButton, x, y);
-      }
-      #endregion
+      byte vkey = (byte)keyScan;
+      byte modifierScan = (byte)(keyScan >> 8);
 
-      #region Control Actions
-      public static void SendCloseWindow(IntPtr windowHandle)
-      {
-         NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-      }
-      #endregion
-
-      #region Helper Methods
-      static uint MakeXYParameter(Point pt)
-      {
-         uint parameter = (uint)pt.X;
-         parameter |= ((uint)pt.Y << 16);
-
-         return parameter;
-      }
-
-      static byte GetScanCode(char c)
-      {
-         var vkey = GetVirtualKey(c);
-         var scanCode = NativeMethods.MapVirtualKey(vkey, VirtualKeyMapMode.VirtualToScanCode);
-
-         return (byte)scanCode;
-      }
-
-      static byte GetScanCode(byte virtualKey)
-      {
-         var scanCode = NativeMethods.MapVirtualKey(virtualKey, VirtualKeyMapMode.VirtualToScanCode);
-
-         return (byte)scanCode;
-      }
-
-      static byte GetVirtualKey(char c)
-      {
-         ModifierKeys modifiers;
-         return GetVirtualKey(c, out modifiers);
-      }
-
-      static byte GetVirtualKey(char c, out ModifierKeys modifiers)
-      {
-         modifiers = ModifierKeys.None;
-         var keyScan = NativeMethods.VkKeyScan(c);
-
-         byte vkey = (byte)keyScan;
-         byte modifierScan = (byte)(keyScan >> 8);
-
-         modifiers = (ModifierKeys)modifierScan;
-         return vkey;
-      }
-      #endregion
-   }   
+      modifiers = (ModifierKeys)modifierScan;
+      return vkey;
+    }
+    #endregion
+  }
 }
