@@ -12,9 +12,15 @@ namespace SleepHunter.Settings
    public sealed class ColorTheme : ObservableObject
     {
       string name;
+
+    [NonSerialized]
       SolidColorBrush background;
+    
       HueSaturationValue backgroundHsv;
+
+    [NonSerialized]
       SolidColorBrush foreground;
+
       HueSaturationValue foregroundHsv;
       bool isDefault;
 

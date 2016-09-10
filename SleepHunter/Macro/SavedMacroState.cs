@@ -117,10 +117,7 @@ namespace SleepHunter.Macro
       {
          using (var inputStream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
          {
-            var bundle = LoadFromStream(inputStream);
-            inputStream.Close();
-
-            return bundle;
+            return LoadFromStream(inputStream);
          }
       }
 
@@ -137,7 +134,6 @@ namespace SleepHunter.Macro
          using (var outputStream = File.Create(file))
          {
             SaveToStream(outputStream);
-            outputStream.Close();
          }
       }
 

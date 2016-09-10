@@ -131,7 +131,7 @@ namespace SleepHunter.Macro
          var scanCode = GetScanCode(virtualKey);
          var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, virtualKey, keyParameter.ToLParam());
+         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
       }
 
       public static void SendKeyChar(IntPtr windowHandle, byte virtualKey)
@@ -144,7 +144,7 @@ namespace SleepHunter.Macro
          var scanCode = GetScanCode(virtualKey);
          var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, virtualKey, keyParameter.ToLParam());
+         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
       }
 
       public static void SendShiftKeyDown(IntPtr windowHandle)
@@ -153,7 +153,7 @@ namespace SleepHunter.Macro
          var scanCode = GetScanCode(virtualKey);
          var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, virtualKey, keyParameter.ToLParam());
+         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
       }
 
       public static void SendShiftKeyUp(IntPtr windowHandle)
@@ -162,7 +162,7 @@ namespace SleepHunter.Macro
          var scanCode = GetScanCode(virtualKey);
          var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, virtualKey, keyParameter.ToLParam());
+         NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, (IntPtr)virtualKey, (IntPtr)keyParameter.ToLParam());
       }
 
       public static void SendKeystroke(IntPtr windowHandle, char key, bool includeCharMessage = false)
@@ -189,7 +189,7 @@ namespace SleepHunter.Macro
       #region Mouse Actions
       public static void SendMouseMove(IntPtr windowHandle, int x, int y)
       {
-         NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, 0x0, MakeXYParameter(new Point(x, y)));
+         NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, IntPtr.Zero, (IntPtr)MakeXYParameter(new Point(x, y)));
       }
 
       public static void SendMouseDown(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
@@ -197,13 +197,13 @@ namespace SleepHunter.Macro
          var xyParam = MakeXYParameter(new Point(x,y));
 
          if (mouseButton.HasFlag(MouseButton.Left))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, MK_LBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
 
          if (mouseButton.HasFlag(MouseButton.Middle))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, MK_MBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
 
          if (mouseButton.HasFlag(MouseButton.Right))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, MK_RBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
       }
 
       public static void SendMouseUp(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
@@ -211,13 +211,13 @@ namespace SleepHunter.Macro
          var xyParam = MakeXYParameter(new Point(x, y));
 
          if (mouseButton.HasFlag(MouseButton.Left))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, MK_LBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, (IntPtr)MK_LBUTTON, (IntPtr)xyParam);
 
          if (mouseButton.HasFlag(MouseButton.Middle))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, MK_MBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, (IntPtr)MK_MBUTTON, (IntPtr)xyParam);
 
          if (mouseButton.HasFlag(MouseButton.Right))
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, MK_RBUTTON, xyParam);
+            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, (IntPtr)MK_RBUTTON, (IntPtr)xyParam);
       }
 
       public static void SendMouseClick(IntPtr windowHandle, MouseButton mouseButton, int x, int y, bool moveFirst = true)
@@ -233,7 +233,7 @@ namespace SleepHunter.Macro
       #region Control Actions
       public static void SendCloseWindow(IntPtr windowHandle)
       {
-         NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, 0, 0);
+         NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
       }
       #endregion
 

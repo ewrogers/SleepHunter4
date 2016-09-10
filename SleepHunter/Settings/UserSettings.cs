@@ -466,11 +466,15 @@ namespace SleepHunter.Settings
          set { SetProperty(ref autoUpdateEnabled, value); }
       }
 
-      public UserSettings()
-      {
-         ResetDefaults();
-      }
+    public UserSettings() {    }
 
+    public static UserSettings CreateDefaults()
+    {
+      var settings = new UserSettings();
+      settings.ResetDefaults();
+      return settings;
+    }
+    
       public void ResetDefaults()
       {
          Version = CurrentVersion;

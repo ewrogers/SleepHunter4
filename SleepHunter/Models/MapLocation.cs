@@ -114,30 +114,36 @@ namespace SleepHunter.Models
 
          Debug.WriteLine($"Updating map location (pid={accessor.ProcessId})...");
 
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
-               MapNumber = mapNumber;
-            else
-               MapNumber = 0;
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
 
-            if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out mapX))
-               X = mapX;
-            else
-               X = 0;
+          if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
+            MapNumber = mapNumber;
+          else
+            MapNumber = 0;
 
-            if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out mapY))
-               Y = mapY;
-            else
-               Y = 0;
+          if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out mapX))
+            X = mapX;
+          else
+            X = 0;
 
-            if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out mapName))
-               MapName = mapName;
-            else
-               MapName = null;
-         }
+          if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out mapY))
+            Y = mapY;
+          else
+            Y = 0;
 
+          if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out mapName))
+            MapName = mapName;
+          else
+            MapName = null;
+        }
+      }
+      finally { stream?.Dispose(); }
          Debug.WriteLine($"MapNumber = {MapNumber}");
          Debug.WriteLine($"MapName = {MapName}");
          Debug.WriteLine($"X = {X}");

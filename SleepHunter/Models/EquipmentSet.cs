@@ -207,56 +207,63 @@ namespace SleepHunter.Models
          Update(owner.Accessor);
       }
 
-      public void Update(ProcessMemoryAccessor accessor)
+    public void Update(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
+
+      var version = this.Owner.Version;
+
+      if (version == null)
       {
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         var version = this.Owner.Version;
-
-         if (version == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         var equipmentVariable = version.GetVariable(EquipmentKey);
-
-         if (equipmentVariable == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         Debug.WriteLine($"Updating equipment (pid={accessor.ProcessId})...");
-
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            var equipmentPointer = equipmentVariable.DereferenceValue(reader);
-
-            if (equipmentPointer == 0)
-            {
-               ResetDefaults();
-               return;
-            }
-
-            reader.BaseStream.Position = equipmentPointer;
-
-            for (int i = 0; i < equipmentVariable.Count; i++)
-            {
-               try
-               {
-                  string name = reader.ReadFixedString(equipmentVariable.MaxLength);
-
-                  equipment[i].IsEmpty = string.IsNullOrWhiteSpace(name);
-                  equipment[i].IconIndex = 0;
-                  equipment[i].Name = name.StripNumbers();
-               }
-               catch { }
-            }
-         }
+        ResetDefaults();
+        return;
       }
+
+      var equipmentVariable = version.GetVariable(EquipmentKey);
+
+      if (equipmentVariable == null)
+      {
+        ResetDefaults();
+        return;
+      }
+
+      Debug.WriteLine($"Updating equipment (pid={accessor.ProcessId})...");
+
+      Stream stream = null;
+      try
+      {
+
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+          var equipmentPointer = equipmentVariable.DereferenceValue(reader);
+
+          if (equipmentPointer == 0)
+          {
+            ResetDefaults();
+            return;
+          }
+
+          reader.BaseStream.Position = equipmentPointer;
+
+          for (int i = 0; i < equipmentVariable.Count; i++)
+          {
+            try
+            {
+              string name = reader.ReadFixedString(equipmentVariable.MaxLength);
+
+              equipment[i].IsEmpty = string.IsNullOrWhiteSpace(name);
+              equipment[i].IconIndex = 0;
+              equipment[i].Name = name.StripNumbers();
+            }
+            catch { }
+          }
+        }
+      }
+      finally { stream?.Dispose(); }
+    }
 
       public void ResetDefaults()
       {

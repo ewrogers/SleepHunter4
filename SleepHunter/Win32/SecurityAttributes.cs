@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace SleepHunter.Win32
 {
-   [StructLayout(LayoutKind.Sequential)]
+  [StructLayout(LayoutKind.Sequential)]
    internal struct SecurityAttributes
    {
       int size;

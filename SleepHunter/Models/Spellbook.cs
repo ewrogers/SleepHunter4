@@ -138,118 +138,124 @@ namespace SleepHunter.Models
          Update(owner.Accessor);
       }
 
-      public void Update(ProcessMemoryAccessor accessor)
+    public void Update(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
+
+      var version = Owner.Version;
+
+      if (version == null)
       {
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         var version = Owner.Version;
-
-         if (version == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         var spellbookVariable = version.GetVariable(SpellbookKey);
-
-         if (spellbookVariable == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         Debug.WriteLine($"Updating spellbook (pid={accessor.ProcessId})...");
-
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            var spellbookPointer = spellbookVariable.DereferenceValue(reader);
-
-            if (spellbookPointer == 0)
-            {
-               ResetDefaults();
-               return;
-            }
-
-            reader.BaseStream.Position = spellbookPointer;
-            bool foundFasSpiorad = false;
-            bool foundLyliacVineyard = false;
-            bool foundLyliacPlant = false;
-
-            for (int i = 0; i < spellbookVariable.Count; i++)
-            {
-               SpellMetadata metadata = null;
-
-               try
-               {
-                  bool hasSpell = reader.ReadInt16() != 0;
-                  ushort iconIndex = reader.ReadUInt16();
-                  SpellTargetMode targetMode = (SpellTargetMode)reader.ReadByte();
-                  string name = reader.ReadFixedString(spellbookVariable.MaxLength);
-                  string prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
-                  reader.ReadByte();
-
-                  int currentLevel, maximumLevel;
-                  if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
-                  {
-                     if (!string.IsNullOrWhiteSpace(name))
-                        spells[i].Name = name.Trim();
-                  }
-
-
-                  spells[i].IsEmpty = !hasSpell;
-                  spells[i].IconIndex = iconIndex;
-                  spells[i].Icon = IconManager.Instance.GetSpellIcon(iconIndex);
-                  spells[i].TargetMode = targetMode;
-                  spells[i].Name = name;
-                  spells[i].Prompt = prompt;
-                  spells[i].CurrentLevel = currentLevel;
-                  spells[i].MaximumLevel = maximumLevel;
-
-                  if (!spells[i].IsEmpty && !string.IsNullOrWhiteSpace(spells[i].Name))
-                     metadata = SpellMetadataManager.Instance.GetSpell(name);
-
-                  spells[i].IsActive = this.IsActive(spells[i].Name);
-
-                  foundFasSpiorad |= string.Equals(spells[i].Name, Spell.FasSpioradKey, StringComparison.OrdinalIgnoreCase);
-                  foundLyliacPlant |= string.Equals(spells[i].Name, Spell.LyliacPlantKey, StringComparison.OrdinalIgnoreCase);
-                  foundLyliacVineyard |= string.Equals(spells[i].Name, Spell.LyliacVineyardKey, StringComparison.OrdinalIgnoreCase);
-
-                  if (metadata != null)
-                  {
-                     spells[i].NumberOfLines = metadata.NumberOfLines;
-                     spells[i].ManaCost = metadata.ManaCost;
-                     spells[i].Cooldown = metadata.Cooldown;
-                     spells[i].CanImprove = metadata.CanImprove;
-
-                     DateTime timestamp = DateTime.MinValue;
-                     if (spells[i].Cooldown > TimeSpan.Zero && spellCooldownTimestamps.TryGetValue(name, out timestamp))
-                     {
-                        var elapsed = DateTime.Now - timestamp;
-                        spells[i].IsOnCooldown = elapsed < (spells[i].Cooldown + TimeSpan.FromMilliseconds(500));
-                     }
-                  }
-                  else
-                  {
-                     spells[i].NumberOfLines = 1;
-                     spells[i].ManaCost = 0;
-                     spells[i].Cooldown = TimeSpan.Zero;
-                     spells[i].CanImprove = true;
-                     spells[i].IsOnCooldown = false;
-                  }
-
-                  if (!spells[i].IsEmpty)
-                      Debug.WriteLine($"Spell slot {i + 1}: {spells[i].Name} (cur={spells[i].CurrentLevel}, max={spells[i].MaximumLevel}, lines={spells[i].NumberOfLines}, icon={spells[i].IconIndex})");
-            }
-               catch { }
-            }
-
-            owner.HasFasSpiorad = foundFasSpiorad;
-            owner.HasLyliacPlant = foundLyliacPlant;
-            owner.HasLyliacVineyard = foundLyliacVineyard;
-         }
+        ResetDefaults();
+        return;
       }
+
+      var spellbookVariable = version.GetVariable(SpellbookKey);
+
+      if (spellbookVariable == null)
+      {
+        ResetDefaults();
+        return;
+      }
+
+      Debug.WriteLine($"Updating spellbook (pid={accessor.ProcessId})...");
+
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+          var spellbookPointer = spellbookVariable.DereferenceValue(reader);
+
+          if (spellbookPointer == 0)
+          {
+            ResetDefaults();
+            return;
+          }
+
+          reader.BaseStream.Position = spellbookPointer;
+          bool foundFasSpiorad = false;
+          bool foundLyliacVineyard = false;
+          bool foundLyliacPlant = false;
+
+          for (int i = 0; i < spellbookVariable.Count; i++)
+          {
+            SpellMetadata metadata = null;
+
+            try
+            {
+              bool hasSpell = reader.ReadInt16() != 0;
+              ushort iconIndex = reader.ReadUInt16();
+              SpellTargetMode targetMode = (SpellTargetMode)reader.ReadByte();
+              string name = reader.ReadFixedString(spellbookVariable.MaxLength);
+              string prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
+              reader.ReadByte();
+
+              int currentLevel, maximumLevel;
+              if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
+              {
+                if (!string.IsNullOrWhiteSpace(name))
+                  spells[i].Name = name.Trim();
+              }
+
+
+              spells[i].IsEmpty = !hasSpell;
+              spells[i].IconIndex = iconIndex;
+              spells[i].Icon = IconManager.Instance.GetSpellIcon(iconIndex);
+              spells[i].TargetMode = targetMode;
+              spells[i].Name = name;
+              spells[i].Prompt = prompt;
+              spells[i].CurrentLevel = currentLevel;
+              spells[i].MaximumLevel = maximumLevel;
+
+              if (!spells[i].IsEmpty && !string.IsNullOrWhiteSpace(spells[i].Name))
+                metadata = SpellMetadataManager.Instance.GetSpell(name);
+
+              spells[i].IsActive = this.IsActive(spells[i].Name);
+
+              foundFasSpiorad |= string.Equals(spells[i].Name, Spell.FasSpioradKey, StringComparison.OrdinalIgnoreCase);
+              foundLyliacPlant |= string.Equals(spells[i].Name, Spell.LyliacPlantKey, StringComparison.OrdinalIgnoreCase);
+              foundLyliacVineyard |= string.Equals(spells[i].Name, Spell.LyliacVineyardKey, StringComparison.OrdinalIgnoreCase);
+
+              if (metadata != null)
+              {
+                spells[i].NumberOfLines = metadata.NumberOfLines;
+                spells[i].ManaCost = metadata.ManaCost;
+                spells[i].Cooldown = metadata.Cooldown;
+                spells[i].CanImprove = metadata.CanImprove;
+
+                DateTime timestamp = DateTime.MinValue;
+                if (spells[i].Cooldown > TimeSpan.Zero && spellCooldownTimestamps.TryGetValue(name, out timestamp))
+                {
+                  var elapsed = DateTime.Now - timestamp;
+                  spells[i].IsOnCooldown = elapsed < (spells[i].Cooldown + TimeSpan.FromMilliseconds(500));
+                }
+              }
+              else
+              {
+                spells[i].NumberOfLines = 1;
+                spells[i].ManaCost = 0;
+                spells[i].Cooldown = TimeSpan.Zero;
+                spells[i].CanImprove = true;
+                spells[i].IsOnCooldown = false;
+              }
+
+              if (!spells[i].IsEmpty)
+                Debug.WriteLine($"Spell slot {i + 1}: {spells[i].Name} (cur={spells[i].CurrentLevel}, max={spells[i].MaximumLevel}, lines={spells[i].NumberOfLines}, icon={spells[i].IconIndex})");
+            }
+            catch { }
+          }
+
+          owner.HasFasSpiorad = foundFasSpiorad;
+          owner.HasLyliacPlant = foundLyliacPlant;
+          owner.HasLyliacVineyard = foundLyliacVineyard;
+        }
+      }
+      finally { stream?.Dispose(); }
+    }
 
       public void ResetDefaults()
       {

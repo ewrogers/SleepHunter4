@@ -80,64 +80,69 @@ namespace SleepHunter.Models
          Update(owner.Accessor);
       }
 
-      public void Update(ProcessMemoryAccessor accessor)
+    public void Update(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
+
+      var version = this.Owner.Version;
+
+      if (version == null)
       {
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         var version = this.Owner.Version;
-
-         if (version == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         var inventoryVariable = version.GetVariable(InventoryKey);
-
-         if (inventoryVariable == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         Debug.WriteLine($"Updating inventory (pid={accessor.ProcessId})...");
-         
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-
-            var inventoryPointer = inventoryVariable.DereferenceValue(reader);
-
-            if (inventoryPointer == 0)
-            {
-               ResetDefaults();
-               return;
-            }
-
-            reader.BaseStream.Position = inventoryPointer;
-
-            for (int i = 0; i < inventoryVariable.Count; i++)
-            {
-               try
-               {
-                  bool hasItem = reader.ReadInt16() != 0;
-                  ushort iconIndex = reader.ReadUInt16();
-                  reader.ReadByte();
-                  string name = reader.ReadFixedString(inventoryVariable.MaxLength);
-                  reader.ReadByte();
-
-                  inventory[i].IsEmpty = !hasItem;
-                  inventory[i].IconIndex = iconIndex;
-                  inventory[i].Name = name.StripNumbers();
-
-                  if (!inventory[i].IsEmpty)
-                      Debug.WriteLine($"Inventory slot {i + 1}: {inventory[i].Name} (icon={inventory[i].IconIndex.ToString("X")})");
-               }
-               catch { }
-            }
-         }
+        ResetDefaults();
+        return;
       }
+
+      var inventoryVariable = version.GetVariable(InventoryKey);
+
+      if (inventoryVariable == null)
+      {
+        ResetDefaults();
+        return;
+      }
+
+      Debug.WriteLine($"Updating inventory (pid={accessor.ProcessId})...");
+
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+          var inventoryPointer = inventoryVariable.DereferenceValue(reader);
+
+          if (inventoryPointer == 0)
+          {
+            ResetDefaults();
+            return;
+          }
+
+          reader.BaseStream.Position = inventoryPointer;
+
+          for (int i = 0; i < inventoryVariable.Count; i++)
+          {
+            try
+            {
+              bool hasItem = reader.ReadInt16() != 0;
+              ushort iconIndex = reader.ReadUInt16();
+              reader.ReadByte();
+              string name = reader.ReadFixedString(inventoryVariable.MaxLength);
+              reader.ReadByte();
+
+              inventory[i].IsEmpty = !hasItem;
+              inventory[i].IconIndex = iconIndex;
+              inventory[i].Name = name.StripNumbers();
+
+              if (!inventory[i].IsEmpty)
+                Debug.WriteLine($"Inventory slot {i + 1}: {inventory[i].Name} (icon={inventory[i].IconIndex.ToString("X")})");
+            }
+            catch { }
+          }
+        }
+      }
+      finally { stream?.Dispose(); }
+    }
 
       public void ResetDefaults()
       {

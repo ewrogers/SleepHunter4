@@ -282,21 +282,22 @@ namespace SleepHunter.Models
          GC.SuppressFinalize(this);
       }
 
-      void Dispose(bool isDisposing)
+    void Dispose(bool isDisposing)
+    {
+      if (isDisposed)
+        return;
+
+      if (isDisposing)
       {
-         if (isDisposed)
-            return;
+        if (skillbook != null)
+          skillbook.Dispose();
 
-         if (isDisposing)
-         {
-            if (accessor != null)
-               accessor.Dispose();
-
-            accessor = null;
-         }
-
-         isDisposed = true;
+        if (accessor != null)
+          accessor.Dispose();
       }
+
+      isDisposed = true;
+    }
       #endregion
 
       public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
@@ -352,30 +353,37 @@ namespace SleepHunter.Models
          }
       }
 
-      void UpdateName(ProcessMemoryAccessor accessor)
-      {         
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
+    void UpdateName(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
 
-         string name = null;
+      string name = null;
 
-         if (version != null && version.ContainsVariable(CharacterNameKey))
-         {
-            Debug.WriteLine($"Updating character name (pid={accessor.ProcessId})...");
+      if (version != null && version.ContainsVariable(CharacterNameKey))
+      {
+        Debug.WriteLine($"Updating character name (pid={accessor.ProcessId})...");
 
-            using (var stream = accessor.GetStream())
-            using (var reader = new BinaryReader(stream, Encoding.ASCII))
-            {
-               var nameVariable = version.GetVariable(CharacterNameKey);
-               nameVariable.TryReadString(reader, out name);
-            }
+        Stream stream = null;
+        try
+        {
+          stream = accessor.GetStream();
+          using (var reader = new BinaryReader(stream, Encoding.ASCII))
+          {
+            stream = null;
 
-            Debug.WriteLine($"CharacterName = {name}");
-         }
+            var nameVariable = version.GetVariable(CharacterNameKey);
+            nameVariable.TryReadString(reader, out name);
+          }
+        }
+        finally { stream?.Dispose(); }
 
-         if (!string.IsNullOrWhiteSpace(name))
-            Name = name;
+        Debug.WriteLine($"CharacterName = {name}");
       }
+
+      if (!string.IsNullOrWhiteSpace(name))
+        Name = name;
+    }
 
       void UpdateGuild(ProcessMemoryAccessor accessor)
       {

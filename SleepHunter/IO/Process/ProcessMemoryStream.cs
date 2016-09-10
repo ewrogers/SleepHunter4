@@ -70,7 +70,7 @@ namespace SleepHunter.IO.Process
          CheckBufferSize(count);
 
          int numberOfBytesRead = 0;
-         bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, count, out numberOfBytesRead);
+         bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out numberOfBytesRead);
 
          if (!success || numberOfBytesRead != count)
          {
@@ -89,7 +89,7 @@ namespace SleepHunter.IO.Process
          CheckIfDisposed();
 
          int numberOfBytesRead = 0;
-         bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, 1, out numberOfBytesRead);
+         bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out numberOfBytesRead);
 
          if (!success || numberOfBytesRead != 1)
          {
@@ -139,7 +139,7 @@ namespace SleepHunter.IO.Process
          Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
 
          int numberOfBytesWritten = 0;
-         bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, count, out numberOfBytesWritten);
+         bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out numberOfBytesWritten);
 
          if (!success || numberOfBytesWritten != count)
          {
@@ -158,7 +158,7 @@ namespace SleepHunter.IO.Process
          internalBuffer[0] = value;
 
          int numberOfBytesWritten = 0;
-         bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, 1, out numberOfBytesWritten);
+         bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out numberOfBytesWritten);
 
          if (!success || numberOfBytesWritten != 1)
          {

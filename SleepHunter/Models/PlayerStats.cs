@@ -159,45 +159,52 @@ namespace SleepHunter.Models
 
          Debug.WriteLine($"Updating stats (pid={accessor.ProcessId})...");
 
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            // Current Health
-            if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out currentHealth))
-               CurrentHealth = (int)currentHealth;
-            else
-               CurrentHealth = 0;
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
 
-            // Max Health
-            if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out maximumHealth))
-               MaximumHealth = (int)maximumHealth;
-            else
-               MaximumHealth = 0;
+          // Current Health
+          if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out currentHealth))
+            CurrentHealth = (int)currentHealth;
+          else
+            CurrentHealth = 0;
 
-            // Current Mana
-            if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out currentMana))
-               CurrentMana = (int)currentMana;
-            else
-               CurrentMana = 0;
+          // Max Health
+          if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out maximumHealth))
+            MaximumHealth = (int)maximumHealth;
+          else
+            MaximumHealth = 0;
 
-            // Max Mana
-            if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out maximumMana))
-               MaximumMana = (int)maximumMana;
-            else
-               MaximumMana = 0;
+          // Current Mana
+          if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out currentMana))
+            CurrentMana = (int)currentMana;
+          else
+            CurrentMana = 0;
 
-            // Level
-            if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out level))
-               Level = (int)level;
-            else
-               Level = 0;
+          // Max Mana
+          if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out maximumMana))
+            MaximumMana = (int)maximumMana;
+          else
+            MaximumMana = 0;
 
-            // Ability Level
-            if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out abilityLevel))
-               AbilityLevel = (int)abilityLevel;
-            else
-               AbilityLevel = 0;
-         }
+          // Level
+          if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out level))
+            Level = (int)level;
+          else
+            Level = 0;
+
+          // Ability Level
+          if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out abilityLevel))
+            AbilityLevel = (int)abilityLevel;
+          else
+            AbilityLevel = 0;
+        }
+      }
+      finally { stream?.Dispose(); }
 
         Debug.WriteLine($"CurrentHealth = {CurrentHealth}");
         Debug.WriteLine($"MaximumHealth = {MaximumHealth}");

@@ -27,156 +27,190 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Views
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-   {
-      static readonly int WM_HOTKEY = 0x312;
+  public partial class MainWindow : Window, IDisposable
+  {
+    static readonly int WM_HOTKEY = 0x312;
 
-      enum ClientLoadResult
+    enum ClientLoadResult
+    {
+      Success = 0,
+      ClientPathInvalid,
+      HashError,
+      AutoDetectFailed,
+      BadVersion,
+      CreateProcessFailed,
+      PatchingFailed
+    }
+
+    static readonly int IconPadding = 14;
+
+    // static readonly int SkillsTabIndex = 0;
+    static readonly int SpellsTabIndex = 1;
+    // static readonly int FlowerTabIndex = 2;
+
+    bool isDisposed;
+    HwndSource windowSource;
+
+    int recentSettingsTabIndex;
+    MetadataEditorWindow metadataWindow;
+    SettingsWindow settingsWindow;
+    BackgroundWorker processUpdateWorker;
+    BackgroundWorker clientUpdateWorker;
+    BackgroundWorker flowerUpdateWorker;
+
+    PlayerMacroState selectedMacro;
+
+    Exception loadSkillsException;
+    Exception loadSpellsException;
+    Exception loadStavesException;
+
+    public MainWindow()
+    {
+      InitializeComponent();
+      InitializeViews();
+
+      LoadVersions();
+      LoadThemes();
+      LoadSettings();
+
+      LoadSkills();
+      LoadSpells();
+      LoadStaves();
+      CalculateLines();
+
+      ApplyTheme();
+      ApplySettings();
+      ApplyDebugSettings();
+
+      StartUpdateTimers();
+    }
+
+    #region IDisposable Methods
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    void Dispose(bool isDisposing)
+    {
+      if (isDisposed)
+        return;
+
+      if (isDisposing)
       {
-         Success = 0,
-         ClientPathInvalid,
-         HashError,
-         AutoDetectFailed,
-         BadVersion,
-         CreateProcessFailed,
-         PatchingFailed
+        if (processUpdateWorker != null)
+          processUpdateWorker.Dispose();
+
+        if (clientUpdateWorker != null)
+          clientUpdateWorker.Dispose();
+
+        if (flowerUpdateWorker != null)
+          flowerUpdateWorker.Dispose();
       }
 
-      static readonly int IconPadding = 14;
-      
-      static readonly int SkillsTabIndex = 0;
-      static readonly int SpellsTabIndex = 1;
-      static readonly int FlowerTabIndex = 2;
+      if (windowSource != null)
+        windowSource.Dispose();
 
-      HwndSource windowSource;
+      isDisposed = true;
+    }
+    #endregion
 
-      int recentSettingsTabIndex;
-      MetadataEditorWindow metadataWindow;
-      SettingsWindow settingsWindow;
-      BackgroundWorker processUpdateWorker;
-      BackgroundWorker clientUpdateWorker;
-      BackgroundWorker flowerUpdateWorker;
+    #region Client Launch Methods
+    void LaunchClient()
+    {
+      startNewClientButton.IsEnabled = false;
 
-      PlayerMacroState selectedMacro;
+      var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
+      var clientHash = string.Empty;
+      var result = ClientLoadResult.Success;
 
-      Exception loadSkillsException;
-      Exception loadSpellsException;
-      Exception loadStavesException;
-
-      public MainWindow()
+      try
       {
-         InitializeComponent();         
-         InitializeViews();
+        // Ensure Client Path Exists
+        if (!File.Exists(clientPath))
+        {
+          result = ClientLoadResult.ClientPathInvalid;
+          return;
+        }
 
-         LoadVersions();
-         LoadThemes();
-         LoadSettings();
-         
-         LoadSkills();
-         LoadSpells();
-         LoadStaves();
-         CalculateLines();
+        var clientVersion = DetectClientVersion(clientPath, out result);
 
-         ApplyTheme();
-         ApplySettings();
-         ApplyDebugSettings();
+        if (result != ClientLoadResult.Success)
+          return;
 
-         StartUpdateTimers();
+        var processInformation = StartClientProcess(clientPath, out result);
+
+        if (result != ClientLoadResult.Success)
+          return;
+
+        PatchClient(processInformation, clientVersion, out result);
       }
-
-      #region Client Launch Methods
-      void LaunchClient()
+      catch (Exception ex)
       {
-         startNewClientButton.IsEnabled = false;
-
-         var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
-         var clientHash = string.Empty;
-         var result = ClientLoadResult.Success;
-
-         try
-         {
-            // Ensure Client Path Exists
-            if (!File.Exists(clientPath))
-            {
-               result = ClientLoadResult.ClientPathInvalid;
-               return;
-            }
-
-            var clientVersion = DetectClientVersion(clientPath, out result);
-
-            if (result != ClientLoadResult.Success)
-               return;
-
-            var processInformation = StartClientProcess(clientPath, out result);
-
-            if (result != ClientLoadResult.Success)
-               return;
-
-            PatchClient(processInformation, clientVersion, out result);
-         }
-         catch (Exception ex)
-         {
-            this.ShowMessageBox(ex.GetType().Name,
-               ex.Message, "This error occured trying to launch a new client.",
-               MessageBoxButton.OK,
-               440,
-               280);
-         }
-         finally
-         {
-            HandleClientLoadResult(result);
-            startNewClientButton.IsEnabled = true;
-         }
+        this.ShowMessageBox(ex.GetType().Name,
+           ex.Message, "This error occured trying to launch a new client.",
+           MessageBoxButton.OK,
+           440,
+           280);
       }
-
-      ClientVersion DetectClientVersion(string clientPath, out ClientLoadResult result)
+      finally
       {
-         ClientVersion clientVersion = null;
-         var clientHash = string.Empty;
-         var clientKey = UserSettingsManager.Instance.Settings.SelectedVersion;
+        HandleClientLoadResult(result);
+        startNewClientButton.IsEnabled = true;
+      }
+    }
 
-         result = ClientLoadResult.Success;
+    ClientVersion DetectClientVersion(string clientPath, out ClientLoadResult result)
+    {
+      ClientVersion clientVersion = null;
+      var clientHash = string.Empty;
+      var clientKey = UserSettingsManager.Instance.Settings.SelectedVersion;
 
-         // Get MD5 Hash and Detect Version
-         try
-         {
-            if (string.Equals("Auto-Detect", clientKey, StringComparison.OrdinalIgnoreCase))
-            {
-               using (var inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-               using (var md5 = new MD5CryptoServiceProvider())
-               {
-                  md5.ComputeHash(inputStream);
-                  inputStream.Close();
+      result = ClientLoadResult.Success;
+      Stream inputStream = null;
 
-                  clientHash = BitConverter.ToString(md5.Hash).Replace("-", string.Empty);
-               }
+      // Get MD5 Hash and Detect Version
+      try
+      {
+        if (string.Equals("Auto-Detect", clientKey, StringComparison.OrdinalIgnoreCase))
+        {
 
-               clientKey = ClientVersionManager.Instance.DetectVersion(clientHash);
+          inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+          using (var md5 = new MD5CryptoServiceProvider())
+          {
+            inputStream = null;
+            md5.ComputeHash(inputStream);
+            inputStream.Close();
 
-               if (clientKey == null)
-               {
-                  result = ClientLoadResult.AutoDetectFailed;
-                  return clientVersion;
-               }
-            }
-         }
-         catch
-         {
-            result = ClientLoadResult.HashError;
+            clientHash = BitConverter.ToString(md5.Hash).Replace("-", string.Empty);
+          }
+
+          clientKey = ClientVersionManager.Instance.DetectVersion(clientHash);
+
+          if (clientKey == null)
+          {
+            result = ClientLoadResult.AutoDetectFailed;
             return clientVersion;
-         }
-
-         // Get Version from Manager
-         clientVersion = ClientVersionManager.Instance.GetVersion(clientKey);
-
-         if (clientVersion == null)
-            result = ClientLoadResult.BadVersion;
-
-         return clientVersion;
+          }
+        }
       }
+      catch
+      {
+        result = ClientLoadResult.HashError;
+        return clientVersion;
+      }
+      finally { inputStream?.Dispose(); }
+
+      // Get Version from Manager
+      clientVersion = ClientVersionManager.Instance.GetVersion(clientKey);
+
+      if (clientVersion == null)
+        result = ClientLoadResult.BadVersion;
+
+      return clientVersion;
+    }
+  
 
       ProcessInformation StartClientProcess(string clientPath, out ClientLoadResult result)
       {
@@ -208,67 +242,74 @@ namespace SleepHunter.Views
          return processInformation;
       }
 
-      void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
+    void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
+    {
+      var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
+      var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
+      var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
+
+      // Patch Process
+      ProcessMemoryAccessor accessor = null;
+      Stream patchStream = null;
+      BinaryReader reader = null;
+      BinaryWriter writer = null;
+      try
       {
-         var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
-         var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
-         var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
-  
-         // Patch Process
-         try
-         {
-            using (var accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.ReadWrite))
-            using (var patchStream = accessor.GetStream())
-            using (var reader = new BinaryReader(patchStream))
-            using (var writer = new BinaryWriter(patchStream))
-            {
-               if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
-               {
-                  patchStream.Position = version.MultipleInstanceAddress;
-                  writer.Write((byte)0x31);        // XOR
-                  writer.Write((byte)0xC0);        // EAX, EAX
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-               }
+        accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.ReadWrite);
+        patchStream = accessor.GetStream();
+        reader = new BinaryReader(patchStream);
+        writer = new BinaryWriter(patchStream);
 
-               if (patchIntroVideo && version.IntroVideoAddress > 0)
-               {
-                  patchStream.Position = version.IntroVideoAddress;
-                  writer.Write((byte)0x83);        // CMP
-                  writer.Write((byte)0xFA);        // EDX
-                  writer.Write((byte)0x00);        // 0
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-                  writer.Write((byte)0x90);        // NOP
-               }
+          if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
+          {
+            patchStream.Position = version.MultipleInstanceAddress;
+            writer.Write((byte)0x31);        // XOR
+            writer.Write((byte)0xC0);        // EAX, EAX
+            writer.Write((byte)0x90);        // NOP
+            writer.Write((byte)0x90);        // NOP
+            writer.Write((byte)0x90);        // NOP
+            writer.Write((byte)0x90);        // NOP
+          }
 
-               if (patchNoWalls && version.NoWallAddress > 0)
-               {
-                  patchStream.Position = version.NoWallAddress;
-                  writer.Write((byte)0xEB);        // JMP SHORT
-                  writer.Write((byte)0x17);        // +0x17
-                  writer.Write((byte)0x90);        // NOP
-               }
+          if (patchIntroVideo && version.IntroVideoAddress > 0)
+          {
+            patchStream.Position = version.IntroVideoAddress;
+            writer.Write((byte)0x83);        // CMP
+            writer.Write((byte)0xFA);        // EDX
+            writer.Write((byte)0x00);        // 0
+            writer.Write((byte)0x90);        // NOP
+            writer.Write((byte)0x90);        // NOP
+            writer.Write((byte)0x90);        // NOP
+          }
 
-               patchStream.Close();
-            }
-
-            result = ClientLoadResult.Success;
-         }
-         catch
-         {
-            result = ClientLoadResult.PatchingFailed;
-         }
-         finally
-         {
-            // Resume and close handles.
-            NativeMethods.ResumeThread(process.ThreadHandle);
-            NativeMethods.CloseHandle(process.ThreadHandle);
-            NativeMethods.CloseHandle(process.ProcessHandle);
-         }
+          if (patchNoWalls && version.NoWallAddress > 0)
+          {
+            patchStream.Position = version.NoWallAddress;
+            writer.Write((byte)0xEB);        // JMP SHORT
+            writer.Write((byte)0x17);        // +0x17
+            writer.Write((byte)0x90);        // NOP
+          }
+        
+        result = ClientLoadResult.Success;
       }
+      catch
+      {
+        result = ClientLoadResult.PatchingFailed;
+      }
+      finally
+      {
+        reader?.Dispose();
+        writer?.Dispose();
+        accessor?.Dispose();
+        patchStream?.Dispose();
+
+        // Resume and close handles.
+        NativeMethods.ResumeThread(process.ThreadHandle);
+        NativeMethods.CloseHandle(process.ThreadHandle);
+        NativeMethods.CloseHandle(process.ProcessHandle);
+      }
+    }
 
       void HandleClientLoadResult(ClientLoadResult result)
       {

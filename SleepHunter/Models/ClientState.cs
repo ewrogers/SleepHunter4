@@ -90,75 +90,82 @@ namespace SleepHunter.Models
          Update(owner.Accessor);
       }
 
-      public void Update(ProcessMemoryAccessor accessor)
+    public void Update(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
+
+      var version = Owner.Version;
+
+      if (version == null)
       {
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         var version = Owner.Version;
-
-         if (version == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         var activePanelVariable = version.GetVariable(ActivePanelKey);
-         var inventoryExpandedVariable = version.GetVariable(InventoryExpandedKey);
-         var minimizedModeVariable = version.GetVariable(MinimizedModeKey);
-         var dialogOpenVariable = version.GetVariable(DialogOpenKey);
-         var senseOpenVariable = version.GetVariable(SenseOpenKey);
-         var userChattingVariable = version.GetVariable(UserChattingKey);
-
-         byte activePanelByte;
-         bool isInventoryExpanded;
-         bool isMinimizedMode;
-         bool isDialogOpen;
-         bool isUserChatting;
-
-         Debug.WriteLine($"Updating client state (pid={accessor.ProcessId})...");
-
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
-               ActivePanel = (InterfacePanel)activePanelByte;
-            else
-               ActivePanel = InterfacePanel.Unknown;
-
-            if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out isInventoryExpanded))
-               IsInventoryExpanded = isInventoryExpanded;
-            else
-               IsInventoryExpanded = false;
-
-            if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out isMinimizedMode))
-               IsMinimizedMode = isMinimizedMode;
-            else
-               IsMinimizedMode = false;
-
-            if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out isDialogOpen))
-               IsDialogOpen = isDialogOpen;
-            else
-               IsDialogOpen = false;
-
-            if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
-                IsSenseOpen = isSenseOpen;
-            else
-                IsSenseOpen = false;
-
-            if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
-               IsUserChatting = isUserChatting;
-            else
-               IsUserChatting = false;
-         }
-
-         Debug.WriteLine($"ActivePanel = {ActivePanel}");
-         Debug.WriteLine($"IsInventoryExpanded = {IsInventoryExpanded}");
-         Debug.WriteLine($"IsMinimizedMode = {IsMinimizedMode}");
-         Debug.WriteLine($"IsDialogOpen = {IsDialogOpen}");
-         Debug.WriteLine($"IsSenseOpen = {IsSenseOpen}");
-         Debug.WriteLine($"IsUserChatting = {IsUserChatting}");
+        ResetDefaults();
+        return;
       }
+
+      var activePanelVariable = version.GetVariable(ActivePanelKey);
+      var inventoryExpandedVariable = version.GetVariable(InventoryExpandedKey);
+      var minimizedModeVariable = version.GetVariable(MinimizedModeKey);
+      var dialogOpenVariable = version.GetVariable(DialogOpenKey);
+      var senseOpenVariable = version.GetVariable(SenseOpenKey);
+      var userChattingVariable = version.GetVariable(UserChattingKey);
+
+      byte activePanelByte;
+      bool isInventoryExpanded;
+      bool isMinimizedMode;
+      bool isDialogOpen;
+      bool isUserChatting;
+
+      Debug.WriteLine($"Updating client state (pid={accessor.ProcessId})...");
+
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+
+          if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
+            ActivePanel = (InterfacePanel)activePanelByte;
+          else
+            ActivePanel = InterfacePanel.Unknown;
+
+          if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out isInventoryExpanded))
+            IsInventoryExpanded = isInventoryExpanded;
+          else
+            IsInventoryExpanded = false;
+
+          if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out isMinimizedMode))
+            IsMinimizedMode = isMinimizedMode;
+          else
+            IsMinimizedMode = false;
+
+          if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out isDialogOpen))
+            IsDialogOpen = isDialogOpen;
+          else
+            IsDialogOpen = false;
+
+          if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
+            IsSenseOpen = isSenseOpen;
+          else
+            IsSenseOpen = false;
+
+          if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
+            IsUserChatting = isUserChatting;
+          else
+            IsUserChatting = false;
+        }
+      }
+      finally { stream?.Dispose(); }
+
+      Debug.WriteLine($"ActivePanel = {ActivePanel}");
+      Debug.WriteLine($"IsInventoryExpanded = {IsInventoryExpanded}");
+      Debug.WriteLine($"IsMinimizedMode = {IsMinimizedMode}");
+      Debug.WriteLine($"IsDialogOpen = {IsDialogOpen}");
+      Debug.WriteLine($"IsSenseOpen = {IsSenseOpen}");
+      Debug.WriteLine($"IsUserChatting = {IsUserChatting}");
+    }
 
       public void ResetDefaults()
       {

@@ -72,6 +72,7 @@ namespace SleepHunter.Macro
       if (isDisposing)
       {
         CancelTask();
+        cancelSource.Dispose();
       }
 
       isDisposed = true;

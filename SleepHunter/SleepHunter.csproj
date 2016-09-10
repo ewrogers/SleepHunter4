@@ -100,12 +100,9 @@
     <Compile Include="Win32\ProcessAccessFlags.cs" />
     <Compile Include="Win32\ProcessCreationFlags.cs" />
     <Compile Include="Win32\ProcessInformation.cs" />
-    <Compile Include="Win32\ProcessorArchitecture.cs" />
-    <Compile Include="Win32\ProcessorType.cs" />
     <Compile Include="Win32\Rect.cs" />
     <Compile Include="Win32\SecurityAttributes.cs" />
     <Compile Include="Win32\StartupInfo.cs" />
-    <Compile Include="Win32\SystemInfo.cs" />
     <Compile Include="Win32\VirtualKeyMapMode.cs" />
     <Compile Include="Win32\VirtualMemoryProtection.cs" />
     <Compile Include="Win32\VirtualMemoryStatus.cs" />

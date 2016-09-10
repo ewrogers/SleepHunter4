@@ -58,7 +58,6 @@ namespace SleepHunter.Settings
          using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
          {
             LoadFromStream(inputStream);
-            inputStream.Close();
          }
       }
 
@@ -70,7 +69,7 @@ namespace SleepHunter.Settings
          if (settings == null)
             settings = new UserSettings();
 
-         this.Settings = settings;
+         Settings = settings;
       }
 
       public void SaveToFile(string filename)
@@ -79,7 +78,6 @@ namespace SleepHunter.Settings
          {
             SaveToStream(outputStream);
             outputStream.Flush();
-            outputStream.Close();
          }
       }
 

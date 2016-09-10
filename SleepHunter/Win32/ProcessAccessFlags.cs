@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SleepHunter.Win32
 {
-   [Flags]
+  [Flags]
    internal enum ProcessAccessFlags
    {
       None = 0x0,

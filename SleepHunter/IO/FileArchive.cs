@@ -39,36 +39,40 @@ namespace SleepHunter.IO
          name = filename;
       }
 
-      void ReadTableOfContents()
+    void ReadTableOfContents()
+    {
+      Stream stream = null;
+      try
       {
-         using (var stream = mappedFile.CreateViewStream(0, 0, MemoryMappedFileAccess.Read))
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            var entryCount = reader.ReadUInt32() - 1;
+        stream = mappedFile.CreateViewStream(0, 0, MemoryMappedFileAccess.Read);
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+          var entryCount = reader.ReadUInt32() - 1;
 
-            for (int i = 0; i < entryCount; i++)
+          for (int i = 0; i < entryCount; i++)
+          {
+            var index = i;
+            var startAddress = reader.ReadUInt32();
+            var name = reader.ReadFixedString(NameLength).Trim();
+            var size = reader.ReadInt32() - startAddress;
+
+            reader.BaseStream.Position -= sizeof(uint);
+
+            var entry = new FileArchiveEntry
             {
-               var index = i;
-               var startAddress = reader.ReadUInt32();
-               var name = reader.ReadFixedString(NameLength).Trim();
-               var size = reader.ReadInt32() - startAddress;
+              Index = index,
+              Name = name,
+              Offset = startAddress,
+              Size = size
+            };
 
-               reader.BaseStream.Position -= sizeof(uint);
-
-               var entry = new FileArchiveEntry
-               {
-                  Index = index,
-                  Name = name,
-                  Offset = startAddress,
-                  Size = size
-               };
-
-               entries[name] = entry;
-            }
-
-            stream.Close();
-         }
+            entries[name] = entry;
+          }
+        }
       }
+      finally { stream?.Dispose(); }
+    }
 
       public bool ContainsFile(string filename)
       {

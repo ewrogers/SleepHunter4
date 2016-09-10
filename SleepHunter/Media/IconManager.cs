@@ -202,10 +202,7 @@ namespace SleepHunter.Media
          {
             using (var inputStream = archive.GetStream(paletteFile))
             {
-               var palette = new ColorPalette(inputStream);
-               inputStream.Close();
-
-               return palette;
+               return new ColorPalette(inputStream);
             }
          }
          catch { return null; }
@@ -223,11 +220,7 @@ namespace SleepHunter.Media
          {
             using (var inputStream = archive.GetStream(epfFile))
             {
-               var epf = new EpfImage(inputStream);
-               inputStream.Close();
-
-               return epf;
-
+               return new EpfImage(inputStream);
             }
          }
          catch { return null; }

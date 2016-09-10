@@ -9,14 +9,17 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryScanner : IDisposable
    {
+    static readonly int PageSize = 64 * 1024;
+    static readonly uint MinimumVmAddress = 0x00400000;
+    static readonly uint MaximumVmAddress = 0xFFFFFFFF;
+
       bool isDisposed;
       IntPtr processHandle;
       bool leaveOpen;
-      SystemInfo systemInfo;
       byte[] internalBuffer = new byte[8];
       byte[] internalStringBuffer = new byte[256];
       byte[] searchBuffer;
-
+      
       public IntPtr ProcessHandle
       {
          get { return processHandle; }
@@ -27,9 +30,8 @@ namespace SleepHunter.IO.Process
       {
          this.processHandle = processHandle;
          this.leaveOpen = leaveOpen;
-
-         NativeMethods.GetSystemInfo(out systemInfo);
-         searchBuffer = new byte[systemInfo.PageSize];
+      
+         searchBuffer = new byte[PageSize];
       }
 
       #region IDisposable Methods
@@ -128,30 +130,31 @@ namespace SleepHunter.IO.Process
          var start = (uint)startingAddress;
          var end = (uint)endingAddress;
 
-         if (start <= 0)
-            start = (uint)systemInfo.MinimumApplicationAddress;
+      if (start <= 0)
+        start = MinimumVmAddress;
 
          if (end <= 0)
-            end = (uint)systemInfo.MaximumApplicationAddress;
+        end = MaximumVmAddress;
 
          long address = start;
          MemoryBasicInformation memoryInfo;
          int sizeofMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
 
          while (address <= end)
-         {            
-            if (NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out memoryInfo, sizeofMemoryInfo) <= 0)
-               break;
+         {
+        var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out memoryInfo, (IntPtr)sizeofMemoryInfo);
 
+        if (queryResult <= 0)
+          break;
 
             if (memoryInfo.Type == VirtualMemoryType.Private && memoryInfo.State == VirtualMemoryStatus.Commit && memoryInfo.Protect == VirtualMemoryProtection.ReadWrite)
             {
-               var numberOfPages = memoryInfo.RegionSize / systemInfo.PageSize;
+               var numberOfPages = memoryInfo.RegionSize / PageSize;
 
                for (int i = 0; i < numberOfPages; i++)
                {
                   int numberOfBytesRead;
-                  var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * systemInfo.PageSize), searchBuffer, searchBuffer.Length, out numberOfBytesRead);
+                  var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, (IntPtr)searchBuffer.Length, out numberOfBytesRead);
 
                   if (!result || numberOfBytesRead != searchBuffer.Length)
                      throw new Win32Exception("Unable to read memory page from process.");
@@ -159,11 +162,11 @@ namespace SleepHunter.IO.Process
                   var index = IndexOfSequence(searchBuffer, bytes, size);
 
                   if (index >= 0)
-                     return (IntPtr)memoryInfo.BaseAddress + (i * systemInfo.PageSize) + index;
+                     return (IntPtr)memoryInfo.BaseAddress + (i * PageSize) + index;
                }
             }
 
-            address = (uint)memoryInfo.BaseAddress + (uint)memoryInfo.RegionSize;
+            address = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
          }
 
          return IntPtr.Zero;

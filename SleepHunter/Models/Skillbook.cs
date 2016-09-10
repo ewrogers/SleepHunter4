@@ -16,7 +16,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class Skillbook : ObservableObject, IEnumerable<Skill>
+    public sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
    {
       static readonly string SkillbookKey = @"Skillbook";
       static readonly string SkillCooldownsKey = "SkillCooldowns";
@@ -25,6 +25,7 @@ namespace SleepHunter.Models
       public static readonly int MedeniaSkillCount = 36;
       public static readonly int WorldSkillCount = 18;
 
+    bool isDisposed;
       Player owner;
       List<Skill> skills = new List<Skill>(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
       ConcurrentDictionary<string, bool> activeSkills = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -76,7 +77,29 @@ namespace SleepHunter.Models
          InitializeSkillbook();
       }
 
-      void InitializeSkillbook()
+    #region IDisposable Methods
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    void Dispose(bool isDisposing)
+    {
+      if (isDisposed)
+        return;
+
+      if (isDisposing)
+      {
+        if (scanner != null)
+          scanner.Dispose();
+      }
+
+      isDisposed = true;
+    }
+    #endregion
+
+    void InitializeSkillbook()
       {
          skills.Clear();
 
@@ -151,100 +174,106 @@ namespace SleepHunter.Models
          Update(owner.Accessor);
       }
 
-      public void Update(ProcessMemoryAccessor accessor)
+    public void Update(ProcessMemoryAccessor accessor)
+    {
+      if (accessor == null)
+        throw new ArgumentNullException("accessor");
+
+      var version = Owner.Version;
+
+      if (version == null)
       {
-         if (accessor == null)
-            throw new ArgumentNullException("accessor");
-
-         var version = Owner.Version;
-
-         if (version == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         var skillbookVariable = version.GetVariable(SkillbookKey);
-
-         if (skillbookVariable == null)
-         {
-            ResetDefaults();
-            return;
-         }
-
-         Debug.WriteLine($"Updating skillbok (pid={accessor.ProcessId})...");
-
-         using (var stream = accessor.GetStream())
-         using (var reader = new BinaryReader(stream, Encoding.ASCII))
-         {
-            var skillbookPointer = skillbookVariable.DereferenceValue(reader);
-
-            if (skillbookPointer == 0)
-            {
-               ResetDefaults();
-               return;
-            }
-
-            reader.BaseStream.Position = skillbookPointer;
-
-            for (int i = 0; i < skillbookVariable.Count; i++)
-            {
-               SkillMetadata metadata = null;
-
-               try
-               {
-                  bool hasSkill = reader.ReadInt16() != 0;
-                  ushort iconIndex = reader.ReadUInt16();
-                  string name = reader.ReadFixedString(skillbookVariable.MaxLength);
-
-                  int currentLevel, maximumLevel;
-                  if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
-                  {
-                     if (!string.IsNullOrWhiteSpace(name))
-                        skills[i].Name = name.Trim();
-                  }
-
-                  skills[i].IsEmpty = !hasSkill;
-                  skills[i].IconIndex = iconIndex;
-                  skills[i].Icon = IconManager.Instance.GetSkillIcon(iconIndex);
-                  skills[i].Name = name;
-                  skills[i].CurrentLevel = currentLevel;
-                  skills[i].MaximumLevel = maximumLevel;
-
-                  if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
-                     metadata = SkillMetadataManager.Instance.GetSkill(name);
-
-                  var isActive = this.IsActive(skills[i].Name);
-                  skills[i].IsActive = isActive.HasValue && isActive.Value;
-
-                  if (metadata != null)
-                  {
-                     skills[i].Cooldown = metadata.Cooldown;
-                     skills[i].ManaCost = metadata.ManaCost;
-                     skills[i].CanImprove = metadata.CanImprove;
-                     skills[i].IsAssail = metadata.IsAssail;
-                     skills[i].OpensDialog = metadata.OpensDialog;
-                     skills[i].RequiresDisarm = metadata.RequiresDisarm;
-                  }
-                  else
-                  {
-                     skills[i].Cooldown = TimeSpan.Zero;
-                     skills[i].ManaCost = 0;
-                     skills[i].CanImprove = true;
-                     skills[i].IsAssail = false;
-                     skills[i].OpensDialog = false;
-                     skills[i].RequiresDisarm = false;
-                  }
-
-                  skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader);
-
-                  if (!skills[i].IsEmpty)
-                      Debug.WriteLine($"Skill slot {i + 1}: {skills[i].Name} (cur={skills[i].CurrentLevel}, max={skills[i].MaximumLevel}, icon={skills[i].IconIndex})");
-               }
-               catch { }
-            }
-         }
+        ResetDefaults();
+        return;
       }
+
+      var skillbookVariable = version.GetVariable(SkillbookKey);
+
+      if (skillbookVariable == null)
+      {
+        ResetDefaults();
+        return;
+      }
+
+      Debug.WriteLine($"Updating skillbok (pid={accessor.ProcessId})...");
+ 
+      Stream stream = null;
+      try
+      {
+        stream = accessor.GetStream();
+        using (var reader = new BinaryReader(stream, Encoding.ASCII))
+        {
+          stream = null;
+          var skillbookPointer = skillbookVariable.DereferenceValue(reader);
+
+          if (skillbookPointer == 0)
+          {
+            ResetDefaults();
+            return;
+          }
+
+          reader.BaseStream.Position = skillbookPointer;
+
+          for (int i = 0; i < skillbookVariable.Count; i++)
+          {
+            SkillMetadata metadata = null;
+
+            try
+            {
+              bool hasSkill = reader.ReadInt16() != 0;
+              ushort iconIndex = reader.ReadUInt16();
+              string name = reader.ReadFixedString(skillbookVariable.MaxLength);
+
+              int currentLevel, maximumLevel;
+              if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
+              {
+                if (!string.IsNullOrWhiteSpace(name))
+                  skills[i].Name = name.Trim();
+              }
+
+              skills[i].IsEmpty = !hasSkill;
+              skills[i].IconIndex = iconIndex;
+              skills[i].Icon = IconManager.Instance.GetSkillIcon(iconIndex);
+              skills[i].Name = name;
+              skills[i].CurrentLevel = currentLevel;
+              skills[i].MaximumLevel = maximumLevel;
+
+              if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
+                metadata = SkillMetadataManager.Instance.GetSkill(name);
+
+              var isActive = this.IsActive(skills[i].Name);
+              skills[i].IsActive = isActive.HasValue && isActive.Value;
+
+              if (metadata != null)
+              {
+                skills[i].Cooldown = metadata.Cooldown;
+                skills[i].ManaCost = metadata.ManaCost;
+                skills[i].CanImprove = metadata.CanImprove;
+                skills[i].IsAssail = metadata.IsAssail;
+                skills[i].OpensDialog = metadata.OpensDialog;
+                skills[i].RequiresDisarm = metadata.RequiresDisarm;
+              }
+              else
+              {
+                skills[i].Cooldown = TimeSpan.Zero;
+                skills[i].ManaCost = 0;
+                skills[i].CanImprove = true;
+                skills[i].IsAssail = false;
+                skills[i].OpensDialog = false;
+                skills[i].RequiresDisarm = false;
+              }
+
+              skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader);
+
+              if (!skills[i].IsEmpty)
+                Debug.WriteLine($"Skill slot {i + 1}: {skills[i].Name} (cur={skills[i].CurrentLevel}, max={skills[i].MaximumLevel}, icon={skills[i].IconIndex})");
+            }
+            catch { }
+          }
+        }
+      }
+      finally { stream?.Dispose(); }
+    }
 
       public void ResetDefaults()
       {

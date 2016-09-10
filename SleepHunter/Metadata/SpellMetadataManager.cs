@@ -115,7 +115,6 @@ namespace SleepHunter.Metadata
          using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
          {
             LoadFromStream(inputStream);
-            inputStream.Close();
          }
       }
 
@@ -135,7 +134,6 @@ namespace SleepHunter.Metadata
          {
             SaveToStream(outputStream);
             outputStream.Flush();
-            outputStream.Close();
          }
       }
 

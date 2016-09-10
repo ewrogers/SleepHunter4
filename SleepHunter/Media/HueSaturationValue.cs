@@ -3,9 +3,12 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
+  [Serializable]
     public struct HueSaturationValue
    {
+    [NonSerialized]
       Color color;
+
       double hue;
       double saturation;
       double value;

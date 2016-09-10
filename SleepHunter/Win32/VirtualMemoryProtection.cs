@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SleepHunter.Win32
 {
-   [Flags]
+  [Flags]
    internal enum VirtualMemoryProtection : uint
    {
       None = 0,
