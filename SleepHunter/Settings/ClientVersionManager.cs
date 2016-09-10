@@ -184,7 +184,7 @@ namespace SleepHunter.Settings
          version.Variables.Add(new DynamicMemoryVariable("MinimizedMode", 0x82B76C, offsets: 0x4DF0));
          version.Variables.Add(new DynamicMemoryVariable("DialogOpen", 0x85118C, offsets: new long[] { 0x59C, 0x594, 0x18, 0x24, 0xA20 }));
          version.Variables.Add(new DynamicMemoryVariable("SenseOpen", 0x6FB194, offsets: new long[] { 0x4C, 0x44, 0x18, 0xE }));
-         version.Variables.Add(new DynamicMemoryVariable("UserChatting", 0x70D098, offsets: 0x438));
+         version.Variables.Add(new DynamicMemoryVariable("UserChatting", 0x6EB118, offsets: 0x438));
 
          AddVersion(version);
       }
