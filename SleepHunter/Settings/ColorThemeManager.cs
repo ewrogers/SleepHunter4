@@ -51,7 +51,7 @@ namespace SleepHunter.Settings
       DefaultThemes.Add(new ColorTheme("Midnight", "#1A237E", WhiteHexString)); // Indigo 900
       
       DefaultThemes.Add(new ColorTheme("Cerulean", "#1976D2", WhiteHexString)); // Blue 700
-      DefaultThemes.Add(new ColorTheme("Classic", "#0D47A1", WhiteHexString)); // Blue 900
+      DefaultThemes.Add(new ColorTheme("Classic", "#0D47A1", WhiteHexString, isDefault: true)); // Blue 900
 
       DefaultThemes.Add(new ColorTheme("Sky", "#039BE5", WhiteHexString)); // Light Blue 600
       DefaultThemes.Add(new ColorTheme("Carolina", "#01579B", WhiteHexString)); // Light Blue 800
