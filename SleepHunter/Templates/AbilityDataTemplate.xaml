@@ -3,11 +3,11 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
-    
+
     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
     <converters:BooleanInverter x:Key="BooleanInverter"/>
-    
+
     <Style TargetType="ToolTip">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -35,7 +35,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <DataTemplate x:Key="AbilityDataTemplate">
         <Border Name="Border" Margin="2">
             <Grid>
@@ -43,7 +43,7 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                
+
                 <Border Name="SlotBorder"
                         BorderBrush="{StaticResource ObsidianSeparatorColor}"
                         BorderThickness="1"
@@ -157,13 +157,13 @@
                                                FontSize="14"
                                                FontWeight="Normal"
                                                TextAlignment="Center"
-                                               Margin="4,2"/>                                    
+                                               Margin="4,2"/>
                                 </StackPanel>
                             </Image.ToolTip>
                         </Image>
                     </Grid>
                 </Border>
-                
+
                 <TextBlock Name="NameText"
                            Grid.Row="1"
                            MaxWidth="{Binding ElementName=Icon, Path=Width}"
@@ -188,7 +188,7 @@
                 <Setter TargetName="LevelBorder" Property="Opacity" Value="1.0"/>
                 <Setter TargetName="NameText" Property="Opacity" Value="0.75"/>
             </DataTrigger>
-            
+
             <DataTrigger Binding="{Binding CanImprove, Mode=OneWay}" Value="False">
                 <Setter TargetName="ToolTipLevelText" Property="Text" Value="Does Not Improve"/>
             </DataTrigger>
@@ -200,7 +200,7 @@
             <DataTrigger Binding="{Binding ManaCost}" Value="0">
                 <Setter TargetName="ToolTipManaText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
-            
+
             <DataTrigger Binding="{Binding NumberOfLines}" Value="0">
                 <Setter TargetName="ToolTipLinesText" Property="Text" Value="No Lines"/>
             </DataTrigger>
@@ -208,11 +208,11 @@
             <DataTrigger Binding="{Binding NumberOfLines}" Value="1">
                 <Setter TargetName="ToolTipLinesText" Property="Text" Value="1 Line"/>
             </DataTrigger>
-            
+
             <DataTrigger Binding="{Binding IsSkill}" Value="True">
                 <Setter TargetName="ToolTipLinesText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
-            
+
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding IsSkill, Mode=OneWay}" Value="True"/>

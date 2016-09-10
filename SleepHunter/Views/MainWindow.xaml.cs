@@ -179,7 +179,6 @@ namespace SleepHunter.Views
           inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read);
           using (var md5 = new MD5CryptoServiceProvider())
           {
-            inputStream = null;
             md5.ComputeHash(inputStream);
             inputStream.Close();
 

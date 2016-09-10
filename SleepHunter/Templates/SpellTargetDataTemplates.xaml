@@ -54,71 +54,78 @@
     </DataTemplate>
     
     <DataTemplate x:Key="SpellQueueItemDataTemplate">
-        <Border Name="Border"
-                Background="{StaticResource ObsidianControlBackground}">
-            <Grid Margin="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <Border Name="IconBorder"
-                        Grid.RowSpan="3"
-                        Padding="2"
-                        Margin="8,5"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        BorderBrush="{DynamicResource ObsidianBackground}"
-                        CornerRadius="2">
-                    <Grid>
-                        <Image Name="Icon" 
+        <DockPanel>
+            <Border Name="SelectionBorder" DockPanel.Dock="Left"
+                    Width="4"
+                    Background="{DynamicResource ObsidianBackground}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Visibility="Collapsed"/>
+            <Border Name="Border" Background="{StaticResource ObsidianControlBackground}"
+                    Padding="8,4,8,4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Name="IconBorder"
+                            Grid.RowSpan="3"
+                            Padding="2"
+                            Margin="8,5"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            BorderBrush="{DynamicResource ObsidianBackground}"
+                            CornerRadius="2">
+                        <Grid>
+                            <Image Name="Icon" 
                                Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
                                Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
                                Source="{Binding Icon}"
                                RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                        <Rectangle Name="ActiveRectangle"
+                            <Rectangle Name="ActiveRectangle"
                                    Fill="{DynamicResource ObsidianBackground}"
                                    Opacity="0.25"
                                    Visibility="Collapsed">
-                            <Rectangle.OpacityMask>
-                                <ImageBrush ImageSource="{Binding Icon}"/>
-                            </Rectangle.OpacityMask>
-                        </Rectangle>
-                    </Grid>                    
-                </Border>
-                
-                <StackPanel Grid.Column="1" 
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="{Binding Icon}"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" 
                             Orientation="Vertical"
                             VerticalAlignment="Center">
-                    <TextBlock Name="NameText"
+                        <TextBlock Name="NameText"
                            Style="{StaticResource ObsidianText}"
-                           FontSize="20"
+                           FontSize="16"
                            Text="{Binding Name}"
                            TextWrapping="WrapWithOverflow"
                            Margin="4,2"/>
-                    <TextBlock Name="TargetText"
+                        <TextBlock Name="TargetText"
                            Grid.Row="1"
                            Grid.Column="1"
                            Grid.ColumnSpan="3"
                            Style="{StaticResource ObsidianText}"
-                           FontSize="16"
+                           FontSize="14"
                            Text="{Binding Target, StringFormat=Targeting {0}}"
                            TextWrapping="WrapWithOverflow"
                            Margin="4,2"
                            Opacity="0.75"/>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
 
-                        <TextBlock Name="CurrentLevelText"
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Name="CurrentLevelText"
                            Style="{StaticResource ObsidianText}"
                            FontSize="12"
                            FontWeight="Normal"
@@ -128,14 +135,14 @@
                            Opacity="0.75"
                            Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
 
-                        <ProgressBar Name="ProgressBar"
+                            <ProgressBar Name="ProgressBar"
                                      Grid.Column="1"
                                      Height="12"
                                      Value="{Binding PercentCompleted, Mode=OneWay}"
                                      Style="{StaticResource ObsidianProgressBar}"
                                      Margin="2"/>
 
-                        <TextBlock Name="TargetLevelText"
+                            <TextBlock Name="TargetLevelText"
                            Grid.Column="2"
                            Style="{StaticResource ObsidianText}"
                            FontSize="12"
@@ -145,41 +152,42 @@
                            Margin="4,2,6,2"
                            Opacity="0.75"
                            Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
-                    </Grid>                    
+                        </Grid>
 
-                    <TextBlock Name="CompletedText"
+                        <TextBlock Name="CompletedText"
                                Style="{StaticResource ObsidianText}"
                                Foreground="{StaticResource ObsidianDisabled}"
                                FontSize="12"
                                FontWeight="Normal"
                                Visibility="Collapsed"
                                Margin="6,2">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="Reached Level {0} of {1}">
-                                <Binding Path="TargetLevel"/>
-                                <Binding Path="MaximumLevel"/>
-                            </MultiBinding>                            
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Reached Level {0} of {1}">
+                                    <Binding Path="TargetLevel"/>
+                                    <Binding Path="MaximumLevel"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
 
-                <Border Name="WarningBorder" 
-                        Background="{Binding ElementName=Border, Path=Background}"
+                    <Border Name="WarningBorder" 
+                        Background="Transparent"
                         Grid.Column="2"
                         BorderBrush="{StaticResource ObsidianDisabled}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Margin="6,2"
-                        ToolTip="Warning: Undefined Spell"
+                        Margin="2"
+                        ToolTip="This spell is not defined in metadata, may not cast properly."
                         Visibility="Collapsed">
-                    <Path StrokeThickness="2"
+                        <Path StrokeThickness="2"
                           Stroke="{Binding ElementName=WarningBorder, Path=BorderBrush}"
                           Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"/>
-                </Border>
-            </Grid>
-        </Border>
+                    </Border>
+                </Grid>
+            </Border>
+        </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsUndefined}" Value="True">
                 <Setter TargetName="WarningBorder" Property="Visibility" Value="Visible"/>
@@ -196,7 +204,8 @@
                 <Setter TargetName="CompletedText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,4,8,4"/>
                 <Setter TargetName="NameText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
                 <Setter TargetName="TargetText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
                 <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
