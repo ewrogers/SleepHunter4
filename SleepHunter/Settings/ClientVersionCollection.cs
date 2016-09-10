@@ -33,17 +33,17 @@ namespace SleepHunter.Settings
 
     public ClientVersionCollection()
     {
-      this.versions = new List<ClientVersion>();
+      versions = new List<ClientVersion>();
     }
 
     public ClientVersionCollection(int capacity)
     {
-      this.versions = new List<ClientVersion>(capacity);
+      versions = new List<ClientVersion>(capacity);
     }
 
     public ClientVersionCollection(IEnumerable<ClientVersion> collection)
     {
-      this.versions = new List<ClientVersion>(collection);
+      versions = new List<ClientVersion>(collection);
     }
   }
 }

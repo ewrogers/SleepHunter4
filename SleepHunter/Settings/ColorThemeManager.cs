@@ -12,6 +12,8 @@ namespace SleepHunter.Settings
   {
     public static readonly string ThemesFile = @"Themes.xml";
 
+    static readonly string WhiteHexString = @"#FFFFFF";
+
     #region Default Themes
     static readonly List<ColorTheme> DefaultThemes = new List<ColorTheme>();
     #endregion
@@ -23,38 +25,85 @@ namespace SleepHunter.Settings
 
     private ColorThemeManager()
     {
-      DefaultThemes.Add(new ColorTheme("Sleepy Blue", "#FF104898", "#FFF8F8F8", isDefault: true));
-      DefaultThemes.Add(new ColorTheme("Firestorm", "#FFA81018", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Maroon", "#FF78081F", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Valve", "#FFD84010", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Ranger Danger", "#FFC86810", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Rust", "#FF682808", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Lemon", "#FFA4A408", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Gold", "#FFA87F1F", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Spring", "#FF4F9818", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Lime", "#FF20A810", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Moist Moss", "#FF106808", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Emerald", "#FF083818", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Sea Foam", "#FF1F8868", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Teal", "#FF105848", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Ice", "#FF60B0D0", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Sky", "#FF1094B8", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Lapis Lazuli", "#FF1858C8", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Oceanic", "#FF083078", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Lavender", "#FF404090", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Indigo", "#FF6824C8", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Arcane", "#FF681888", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Royal Purple", "#FF401070", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Cotton Candy", "#FFC87898", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Magenta", "#FFC83098", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Pretty in Pink", "#FFDF2878", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Wood", "#FF4F1F08", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Sand", "#FF8F6F48", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Silverstone", "#FF697E8C", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Steel", "#FF808080", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Smoke", "#FF606060", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Shadow", "#FF404040", "#FFF8F8F8"));
-      DefaultThemes.Add(new ColorTheme("Void", "#FF101010", "#FFF8F8F8"));
+      // Google Material Color Palette
+      DefaultThemes.Add(new ColorTheme("Cherry", "#F44336", WhiteHexString)); // Red 500
+      DefaultThemes.Add(new ColorTheme("Scarlet", "#D32F2F", WhiteHexString)); // Red 700
+      DefaultThemes.Add(new ColorTheme("Crimson", "#B71C1C", WhiteHexString)); // Red 900
+
+      DefaultThemes.Add(new ColorTheme("Sakura", "#F06292", WhiteHexString)); // Pink 300
+      DefaultThemes.Add(new ColorTheme("Pink", "#E91E63", WhiteHexString)); // Pink 500
+      DefaultThemes.Add(new ColorTheme("Primrose", "#C2185B", WhiteHexString)); // Pink 700
+      DefaultThemes.Add(new ColorTheme("Sangria", "#880E4F", WhiteHexString)); // Pink 900
+
+      DefaultThemes.Add(new ColorTheme("Lilac", "#BA68C8", WhiteHexString)); // Purple 300
+      DefaultThemes.Add(new ColorTheme("Purple", "#9C27B0", WhiteHexString)); // Purple 500
+      DefaultThemes.Add(new ColorTheme("Royal", "#7B1FA2", WhiteHexString)); // Purple 700
+      DefaultThemes.Add(new ColorTheme("Plum", "#4A148C", WhiteHexString)); // Purple 900
+
+      DefaultThemes.Add(new ColorTheme("Lavender", "#9575CD", WhiteHexString)); // Deep Purple 300
+      DefaultThemes.Add(new ColorTheme("Deep Purple", "#673AB7", WhiteHexString)); // Deep Purple 500
+      DefaultThemes.Add(new ColorTheme("Twilight", "#512DA8", WhiteHexString)); // Deep Purple 700
+
+      DefaultThemes.Add(new ColorTheme("Periwinkle", "#5C6BC0", WhiteHexString)); // Indigo 400
+      DefaultThemes.Add(new ColorTheme("Indigo", "#3F51B5", WhiteHexString)); // Indigo 500
+      DefaultThemes.Add(new ColorTheme("Oceanic", "#303F9F", WhiteHexString)); // Indigo 700
+      DefaultThemes.Add(new ColorTheme("Midnight", "#1A237E", WhiteHexString)); // Indigo 900
+      
+      DefaultThemes.Add(new ColorTheme("Cerulean", "#1976D2", WhiteHexString)); // Blue 700
+      DefaultThemes.Add(new ColorTheme("Classic", "#0D47A1", WhiteHexString)); // Blue 900
+
+      DefaultThemes.Add(new ColorTheme("Sky", "#039BE5", WhiteHexString)); // Light Blue 600
+      DefaultThemes.Add(new ColorTheme("Carolina", "#01579B", WhiteHexString)); // Light Blue 800
+      
+      DefaultThemes.Add(new ColorTheme("Cyan", "#0097A7", WhiteHexString)); // Cyan 700
+      DefaultThemes.Add(new ColorTheme("Aquamarine", "#00838F", WhiteHexString)); // Cyan 800
+      DefaultThemes.Add(new ColorTheme("Spruce", "#006064", WhiteHexString)); // Cyan 900
+
+      DefaultThemes.Add(new ColorTheme("Teal", "#009688", WhiteHexString)); // Teal 500
+      DefaultThemes.Add(new ColorTheme("Turquoise", "#00796B", WhiteHexString)); // Teal 700
+      DefaultThemes.Add(new ColorTheme("Evergreen", "#004D40", WhiteHexString)); // Teal 900
+
+      DefaultThemes.Add(new ColorTheme("Fresh", "#43A047", WhiteHexString)); // Green 600
+      DefaultThemes.Add(new ColorTheme("Mileth", "#2E7D32", WhiteHexString)); // Green 800
+      DefaultThemes.Add(new ColorTheme("Forest", "#1B5E20", WhiteHexString)); // Green 900
+
+      DefaultThemes.Add(new ColorTheme("Lime", "#689F38", WhiteHexString)); // Light Green 700
+      DefaultThemes.Add(new ColorTheme("Moss", "#33691E", WhiteHexString)); // Light Green 900
+
+      DefaultThemes.Add(new ColorTheme("Lemon", "#9E9D24", WhiteHexString)); // Lime 800
+      DefaultThemes.Add(new ColorTheme("Mustard", "#827717", WhiteHexString)); // Lime 900
+
+      DefaultThemes.Add(new ColorTheme("Gold", "#F9A825", WhiteHexString)); // Yellow 800
+
+      DefaultThemes.Add(new ColorTheme("Ranger", "#FF8F00", WhiteHexString)); // Amber 800
+      DefaultThemes.Add(new ColorTheme("Tangerine", "#FF6F00", WhiteHexString)); // Amber 900
+      
+      DefaultThemes.Add(new ColorTheme("Valve", "#E65100", WhiteHexString)); // Orange 900
+
+      DefaultThemes.Add(new ColorTheme("Coral", "#FF7043", WhiteHexString)); // Deep Orange 400
+      DefaultThemes.Add(new ColorTheme("Sanguine", "#BF360C", WhiteHexString)); // Deep Orange 900
+
+      DefaultThemes.Add(new ColorTheme("Cream", "#A1887F", WhiteHexString)); // Brown 300
+      DefaultThemes.Add(new ColorTheme("Nude", "#8D6E63", WhiteHexString)); // Brown 400
+      DefaultThemes.Add(new ColorTheme("Cappuccino", "#795548", WhiteHexString)); // Brown 500
+      DefaultThemes.Add(new ColorTheme("Earth", "#6D4C41", WhiteHexString)); // Brown 600
+      DefaultThemes.Add(new ColorTheme("Wood", "#5D4037", WhiteHexString)); // Brown 700
+      DefaultThemes.Add(new ColorTheme("Chocolate", "#4E342E", WhiteHexString)); // Brown 800
+      DefaultThemes.Add(new ColorTheme("Espresso", "#3E2723", WhiteHexString)); // Brown 900
+
+      DefaultThemes.Add(new ColorTheme("Silver", "#757575", WhiteHexString)); // Grey 600
+      DefaultThemes.Add(new ColorTheme("Pewter", "#616161", WhiteHexString)); // Grey 700
+      DefaultThemes.Add(new ColorTheme("Gunmetal", "#424242", WhiteHexString)); // Grey 800
+      DefaultThemes.Add(new ColorTheme("Charcoal", "#212121", WhiteHexString)); // Grey 900
+
+      DefaultThemes.Add(new ColorTheme("Smoke", "#78909C", WhiteHexString));  // Blue Grey 400
+      DefaultThemes.Add(new ColorTheme("Silverstone", "#607D8B", WhiteHexString));  // Blue Grey 500
+      DefaultThemes.Add(new ColorTheme("Steel", "#546E7A", WhiteHexString));  // Blue Grey 600
+      DefaultThemes.Add(new ColorTheme("Slate", "#455A64", WhiteHexString));  // Blue Grey 700
+      DefaultThemes.Add(new ColorTheme("Ebony", "#37474F", WhiteHexString));  // Blue Grey 800
+      DefaultThemes.Add(new ColorTheme("Shadow", "#263238", WhiteHexString));  // Blue Grey 900
+
+      DefaultThemes.Add(new ColorTheme("Void", "#000000", WhiteHexString));
     }
     #endregion
 
@@ -76,9 +125,9 @@ namespace SleepHunter.Settings
     {
       get
       {
-        return from t in colorThemes.Values
-               orderby t.BackgroundHsv.Hue descending, t.BackgroundHsv.Value descending
-               select t;
+        return colorThemes.Values
+          .OrderByDescending(x => x.BackgroundHsv.Hue)
+          .ThenByDescending(x => x.BackgroundHsv.Value);
       }
     }
     #endregion

@@ -33,17 +33,17 @@ namespace SleepHunter.Settings
 
     public ColorThemeCollection()
     {
-      this.themes = new List<ColorTheme>();
+      themes = new List<ColorTheme>();
     }
 
     public ColorThemeCollection(int capacity)
     {
-      this.themes = new List<ColorTheme>(capacity);
+      themes = new List<ColorTheme>(capacity);
     }
 
     public ColorThemeCollection(IEnumerable<ColorTheme> collection)
     {
-      this.themes = new List<ColorTheme>(collection);
+      themes = new List<ColorTheme>(collection);
     }
   }
 }
