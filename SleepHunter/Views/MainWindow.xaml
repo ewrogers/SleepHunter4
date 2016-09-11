@@ -16,9 +16,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" MinWidth="180" MaxWidth="320"/>
+            <ColumnDefinition Width="280" MinWidth="180" MaxWidth="360"/>
             <ColumnDefinition Width="*" MinWidth="200"/>
-            <ColumnDefinition Width="240" MinWidth="200" MaxWidth="360"/>
+            <ColumnDefinition Width="260" MinWidth="200" MaxWidth="360"/>
         </Grid.ColumnDefinitions>
         
         <!-- Tool Bar -->

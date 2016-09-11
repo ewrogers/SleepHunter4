@@ -53,7 +53,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="6,2"
-                ToolTip="Warning: Undefined Spell"
+                ToolTip="This spell is not defined in metadata, may not cast properly."
                 Visibility="Collapsed">
             <Path StrokeThickness="2"
                   Stroke="{Binding ElementName=WarningBorder, Path=BorderBrush}"
