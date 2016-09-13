@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:SleepHunter.Models"
         Title="SleepHunter" 
-        Width="800" Height="600"
+        Width="1024" Height="768"
         MinWidth="746" MinHeight="460"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterScreen"
