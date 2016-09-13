@@ -245,9 +245,13 @@
     </DataTemplate>
 
     <DataTemplate x:Key="FlowerQueueItemDataTemplate">
-        <Border Name="Border"
-                Background="{StaticResource ObsidianControlBackground}"
-                Padding="2">
+        <DockPanel>
+            <Border Name="SelectionBorder" DockPanel.Dock="Left"
+                    Width="6"
+                    Background="{DynamicResource ObsidianBackground}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Visibility="Collapsed"/>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -262,7 +266,7 @@
                             Margin="2">
                     <TextBlock Name="TargetText"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="24"
+                               FontSize="20"
                                Text="{Binding Target, StringFormat=Flowering {0}}"
                                Margin="8,4"/>
 
@@ -271,13 +275,13 @@
                                    Grid.Row="1"
                                    Style="{StaticResource ObsidianText}"
                                    Text="{Binding RemainingTime, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Cooldown, Mode=OneWay}"
-                                   FontSize="18"
+                                   FontSize="16"
                                    Margin="8,4"/>
 
                         <ProgressBar Name="TimeProgressBar"
                                      DockPanel.Dock="Right"
                                      Grid.Row="1"
-                                     Height="12"
+                                     Height="8"
                                      Minimum="0"
                                      Maximum="{Binding IntervalSeconds, Mode=OneWay}"
                                      Value="{Binding RemainingTimeSeconds, Mode=OneWay}"
@@ -294,7 +298,7 @@
                             Margin="2">
                     <TextBlock Name="IntervalText"
                            Style="{StaticResource ObsidianText}"
-                           FontSize="18"
+                           FontSize="16"
                            Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=Every {0}}"
                            TextAlignment="Right"
                            Opacity="0.80"
@@ -302,19 +306,17 @@
 
                     <TextBlock Name="ThresholdText"
                            Style="{StaticResource ObsidianText}"
-                           FontSize="18"
+                           FontSize="16"
                            Text="{Binding ManaThreshold, StringFormat=If Mana &lt; {0}}"
                            TextAlignment="Right"
                            Opacity="0.80"
                            Margin="8,4"/>
                 </StackPanel>
             </Grid>
-        </Border>
+        </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                <Setter TargetName="TimeProgressBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="TimeProgressBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ManaThreshold}" Value="{x:Null}">
                 <Setter TargetName="ThresholdText" Property="Visibility" Value="Collapsed"/>

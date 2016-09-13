@@ -1356,6 +1356,39 @@ namespace SleepHunter.Views
       }
     }
 
+    void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+      if (e.LeftButton == MouseButtonState.Pressed)
+      {
+        var draggedItem = sender as ListBoxItem;
+        DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+        draggedItem.IsSelected = true;
+      }
+    }
+
+    void flowerQueueListBox_Drop(object sender, DragEventArgs e)
+    {
+      var droppedItem = e.Data.GetData(typeof(FlowerQueueItem)) as FlowerQueueItem;
+      var target = (sender as ListBoxItem)?.DataContext as FlowerQueueItem;
+
+      var removedIndex = flowerListBox.Items.IndexOf(droppedItem);
+      var targetIndex = flowerListBox.Items.IndexOf(target);
+
+      if (removedIndex < targetIndex)
+      {
+        selectedMacro.AddToFlowerQueue(droppedItem, targetIndex + 1);
+        selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex);
+      }
+      else
+      {
+        if (selectedMacro.FlowerTargets.Count + 1 > removedIndex + 1)
+        {
+          selectedMacro.AddToFlowerQueue(droppedItem, targetIndex);
+          selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex + 1);
+        }
+      }
+    }
+
     void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       var listBox = sender as ListBox;
