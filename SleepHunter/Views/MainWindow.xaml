@@ -33,57 +33,104 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal">
+                    <!-- Start New Client Button -->
                     <Button Name="startNewClientButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Padding="16,2"
-                        Tag="Start New Client"
-                        Click="startNewClientButton_Click">
-                        <Path Stroke="{Binding ElementName=startNewClientButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 8,0 h 6 v 8 h 8 v 6 h -8 v 8 h -6 v -8 h -8 v -6 h 8 v -8 z"/>
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="startNewClientButton_Click"
+                            Padding="8,0">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Start _New Client"
+                                   Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                   Margin="0"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="24"
+                                       Margin="0,4,0,0"
+                                       Text="&#xE1E2;"/>                            
+                        </DockPanel>
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Start Macro Button -->
                     <Button Name="startMacroButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Padding="16,2"
-                        Tag="Start Macro"
-                        IsEnabled="False"
-                        Click="startMacroButton_Click">
-                        <Path Stroke="{Binding ElementName=startMacroButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 0,0 v 22 l 16,-11 z"/>
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="startMacroButton_Click"
+                            Padding="4,0">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Sta_rt Macroing"
+                                   Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                   Margin="0"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="24"
+                                       Margin="0,4,0,0"
+                                       Text="&#xE102;"/>                            
+                        </DockPanel>
                     </Button>
+                    <!-- Pause Macro Button -->
                     <Button Name="pauseMacroButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Padding="16,2"
-                        Tag="Pause Macro"
-                        IsEnabled="False"
-                        Click="pauseMacroButton_Click">
-                        <Path Stroke="{Binding ElementName=pauseMacroButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 0,0 h 10 v 22 h -10 z m 14,0 h 10 v 22 h -10 z"/>
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="pauseMacroButton_Click"
+                            Padding="4,0">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Pause Macroing"
+                                   Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                   Margin="0"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="24"
+                                       Margin="0,4,0,0"
+                                       Text="&#xE103;"/>
+                        </DockPanel>
                     </Button>
+                    <!-- Stop Macro Button -->
                     <Button Name="stopMacroButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Padding="16,2"
-                        Tag="Stop Macro"
-                        IsEnabled="False"
-                        Click="stopMacroButton_Click">
-                        <Path Stroke="{Binding ElementName=stopMacroButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 0,0 h 22 v 22 h -22 z"/>
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="stopMacroButton_Click"
+                            Padding="4,0">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="S_top Macroing"
+                                   Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                   Margin="0"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="24"
+                                       Margin="0,4,0,0"
+                                       Text="&#xE20D;"/>
+                        </DockPanel>
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Settings Button -->
                     <Button Name="settingsButton"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Padding="16,2"
-                        Tag="Settings"
-                        Click="settingsButton_Click">
-                        <Path Stroke="{Binding ElementName=settingsButton, Path=Foreground}"
-                          StrokeThickness="2"
-                          Data="M 0,0 h 10 v 10 h -10 z m 0, 14 h 10 v 10 h -10 z m 14,-8 h 12 m -12,14 h 12 m -24,-4 l 6,6 m -6,0 l 6,-6"/>
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="settingsButton_Click"
+                            Padding="8,0">
+                        <DockPanel VerticalAlignment="Stretch">
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="App Settin_gs"
+                                   Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                   Margin="0"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="24"
+                                       Margin="0"
+                                       Text="&#xE2FC;"/>
+                        </DockPanel>
                     </Button>
                 </StackPanel>
             </Grid>

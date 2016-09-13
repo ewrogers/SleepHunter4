@@ -1032,15 +1032,15 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    <!-- ToolBar Button Style -->
+
+    <!-- Tool Bar Button Style -->
     <Style x:Key="ObsidianToolBarButton" TargetType="Button">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="4"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="0"/>
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -1050,27 +1050,10 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Margin="2,8,2,4"
-                                              TextBlock.TextAlignment="Center"
-                                              RecognizesAccessKey="True"/>
-                            
-                            <TextBlock Name="CaptionText"
-                                       Grid.Row="1"
-                                       Text="{TemplateBinding Tag}"
-                                       TextAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       TextWrapping="WrapWithOverflow"
-                                       VerticalAlignment="Center"
-                                       Margin="8,-2,8,2"/>
-                        </Grid>
+                        <ContentPresenter HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          TextBlock.TextAlignment="Center"
+                                          RecognizesAccessKey="True"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -1078,7 +1061,7 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>                            
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
