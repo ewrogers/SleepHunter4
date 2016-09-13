@@ -119,149 +119,102 @@
                     Style="{StaticResource ObsidianTabControl}"
                     SelectedIndex="0"
                     SelectionChanged="tabControl_SelectionChanged"
-                    Margin="-1,-1,0,0">
+                    Margin="-1,-1,0,0"
+                    Padding="0">
+            
+            <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">
-                <ScrollViewer Name="skillsScrollViewer" 
-                              Style="{StaticResource ObsidianScrollViewer}"
-                              HorizontalScrollBarVisibility="Disabled"
-                              VerticalScrollBarVisibility="Auto"
-                              Margin="0,0,-8,0">
-                    <StackPanel Orientation="Vertical">
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="Temuair Skills"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,8,4,4"
-                                   Visibility="{Binding ElementName=temuairSkillListBox, Path=Visibility}"/>
-
-                        <!-- Temuair Skill Box -->
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}">
+                    <TabItem Header="_Temuair">
+                        <!-- Temuair Skills -->
                         <ListBox Name="temuairSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
                                  ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.TemuairSkills}"
-                                 VerticalContentAlignment="Top"
-                                 Visibility="Collapsed">
+                                 VerticalContentAlignment="Top">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="Medenia Skills"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,16,4,4"
-                                   Visibility="{Binding ElementName=medeniaSkillListBox, Path=Visibility}"/>
-
-                        <!-- Medenia Skill Box -->
+                    </TabItem>
+                    <!-- Medenia Skills -->
+                    <TabItem Header="_Medenia">
                         <ListBox Name="medeniaSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.MedeniaSkills}"
-                                 Visibility="Collapsed">
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.MedeniaSkills}">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="World Skills"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,16,4,4"
-                                   Visibility="{Binding ElementName=worldSkillListBox, Path=Visibility}"/>
-
-                        <!-- World Skill Box -->
+                    </TabItem>
+                    <!-- World Skills -->
+                    <TabItem Header="_World">
                         <ListBox Name="worldSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.WorldSkills}"
-                                 Visibility="Collapsed">
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.WorldSkills}">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-                    </StackPanel>
-                </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </TabItem>
+            
+            <!-- Spells Tabs-->
             <TabItem Name="spellsTab" Header="S_pells" IsEnabled="False">
-                <ScrollViewer Name="spellsScrolViewer" 
-                              Style="{StaticResource ObsidianScrollViewer}"
-                              HorizontalScrollBarVisibility="Disabled"
-                              VerticalScrollBarVisibility="Auto"
-                              Margin="0,0,-8,0">
-                    <StackPanel Orientation="Vertical">
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="Temuair Spells"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,8,4,4"
-                                   Visibility="{Binding ElementName=temuairSpellListBox, Path=Visibility}"/>
-
-                        <!-- Temuair Spell Box -->
+                <!-- Temuair Spells -->
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}">
+                    <TabItem Header="_Temuair">
                         <ListBox Name="temuairSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
                                  ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.TemuairSpells}"
-                                 VerticalContentAlignment="Top"
-                                 Visibility="Collapsed">
+                                 VerticalContentAlignment="Top">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="Medenia Spells"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,16,4,4"
-                                   Visibility="{Binding ElementName=medeniaSpellListBox, Path=Visibility}"/>
-
-                        <!-- Medenia Spell Box -->
+                    </TabItem>
+                    <!-- Medenia Spells -->
+                    <TabItem Header="_Medenia">
                         <ListBox Name="medeniaSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.MedeniaSpells}"
-                                 Visibility="Collapsed">
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.MedeniaSpells}">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Text="World Spells"
-                                   TextAlignment="Center"
-                                   FontSize="24"
-                                   Margin="8,16,4,4"
-                                   Visibility="{Binding ElementName=worldSpellListBox, Path=Visibility}"/>
-
-                        <!-- World Spell Box -->
+                    </TabItem>
+                    <!-- World Spells -->
+                    <TabItem Header="_World">
                         <ListBox Name="worldSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.WorldSpells}"
-                                 Visibility="Collapsed">
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.WorldSpells}">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
                                     <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-                    </StackPanel>
-                </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </TabItem>
+            
+            <!-- Flower Settings -->
             <TabItem Name="flowerTab" Header="_Flower" IsEnabled="False">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -391,14 +344,13 @@
             
             <Border VerticalAlignment="Top"
                     Background="{DynamicResource ObsidianBackground}"
-                    Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"
-                    MinHeight="41"
-                    Margin="-1,0,0,0">
+                    Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
                 <TextBlock Text="Spell Queue"
                            Style="{StaticResource ObsidianText}"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
-                           FontSize="24"/>
+                           FontSize="20"
+                           Padding="4,2"/>
             </Border>            
             
             <ListBox Name="spellQueueListBox"

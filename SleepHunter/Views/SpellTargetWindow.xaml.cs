@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 using SleepHunter.Extensions;
@@ -76,7 +78,17 @@ namespace SleepHunter.Views
       else
         targetModeComboBox.SelectedValue = "Self";
 
-      WarningBorder.Visibility = !SpellMetadataManager.Instance.ContainsSpell(spell.Name) ? Visibility.Visible : Visibility.Collapsed;
+      if (!SpellMetadataManager.Instance.ContainsSpell(spell.Name))
+      {
+        WarningBorder.Visibility = Visibility.Visible;
+
+        var opacityAnimation = new DoubleAnimation(1.0, 0.25, new Duration(TimeSpan.FromSeconds(0.4)));
+        opacityAnimation.AccelerationRatio = 0.75;
+        opacityAnimation.AutoReverse = true;
+        opacityAnimation.RepeatBehavior = RepeatBehavior.Forever;
+
+        WarningIcon.BeginAnimation(FrameworkElement.OpacityProperty, opacityAnimation);
+      }
     }
 
     public SpellTargetWindow()

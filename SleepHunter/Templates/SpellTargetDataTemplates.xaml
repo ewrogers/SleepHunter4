@@ -2,13 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
-    
+
     <converters:LessThanConverter x:Key="LessThanConverter"/>
     <converters:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
     <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
     <converters:GreaterThanOrEqualConverter x:Key="GreaterThanOrEqualConverter"/>
     <converters:AbsoluteValueConverter x:Key="AbsoluteValueConverter"/>
-    
+
     <DataTemplate x:Key="TilesXDataTemplate">
         <Border>
             <Grid>
@@ -52,17 +52,17 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
-    
+
     <DataTemplate x:Key="SpellQueueItemDataTemplate">
         <DockPanel>
             <Border Name="SelectionBorder" DockPanel.Dock="Left"
-                    Width="4"
+                    Width="6"
                     Background="{DynamicResource ObsidianBackground}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch"
                     Visibility="Collapsed"/>
             <Border Name="Border" Background="{StaticResource ObsidianControlBackground}"
-                    Padding="8,4,8,4">
+                    Padding="10,4,10,4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -83,14 +83,14 @@
                             CornerRadius="2">
                         <Grid>
                             <Image Name="Icon" 
-                               Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
-                               Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
-                               Source="{Binding Icon}"
-                               RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                   Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                                   Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                                   Source="{Binding Icon}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                             <Rectangle Name="ActiveRectangle"
-                                   Fill="{DynamicResource ObsidianBackground}"
-                                   Opacity="0.25"
-                                   Visibility="Collapsed">
+                                       Fill="{DynamicResource ObsidianBackground}"
+                                       Opacity="0.25"
+                                       Visibility="Collapsed">
                                 <Rectangle.OpacityMask>
                                     <ImageBrush ImageSource="{Binding Icon}"/>
                                 </Rectangle.OpacityMask>
@@ -99,24 +99,24 @@
                     </Border>
 
                     <StackPanel Grid.Column="1" 
-                            Orientation="Vertical"
-                            VerticalAlignment="Center">
+                                Orientation="Vertical"
+                                VerticalAlignment="Center">
                         <TextBlock Name="NameText"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="16"
-                           Text="{Binding Name}"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2"/>
+                                   Style="{StaticResource ObsidianText}"
+                                   FontSize="16"
+                                   Text="{Binding Name}"
+                                   TextWrapping="WrapWithOverflow"
+                                   Margin="4,2"/>
                         <TextBlock Name="TargetText"
-                           Grid.Row="1"
-                           Grid.Column="1"
-                           Grid.ColumnSpan="3"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="14"
-                           Text="{Binding Target, StringFormat=Targeting {0}}"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2"
-                           Opacity="0.75"/>
+                                   Grid.Row="1"
+                                   Grid.Column="1"
+                                   Grid.ColumnSpan="3"
+                                   Style="{StaticResource ObsidianText}"
+                                   FontSize="14"
+                                   Text="{Binding Target, StringFormat=Targeting {0}}"
+                                   TextWrapping="WrapWithOverflow"
+                                   Margin="4,2"
+                                   Opacity="0.75"/>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -126,41 +126,42 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Name="CurrentLevelText"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="12"
-                           FontWeight="Normal"
-                           Text="{Binding CurrentLevel}"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="6,2,4,2"
-                           Opacity="0.75"
-                           Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
+                                       Style="{StaticResource ObsidianText}"
+                                       FontSize="12"
+                                       FontWeight="Normal"
+                                       Text="{Binding CurrentLevel}"
+                                       TextWrapping="WrapWithOverflow"
+                                       Margin="6,2,4,2"
+                                       Opacity="0.75"
+                                       Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
 
                             <ProgressBar Name="ProgressBar"
-                                     Grid.Column="1"
-                                     Height="12"
-                                     Value="{Binding PercentCompleted, Mode=OneWay}"
-                                     Style="{StaticResource ObsidianProgressBar}"
-                                     Margin="2"/>
+                                         Grid.Column="1"
+                                         Height="8"
+                                         Value="{Binding PercentCompleted, Mode=OneWay}"
+                                         Style="{StaticResource ObsidianProgressBar}"
+                                         VerticalAlignment="Center"
+                                         Margin="2"/>
 
                             <TextBlock Name="TargetLevelText"
-                           Grid.Column="2"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="12"
-                           FontWeight="Normal"
-                           Text="{Binding TargetLevel}"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2,6,2"
-                           Opacity="0.75"
-                           Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
+                                       Grid.Column="2"
+                                       Style="{StaticResource ObsidianText}"
+                                       FontSize="12"
+                                       FontWeight="Normal"
+                                       Text="{Binding TargetLevel}"
+                                       TextWrapping="WrapWithOverflow"
+                                       Margin="4,2,6,2"
+                                       Opacity="0.75"
+                                       Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
                         </Grid>
 
                         <TextBlock Name="CompletedText"
-                               Style="{StaticResource ObsidianText}"
-                               Foreground="{StaticResource ObsidianDisabled}"
-                               FontSize="12"
-                               FontWeight="Normal"
-                               Visibility="Collapsed"
-                               Margin="6,2">
+                                   Style="{StaticResource ObsidianText}"
+                                   Foreground="{StaticResource ObsidianDisabled}"
+                                   FontSize="12"
+                                   FontWeight="Normal"
+                                   Visibility="Collapsed"
+                                   Margin="6,2">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="Reached Level {0} of {1}">
                                     <Binding Path="TargetLevel"/>
@@ -170,20 +171,20 @@
                         </TextBlock>
                     </StackPanel>
 
-                    <Border Name="WarningBorder" 
-                        Background="Transparent"
-                        Grid.Column="2"
-                        BorderBrush="{StaticResource ObsidianDisabled}"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="2"
-                        ToolTip="This spell is not defined in metadata, may not cast properly."
-                        Visibility="Collapsed">
-                        <Path StrokeThickness="2"
-                          Stroke="{Binding ElementName=WarningBorder, Path=BorderBrush}"
-                          Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"/>
+                    <Border Name="WarningBorder"
+                            Background="Transparent"
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Stretch"
+                            ToolTip="This spell is not defined in metadata, may not cast properly."
+                            Margin="0,0,2,0"
+                            Visibility="Collapsed">
+                        <Path Name="WarningIcon"
+                              StrokeThickness="2"
+                              Stroke="{DynamicResource ObsidianBackground}"
+                              Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
@@ -191,6 +192,21 @@
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsUndefined}" Value="True">
                 <Setter TargetName="WarningBorder" Property="Visibility" Value="Visible"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Name="WarningIconFade">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="WarningIcon"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="1.0" To="0.25" Duration="0:0:0.400"
+                                             AccelerationRatio="0.75"
+                                             AutoReverse="True"
+                                             RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="WarningIconFade"/>
+                </DataTrigger.ExitActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsDone}" Value="True">
                 <Setter TargetName="Border" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
@@ -203,21 +219,16 @@
                 <Setter TargetName="Icon" Property="Opacity" Value="0.5"/>
                 <Setter TargetName="CompletedText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="False">
+                <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="TargetLevelText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="CompletedText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+            </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="Border" Property="Padding" Value="4,4,8,4"/>
-                <Setter TargetName="NameText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="TargetText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="TargetLevelText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ProgressBar" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ProgressBar" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="CompletedText" Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="WarningBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ActiveRectangle" Property="Fill" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="IconBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="CompletedText" Property="Opacity" Value="0.5"/>
-                <Setter TargetName="Icon" Property="Opacity" Value="1.0"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding HasTargetLevel}" Value="False">
                 <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>
@@ -232,7 +243,7 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
-    
+
     <DataTemplate x:Key="FlowerQueueItemDataTemplate">
         <Border Name="Border"
                 Background="{StaticResource ObsidianControlBackground}"
@@ -275,7 +286,7 @@
                                      Margin="4"/>
                     </DockPanel>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="1"
                             Orientation="Vertical"
                             VerticalAlignment="Bottom"
@@ -296,7 +307,7 @@
                            TextAlignment="Right"
                            Opacity="0.80"
                            Margin="8,4"/>
-                </StackPanel>                            
+                </StackPanel>
             </Grid>
         </Border>
         <DataTemplate.Triggers>
