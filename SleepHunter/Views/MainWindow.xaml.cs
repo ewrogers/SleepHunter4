@@ -1606,7 +1606,7 @@ namespace SleepHunter.Views
         return;
 
       selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-      ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && selectedMacro.TotalSpellsCount > 0);
+      ToggleSpellQueue(selectedMacro.TotalSpellsCount > 0);
       ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
     }
 
