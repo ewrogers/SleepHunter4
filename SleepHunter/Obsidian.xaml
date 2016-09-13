@@ -41,7 +41,9 @@
 
     <!-- Font Parameters -->
     <FontFamily x:Key="ObsidianFontFamily">Segoe UI</FontFamily>
+    <FontFamily x:Key="ObsidianSymbolFontFamily">Segoe UI Symbol</FontFamily>
     <sys:Double x:Key="ObsidianFontSize">14</sys:Double>
+    <sys:Double x:Key="ObsidianSymbolFontSize">20</sys:Double>
     <FontWeight x:Key="ObsidianFontWeight">Light</FontWeight>
     <sys:Double x:Key="ObsidianWindowTitleFontSize">28</sys:Double>
 
@@ -155,7 +157,24 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="8,4"/>
     </Style>
-    
+
+    <!-- Symbol Text Style -->
+    <Style x:Key="ObsidianSymbolText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+        <Setter Property="FontFamily" Value="{StaticResource ObsidianSymbolFontFamily}"/>
+        <Setter Property="FontSize" Value="{StaticResource ObsidianSymbolFontSize}"/>
+        <Setter Property="FontWeight" Value="Regular"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="2"/>
+    </Style>
+
+    <!-- Command Label Style -->
+    <Style x:Key="ObsidianCommandLabel" TargetType="Label">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianInactive}"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+
     <!-- Scroll Viewer Style -->
     <Style x:Key="ObsidianScrollViewer" TargetType="ScrollViewer">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1069,7 +1088,46 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <!-- Command Button Style -->
+    <Style x:Key="ObsidianCommandButton" TargetType="Button">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          TextBlock.TextAlignment="Center"
+                                          RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Grid Splitter Style -->
     <Style x:Key="ObsidianGridSplitter" TargetType="GridSplitter">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1081,7 +1139,7 @@
     <Style x:Key="ObsidianSkillListBoxItem" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Top"/>
@@ -1108,7 +1166,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianSkillListBoxItem}"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Top"/>
@@ -1135,7 +1193,7 @@
     <Style x:Key="ObsidianListBoxItem" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
@@ -1162,7 +1220,7 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianListBoxItem}"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
@@ -1191,7 +1249,7 @@
     <Style x:Key="ObsidianListViewItem" TargetType="ListViewItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="16"/>

@@ -24,7 +24,8 @@
         <!-- Tool Bar -->
         <Border Grid.ColumnSpan="3" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                BorderThickness="0,0,0,1">
+                BorderThickness="0,0,0,1"
+                Panel.ZIndex="9">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -94,7 +95,7 @@
                  ItemTemplate="{StaticResource PlayerDataTemplate}"
                  ItemsSource="{Binding Source={x:Static models:PlayerManager.Instance}, Path=Players}"
                  Style="{StaticResource ObsidianListBox}"
-                 Margin="0,-1.5,0,0"
+                 Margin="0"
                  SelectionChanged="clientListBox_SelectionChanged"
                  SelectionMode="Single">
             <ListBox.ItemContainerStyle>
@@ -110,6 +111,7 @@
                       Width="1"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Stretch"
+                      Panel.ZIndex="10"
                       Style="{StaticResource ObsidianGridSplitter}"/>
         
         <!-- Spell/Skills/Flower Tabs -->
@@ -214,45 +216,46 @@
                 </TabControl>
             </TabItem>
             
-            <!-- Flower Settings -->
+            <!-- Flowering Tab -->
             <TabItem Name="flowerTab" Header="_Flowering" IsEnabled="False">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <UniformGrid HorizontalAlignment="Left"
-                                 VerticalAlignment="Center"
-                                 Rows="1"
-                                 Margin="4,8,4,4">
-                        <CheckBox Name="flowerAlternateCharactersCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  FontSize="14"
-                                  Margin="8,0"
-                                  Checked="flowerAlternateCharactersCheckBox_Checked"
-                                  Unchecked="flowerAlternateCharactersCheckBox_Checked"
-                                  ToolTip="This enables automatic flowering for your alternate characters (if they require mana).">
-                            _Auto-Flower My Characters
-                        </CheckBox>
-                        <CheckBox Name="flowerVineyardCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  FontSize="14"
-                                  Margin="8,0"
-                                  Checked="flowerVineyardCheckBox_Checked"
-                                  Unchecked="flowerVineyardCheckBox_Checked"
-                                  ToolTip="This will enable automatic casting of Lyliac Vineyard (on cooldown).">
-                            Use Lyliac _Vineyard
-                        </CheckBox>                                            
-                    </UniformGrid>
-                    
-                    <Separator Grid.Row="1"
-                               Style="{StaticResource ObsidianSeparator}"
-                               Margin="0,4"/>
-                    
+
+                    <!-- Flower Settings -->
+                    <Border BorderBrush="{StaticResource ObsidianSeparatorColor}" 
+                            BorderThickness="0,0,0,1"
+                            Padding="4,8">
+                        <UniformGrid HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Rows="1">
+                            <CheckBox Name="flowerAlternateCharactersCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      FontSize="14"
+                                      Margin="8,0"
+                                      Checked="flowerAlternateCharactersCheckBox_Checked"
+                                      Unchecked="flowerAlternateCharactersCheckBox_Checked"
+                                      ToolTip="This enables automatic flowering for your alternate characters (if they require mana).">
+                                _Auto-Flower My Characters
+                            </CheckBox>
+                            <CheckBox Name="flowerVineyardCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      FontSize="14"
+                                      Margin="8,0"
+                                      Checked="flowerVineyardCheckBox_Checked"
+                                      Unchecked="flowerVineyardCheckBox_Checked"
+                                      ToolTip="This will enable automatic casting of Lyliac Vineyard (on cooldown).">
+                                Use Lyliac _Vineyard
+                            </CheckBox>
+                        </UniformGrid>
+                    </Border>
+
+                    <!-- Flower Queue -->
                     <ListBox Name="flowerListBox"
-                             Grid.Row="2"
+                             Grid.Row="1"
                              Style="{StaticResource ObsidianListBox}"
                              ItemTemplate="{StaticResource FlowerQueueItemDataTemplate}"
                              SelectionMode="Single"
@@ -267,66 +270,57 @@
                             </Style>
                         </ListBox.ItemContainerStyle>
                     </ListBox>
-                    
-                    <Grid Grid.Row="3" Margin="-8,0,-8,-8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
 
-                        <Button Name="addFlowerTargetButton"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Add"
-                                Click="addFlowerTargetButton_Click"
-                                IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
-                            <Path Stroke="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"
-                                  StrokeThickness="6"
-                                  Data="M 0,11 h 22 m -11,-11 v 22"/>
-                        </Button>       
-                        
-                        <Button Name="clearFlowerQueueButton"
-                                Grid.Column="1"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Clear All"
-                                Click="clearFlowerQueueButton_Click"
-                                IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
-                            <Path Stroke="{Binding ElementName=clearFlowerQueueButton, Path=Foreground}"
-                                  StrokeThickness="6"
-                                  Data="M 0,0 l 20,20 m 0,-20 l -20,20"/>
-                        </Button>
+                    <!-- Buttons -->
+                    <Border Grid.Row="2"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="0,1,0,0">
+                        <UniformGrid Rows="1"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch">
+                            <!-- Add Target to Queue -->
+                            <Button Name="addFlowerTargetButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="addFlowerTargetButton_Click"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"
+                                               Text="&#xE109;"/>
+                                    <Label Content="_Add Target"
+                                           Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Remove Selected Target from Queue -->
+                            <Button Name="removeSelectedFlowerTargetButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="removeSelectedFlowerTargetButton_Click"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=removeSelectedFlowerTargetButton, Path=Foreground}"
+                                               Text="&#xE10A;"/>
+                                    <Label Content="_Remove"
+                                           Foreground="{Binding ElementName=removeSelectedFlowerTargetButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
 
-                        <Button Name="flowerMoveUpButton"
-                                Grid.Column="2"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Move Up"
-                                Click="flowerMoveUpButton_Click"
-                                IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
-                            <Path Fill="{Binding ElementName=flowerMoveUpButton, Path=Foreground}"
-                                  Data="M 0 12 l 16,-12 l 16,12 z"
-                                  VerticalAlignment="Center"/>
-                        </Button>
-
-                        <Button Name="flowerMoveDownButton"
-                                Grid.Column="3"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Move Down"
-                                Click="flowerMoveDownButton_Click"
-                                IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
-                                    <Path Fill="{Binding ElementName=flowerMoveDownButton, Path=Foreground}"
-                                  Data="M 0 0 l 16,12 l 16,-12 z"
-                                  VerticalAlignment="Center"/>
-                        </Button>
-                    </Grid>
+                            <!-- Clear All Flower Targets from Queue -->
+                            <Button Name="removeAllFlowerTargetsButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="removeAllFlowerTargetsButton_Click"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=removeAllFlowerTargetsButton, Path=Foreground}"
+                                               Text="&#xE107;"/>
+                                    <Label Content="Cle_ar All"
+                                           Foreground="{Binding ElementName=removeAllFlowerTargetsButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </Border>
                 </Grid>
             </TabItem>
         </TabControl>
@@ -340,8 +334,8 @@
                       Style="{StaticResource ObsidianGridSplitter}"
                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
         
-        <Grid Grid.Row="1"
-              Grid.Column="2">
+        <!-- Spell Queue Grid -->
+        <Grid Grid.Row="1" Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -349,6 +343,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             
+            <!-- Spell Queue Header -->
             <Border VerticalAlignment="Top"
                     Background="{DynamicResource ObsidianBackground}"
                     Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
@@ -384,42 +379,35 @@
                        Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
             
             <Grid Grid.Row="3" Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                
-                <Button Name="moveUpButton"
-                        Grid.Column="0"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Tag="Move Up"
-                        Click="moveUpButton_Click">
-                    <Path Fill="{Binding ElementName=moveUpButton, Path=Foreground}"
-                          Data="M 0 12 l 16,-12 l 16,12 z"
-                          VerticalAlignment="Center"/>
-                </Button>
-
-                <Button Name="clearSpellQueueButton"
-                        Grid.Column="1"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Tag="Clear All"
-                        Click="clearSpellQueueButton_Click">
-                    <Path Stroke="{Binding ElementName=clearSpellQueueButton, Path=Foreground}"
-                          StrokeThickness="4"
-                          Data="M 0 12 l 16,-16 m -16,0 l 16,16"
-                          VerticalAlignment="Center"/>
-                </Button>
-
-                <Button Name="moveDownButton"
-                        Grid.Column="2"
-                        Style="{StaticResource ObsidianToolBarButton}"
-                        Tag="Move Down"
-                        Click="moveDownButton_Click">
-                    <Path Fill="{Binding ElementName=moveDownButton, Path=Foreground}"
-                          Data="M 0 0 l 16,12 l 16,-12 z"
-                          VerticalAlignment="Center"/>
-                </Button>
+                <UniformGrid Rows="1"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center">
+                    <!-- Remove Selected Spell from Queue -->
+                    <Button Name="removeSelectedSpellButton"
+                            Style="{StaticResource ObsidianCommandButton}"
+                            Click="removeSelectedSpellButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=removeSelectedSpellButton, Path=Foreground}"
+                                       Text="&#xE10A;"/>
+                            <Label Content="_Remove"
+                                   Foreground="{Binding ElementName=removeSelectedSpellButton, Path=Foreground}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Clear All Spells from Queue -->
+                    <Button Name="removeAllSpellsButton"
+                            Style="{StaticResource ObsidianCommandButton}"
+                            Click="removeAllSpellsButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=removeAllSpellsButton, Path=Foreground}"
+                                       Text="&#xE107;"/>
+                            <Label Content="Cle_ar All"
+                                   Foreground="{Binding ElementName=removeAllSpellsButton, Path=Foreground}"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
             </Grid>
         </Grid>        
         

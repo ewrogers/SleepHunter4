@@ -1720,45 +1720,24 @@ namespace SleepHunter.Views
       selectedMacro.AddToSpellQueue(queueItem);
     }
 
-    void moveUpButton_Click(object sender, RoutedEventArgs e)
+    void removeSelectedSpellButton_Click(object sender, RoutedEventArgs e)
     {
-      var selectedItem = spellQueueListBox.SelectedItem as SpellQueueItem;
-      if (selectedItem == null)
+      var selectedSpell = spellQueueListBox.SelectedItem as SpellQueueItem;
+
+      if (selectedMacro == null || selectedSpell == null)
         return;
 
-      if (selectedMacro == null)
-        return;
-
-      if (selectedMacro.SpellQueueMoveItemUp(selectedItem))
-      {
-        RefreshSpellQueue();
-        spellQueueListBox.SelectedIndex = spellQueueListBox.Items.IndexOf(selectedItem);
-      }
+      selectedMacro.RemoveFromSpellQueue(selectedSpell);
+      RefreshSpellQueue();
     }
 
-    void clearSpellQueueButton_Click(object sender, RoutedEventArgs e)
+    void removeAllSpellsButton_Click(object sender, RoutedEventArgs e)
     {
       if (selectedMacro == null)
         return;
 
       selectedMacro.ClearSpellQueue();
       RefreshSpellQueue();
-    }
-
-    void moveDownButton_Click(object sender, RoutedEventArgs e)
-    {
-      var selectedItem = spellQueueListBox.SelectedItem as SpellQueueItem;
-      if (selectedItem == null)
-        return;
-
-      if (selectedMacro == null)
-        return;
-
-      if (selectedMacro.SpellQueueMoveItemDown(selectedItem))
-      {
-        RefreshSpellQueue();
-        spellQueueListBox.SelectedIndex = spellQueueListBox.Items.IndexOf(selectedItem);
-      }
     }
 
     void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
@@ -1778,45 +1757,25 @@ namespace SleepHunter.Views
       selectedMacro.AddToFlowerQueue(queueItem);
     }
 
-    void clearFlowerQueueButton_Click(object sender, RoutedEventArgs e)
+    void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
+    {
+      var selectedTarget = flowerListBox.SelectedItem as FlowerQueueItem;
+
+      if (selectedMacro == null || selectedTarget == null)
+        return;
+
+      selectedMacro.RemoveFromFlowerQueue(selectedTarget);
+      RefreshFlowerQueue();
+    }
+
+
+    void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
     {
       if (selectedMacro == null)
         return;
 
       selectedMacro.ClearFlowerQueue();
       RefreshFlowerQueue();
-    }
-
-    void flowerMoveUpButton_Click(object sender, RoutedEventArgs e)
-    {
-      var selectedItem = flowerListBox.SelectedItem as FlowerQueueItem;
-      if (selectedItem == null)
-        return;
-
-      if (selectedMacro == null)
-        return;
-
-      if (selectedMacro.FlowerQueueMoveItemUp(selectedItem))
-      {
-        RefreshFlowerQueue();
-        flowerListBox.SelectedIndex = flowerListBox.Items.IndexOf(selectedItem);
-      }
-    }
-
-    void flowerMoveDownButton_Click(object sender, RoutedEventArgs e)
-    {
-      var selectedItem = flowerListBox.SelectedItem as FlowerQueueItem;
-      if (selectedItem == null)
-        return;
-
-      if (selectedMacro == null)
-        return;
-
-      if (selectedMacro.FlowerQueueMoveItemDown(selectedItem))
-      {
-        RefreshFlowerQueue();
-        flowerListBox.SelectedIndex = flowerListBox.Items.IndexOf(selectedItem);
-      }
     }
 
     void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
