@@ -353,6 +353,7 @@
                            Padding="4,2"/>
             </Border>            
             
+            <!-- Spell Queue -->
             <ListBox Name="spellQueueListBox"
                      Grid.Row="1"
                      Style="{StaticResource ObsidianListBox}"
@@ -361,8 +362,11 @@
                      Visibility="Collapsed">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                        <Setter Property="AllowDrop" Value="True"/>
                         <EventSetter Event="PreviewKeyDown" Handler="spellQueueListBox_PreviewKeyDown"/>
                         <EventSetter Event="MouseDoubleClick" Handler="spellQueueListBox_ItemDoubleClick"/>
+                        <EventSetter Event="PreviewMouseMove" Handler="spellQueueListBox_PreviewMouseMove"/>
+                        <EventSetter Event="Drop" Handler="spellQueueListBox_Drop"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>

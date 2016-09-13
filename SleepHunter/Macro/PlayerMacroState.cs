@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -17,9 +16,11 @@ namespace SleepHunter.Macro
     static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
     static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
 
-    int idCounter = 1;
-    ConcurrentDictionary<int, SpellQueueItem> spellQueue = new ConcurrentDictionary<int, SpellQueueItem>();
-    ConcurrentDictionary<int, FlowerQueueItem> flowerQueue = new ConcurrentDictionary<int, FlowerQueueItem>();
+    object spellQueueLock = new object();
+    object flowerQueueLock = new object();
+
+    List<SpellQueueItem> spellQueue = new List<SpellQueueItem>();
+    List<FlowerQueueItem> flowerQueue = new List<FlowerQueueItem>();
     PlayerMacroStatus playerStatus;
 
     int spellQueueIndex;
@@ -50,27 +51,27 @@ namespace SleepHunter.Macro
 
     public IEnumerable<SpellQueueItem> QueuedSpells
     {
-      get { return from s in spellQueue.Values select s; }
+      get { return from s in spellQueue select s; }
     }
 
     public IEnumerable<FlowerQueueItem> FlowerTargets
     {
-      get { return from f in flowerQueue.Values select f; }
+      get { return from f in flowerQueue select f; }
     }
 
     public int ActiveSpellsCount
     {
-      get { return spellQueue.Values.Count((spell) => { return !spell.IsDone; }); }
+      get { return spellQueue.Count((spell) => { return !spell.IsDone; }); }
     }
 
     public int CompletedSpellsCount
     {
-      get { return spellQueue.Values.Count((spell) => { return spell.IsDone; }); }
+      get { return spellQueue.Count((spell) => { return spell.IsDone; }); }
     }
 
     public int TotalSpellsCount
     {
-      get { return spellQueue.Values.Count; }
+      get { return spellQueue.Count; }
     }
 
     public int FlowerQueueCount
@@ -123,62 +124,46 @@ namespace SleepHunter.Macro
     public PlayerMacroState(Player client)
        : base(client) { }
 
-    public void AddToSpellQueue(SpellQueueItem spell, bool setId = true)
+    public void AddToSpellQueue(SpellQueueItem spell)
     {
-      if (setId)
-      {
-        var id = Interlocked.Increment(ref idCounter);
-        spell.Id = id;
-      }
-
-      var alreadyExists = spellQueue.ContainsKey(spell.Id);
-
       spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
-      spellQueue[spell.Id] = spell;
 
-      if (alreadyExists)
-        OnSpellUpdated(spell);
-      else
-        OnSpellAdded(spell);
-      ;
+      lock (spellQueueLock)
+        spellQueue.Add(spell);
+
+      OnSpellAdded(spell);
     }
 
-    public void AddToFlowerQueue(FlowerQueueItem flower, bool setId = true)
+    public void AddToFlowerQueue(FlowerQueueItem flower)
     {
-      if (setId)
-      {
-        var id = Interlocked.Increment(ref idCounter);
-        flower.Id = id;
-      }
+      lock (flowerQueueLock)
+        flowerQueue.Add(flower);
 
-      var alreadyExists = flowerQueue.ContainsKey(flower.Id);
-
-      flowerQueue[flower.Id] = flower;
-      if (alreadyExists)
-        OnFlowerTargetUpdated(flower);
-      else
-        OnFlowerTargetAdded(flower);
-
+      OnFlowerTargetAdded(flower);
     }
 
     public bool IsSpellInQueue(string spellName)
     {
       spellName = spellName.Trim();
 
-      foreach (var spell in spellQueue.Values)
+      lock (spellQueueLock)
       {
-        if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
-          return true;
+        foreach (var spell in spellQueue)
+        {
+          if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
+            return true;
+        }
       }
 
       return false;
     }
 
-    public bool RemoveFromSpellQueue(int spellQueueId)
+    public bool RemoveFromSpellQueue(SpellQueueItem spell)
     {
-      SpellQueueItem spell = null;
+      var wasRemoved = false;
 
-      var wasRemoved = spellQueue.TryRemove(spellQueueId, out spell);
+      lock(spellQueueLock)
+        wasRemoved = spellQueue.Remove(spell);
 
       if (wasRemoved)
         OnSpellRemoved(spell);
@@ -186,11 +171,12 @@ namespace SleepHunter.Macro
       return wasRemoved;
     }
 
-    public bool RemoveFromFlowerQueue(int flowerQueueId)
+    public bool RemoveFromFlowerQueue(FlowerQueueItem flower)
     {
-      FlowerQueueItem flower = null;
+      var wasRemoved = false;
 
-      var wasRemoved = flowerQueue.TryRemove(flowerQueueId, out flower);
+      lock (flowerQueueLock)
+        wasRemoved = flowerQueue.Remove(flower);
 
       if (wasRemoved)
         OnFlowerTargetRemoved(flower);
@@ -200,110 +186,125 @@ namespace SleepHunter.Macro
 
     public void ClearSpellQueue()
     {
-      var oldQueue = spellQueue;
-      spellQueue = new ConcurrentDictionary<int, SpellQueueItem>();
+      var oldSpells = Enumerable.Empty<SpellQueueItem>();
 
-      foreach (var spell in oldQueue.Values)
+      lock (spellQueueLock)
+      {
+        oldSpells = spellQueue;
+        spellQueue = new List<SpellQueueItem>();
+      }
+
+      foreach (var spell in oldSpells)
         OnSpellRemoved(spell);
     }
 
     public void ClearFlowerQueue()
     {
-      var oldQueue = flowerQueue;
-      flowerQueue = new ConcurrentDictionary<int, FlowerQueueItem>();
+      var oldFlowers = Enumerable.Empty<FlowerQueueItem>();
 
-      foreach (var flower in oldQueue.Values)
+      lock (flowerQueueLock)
+      {
+        oldFlowers = flowerQueue;
+        flowerQueue = new List<FlowerQueueItem>();
+      }
+
+      foreach (var flower in oldFlowers)
         OnFlowerTargetRemoved(flower);
     }
 
-    public bool SpellQueueMoveItemUp(SpellQueueItem item, out int newIndex)
+    public bool SpellQueueMoveItemUp(SpellQueueItem item)
     {
-      return DictionaryMoveItemUp(spellQueue, item, item.Id, out newIndex, true);
+      var hasChanges = false;
+
+      lock (spellQueueLock)
+        hasChanges = MoveListItemUp(spellQueue, item);
+
+      if (hasChanges)
+        RaisePropertyChanged("QueuedSpells");
+
+      return hasChanges;
     }
 
-    public bool SpellQueueMoveItemDown(SpellQueueItem item, out int newIndex)
+    public bool SpellQueueMoveItemDown(SpellQueueItem item)
     {
-      return DictionaryMoveItemDown(spellQueue, item, item.Id, out newIndex, true);
+      var hasChanges = false;
+
+      lock (spellQueueLock)
+        hasChanges = MoveListItemDown(spellQueue, item);
+
+      if (hasChanges)
+        RaisePropertyChanged("QueuedSpells");
+
+      return hasChanges;
     }
 
-    public bool FlowerQueueMoveItemUp(FlowerQueueItem item, out int newIndex)
+    public bool FlowerQueueMoveItemUp(FlowerQueueItem item)
     {
-      return DictionaryMoveItemUp(flowerQueue, item, item.Id, out newIndex, false);
+      var hasChanges = false;
+
+      lock (flowerQueueLock)
+        hasChanges = MoveListItemUp(flowerQueue, item);
+
+      if (hasChanges)
+        RaisePropertyChanged("FlowerTargets");
+
+      return hasChanges;
     }
 
-    public bool FlowerQueueMoveItemDown(FlowerQueueItem item, out int newIndex)
+    public bool FlowerQueueMoveItemDown(FlowerQueueItem item)
     {
-      return DictionaryMoveItemDown(flowerQueue, item, item.Id, out newIndex, false);
+      var hasChanges = false;
+
+      lock (flowerQueueLock)
+        hasChanges = MoveListItemDown(flowerQueue, item);
+
+      if (hasChanges)
+        RaisePropertyChanged("FlowerTargets");
+
+      return hasChanges;
+    }
+
+    bool MoveListItemUp<T>(IList<T> list, T item)
+    {
+      var currentIndex = list.IndexOf(item);
+      var newIndex = currentIndex - 1;
+
+      if (currentIndex < 0 || newIndex < 0)
+        return false;
+
+      var displacedItem = list[newIndex];
+      var currentItem = list[currentIndex];
+
+      list[newIndex] = currentItem;
+      list[currentIndex] = displacedItem;
+      return true;
+    }
+
+    bool MoveListItemDown<T>(IList<T> list, T item)
+    {
+      var currentIndex = list.IndexOf(item);
+      var newIndex = currentIndex + 1;
+
+      if (currentIndex < 0 || currentIndex > list.Count - 1 || newIndex > list.Count - 1)
+        return false;
+
+      var displacedItem = list[newIndex];
+      var currentItem = list[currentIndex];
+
+      list[newIndex] = currentItem;
+      list[currentIndex] = displacedItem;
+      return true;
     }
 
     public void TickFlowerTimers(TimeSpan deltaTime)
     {
-      foreach (var flower in flowerQueue.Values)
-        flower.Tick(deltaTime);
+      lock (flowerQueueLock)
+      {
+        foreach (var flower in flowerQueue)
+          flower.Tick(deltaTime);
+      }
     }
-
-    bool DictionaryMoveItemUp<K, V>(ConcurrentDictionary<K, V> source, V item, int id, out int newIndex, bool isSpellQueue) where V : ICopyable<V>, new()
-    {
-      newIndex = -1;
-
-      if (source.Count < 2)
-        return false;
-
-      var currentIndex = isSpellQueue ? GetSpellQueueIndex(id) : GetFlowerQueueIndex(id);
-      if (currentIndex < 0)
-        return false;
-
-      var targetIndex = currentIndex - 1;
-
-      if (targetIndex < 0)
-        targetIndex = source.Count - 1;
-
-      var targetItem = source.Values.ElementAtOrDefault(targetIndex);
-      if (targetItem == null)
-        return false;
-
-      var tempItem = new V();
-
-      item.CopyTo(tempItem, true, true);
-
-      targetItem.CopyTo(item, false, true);
-      tempItem.CopyTo(targetItem, false, true);
-
-      newIndex = targetIndex;
-      return true;
-    }
-
-    bool DictionaryMoveItemDown<K, V>(ConcurrentDictionary<K, V> source, V item, int id, out int newIndex, bool isSpellQueue) where V : ICopyable<V>, new()
-    {
-      newIndex = -1;
-
-      if (source.Count < 2)
-        return false;
-
-      var currentIndex = isSpellQueue ? GetSpellQueueIndex(id) : GetFlowerQueueIndex(id);
-      if (currentIndex < 0)
-        return false;
-
-      var targetIndex = currentIndex + 1;
-
-      if (targetIndex >= source.Count)
-        targetIndex = 0;
-
-      var targetItem = source.Values.ElementAtOrDefault(targetIndex);
-      if (targetItem == null)
-        return false;
-
-      var tempItem = new V();
-
-      item.CopyTo(tempItem, true, true);
-
-      targetItem.CopyTo(item, false, true);
-      tempItem.CopyTo(targetItem, false, true);
-
-      newIndex = targetIndex;
-      return true;
-    }
-
+    
     public void CancelCasting()
     {
       spellCastDuration = TimeSpan.Zero;
@@ -783,7 +784,7 @@ namespace SleepHunter.Macro
       if (spellQueue.Count < 1)
         return null;
 
-      var currentSpell = spellQueue.ElementAt(spellQueueIndex).Value;
+      var currentSpell = spellQueue.ElementAt(spellQueueIndex);
       var currentId = currentSpell.Id;
 
       while (currentSpell.IsDone && shouldRotate)
@@ -791,7 +792,7 @@ namespace SleepHunter.Macro
         if (++spellQueueIndex >= spellQueue.Count)
           spellQueueIndex = 0;
 
-        currentSpell = spellQueue.ElementAt(spellQueueIndex).Value;
+        currentSpell = spellQueue.ElementAt(spellQueueIndex);
 
         if (currentSpell.Id == currentId)
         {
@@ -829,33 +830,36 @@ namespace SleepHunter.Macro
       if (flowerQueue.Count < 1)
         return null;
 
-      var currentTarget = flowerQueue.ElementAt(flowerQueueIndex).Value;
+      var currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
       var currentId = currentTarget.Id;
       bool isWithinManaThreshold = false;
 
       if (prioritizeAlts)
       {
-        foreach (var altTarget in flowerQueue.Values)
+        lock (flowerQueueLock)
         {
-          if (altTarget.Target.Units != TargetCoordinateUnits.Character)
-            continue;
+          foreach (var altTarget in flowerQueue)
+          {
+            if (altTarget.Target.Units != TargetCoordinateUnits.Character)
+              continue;
 
-          var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
+            var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
 
-          if (altClient == null)
-            continue;
+            if (altClient == null)
+              continue;
 
-          client.Update(PlayerFieldFlags.Location);
-          altClient.Update(PlayerFieldFlags.Location);
+            client.Update(PlayerFieldFlags.Location);
+            altClient.Update(PlayerFieldFlags.Location);
 
-          if (!client.Location.IsWithinRange(altClient.Location))
-            continue;
+            if (!client.Location.IsWithinRange(altClient.Location))
+              continue;
 
-          altClient.Update(PlayerFieldFlags.Stats);
-          isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
+            altClient.Update(PlayerFieldFlags.Stats);
+            isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
 
-          if (altTarget.IsReady || isWithinManaThreshold)
-            return altTarget;
+            if (altTarget.IsReady || isWithinManaThreshold)
+              return altTarget;
+          }
         }
       }
 
@@ -868,7 +872,7 @@ namespace SleepHunter.Macro
         if (++flowerQueueIndex >= flowerQueue.Count)
           flowerQueueIndex = 0;
 
-        currentTarget = flowerQueue.ElementAt(flowerQueueIndex).Value;
+        currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
 
         if (currentTarget.Target.Units == TargetCoordinateUnits.Character && currentTarget.ManaThreshold.HasValue)
         {
@@ -1152,34 +1156,6 @@ namespace SleepHunter.Macro
         var delay = UserSettingsManager.Instance.Settings.MultipleLineDelaySeconds * numberOfLines;
         return TimeSpan.FromSeconds(delay);
       }
-    }
-
-    int GetSpellQueueIndex(int id)
-    {
-      int index = 0;
-      foreach (var spell in spellQueue.Values)
-      {
-        if (spell.Id == id)
-          return index;
-
-        index++;
-      }
-
-      return -1;
-    }
-
-    int GetFlowerQueueIndex(int id)
-    {
-      int index = 0;
-      foreach (var flower in flowerQueue.Values)
-      {
-        if (flower.Id == id)
-          return index;
-
-        index++;
-      }
-
-      return -1;
     }
 
     #region Macro State Overrides

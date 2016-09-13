@@ -572,6 +572,7 @@ namespace SleepHunter.Views
         return;
       }
 
+      spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
       spellQueueListBox.Items.Refresh();
     }
 
@@ -583,6 +584,7 @@ namespace SleepHunter.Views
         return;
       }
 
+      flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
       flowerListBox.Items.Refresh();
     }
 
@@ -1271,7 +1273,38 @@ namespace SleepHunter.Views
         return;
 
       if (e.Key == Key.Delete || e.Key == Key.Back)
-        selectedMacro.RemoveFromSpellQueue(spell.Id);
+      {
+        if (selectedMacro.RemoveFromSpellQueue(spell))
+          RefreshSpellQueue();
+      }
+    }
+
+    void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+    {      
+      if (e.LeftButton == MouseButtonState.Pressed)
+      {
+        var draggedItem = sender as ListBoxItem;
+        DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+        draggedItem.IsSelected = true;
+      }
+    }
+
+    void spellQueueListBox_Drop(object sender, DragEventArgs e)
+    {
+      var droppedItem = e.Data.GetData(typeof(SpellQueueItem)) as SpellQueueItem;
+      var target = (sender as ListBoxItem)?.DataContext as SpellQueueItem;
+
+      var removedIndex = spellQueueListBox.Items.IndexOf(droppedItem);
+      var targetIndex = spellQueueListBox.Items.IndexOf(target);
+
+      if (removedIndex < targetIndex)
+      {
+        
+      }
+      else
+      {
+
+      }
     }
 
     void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1312,7 +1345,10 @@ namespace SleepHunter.Views
         return;
 
       if (e.Key == Key.Delete || e.Key == Key.Back)
-        selectedMacro.RemoveFromFlowerQueue(flower.Id);
+      {
+        if (selectedMacro.RemoveFromFlowerQueue(flower))
+          RefreshFlowerQueue();
+      }
     }
 
     void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1655,9 +1691,11 @@ namespace SleepHunter.Views
       if (selectedMacro == null)
         return;
 
-      int newIndex;
-      if (selectedMacro.SpellQueueMoveItemUp(selectedItem, out newIndex))
-        spellQueueListBox.SelectedIndex = newIndex;
+      if (selectedMacro.SpellQueueMoveItemUp(selectedItem))
+      {
+        RefreshSpellQueue();
+        spellQueueListBox.SelectedIndex = spellQueueListBox.Items.IndexOf(selectedItem);
+      }
     }
 
     void clearSpellQueueButton_Click(object sender, RoutedEventArgs e)
@@ -1678,9 +1716,11 @@ namespace SleepHunter.Views
       if (selectedMacro == null)
         return;
 
-      int newIndex;
-      if (selectedMacro.SpellQueueMoveItemDown(selectedItem, out newIndex))
-        spellQueueListBox.SelectedIndex = newIndex;
+      if (selectedMacro.SpellQueueMoveItemDown(selectedItem))
+      {
+        RefreshSpellQueue();
+        spellQueueListBox.SelectedIndex = spellQueueListBox.Items.IndexOf(selectedItem);
+      }
     }
 
     void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
@@ -1718,9 +1758,11 @@ namespace SleepHunter.Views
       if (selectedMacro == null)
         return;
 
-      int newIndex;
-      if (selectedMacro.FlowerQueueMoveItemUp(selectedItem, out newIndex))
-        flowerListBox.SelectedIndex = newIndex;
+      if (selectedMacro.FlowerQueueMoveItemUp(selectedItem))
+      {
+        RefreshFlowerQueue();
+        flowerListBox.SelectedIndex = flowerListBox.Items.IndexOf(selectedItem);
+      }
     }
 
     void flowerMoveDownButton_Click(object sender, RoutedEventArgs e)
@@ -1732,9 +1774,11 @@ namespace SleepHunter.Views
       if (selectedMacro == null)
         return;
 
-      int newIndex;
-      if (selectedMacro.FlowerQueueMoveItemDown(selectedItem, out newIndex))
-        flowerListBox.SelectedIndex = newIndex;
+      if (selectedMacro.FlowerQueueMoveItemDown(selectedItem))
+      {
+        RefreshFlowerQueue();
+        flowerListBox.SelectedIndex = flowerListBox.Items.IndexOf(selectedItem);
+      }
     }
 
     void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
