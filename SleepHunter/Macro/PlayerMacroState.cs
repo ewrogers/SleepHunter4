@@ -49,14 +49,14 @@ namespace SleepHunter.Macro
       set { SetProperty(ref playerStatus, value, "PlayerStatus"); }
     }
 
-    public IEnumerable<SpellQueueItem> QueuedSpells
+    public IReadOnlyList<SpellQueueItem> QueuedSpells
     {
-      get { return from s in spellQueue select s; }
+      get { return spellQueue; }
     }
 
-    public IEnumerable<FlowerQueueItem> FlowerTargets
+    public IReadOnlyList<FlowerQueueItem> FlowerTargets
     {
-      get { return from f in flowerQueue select f; }
+      get { return flowerQueue; }
     }
 
     public int ActiveSpellsCount
@@ -124,20 +124,26 @@ namespace SleepHunter.Macro
     public PlayerMacroState(Player client)
        : base(client) { }
 
-    public void AddToSpellQueue(SpellQueueItem spell)
+    public void AddToSpellQueue(SpellQueueItem spell, int index = -1)
     {
       spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
 
       lock (spellQueueLock)
-        spellQueue.Add(spell);
+        if (index < 0)
+          spellQueue.Add(spell);
+        else
+          spellQueue.Insert(index, spell);
 
       OnSpellAdded(spell);
     }
 
-    public void AddToFlowerQueue(FlowerQueueItem flower)
+    public void AddToFlowerQueue(FlowerQueueItem flower, int index = -1)
     {
       lock (flowerQueueLock)
-        flowerQueue.Add(flower);
+        if (index < 0)
+          flowerQueue.Add(flower);
+        else
+          flowerQueue.Insert(index, flower);
 
       OnFlowerTargetAdded(flower);
     }
@@ -162,13 +168,27 @@ namespace SleepHunter.Macro
     {
       var wasRemoved = false;
 
-      lock(spellQueueLock)
+      lock (spellQueueLock)
         wasRemoved = spellQueue.Remove(spell);
 
       if (wasRemoved)
         OnSpellRemoved(spell);
 
       return wasRemoved;
+    }
+
+    public void RemoveFromSpellQueueAtIndex(int index)
+    {
+      SpellQueueItem spell = null;
+
+      lock (spellQueueLock)
+      {
+        spell = spellQueue?[index];
+        spellQueue.RemoveAt(index);
+      }
+
+      if (spell != null)
+        OnSpellRemoved(spell);
     }
 
     public bool RemoveFromFlowerQueue(FlowerQueueItem flower)
@@ -182,6 +202,20 @@ namespace SleepHunter.Macro
         OnFlowerTargetRemoved(flower);
 
       return wasRemoved;
+    }
+
+    public void RemoveFromFlowerQueueAtIndex(int index)
+    {
+      FlowerQueueItem flower = null;
+
+      lock (flowerQueueLock)
+      {
+        flower = flowerQueue?[index];
+        flowerQueue.RemoveAt(index);
+      }
+
+      if (flower != null)
+        OnFlowerTargetRemoved(flower);
     }
 
     public void ClearSpellQueue()
@@ -304,7 +338,7 @@ namespace SleepHunter.Macro
           flower.Tick(deltaTime);
       }
     }
-    
+
     public void CancelCasting()
     {
       spellCastDuration = TimeSpan.Zero;

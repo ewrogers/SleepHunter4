@@ -1299,11 +1299,16 @@ namespace SleepHunter.Views
 
       if (removedIndex < targetIndex)
       {
-        
+        selectedMacro.AddToSpellQueue(droppedItem, targetIndex + 1);
+        selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex);
       }
       else
       {
-
+        if (selectedMacro.QueuedSpells.Count + 1 > removedIndex + 1)
+        {
+          selectedMacro.AddToSpellQueue(droppedItem, targetIndex);
+          selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex + 1);
+        }
       }
     }
 
