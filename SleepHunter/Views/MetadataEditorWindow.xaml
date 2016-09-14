@@ -26,7 +26,7 @@
             <TabItem Header="Skills">
                 <ListView Name="skillListView" 
                           Style="{StaticResource ObsidianListView}" 
-                          Margin="0,-2,0,0" 
+                          Margin="0" 
                           Panel.ZIndex="2"
                           SelectionMode="Extended"
                           ItemsSource="{Binding Source={x:Static metadata:SkillMetadataManager.Instance}, Path=Skills}"
@@ -54,7 +54,7 @@
             <TabItem Header="Spells">
                 <ListView Name="spellListView" 
                           Style="{StaticResource ObsidianListView}" 
-                          Margin="0,-2,0,0" 
+                          Margin="0" 
                           Panel.ZIndex="2"
                           SelectionMode="Extended"
                           ItemsSource="{Binding Source={x:Static metadata:SpellMetadataManager.Instance}, Path=Spells}"
@@ -86,7 +86,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="320" MinWidth="200" MaxWidth="400"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <ListBox Name="stavesListBox"

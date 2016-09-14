@@ -320,97 +320,110 @@
     
     <!-- Line Modifiers Data Template -->
     <DataTemplate x:Key="LineModifiersDataTemplate">
-        <Border Name="Border" Padding="4">
-            <StackPanel Orientation="Vertical">
-                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <ComboBox Name="ActionComboBox"
-                              Style="{StaticResource ObsidianComboBox}"
-                              ItemTemplate="{StaticResource StringDataTemplate}"
-                              Width="120" Height="34"
-                              SelectedItem="{Binding Action, Mode=TwoWay}"
-                              Margin="4,6">
-                        <meta:ModifierAction>Increase</meta:ModifierAction>
-                        <meta:ModifierAction>Decrease</meta:ModifierAction>
-                        <meta:ModifierAction>Set</meta:ModifierAction>
-                    </ComboBox>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Name="SelectionBorder"
+                    Background="{DynamicResource ObsidianBackground}"
+                    Width="6"
+                    VerticalAlignment="Stretch"
+                    Visibility="Collapsed"/>
+            <Border Grid.Column="1" Name="Border"
+                    BorderBrush="Transparent"
+                    BorderThickness="2"
+                    Padding="10,4">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ComboBox Name="ActionComboBox"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  Width="120" Height="34"
+                                  SelectedItem="{Binding Action, Mode=TwoWay}"
+                                  Margin="4,6">
+                            <meta:ModifierAction>Increase</meta:ModifierAction>
+                            <meta:ModifierAction>Decrease</meta:ModifierAction>
+                            <meta:ModifierAction>Set</meta:ModifierAction>
+                        </ComboBox>
 
-                    <ComboBox Name="ScopeComboBox"
-                              Style="{StaticResource ObsidianComboBox}"
-                              ItemTemplate="{StaticResource StringDataTemplate}"
-                              Width="120" Height="34"
-                              SelectedItem="{Binding Scope, Mode=TwoWay}"
-                              BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
-                              Margin="4,6">
-                        <meta:ModifierScope>Single</meta:ModifierScope>
-                        <meta:ModifierScope>Group</meta:ModifierScope>
-                        <meta:ModifierScope>All</meta:ModifierScope>
-                    </ComboBox>
+                        <ComboBox Name="ScopeComboBox"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  Width="120" Height="34"
+                                  SelectedItem="{Binding Scope, Mode=TwoWay}"
+                                  BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
+                                  Margin="4,6">
+                            <meta:ModifierScope>Single</meta:ModifierScope>
+                            <meta:ModifierScope>Group</meta:ModifierScope>
+                            <meta:ModifierScope>All</meta:ModifierScope>
+                        </ComboBox>
 
-                    <TextBox Name="ScopeTextBox"
-                             Style="{StaticResource ObsidianTextBox}"
-                             Width="120" Height="34"
-                             Text="{Binding ScopeName, Mode=TwoWay}"
-                             BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
-                             TextAlignment="Center"
-                             Margin="4,6"/>
+                        <TextBox Name="ScopeTextBox"
+                                 Style="{StaticResource ObsidianTextBox}"
+                                 Width="120" Height="34"
+                                 Text="{Binding ScopeName, Mode=TwoWay}"
+                                 BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
+                                 TextAlignment="Center"
+                                 Margin="4,6"/>
 
-                    <TextBlock Name="ConjunctionText"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="18"
-                               Text="by"
-                               Margin="4,6"/>
+                        <TextBlock Name="ConjunctionText"
+                                   Style="{StaticResource ObsidianText}"
+                                   FontSize="18"
+                                   Text="by"
+                                   Margin="4,6"/>
 
-                    <ctl:NumericUpDown x:Name="ValueUpDown"
-                                       Style="{StaticResource ObsidianNumericUpDown}"
-                                       Width="80" Height="34"
-                                       Value="{Binding Value, Mode=TwoWay}"
-                                       Minimum="0"
-                                       Maximum="255"
-                                       Margin="4,6"/>
-                </WrapPanel>
-                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Style="{StaticResource ObsidianText}"
-                               Text="For Spells >= "
-                               Margin="4,6"/>
-                    <ctl:NumericUpDown x:Name="MinThresholdUpDown"
-                                       Width="80" Height="34"
-                                       Style="{StaticResource ObsidianNumericUpDown}"
-                                       Value="{Binding MinThreshold, Mode=TwoWay}"
-                                       BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
-                                       Minimum="0"
-                                       Maximum="255"
-                                       Margin="4,6"/>
+                        <ctl:NumericUpDown x:Name="ValueUpDown"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Width="80" Height="34"
+                                           Value="{Binding Value, Mode=TwoWay}"
+                                           Minimum="0"
+                                           Maximum="255"
+                                           Margin="4,6"/>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Text="For Spells >= "
+                                   Margin="4,6"/>
+                        <ctl:NumericUpDown x:Name="MinThresholdUpDown"
+                                           Width="80" Height="34"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Value="{Binding MinThreshold, Mode=TwoWay}"
+                                           BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
+                                           Minimum="0"
+                                           Maximum="255"
+                                           Margin="4,6"/>
 
-                    <TextBlock Name="MinLinesText" 
-                               Style="{StaticResource ObsidianText}"
-                               Text="Lines"
-                               Margin="4,6"/>
-                </WrapPanel>
-                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Style="{StaticResource ObsidianText}"
-                               Text="For Spells &lt;= "
-                               Margin="4,6"/>
-                    <ctl:NumericUpDown x:Name="MaxThresholdUpDown"
-                                       Width="80" Height="34"
-                                       Style="{StaticResource ObsidianNumericUpDown}"
-                                       Value="{Binding MaxThreshold, Mode=TwoWay}"
-                                       BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
-                                       Minimum="0"
-                                       Maximum="255"
-                                       Margin="4,6"/>
+                        <TextBlock Name="MinLinesText" 
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="Lines"
+                                   Margin="4,6"/>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Text="For Spells &lt;= "
+                                   Margin="4,6"/>
+                        <ctl:NumericUpDown x:Name="MaxThresholdUpDown"
+                                           Width="80" Height="34"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Value="{Binding MaxThreshold, Mode=TwoWay}"
+                                           BorderBrush="{Binding ElementName=ActionComboBox, Path=BorderBrush}"
+                                           Minimum="0"
+                                           Maximum="255"
+                                           Margin="4,6"/>
 
-                    <TextBlock Name="MaxLinesText" 
-                               Style="{StaticResource ObsidianText}"
-                               Text="Lines"
-                               Margin="4,6"/>
-                </WrapPanel>
-            </StackPanel>
-        </Border>
+                        <TextBlock Name="MaxLinesText" 
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="Lines"
+                                   Margin="4,6"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </Grid>        
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                <Setter TargetName="ActionComboBox" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-                <Setter TargetName="ValueUpDown" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
+                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Action}" Value="Set">
                 <Setter TargetName="ConjunctionText" Property="Text" Value="to"/>
