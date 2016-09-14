@@ -121,55 +121,54 @@
                         </ListBox.ItemContainerStyle>
                     </ListBox>
 
-                    <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,-4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Name="addModifierButton"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Add"
-                                Click="addModifierButton_Click">
-                            <Path Stroke="{Binding ElementName=addModifierButton, Path=Foreground}"
-                                  StrokeThickness="6"
-                                  Data="M 0,14 h 32 m -16,-16 v 32"/>
-                        </Button>
-
-                        <Button Name="editModifierButton"
-                                Grid.Column="1"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Edit"
-                                Click="editModifierButton_Click">
-                            <Path Stroke="{Binding ElementName=editModifierButton, Path=Foreground}"
-                                  StrokeThickness="6"
-                                  Data="M 0,12 h 8 m 4,0 h 8 m 4,0 h 8"/>
-                        </Button>
-
-                        <Button Name="removeModifierButton"
-                                Grid.Column="2"
-                                Style="{StaticResource ObsidianToolBarButton}"
-                                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                BorderThickness="0,1,0,0"
-                                Tag="Remove"
-                                Click="removeModifierButton_Click">
-                            <Path Stroke="{Binding ElementName=removeModifierButton, Path=Foreground}"
-                                  StrokeThickness="6"
-                                  Data="M 0,0 l 26,26 m 0,-26 l -26,26"/>
-                        </Button>
-                    </Grid>
+                    <Border Grid.Row="1" Grid.Column="1"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="0,1,0,0">
+                        <UniformGrid Rows="1"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Center">
+                            <!-- Add Modifier Button -->
+                            <Button Name="addModifierButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="addModifierButton_Click"
+                                    Padding="8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=addModifierButton, Path=Foreground}"
+                                               Text="&#xE109;"/>
+                                    <Label Content="Add _Modifiers"
+                                           Foreground="{Binding ElementName=addModifierButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                            <!-- Edit Modifier Button -->
+                            <Button Name="editModifierButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="editModifierButton_Click"
+                                    Padding="8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=editModifierButton, Path=Foreground}"
+                                               Text="&#xE104;"/>
+                                    <Label Content="_Edit"
+                                           Foreground="{Binding ElementName=editModifierButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                            <!-- Remove Modifier Button -->
+                            <Button Name="removeModifierButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="removeModifierButton_Click"
+                                    Padding="8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=removeModifierButton, Path=Foreground}"
+                                               Text="&#xE10A;"/>
+                                    <Label Content="_Remove"
+                                           Foreground="{Binding ElementName=removeModifierButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </Border>                    
                 </Grid>
-            </TabItem>
-            <TabItem Header="Weapons" IsEnabled="False">
-
-            </TabItem>
-            <TabItem Header="Items" IsEnabled="False">
-
             </TabItem>
         </TabControl>
 
