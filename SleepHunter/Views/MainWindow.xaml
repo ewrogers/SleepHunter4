@@ -37,7 +37,7 @@
                     <Button Name="startNewClientButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="startNewClientButton_Click"
-                            Padding="8,0">
+                            Padding="8,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Start _New Client"
@@ -48,7 +48,7 @@
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="24"
-                                       Margin="0,4,0,0"
+                                       Margin="0,8,0,0"
                                        Text="&#xE1E2;"/>                            
                         </DockPanel>
                     </Button>
@@ -58,7 +58,7 @@
                     <Button Name="startMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="startMacroButton_Click"
-                            Padding="4,0">
+                            Padding="4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Sta_rt Macroing"
@@ -77,7 +77,7 @@
                     <Button Name="pauseMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="pauseMacroButton_Click"
-                            Padding="4,0">
+                            Padding="4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="_Pause Macroing"
@@ -96,7 +96,7 @@
                     <Button Name="stopMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="stopMacroButton_Click"
-                            Padding="4,0">
+                            Padding="4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="S_top Macroing"
@@ -117,7 +117,7 @@
                     <Button Name="settingsButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="settingsButton_Click"
-                            Padding="8,0">
+                            Padding="8,2">
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="App Settin_gs"
