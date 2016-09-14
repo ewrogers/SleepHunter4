@@ -334,7 +334,7 @@
                                     <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                                Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"
                                                Text="&#xE109;"/>
-                                    <Label Content="_Add Target"
+                                    <Label Content="Add _New"
                                            Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"/>
                                 </StackPanel>
                             </Button>

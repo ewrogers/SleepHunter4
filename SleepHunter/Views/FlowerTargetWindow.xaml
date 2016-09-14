@@ -6,7 +6,7 @@
         xmlns:models="clr-namespace:SleepHunter.Models"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         xmlns:sh="clr-namespace:SleepHunter"
-        Title="Flower Target"
+        Title="Add Flower Target"
         Width="500" Height="330"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"

@@ -516,7 +516,7 @@ namespace SleepHunter.Settings
       UseSpaceForAssail = true;
       DisarmForAssails = true;
 
-      SpellRotationMode = SpellRotationMode.RoundRobin;
+      SpellRotationMode = SpellRotationMode.Singular;
       ZeroLineDelay = TimeSpan.FromSeconds(0.2);
       SingleLineDelay = TimeSpan.FromSeconds(1);
       MultipleLineDelay = TimeSpan.FromSeconds(1);
