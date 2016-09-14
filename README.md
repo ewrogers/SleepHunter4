@@ -31,6 +31,7 @@ Dark Ages Automation Tool
 - Spell queue list item font sizes have been reduced
 - Spell queue list item selected indicator is now a left-aligned bar instead of entire cell highlight
 - Spell queue warning indicator (for undefined spells) now flashes and has an improved tooltip message
+- Spell queue rotation now defaults to singular order instead of round robin (user settings)
 - Flowering tab bottom buttons changed to use Segoe UI Symbol font icons
 - Flower queue can now be re-ordered via drag and drop (move up/down buttons have been removed)
 - Flower queue now has 'remove' and 'clear all' buttons to make it more clear (DELETE key still removes selected)
