@@ -105,7 +105,8 @@
                     <GridSplitter Grid.RowSpan="2"
                                   HorizontalAlignment="Right"
                                   Width="1"
-                                  Margin="0,0,0,-4"
+                                  Margin="0"
+                                  Panel.ZIndex="2"
                                   Style="{StaticResource ObsidianGridSplitter}"/>
 
                     <ListBox Name="lineModifiersListBox"
