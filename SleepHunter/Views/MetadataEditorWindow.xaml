@@ -15,9 +15,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <TabControl Name="tabControl"
                     SelectedIndex="{Binding RelativeSource={RelativeSource AncestorType=views:MetadataEditorWindow}, Path=SelectedTabIndex}"
                     SelectionChanged="tabControl_SelectionChanged"
@@ -89,7 +88,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <ListBox Name="stavesListBox"
                              Grid.RowSpan="2"
                              Style="{StaticResource ObsidianListBox}"
@@ -103,13 +102,13 @@
                             </Style>
                         </ListBox.ItemContainerStyle>
                     </ListBox>
-                    
+
                     <GridSplitter Grid.RowSpan="2"
                                   HorizontalAlignment="Right"
                                   Width="1"
                                   Margin="0,0,0,-4"
                                   Style="{StaticResource ObsidianGridSplitter}"/>
-                    
+
                     <ListBox Name="lineModifiersListBox"
                              Grid.Column="1"
                              Style="{StaticResource ObsidianListBox}"
@@ -120,15 +119,15 @@
                                 <EventSetter Event="MouseDoubleClick" Handler="lineModifiersListBoxItem_DoubleClick"/>
                             </Style>
                         </ListBox.ItemContainerStyle>
-                    </ListBox>                       
-                    
+                    </ListBox>
+
                     <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,-4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <Button Name="addModifierButton"
                                 Style="{StaticResource ObsidianToolBarButton}"
                                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
@@ -173,54 +172,92 @@
 
             </TabItem>
         </TabControl>
-        
-        <Separator Name="separator" 
-                   Grid.Row="1" 
-                   Style="{StaticResource ObsidianSeparator}"
-                   Margin="0,4"/>
-        
-        <WrapPanel Name="buttonPanel" 
-                   Grid.Row="2"
-                   Orientation="Horizontal"
-                   Margin="8,0,16,4"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center">
-            <Button Name="addButton" 
-                    Width="100" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Add"
-                    Click="addButton_Click"/>
-            <Button Name="editButton" 
-                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Edit"
-                    Click="editButton_Click"/>
-            <Button Name="removeButton" 
-                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Delete"
-                    Click="deleteButton_Click"/>
-            <Button Name="clearButton" 
-                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Clear All"
-                    Click="clearButton_Click"/>
-            <Button Name="saveButton" 
-                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Save"
-                    Click="saveButton_Click"/>
-            <Button Name="revertButton" 
-                    Width="{Binding ElementName=addButton, Path=Width}" Height="32"
-                    Margin="6,4"
-                    Style="{StaticResource ObsidianButton}"
-                    Content="_Reload"
-                    Click="revertButton_Click"/>
-        </WrapPanel>
+
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                BorderThickness="0,1,0,0">
+            <UniformGrid Rows="1"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center">
+                <!-- Add Button -->
+                <Button Name="addButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="addButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=addButton, Path=Foreground}"
+                                   Text="&#xE109;"/>
+                        <Label Content="Add _New"
+                               Foreground="{Binding ElementName=addButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+                <!-- Edit Button -->
+                <Button Name="editButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="editButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=editButton, Path=Foreground}"
+                                   Text="&#xE104;"/>
+                        <Label Content="_Edit"
+                               Foreground="{Binding ElementName=editButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+                <!-- Remove Button -->
+                <Button Name="removeButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="removeButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=removeButton, Path=Foreground}"
+                                   Text="&#xE10A;"/>
+                        <Label Content="_Remove"
+                               Foreground="{Binding ElementName=removeButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+                <!-- Clear Button -->
+                <Button Name="clearButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="clearButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=clearButton, Path=Foreground}"
+                                   Text="&#xE107;"/>
+                        <Label Content="Clear _All"
+                               Foreground="{Binding ElementName=clearButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+                <!-- Save Button -->
+                <Button Name="saveButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="saveButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=saveButton, Path=Foreground}"
+                                   Text="&#xE105;"/>
+                        <Label Content="_Save"
+                               Foreground="{Binding ElementName=saveButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+                <!-- Revert Button -->
+                <Button Name="revertButton"
+                        Style="{StaticResource ObsidianCommandButton}"
+                        Click="revertButton_Click"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding ElementName=revertButton, Path=Foreground}"
+                                   Text="&#xE149;"/>
+                        <Label Content="Re_vert"
+                               Foreground="{Binding ElementName=revertButton, Path=Foreground}"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+        </Border>
     </Grid>
 </Window>

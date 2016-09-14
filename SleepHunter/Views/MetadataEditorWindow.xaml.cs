@@ -130,7 +130,7 @@ namespace SleepHunter.Views
       }
     }
 
-    void deleteButton_Click(object sender, RoutedEventArgs e)
+    void removeButton_Click(object sender, RoutedEventArgs e)
     {
       var selectedNames = new List<string>();
 
