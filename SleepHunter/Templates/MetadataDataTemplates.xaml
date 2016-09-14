@@ -12,7 +12,7 @@
         <Border>
             <TextBlock Style="{StaticResource ObsidianText}"
                        Text="{Binding Name}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Left"
                        TextWrapping="WrapWithOverflow"
                        Margin="0,2,0,0"/>
@@ -24,7 +24,7 @@
         <Border>
             <TextBlock Style="{StaticResource ObsidianText}"
                        Text="{Binding Class, Converter={StaticResource PlayerClassConverter}}"
-                       FontSize="16"
+                       FontSize="14"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"
                        Margin="0,2,0,0"/>
@@ -36,7 +36,7 @@
         <Border>
             <TextBlock Style="{StaticResource ObsidianText}"
                        Text="{Binding GroupName}"
-                       FontSize="16"
+                       FontSize="14"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"
                        Margin="0,2,0,0"/>
@@ -49,7 +49,7 @@
             <TextBlock Name="ManaText" 
                        Style="{StaticResource ObsidianText}"
                        Text="{Binding ManaCost}"
-                       FontSize="16"
+                       FontSize="14"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"
                        Margin="0,2,0,0"/>
@@ -68,7 +68,7 @@
             <TextBlock Name="LinesText" 
                        Style="{StaticResource ObsidianText}"
                        Text="{Binding NumberOfLines}"
-                       FontSize="16"
+                       FontSize="14"
                        TextAlignment="Center"
                        TextWrapping="WrapWithOverflow"
                        Margin="0,2,0,0"/>
@@ -230,70 +230,81 @@
 
     <!-- Staff Metadata Data Template -->
     <DataTemplate x:Key="StaffDataTemplate">
-        <Border Name="Border" Padding="2">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Name="NameText"
-                           Text="{Binding Name}"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="24"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2"/>
-                
-                <TextBlock Name="LevelText"
-                           Grid.Row="1" 
-                           Text="{Binding Level, StringFormat=Level {0}}"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="18"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2"
-                           Opacity="0.55"/>
+        <DockPanel>
+            <Border Name="SelectionBorder"
+                    DockPanel.Dock="Left"
+                    Width="6"
+                    Background="{DynamicResource ObsidianBackground}"
+                    VerticalAlignment="Stretch"
+                    Visibility="Collapsed"/>
+            <Border Name="Border" Padding="10,0">
+                <Grid Margin="0,2,0,4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <TextBlock Name="AbilityLevelText"
-                           Grid.Row="1" 
-                           Text="{Binding AbilityLevel, StringFormat=AB {0}}"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="18"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="4,2"
-                           Opacity="0.55"
-                           Visibility="Collapsed"/>
+                    <TextBlock Name="NameText"
+                               Text="{Binding Name}"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextWrapping="WrapWithOverflow"
+                               Margin="4,2"/>
 
-                <TextBlock Name="ClassText"
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1" 
-                           Text="{Binding Class, Converter={StaticResource PlayerClassConverter}}"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="18"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="8,2"
-                           Opacity="0.75"/>
+                    <TextBlock Name="ClassText"
+                               Grid.Row="1"
+                               Text="{Binding Class, Converter={StaticResource PlayerClassConverter}}"
+                               Style="{StaticResource ObsidianText}"
+                               Foreground="{StaticResource ObsidianInactive}"
+                               FontSize="16"
+                               TextWrapping="WrapWithOverflow"
+                               Margin="4,2"
+                               Opacity="0.75"/>
 
-                <TextBlock Name="MedeniaClassText"
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1" 
-                           Text="{Binding Class, Converter={StaticResource PlayerClassConverter}, ConverterParameter=Medenia}"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="18"
-                           TextWrapping="WrapWithOverflow"
-                           Margin="8,2"
-                           Opacity="0.75"
-                           Visibility="Collapsed"/>
-            </Grid>            
-        </Border>
+                    <TextBlock Name="MedeniaClassText"
+                               Grid.Row="1"
+                               Text="{Binding Class, Converter={StaticResource PlayerClassConverter}, ConverterParameter=Medenia}"
+                               Style="{StaticResource ObsidianText}"
+                               Foreground="{StaticResource ObsidianInactive}"
+                               FontSize="16"
+                               TextWrapping="WrapWithOverflow"
+                               Margin="4,2"
+                               Opacity="0.75"
+                               Visibility="Collapsed"/>
+
+                    <TextBlock Name="LevelText"
+                               Grid.Row="0"
+                               Grid.RowSpan="2"
+                               Grid.Column="1" 
+                               Text="{Binding Level, StringFormat=Level {0}}"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextWrapping="WrapWithOverflow"
+                               Margin="8,2"
+                               Opacity="0.55"/>
+
+                    <TextBlock Name="AbilityLevelText"
+                               Grid.Row="0"
+                               Grid.RowSpan="2"
+                               Grid.Column="1" 
+                               Text="{Binding AbilityLevel, StringFormat=AB {0}}"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextWrapping="WrapWithOverflow"
+                               Margin="8,2"
+                               Opacity="0.55"
+                               Visibility="Collapsed"/>
+                </Grid>
+            </Border>
+        </DockPanel>        
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,0,10,0"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Level}" Value="0">
                 <Setter TargetName="LevelText" Property="Text" Value="Any Level"/>

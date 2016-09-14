@@ -84,7 +84,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="240" MinWidth="200" MaxWidth="360"/>
+                        <ColumnDefinition Width="320" MinWidth="200" MaxWidth="400"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
