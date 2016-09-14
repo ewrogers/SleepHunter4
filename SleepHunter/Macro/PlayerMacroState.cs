@@ -490,12 +490,12 @@ namespace SleepHunter.Macro
         }
       }
 
-      if (expectDialog || client.GameClient.IsDialogOpen)
+      if (expectDialog/* || client.GameClient.IsDialogOpen*/)
         client.CancelDialog();
 
       if (useSpaceForAssail && isAssailQueued)
       {
-        if (expectDialog || client.GameClient.IsDialogOpen)
+        if (expectDialog/* || client.GameClient.IsDialogOpen*/)
           client.CancelDialog();
 
         SetPlayerStatus(PlayerMacroStatus.Assailing);
