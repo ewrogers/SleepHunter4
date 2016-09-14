@@ -31,10 +31,10 @@ namespace SleepHunter.Win32
       internal static extern bool GetWindowRect(IntPtr windowHandle, out Rect windowRectangle);
 
       [DllImport("user32", EntryPoint = "PostMessage", CharSet = CharSet.Auto)]
-      internal static extern bool PostMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
+      internal static extern bool PostMessage(IntPtr windowHandle, uint message, UIntPtr wParam, UIntPtr lParam);
 
       [DllImport("user32", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
-      internal static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
+      internal static extern IntPtr SendMessage(IntPtr windowHandle, uint message, UIntPtr wParam, UIntPtr lParam);
 
       [DllImport("user32", EntryPoint = "VkKeyScan", CharSet = CharSet.Auto)]
       internal static extern ushort VkKeyScan(char character);

@@ -252,31 +252,35 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch"
                     Visibility="Collapsed"/>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Orientation="Vertical"
-                            VerticalAlignment="Center"
-                            Margin="2">
+            <Border Name="Border" Padding="10,4">
+                <StackPanel Orientation="Vertical">
                     <TextBlock Name="TargetText"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="20"
+                               FontSize="18"
                                Text="{Binding Target, StringFormat=Flowering {0}}"
-                               Margin="8,4"/>
+                               Margin="8,2"/>
+                    <WrapPanel Orientation="Horizontal" Margin="4,0">
+                        <TextBlock Name="IntervalText"
+                                   Style="{StaticResource ObsidianText}"
+                                   FontSize="14"
+                                   Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=Every {0}}"
+                                   Foreground="{StaticResource ObsidianInactive}"
+                                   Margin="4,2"/>
 
+                        <TextBlock Name="ThresholdText"
+                                   Style="{StaticResource ObsidianText}"
+                                   FontSize="14"
+                                   Text="{Binding ManaThreshold, StringFormat=If Mana &lt; {0}}"
+                                   Foreground="{StaticResource ObsidianInactive}"
+                                   Margin="4,2"/>
+                    </WrapPanel>
                     <DockPanel>
                         <TextBlock Name="RemainingText"
                                    Grid.Row="1"
                                    Style="{StaticResource ObsidianText}"
-                                   Text="{Binding RemainingTime, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Cooldown, Mode=OneWay}"
+                                   Text="{Binding RemainingTime, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Cooldown, Mode=OneWay, StringFormat=Waiting {0}...}"
                                    FontSize="16"
-                                   Margin="8,4"/>
+                                   Margin="6,2"/>
 
                         <ProgressBar Name="TimeProgressBar"
                                      DockPanel.Dock="Right"
@@ -287,36 +291,15 @@
                                      Value="{Binding RemainingTimeSeconds, Mode=OneWay}"
                                      Style="{StaticResource ObsidianProgressBar}"
                                      VerticalAlignment="Center"
-                                     Margin="4"/>
+                                     Margin="8,2"/>
                     </DockPanel>
                 </StackPanel>
-
-                <StackPanel Grid.Column="1"
-                            Orientation="Vertical"
-                            VerticalAlignment="Bottom"
-                            HorizontalAlignment="Right"
-                            Margin="2">
-                    <TextBlock Name="IntervalText"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="16"
-                           Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=Every {0}}"
-                           TextAlignment="Right"
-                           Opacity="0.80"
-                           Margin="8,4"/>
-
-                    <TextBlock Name="ThresholdText"
-                           Style="{StaticResource ObsidianText}"
-                           FontSize="16"
-                           Text="{Binding ManaThreshold, StringFormat=If Mana &lt; {0}}"
-                           TextAlignment="Right"
-                           Opacity="0.80"
-                           Margin="8,4"/>
-                </StackPanel>
-            </Grid>
+            </Border>            
         </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ManaThreshold}" Value="{x:Null}">
                 <Setter TargetName="ThresholdText" Property="Visibility" Value="Collapsed"/>
