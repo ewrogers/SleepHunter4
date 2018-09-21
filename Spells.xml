@@ -147,7 +147,7 @@
     <Spell Name="mor dion" Class="Priest" Group="dion" Mana="1000" Lines="2" />
     <Spell Name="mor dion comlha" Class="Priest" Group="dion" Mana="300" Lines="4" />
     <Spell Name="mor fas nadur" Class="Wizard" Group="fas nadur" Mana="150" Lines="4" />
-    <Spell Name="mor ioc" Class="Priest" Group="ioc" Mana="500" Lines="2" />
+    <Spell Name="mor ioc" Class="Priest" Group="ioc" Mana="600" Lines="2" />
     <Spell Name="mor ioc comlha" Class="Priest" Group="ioc" Mana="1100" Lines="2" />
     <Spell Name="mor naomh aite" Class="Priest" Group="naomh aite" Mana="400" Lines="4" />
     <Spell Name="mor pian na dion" Class="Wizard" Mana="3000" Lines="1" />
