@@ -989,7 +989,7 @@
                                Margin="4,8,4,4"/>
 
                     <TextBlock Grid.Row="4" 
-                               Text="erik.rogers@live.com"
+                               Text="ewrogers@gmail.com"
                                Style="{StaticResource ObsidianText}"
                                FontSize="16"
                                TextAlignment="Center"
@@ -1025,15 +1025,6 @@
                                TextAlignment="Center"
                                Opacity="0.75"
                                Margin="4,4"/>
-
-                    <TextBlock Name="frameworkVersionText" 
-                               Grid.Row="9" 
-                               Text="Unknown Framework Version"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="18"
-                               TextAlignment="Center"
-                               Opacity="0.5"
-                               Margin="4,8"/>
 
                     <CheckBox Name="autoUpdateCheckBox"
                               Grid.Row="11"
