@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - .NET Framework 4.8.1 support
+- Updated personal email address
+
+### Removed
+
+- .NET Framework version display in `Settings->About`
 
 ## [1.5.0] - 2016-09-13
 

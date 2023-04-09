@@ -3,8 +3,6 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
-using Microsoft.Win32;
-
 using SleepHunter.Extensions;
 using SleepHunter.Settings;
 
@@ -12,8 +10,6 @@ namespace SleepHunter.Views
 {
   public partial class SettingsWindow : Window
   {
-    static readonly string DotNetRegistryKey = @"Software\Microsoft\NET Framework Setup\NDP\v4\Full\";
-
     public static readonly int GeneralTabIndex = 0;
     public static readonly int UserInterfaceTabIndex = 1;
     public static readonly int GameClientTabIndex = 2;
@@ -50,7 +46,6 @@ namespace SleepHunter.Views
       var buildYear = Convert.ToInt32(buildNumber.Substring(0, 2)) + 2000;
       var buildMonth = Convert.ToInt32(buildNumber.Substring(2, 1), 16);
       var buildDay = Convert.ToInt32(buildNumber.Substring(3, 2));
-      var buildIncrement = buildNumber.Substring(5, 1);
 
       var buildDate = new DateTime(buildYear, buildMonth, buildDay);
 
@@ -59,23 +54,6 @@ namespace SleepHunter.Views
 
       if (isDebug)
         buildText.Text += "  (Debug)";
-
-      var frameworkVersion = "???";
-
-      using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(DotNetRegistryKey))
-      {
-        var releaseKey = Convert.ToInt32(ndpKey.GetValue("Release"));
-        if (releaseKey >= 393295)
-          frameworkVersion = "4.6+";
-        else if (releaseKey >= 379893)
-          frameworkVersion = "4.5.2+";
-        else if (releaseKey >= 378675)
-          frameworkVersion = "4.5.1+";
-        else if (releaseKey >= 378389)
-          frameworkVersion = "4.5+";
-      }
-
-      frameworkVersionText.Text = string.Format(".NET Framework {0}", frameworkVersion);
     }
 
     void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
