@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <converters:NumericConverter x:Key="NumericConverter"/>
     </UserControl.Resources>
-    <Grid>        
+    <Grid>
         <Border Name="Border"
                 BorderBrush="{Binding ElementName=Root, Path=BorderBrush}"
                 BorderThickness="1">
@@ -39,7 +39,7 @@
                          LostFocus="TextBox_LostFocus"
                          MouseWheel="TextBox_MouseWheel">
                 </TextBox>
-                
+
                 <!-- Increment Button -->
                 <RepeatButton Name="incrementButton" 
                               Grid.Column="1"
@@ -54,7 +54,7 @@
                           VerticalAlignment="Center"
                           Data="M 0,9 l 6,-10 l 6,10 Z"/>
                 </RepeatButton>
-                
+
                 <!-- Decrement Button -->
                 <RepeatButton Name="decrementButton" 
                               Grid.Row="1" 

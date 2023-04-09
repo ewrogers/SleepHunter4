@@ -2,23 +2,23 @@
 
 namespace SleepHunter.Metadata
 {
-  public delegate void SpellMetadataEventHandler(object sender, SpellMetadataEventArgs e);
+    public delegate void SpellMetadataEventHandler(object sender, SpellMetadataEventArgs e);
 
-  public sealed class SpellMetadataEventArgs : EventArgs
-  {
-    readonly SpellMetadata spell;
-
-    public SpellMetadata Spell
+    public sealed class SpellMetadataEventArgs : EventArgs
     {
-      get { return spell; }
-    }
+        readonly SpellMetadata spell;
 
-    public SpellMetadataEventArgs(SpellMetadata spell)
-    {
-      if (spell == null)
-        throw new ArgumentNullException("spell");
+        public SpellMetadata Spell
+        {
+            get { return spell; }
+        }
 
-      this.spell = spell;
+        public SpellMetadataEventArgs(SpellMetadata spell)
+        {
+            if (spell == null)
+                throw new ArgumentNullException("spell");
+
+            this.spell = spell;
+        }
     }
-  }
 }

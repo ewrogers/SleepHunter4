@@ -12,22 +12,22 @@
 
         <GradientStop Offset="0.166" Color="#AF6F00"/>
         <GradientStop Offset="0.332" Color="#AF6F00"/>
-        
+
         <GradientStop Offset="0.332" Color="#AFAF00"/>
         <GradientStop Offset="0.498" Color="#AFAF00"/>
-        
+
         <GradientStop Offset="0.498" Color="#00AF00"/>
         <GradientStop Offset="0.664" Color="#00AF00"/>
-        
+
         <GradientStop Offset="0.664" Color="#0000AF"/>
         <GradientStop Offset="0.830" Color="#0000AF"/>
-        
+
         <GradientStop Offset="0.830" Color="#6F00AF"/>
-        <GradientStop Offset="1.000" Color="#6F00AF"/> 
+        <GradientStop Offset="1.000" Color="#6F00AF"/>
     </LinearGradientBrush>
-    
+
     <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
-    
+
     <!-- Backgrounds & Foregrounds -->
     <SolidColorBrush x:Key="ObsidianBackground" Color="#104898"/>
     <SolidColorBrush x:Key="ObsidianControlBackground" Color="#181818"/>
@@ -37,7 +37,7 @@
     <SolidColorBrush x:Key="ObsidianActive" Color="#F0F0F0"/>
     <SolidColorBrush x:Key="ObsidianInactive" Color="#909090"/>
     <SolidColorBrush x:Key="ObsidianDisabled" Color="#505050"/>
-    <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>  
+    <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>
 
     <!-- Font Parameters -->
     <FontFamily x:Key="ObsidianFontFamily">Segoe UI</FontFamily>
@@ -56,7 +56,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- Scroll Bar Thumb Style -->
     <Style x:Key="ObsidianScrollBarThumb" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -137,7 +137,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Seprator Style -->
     <Style x:Key="ObsidianSeparator" TargetType="Separator">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -147,7 +147,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
-    
+
     <!-- Normal Text Style -->
     <Style x:Key="ObsidianText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
@@ -245,7 +245,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <DockPanel>
                                 <ScrollViewer DockPanel.Dock="Top"
                                               HorizontalScrollBarVisibility="Hidden"
@@ -260,12 +260,12 @@
                                                                 ColumnHeaderContextMenu="{Binding Path=TemplatedParent.View.ColumnHeaderContextMenu, RelativeSource={RelativeSource TemplatedParent}}"
                                                                 ColumnHeaderToolTip="{Binding Path=TemplatedParent.View.ColumnHeaderToolTip, RelativeSource={RelativeSource TemplatedParent}}"
                                                                 SnapsToDevicePixels="True"/>
-                                </ScrollViewer>                            
+                                </ScrollViewer>
 
                                 <ScrollContentPresenter Name="PART_ScrollContentPresenter"
                                                         KeyboardNavigation.DirectionalNavigation="Local"/>
                             </DockPanel>
-                            
+
                             <ScrollBar Name="PART_VerticalScrollBar"
                                        Grid.Column="1"
                                        Value="{TemplateBinding VerticalOffset}"
@@ -324,7 +324,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- TextBox Style -->
     <Style x:Key="ObsidianTextBox" TargetType="TextBox">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -486,13 +486,13 @@
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ContentSite" Property="Opacity" Value="1.0"/>
-                        </Trigger>                        
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ProgressBar Style -->
     <Style x:Key="ObsidianProgressBar" TargetType="ProgressBar">
         <Setter Property="SnapsToDevicePixels"  Value="True"/>
@@ -518,13 +518,13 @@
                                 BorderThickness="{TemplateBinding Padding}"
                                 HorizontalAlignment="Left"
                                 Panel.ZIndex="1"/>
-                        </Grid>                        
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
- 
+
     <!-- SpinButton Style -->
     <Style x:Key="ObsidianSpinButton" TargetType="RepeatButton">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -577,7 +577,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Button Style -->
     <Style x:Key="ObsidianButton" TargetType="Button">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -629,7 +629,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ComboBox Item Style -->
     <Style x:Key="ObsidianComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -650,7 +650,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ComboBox Toggle Button Style -->
     <Style x:Key="ObsidianComboBoxToggleButton" TargetType="ToggleButton">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -704,8 +704,8 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>   
-    
+    </Style>
+
     <!-- Popup Style -->
     <Style x:Key="ObsidianPopup" TargetType="Popup">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -713,7 +713,7 @@
         <Setter Property="AllowsTransparency" Value="True"/>
         <Setter Property="PopupAnimation" Value="Slide"/>
     </Style>
-    
+
     <!-- ComboBox Style -->
     <Style x:Key="ObsidianComboBox" TargetType="ComboBox">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -758,8 +758,8 @@
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                             </Border>
-                            
-                            
+
+
                             <TextBox Name="PART_EditableTextBox"
                                      Style="{StaticResource ObsidianComboBoxTextBox}"
                                      Foreground="{TemplateBinding Foreground}"
@@ -770,7 +770,7 @@
                                      Background="Transparent"
                                      Visibility="Hidden"
                                      IsReadOnly="{TemplateBinding IsReadOnly}"/>
-                            
+
                             <Popup Name="Popup"
                                    Placement="Bottom"
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
@@ -790,7 +790,7 @@
                                         <ScrollViewer Style="{StaticResource ObsidianScrollViewer}">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>
-                                    </Border>                                            
+                                    </Border>
                                 </Grid>
                             </Popup>
                         </Grid>
@@ -809,7 +809,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Tab Item Style -->
     <Style x:Key="ObsidianTabItem" TargetType="TabItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -861,7 +861,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Panel Tab Item Style -->
     <Style x:Key="ObsidianPanelTabItem" TargetType="TabItem" BasedOn="{StaticResource ObsidianTabItem}">
         <Setter Property="Padding" Value="4,4,4,0"/>
@@ -910,7 +910,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Vertical Tab Control Style -->
     <Style x:Key="ObsidianVerticalTabControl" TargetType="TabControl">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -951,7 +951,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Tab Control Style -->
     <Style x:Key="ObsidianTabControl" TargetType="TabControl">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1014,7 +1014,7 @@
                                          IsItemsHost="True"
                                          KeyboardNavigation.TabIndex="1"
                                          Background="Transparent"/>
-                        </Border>                        
+                        </Border>
                         <Border Name="Border"
                                 Grid.Row="1"
                                 Background="{TemplateBinding Background}"
@@ -1117,7 +1117,7 @@
         <Setter Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="Margin" Value="0"/>
     </Style>
-    
+
     <!-- Skillbook ListBoxItem Style -->
     <Style x:Key="ObsidianSkillListBoxItem" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1142,7 +1142,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Skillbook ListBox Style -->
     <Style x:Key="ObsidianSkillListBox" TargetType="ListBox">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1171,7 +1171,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ListBox Item Style -->
     <Style x:Key="ObsidianListBoxItem" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1197,7 +1197,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ListBox Style -->
     <Style x:Key="ObsidianListBox" TargetType="ListBox">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1227,7 +1227,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ListView Item -->
     <Style x:Key="ObsidianListViewItem" TargetType="ListViewItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1243,7 +1243,7 @@
         <Setter Property="Margin" Value="0,0,0,1"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ListViewItem">                    
+                <ControlTemplate TargetType="ListViewItem">
                     <Grid>
                         <Border Name="HighlightBorder"
                                 Background="{DynamicResource ObsidianBackground}"
@@ -1265,8 +1265,8 @@
                                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Border>
                         </DockPanel>
-                                               
-                    </Grid>                    
+
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="HighlightBorder" Property="Opacity" Value="0.2"/>
@@ -1275,13 +1275,13 @@
                             <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
                             <Setter Property="Padding" Value="4,2,10,2"/>
                             <Setter TargetName="HighlightBorder" Property="Opacity" Value="0.4"/>
-                        </Trigger>                        
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Grid View Column Header Gripper -->
     <Style x:Key="ObsidianGridViewColumnHeaderGripper" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1303,7 +1303,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Grid View Column Header -->
     <Style x:Key="ObsidianGridViewColumnHeader" TargetType="GridViewColumnHeader">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1340,7 +1340,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ListView Style -->
     <Style x:Key="ObsidianListView" TargetType="ListView">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1367,7 +1367,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Window Control Box Style -->
     <Style x:Key="ObsidianControlBox" TargetType="Button">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1401,7 +1401,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- Window Resize Grip Style -->
     <Style x:Key="ObsidianResizeGrip" TargetType="ResizeGrip">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1422,22 +1422,22 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    <!-- Window Title Thumb Style --> 
+
+    <!-- Window Title Thumb Style -->
     <Style x:Key="ObsidianWindowThumb" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Opacity" Value="0"/>
         <Setter Property="IsHitTestVisible" Value="True"/>
         <Setter Property="Focusable" Value="False"/>
     </Style>
-    
+
     <!-- Window Title Border Style -->
     <Style x:Key="ObsidianWindowTitleBorder" TargetType="Border">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="Padding" Value="10,1,10,2"/>
     </Style>
-    
+
     <!-- Window Title Text Style -->
     <Style x:Key="ObsidianWindowTitle" TargetType="TextBlock">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1449,7 +1449,7 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="2,4"/>
     </Style>
-    
+
     <!-- Window Style -->
     <Style x:Key="ObsidianWindow" TargetType="Window">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1478,7 +1478,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            
+
                             <Border Name="WindowTitleBorder"
                                     Style="{StaticResource ObsidianWindowTitleBorder}">
                                 <Grid>
@@ -1488,7 +1488,7 @@
                                         <ColumnDefinition Width="32"/>
                                         <ColumnDefinition Width="32"/>
                                     </Grid.ColumnDefinitions>
-                                    
+
                                     <TextBlock Name="WindowTitleText"
                                            Text="{TemplateBinding Title}"
                                            Style="{StaticResource ObsidianWindowTitle}"/>
@@ -1527,12 +1527,12 @@
                                     </Button>
                                 </Grid>
                             </Border>
-                            
+
                             <ContentPresenter Name="ContentSite"
                                               Grid.Row="1"
                                               Margin="{TemplateBinding Padding}"
                                               Panel.ZIndex="1"/>
-                            
+
                             <ResizeGrip Name="WindowResizeGrip"
                                         Grid.Row="1"
                                         Style="{StaticResource ObsidianResizeGrip}"

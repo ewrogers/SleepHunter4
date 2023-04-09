@@ -5,47 +5,47 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-  [Serializable]
-  [XmlRoot("SpellMetadata")]
-  public sealed class SpellMetadataCollection
-  {
-    string version;
-    List<SpellMetadata> spells;
-
-    [XmlAttribute("FileVersion")]
-    [DefaultValue(null)]
-    public string Version
+    [Serializable]
+    [XmlRoot("SpellMetadata")]
+    public sealed class SpellMetadataCollection
     {
-      get { return version; }
-      set { version = value; }
-    }
+        string version;
+        List<SpellMetadata> spells;
 
-    [XmlIgnore]
-    public int Count { get { return spells.Count; } }
+        [XmlAttribute("FileVersion")]
+        [DefaultValue(null)]
+        public string Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
 
-    [XmlArray("Spells")]
-    [XmlArrayItem("Spell")]
-    public List<SpellMetadata> Spells
-    {
-      get { return spells; }
-      private set { spells = value; }
-    }
+        [XmlIgnore]
+        public int Count { get { return spells.Count; } }
 
-    public SpellMetadataCollection()
-    {
-      spells = new List<SpellMetadata>();
-    }
+        [XmlArray("Spells")]
+        [XmlArrayItem("Spell")]
+        public List<SpellMetadata> Spells
+        {
+            get { return spells; }
+            private set { spells = value; }
+        }
 
-    public SpellMetadataCollection(int capacity)
-    {
-      spells = new List<SpellMetadata>(capacity);
-    }
+        public SpellMetadataCollection()
+        {
+            spells = new List<SpellMetadata>();
+        }
 
-    public SpellMetadataCollection(IEnumerable<SpellMetadata> collection)
-       : this()
-    {
-      if (collection != null)
-        spells.AddRange(collection);
+        public SpellMetadataCollection(int capacity)
+        {
+            spells = new List<SpellMetadata>(capacity);
+        }
+
+        public SpellMetadataCollection(IEnumerable<SpellMetadata> collection)
+           : this()
+        {
+            if (collection != null)
+                spells.AddRange(collection);
+        }
     }
-  }
 }

@@ -1,9 +1,9 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:SleepHunter.Converters">
-    
+
     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
-    
+
     <DataTemplate x:Key="TimeSpanDataTemplate">
         <Border>
             <Grid>

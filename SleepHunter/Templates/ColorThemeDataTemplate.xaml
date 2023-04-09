@@ -7,13 +7,13 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                
+
                 <Border Name="ColorBorder" 
                         Width="18" Height="18"
                         Background="{Binding Background}"
-                        CornerRadius="8">                    
+                        CornerRadius="8">
                 </Border>
-                
+
                 <TextBlock Name="Text"
                            Grid.Column="1"
                            Style="{StaticResource ObsidianText}"

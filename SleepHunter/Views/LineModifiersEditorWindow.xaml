@@ -30,7 +30,7 @@
                    TextAlignment="Right"
                    FontSize="18"
                    Focusable="False"/>
-        
+
         <ComboBox Name="actionComboBox"
                   Grid.Column="1"
                   Width="200"
@@ -72,7 +72,7 @@
                    TextAlignment="Right"
                    FontSize="18"
                    Focusable="False"/>
-        
+
         <TextBox Name="scopeNameTextBox"
                  Grid.Row="2"
                  Grid.Column="1"
@@ -89,7 +89,7 @@
                    TextAlignment="Right"
                    FontSize="18"
                    Focusable="False"/>
-        
+
         <ctl:NumericUpDown x:Name="valueUpDown" 
                            Style="{StaticResource ObsidianNumericUpDown}"
                            Grid.Row="3"
@@ -101,7 +101,7 @@
                            Maximum="255"
                            LargeIncrement="2"
                            Margin="6"/>
-        
+
         <Separator Grid.Row="4"
                    Grid.ColumnSpan="2"
                    Margin="2,6"

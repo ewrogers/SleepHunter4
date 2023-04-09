@@ -30,7 +30,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <DataTemplate x:Key="PlayerDataTemplate" DataType="models:Player">
         <DockPanel>
             <Border Name="SelectionBorder" 
@@ -206,7 +206,7 @@
                 </Grid>
             </Border>
         </DockPanel>
-        
+
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="{x:Null}">
                 <Setter TargetName="StatusText" Property="Visibility" Value="Collapsed"/>

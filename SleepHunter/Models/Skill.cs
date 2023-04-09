@@ -1,47 +1,47 @@
 ﻿
 namespace SleepHunter.Models
 {
-  public sealed class Skill : Ability
-  {
-    public Skill()
-       : base() { }
-
-    bool isAssail;
-    bool opensDialog;
-    bool requiresDisarm;
-
-    public bool IsAssail
+    public sealed class Skill : Ability
     {
-      get { return isAssail; }
-      set { SetProperty(ref isAssail, value, "IsAssail"); }
-    }
+        public Skill()
+           : base() { }
 
-    public bool OpensDialog
-    {
-      get { return opensDialog; }
-      set { SetProperty(ref opensDialog, value, "OpensDialog"); }
-    }
+        bool isAssail;
+        bool opensDialog;
+        bool requiresDisarm;
 
-    public bool RequiresDisarm
-    {
-      get { return requiresDisarm; }
-      set { SetProperty(ref requiresDisarm, value, "RequiresDisarm"); }
-    }
+        public bool IsAssail
+        {
+            get { return isAssail; }
+            set { SetProperty(ref isAssail, value, "IsAssail"); }
+        }
 
-    public static Skill MakeEmpty(int slot)
-    {
-      return new Skill
-      {
-        Slot = slot,
-        Panel = Ability.GetSkillPanelForSlot(slot),
-        IsEmpty = true
-      };
-    }
+        public bool OpensDialog
+        {
+            get { return opensDialog; }
+            set { SetProperty(ref opensDialog, value, "OpensDialog"); }
+        }
 
-    public override string ToString()
-    {
-      return string.Format("{0}", this.Name ?? "Unknown Skill");
+        public bool RequiresDisarm
+        {
+            get { return requiresDisarm; }
+            set { SetProperty(ref requiresDisarm, value, "RequiresDisarm"); }
+        }
+
+        public static Skill MakeEmpty(int slot)
+        {
+            return new Skill
+            {
+                Slot = slot,
+                Panel = Ability.GetSkillPanelForSlot(slot),
+                IsEmpty = true
+            };
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}", this.Name ?? "Unknown Skill");
+        }
     }
-  }
 
 }

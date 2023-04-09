@@ -2,24 +2,24 @@
 
 namespace SleepHunter.Extensions
 {
-  public static class StringExtender
-  {
-    public static string StripNumbers(this string text)
+    public static class StringExtender
     {
-      if (text == null)
-        return null;
+        public static string StripNumbers(this string text)
+        {
+            if (text == null)
+                return null;
 
-      var sb = new StringBuilder(text.Length);
+            var sb = new StringBuilder(text.Length);
 
-      foreach (var c in text)
-      {
-        if (char.IsDigit(c) || char.IsNumber(c))
-          continue;
+            foreach (var c in text)
+            {
+                if (char.IsDigit(c) || char.IsNumber(c))
+                    continue;
 
-        sb.Append(c);
-      }
+                sb.Append(c);
+            }
 
-      return sb.ToString();
+            return sb.ToString();
+        }
     }
-  }
 }

@@ -2,20 +2,20 @@
 
 namespace SleepHunter.Settings
 {
-  public delegate void ClientVersionEventHandler(object sender, ClientVersionEventArgs e);
+    public delegate void ClientVersionEventHandler(object sender, ClientVersionEventArgs e);
 
-  public sealed class ClientVersionEventArgs : EventArgs
-  {
-    readonly ClientVersion version;
-
-    public ClientVersion Version { get { return version; } }
-
-    public ClientVersionEventArgs(ClientVersion version)
+    public sealed class ClientVersionEventArgs : EventArgs
     {
-      if (version == null)
-        throw new ArgumentNullException("version");
+        readonly ClientVersion version;
 
-      this.version = version;
+        public ClientVersion Version { get { return version; } }
+
+        public ClientVersionEventArgs(ClientVersion version)
+        {
+            if (version == null)
+                throw new ArgumentNullException("version");
+
+            this.version = version;
+        }
     }
-  }
 }
