@@ -161,5 +161,10 @@ namespace SleepHunter.Views
 
             mainWindow.CheckForUpdate();
         }
+
+        private void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

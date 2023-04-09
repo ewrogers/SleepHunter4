@@ -68,10 +68,6 @@
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs" />
-    <Compile Include="Commands\AsyncDelegateCommand.cs" />
-    <Compile Include="Commands\DelegateCommand.cs" />
-    <Compile Include="Commands\IAsyncCommand.cs" />
-    <Compile Include="Commands\IRaiseCanExecuteChanged.cs" />
     <Compile Include="Views\LineModifiersEditorWindow.xaml.cs" />
     <Compile Include="Views\MainWindow.xaml.cs" />
     <Compile Include="Views\MessageBoxWindow.xaml.cs" />
@@ -95,7 +91,6 @@
     <Compile Include="Views\SpellTargetWindow.xaml.cs" />
     <Compile Include="Views\StaffEditorWindow.xaml.cs" />
     <Compile Include="Extensions\StringExtender.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Win32\MemoryBasicInformation.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
     <Compile Include="Win32\ProcessAccessFlags.cs" />

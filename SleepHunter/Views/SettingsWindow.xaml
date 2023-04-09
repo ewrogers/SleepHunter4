@@ -430,7 +430,7 @@
                     <TextBlock Text="Client Path:"
                                Grid.Row="0" Grid.ColumnSpan="2"
                                TextAlignment="Left"
-                               Margin="24,2"
+                               Margin="20,2"
                                Style="{StaticResource ObsidianText}"
                                ToolTip="This is the folder path to the game client executable."/>
 
@@ -438,10 +438,10 @@
                     <TextBox Name="clientPathTextBox"
                              Grid.Row="1"
                              Grid.ColumnSpan="2"
-                             Width="400"
+                             Width="440"
                              Style="{StaticResource ObsidianTextBox}"
                              Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
-                             Margin="4,2,4,6"/>
+                             Margin="0,2,0,6"/>
 
                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -945,8 +945,89 @@
                 </Grid>
             </TabItem>
 
+            <!-- Updates Tab -->
+            <TabItem Header="Up_dates">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Current Version Label Text -->
+                    <TextBlock Text="Current Version:"
+            		           TextAlignment="Right"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               ToolTip="This is the current version of SleepHunter running."/>
+
+                    <!-- Current Version Text -->
+                    <TextBlock Grid.Column="1"
+                               Text="4.0.1"
+            		           TextAlignment="Left"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               FontWeight="Normal"
+                               ToolTip="This is the current version of SleepHunter running."/>
+
+                    <!-- Latest Version Label Text -->
+                    <TextBlock Grid.Row="1"
+                               Text="Latest Version:"
+            		           TextAlignment="Right"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               ToolTip="This is the latest version of SleepHunter vailable."/>
+
+                    <!-- Latest Version Text -->
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="1"
+                               Text="4.1.0"
+            		           TextAlignment="Left"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               FontWeight="Normal"
+                               ToolTip="This is the latest version of SleepHunter available."/>
+
+                    <!-- Manually Check for Update Button -->
+                    <Button Name="checkForUpdateButton"
+                            Grid.Row="3"
+                            Grid.ColumnSpan="2"
+                            Style="{StaticResource ObsidianButton}"
+                            Width="320"
+                            Margin="4,16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Click="checkForUpdateButton_Click">
+                        _Check for Update
+                    </Button>
+
+                    <Separator Grid.Row="4"
+                               Grid.ColumnSpan="2"
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="4,8"/>
+
+                    <CheckBox Name="autoUpdateCheckBox"
+                              Grid.Row="5"
+                              Grid.ColumnSpan="2"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="4"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
+                              Content="_Automatically Check for Updates on Startup"/>
+
+                </Grid>
+            </TabItem>
+
             <!-- About Tab -->
-            <TabItem Header="_About">
+            <TabItem Header="A_bout">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1025,24 +1106,6 @@
                                TextAlignment="Center"
                                Opacity="0.75"
                                Margin="4,4"/>
-
-                    <CheckBox Name="autoUpdateCheckBox"
-                              Grid.Row="11"
-                              Style="{StaticResource ObsidianCheckBox}"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              Margin="4"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
-                              Content="_Automatically Check for Updates"/>
-
-                    <Button Name="updateButton"
-                            Grid.Row="12"
-                            Width="320"
-                            Height="32"
-                            Margin="8"
-                            Style="{StaticResource ObsidianButton}"
-                            Click="updateButton_Click">Check for _Updates
-                    </Button>
                 </Grid>
             </TabItem>
         </TabControl>
