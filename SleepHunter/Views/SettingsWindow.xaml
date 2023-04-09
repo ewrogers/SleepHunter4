@@ -10,7 +10,7 @@
         ResizeMode="NoResize"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner">
-    <Grid>        
+    <Grid>
         <!-- Tabs -->
         <TabControl Name="tabControl"
                     Style="{StaticResource ObsidianVerticalTabControl}"
@@ -87,7 +87,7 @@
                         <sys:TimeSpan>0:0:30</sys:TimeSpan>
                         <sys:TimeSpan>0:1:00</sys:TimeSpan>
                     </ComboBox>
-                    
+
                     <StackPanel Grid.Row="2"
                                 Grid.ColumnSpan="2"
                                 HorizontalAlignment="Center"
@@ -101,7 +101,7 @@
                             Remember Last Known Macro State
                         </CheckBox>
                     </StackPanel>
-               
+
                     <!-- Metadata Editor Button -->
                     <Button Name="metadataEditorButton"
                             Grid.Row="5"
@@ -114,7 +114,7 @@
                             Click="metadataEditorButton_Click">
                         Show _Metadata Editor
                     </Button>
-                    
+
                     <!-- Reset Defaults Button -->
                     <Button x:Name="resetDefaultsButton"
             		        Grid.Row="5"
@@ -134,7 +134,7 @@
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto"
-                              Margin="0,0,-8,0">                    
+                              Margin="0,0,-8,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -223,7 +223,7 @@
                             <settings:UserSetting Key="Medium" Value="46"/>
                             <settings:UserSetting Key="Large" Value="62"/>
                         </ComboBox>
-                        
+
                         <!-- Tem/Med Skills per Row Text -->
                         <TextBlock Text="Tem/Med Skills per Row:"
                                    Grid.Row="4"
@@ -369,7 +369,7 @@
                                 Show Skill Names
                             </CheckBox>
 
-                            
+
 
                             <!-- Show Spell Names  -->
                             <CheckBox Name="showSpellNamesCheckBox"
@@ -380,9 +380,9 @@
                                 Show Spell Names
                             </CheckBox>
 
-                            
+
                         </WrapPanel>
-                        
+
                         <WrapPanel Grid.Row="9" Grid.Column="1"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Top"
@@ -405,14 +405,14 @@
                                 Show Spell Levels
                             </CheckBox>
                         </WrapPanel>
-                        
+
                     </Grid>
-                </ScrollViewer>               
+                </ScrollViewer>
             </TabItem>
 
             <!-- Game Client Tab -->
             <TabItem Header="Game _Client">
-                
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -467,7 +467,7 @@
             		           Grid.ColumnSpan="2"
             		           Style="{StaticResource ObsidianSeparator}"
             		           Margin="4,6"/>
-                    
+
                     <StackPanel Grid.Row="4" Grid.ColumnSpan="2" 
                                 Orientation="Vertical"
                                 HorizontalAlignment="Center"
@@ -499,7 +499,7 @@
                             No Foreground _Walls
                         </CheckBox>
                     </StackPanel>
-                    
+
                     <!-- Reset Versions Button -->
                     <Button Name="resetVersionsButton"
                             Grid.Row="4"
@@ -511,7 +511,7 @@
                             VerticalAlignment="Bottom"
                             Click="resetVersionsButton_Click">
                         Reset Client _Versions
-                    </Button>                    
+                    </Button>
                 </Grid>
             </TabItem>
 
@@ -552,7 +552,7 @@
                         <settings:UserSetting Key="StopMacro" DisplayText="Stop Macro" Value="Stop"/>
                         <settings:UserSetting Key="ForceQuit" DisplayText="Close Client" Value="ForceQuit"/>
                     </ComboBox>
-                    
+
                     <!-- X/Y Change Text -->
                     <TextBlock Text="Action on X/Y Change:"
                                Grid.Row="1"
@@ -580,7 +580,7 @@
             		           Grid.ColumnSpan="2"
             		           Style="{StaticResource ObsidianSeparator}"
             		           Margin="4,6"/>
-                    
+
                     <!-- Medenia Switch Text -->
                     <TextBlock Text="Medenia Panel Switching:"
                                Grid.Row="3"
@@ -601,7 +601,7 @@
                         <settings:UserSetting Key="UseShiftKey" DisplayText="Shift-Click" Value="True"/>
                         <settings:UserSetting Key="DoNotUseShiftKey" DisplayText="Double Click" Value="False"/>
                     </ComboBox>
-                    
+
                     <!-- Preserve User Panel CheckBox -->
                     <CheckBox Name="preserveUserPanelCheckBox"
                               Grid.Row="7"
@@ -616,7 +616,7 @@
                     </CheckBox>
                 </Grid>
             </TabItem>
-            
+
             <!-- Skill Tab -->
             <TabItem Header="S_kill Macros">
                 <Grid>
@@ -648,7 +648,7 @@
                         <settings:UserSetting Key="Click" DisplayText="Click Each Skill" Value="False"/>
                         <settings:UserSetting Key="SpaceBar" DisplayText="Use Space Bar" Value="True"/>
                     </ComboBox>
-                    
+
                     <CheckBox Name="disarmForAssailsCheckBox"
                               Grid.Row="1"
                               Grid.ColumnSpan="2"
@@ -660,7 +660,7 @@
                               HorizontalAlignment="Center"/>
                 </Grid>
             </TabItem>
-            
+
             <!-- Spell Tab -->
             <TabItem Header="S_pell Macros">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
@@ -793,7 +793,7 @@
                                    Grid.ColumnSpan="2"
                                    Margin="4,6"
                                    Style="{StaticResource ObsidianSeparator}"/>
-                        
+
                         <WrapPanel Grid.Row="6" Grid.ColumnSpan="2"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
@@ -873,7 +873,7 @@
                     </Grid>
                 </ScrollViewer>
             </TabItem>
-            
+
             <!-- Flowering Tab -->
             <TabItem Header="_Flowering">
                 <Grid>

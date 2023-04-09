@@ -5,47 +5,47 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-  [Serializable]
-  [XmlRoot("SkillMetadata")]
-  public sealed class SkillMetadataCollection
-  {
-    string version;
-    List<SkillMetadata> skills;
-
-    [XmlAttribute("FileVersion")]
-    [DefaultValue(null)]
-    public string Version
+    [Serializable]
+    [XmlRoot("SkillMetadata")]
+    public sealed class SkillMetadataCollection
     {
-      get { return version; }
-      set { version = value; }
-    }
+        string version;
+        List<SkillMetadata> skills;
 
-    [XmlIgnore]
-    public int Count { get { return skills.Count; } }
+        [XmlAttribute("FileVersion")]
+        [DefaultValue(null)]
+        public string Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
 
-    [XmlArray("Skills")]
-    [XmlArrayItem("Skill")]
-    public List<SkillMetadata> Skills
-    {
-      get { return skills; }
-      private set { skills = value; }
-    }
+        [XmlIgnore]
+        public int Count { get { return skills.Count; } }
 
-    public SkillMetadataCollection()
-    {
-      skills = new List<SkillMetadata>();
-    }
+        [XmlArray("Skills")]
+        [XmlArrayItem("Skill")]
+        public List<SkillMetadata> Skills
+        {
+            get { return skills; }
+            private set { skills = value; }
+        }
 
-    public SkillMetadataCollection(int capacity)
-    {
-      skills = new List<SkillMetadata>(capacity);
-    }
+        public SkillMetadataCollection()
+        {
+            skills = new List<SkillMetadata>();
+        }
 
-    public SkillMetadataCollection(IEnumerable<SkillMetadata> collection)
-       : this()
-    {
-      if (collection != null)
-        skills.AddRange(collection);
+        public SkillMetadataCollection(int capacity)
+        {
+            skills = new List<SkillMetadata>(capacity);
+        }
+
+        public SkillMetadataCollection(IEnumerable<SkillMetadata> collection)
+           : this()
+        {
+            if (collection != null)
+                skills.AddRange(collection);
+        }
     }
-  }
 }

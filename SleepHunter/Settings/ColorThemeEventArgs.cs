@@ -2,20 +2,20 @@
 
 namespace SleepHunter.Settings
 {
-  public delegate void ColorThemeEventHandler(object sender, ColorThemeEventArgs e);
+    public delegate void ColorThemeEventHandler(object sender, ColorThemeEventArgs e);
 
-  public sealed class ColorThemeEventArgs : EventArgs
-  {
-    readonly ColorTheme theme;
-
-    public ColorTheme Theme { get { return theme; } }
-
-    public ColorThemeEventArgs(ColorTheme theme)
+    public sealed class ColorThemeEventArgs : EventArgs
     {
-      if (theme == null)
-        throw new ArgumentNullException("theme");
+        readonly ColorTheme theme;
 
-      this.theme = theme;
+        public ColorTheme Theme { get { return theme; } }
+
+        public ColorThemeEventArgs(ColorTheme theme)
+        {
+            if (theme == null)
+                throw new ArgumentNullException("theme");
+
+            this.theme = theme;
+        }
     }
-  }
 }

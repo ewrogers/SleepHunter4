@@ -6,48 +6,48 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Settings
 {
-  [Serializable]
-  public sealed class UserSetting : ObservableObject
-  {
-    string key;
-    string displayText;
-    object value;
-
-    [XmlAttribute("Key")]
-    public string Key
+    [Serializable]
+    public sealed class UserSetting : ObservableObject
     {
-      get { return key; }
-      set { SetProperty(ref key, value); }
-    }
+        string key;
+        string displayText;
+        object value;
 
-    [XmlIgnore]
-    public string DisplayText
-    {
-      get { return displayText; }
-      set { SetProperty(ref displayText, value); }
-    }
+        [XmlAttribute("Key")]
+        public string Key
+        {
+            get { return key; }
+            set { SetProperty(ref key, value); }
+        }
 
-    [XmlAttribute("Value")]
-    [DefaultValue(null)]
-    public object Value
-    {
-      get { return value; }
-      set { SetProperty(ref this.value, value); }
-    }
+        [XmlIgnore]
+        public string DisplayText
+        {
+            get { return displayText; }
+            set { SetProperty(ref displayText, value); }
+        }
 
-    public UserSetting()
-    { }
+        [XmlAttribute("Value")]
+        [DefaultValue(null)]
+        public object Value
+        {
+            get { return value; }
+            set { SetProperty(ref this.value, value); }
+        }
 
-    public UserSetting(string key, string displayText, object value = null)
-    {
-      this.key = key;
-      this.displayText = displayText;
-      this.value = value;
-    }
+        public UserSetting()
+        { }
 
-    public override string ToString()
-    {
-      return DisplayText ?? this.Key;
+        public UserSetting(string key, string displayText, object value = null)
+        {
+            this.key = key;
+            this.displayText = displayText;
+            this.value = value;
+        }
+
+        public override string ToString()
+        {
+            return DisplayText ?? this.Key;
+        }
     }
-  }
 }

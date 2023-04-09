@@ -20,7 +20,7 @@
             <ColumnDefinition Width="*" MinWidth="200"/>
             <ColumnDefinition Width="260" MinWidth="200" MaxWidth="360"/>
         </Grid.ColumnDefinitions>
-        
+
         <!-- Tool Bar -->
         <Border Grid.ColumnSpan="3" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
@@ -49,7 +49,7 @@
                                        VerticalAlignment="Bottom"
                                        FontSize="24"
                                        Margin="0,8,0,0"
-                                       Text="&#xE1E2;"/>                            
+                                       Text="&#xE1E2;"/>
                         </DockPanel>
                     </Button>
                 </StackPanel>
@@ -70,7 +70,7 @@
                                        VerticalAlignment="Bottom"
                                        FontSize="24"
                                        Margin="0,4,0,0"
-                                       Text="&#xE102;"/>                            
+                                       Text="&#xE102;"/>
                         </DockPanel>
                     </Button>
                     <!-- Pause Macro Button -->
@@ -134,8 +134,8 @@
                     </Button>
                 </StackPanel>
             </Grid>
-        </Border>       
- 
+        </Border>
+
         <!-- Client List Box -->
         <ListBox Name="clientListBox"
                  Grid.Row="1"
@@ -152,7 +152,7 @@
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
-        
+
         <!-- Grid Splitter -->
         <GridSplitter Grid.Row="1"
                       Width="1"
@@ -160,7 +160,7 @@
                       VerticalAlignment="Stretch"
                       Panel.ZIndex="10"
                       Style="{StaticResource ObsidianGridSplitter}"/>
-        
+
         <!-- Spell/Skills/Flower Tabs -->
         <TabControl Name="tabControl"
                     Grid.Row="1" Grid.Column="1"
@@ -170,7 +170,7 @@
                     SelectionChanged="tabControl_SelectionChanged"
                     Margin="-1,-1,0,0"
                     Padding="0">
-            
+
             <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">
                 <TabControl Style="{StaticResource ObsidianPanelTabControl}">
@@ -216,7 +216,7 @@
                     </TabItem>
                 </TabControl>
             </TabItem>
-            
+
             <!-- Spells Tabs-->
             <TabItem Name="spellsTab" Header="S_pells" IsEnabled="False">
                 <!-- Temuair Spells -->
@@ -262,7 +262,7 @@
                     </TabItem>
                 </TabControl>
             </TabItem>
-            
+
             <!-- Flowering Tab -->
             <TabItem Name="flowerTab" Header="_Flowering" IsEnabled="False">
                 <Grid>
@@ -338,7 +338,7 @@
                                            Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"/>
                                 </StackPanel>
                             </Button>
-                            
+
                             <!-- Remove Selected Target from Queue -->
                             <Button Name="removeSelectedFlowerTargetButton"
                                     Style="{StaticResource ObsidianCommandButton}"
@@ -380,7 +380,7 @@
                       VerticalAlignment="Stretch"
                       Style="{StaticResource ObsidianGridSplitter}"
                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
-        
+
         <!-- Spell Queue Grid -->
         <Grid Grid.Row="1" Grid.Column="2">
             <Grid.RowDefinitions>
@@ -389,7 +389,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
+
             <!-- Spell Queue Header -->
             <Border VerticalAlignment="Top"
                     Background="{DynamicResource ObsidianBackground}"
@@ -400,8 +400,8 @@
                            TextWrapping="Wrap"
                            FontSize="20"
                            Padding="4,2"/>
-            </Border>            
-            
+            </Border>
+
             <!-- Spell Queue -->
             <ListBox Name="spellQueueListBox"
                      Grid.Row="1"
@@ -419,12 +419,12 @@
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
-            
+
             <Separator Grid.Row="2"
                        Style="{StaticResource ObsidianSeparator}"
                        Margin="0"
                        Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
-            
+
             <Grid Grid.Row="3" Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
                 <UniformGrid Rows="1"
                              HorizontalAlignment="Stretch"
@@ -441,7 +441,7 @@
                                    Foreground="{Binding ElementName=removeSelectedSpellButton, Path=Foreground}"/>
                         </StackPanel>
                     </Button>
-                    
+
                     <!-- Clear All Spells from Queue -->
                     <Button Name="removeAllSpellsButton"
                             Style="{StaticResource ObsidianCommandButton}"
@@ -456,8 +456,8 @@
                     </Button>
                 </UniformGrid>
             </Grid>
-        </Grid>        
-        
+        </Grid>
+
         <!-- Status Bar -->
         <Border Grid.Row="2"
                 Grid.ColumnSpan="3"
@@ -471,7 +471,7 @@
                       HorizontalAlignment="Right"
                       VerticalAlignment="Bottom"
                       Opacity="0.5"/>
-                
+
                 <TextBlock Name="statusTextBlock" 
                            DockPanel.Dock="Left"
                            Text="Ready"

@@ -5,23 +5,23 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Macro
 {
-  [Serializable]
-  public sealed class SavedSkillState : ObservableObject
-  {
-    string skillName;
-
-    [XmlAttribute("Name")]
-    public string SkillName
+    [Serializable]
+    public sealed class SavedSkillState : ObservableObject
     {
-      get { return skillName; }
-      set { SetProperty(ref skillName, value); }
-    }
+        string skillName;
 
-    public SavedSkillState() { }
+        [XmlAttribute("Name")]
+        public string SkillName
+        {
+            get { return skillName; }
+            set { SetProperty(ref skillName, value); }
+        }
 
-    public SavedSkillState(string skillName)
-    {
-      this.skillName = skillName;
+        public SavedSkillState() { }
+
+        public SavedSkillState(string skillName)
+        {
+            this.skillName = skillName;
+        }
     }
-  }
 }

@@ -294,7 +294,7 @@
                                      Margin="8,2"/>
                     </DockPanel>
                 </StackPanel>
-            </Border>            
+            </Border>
         </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">

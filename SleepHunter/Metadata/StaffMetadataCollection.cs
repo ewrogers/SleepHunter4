@@ -5,42 +5,42 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-  [Serializable]
-  [XmlRoot("StaffMetadata")]
-  public sealed class StaffMetadataCollection
-  {
-    string version;
-    List<StaffMetadata> staves;
-
-    [XmlAttribute("FileVersion")]
-    [DefaultValue(null)]
-    public string Version
+    [Serializable]
+    [XmlRoot("StaffMetadata")]
+    public sealed class StaffMetadataCollection
     {
-      get { return version; }
-      set { version = value; }
-    }
+        string version;
+        List<StaffMetadata> staves;
 
-    [XmlArray("Staves")]
-    [XmlArrayItem("Staff")]
-    public List<StaffMetadata> Staves
-    {
-      get { return staves; }
-      private set { staves = value; }
-    }
+        [XmlAttribute("FileVersion")]
+        [DefaultValue(null)]
+        public string Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
 
-    public StaffMetadataCollection()
-    {
-      staves = new List<StaffMetadata>();
-    }
+        [XmlArray("Staves")]
+        [XmlArrayItem("Staff")]
+        public List<StaffMetadata> Staves
+        {
+            get { return staves; }
+            private set { staves = value; }
+        }
 
-    public StaffMetadataCollection(int capacity)
-    {
-      staves = new List<StaffMetadata>(capacity);
-    }
+        public StaffMetadataCollection()
+        {
+            staves = new List<StaffMetadata>();
+        }
 
-    public StaffMetadataCollection(IEnumerable<StaffMetadata> collection)
-    {
-      staves = new List<StaffMetadata>(collection);
+        public StaffMetadataCollection(int capacity)
+        {
+            staves = new List<StaffMetadata>(capacity);
+        }
+
+        public StaffMetadataCollection(IEnumerable<StaffMetadata> collection)
+        {
+            staves = new List<StaffMetadata>(collection);
+        }
     }
-  }
 }

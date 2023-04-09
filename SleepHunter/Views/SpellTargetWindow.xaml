@@ -24,7 +24,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        
+
         <Border Grid.RowSpan="2" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
                 BorderThickness="1"
@@ -32,7 +32,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="8,4">
-             <Image Source="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
+            <Image Source="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
                     Width="62" Height="62"
                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
         </Border>
@@ -61,14 +61,14 @@
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"/>
         </Border>
-        
+
         <TextBlock Grid.Column="3" Text="Level"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Center"
                    FontSize="18"
                    Opacity="0.5"
-                   Margin="4,2"/>        
-        
+                   Margin="4,2"/>
+
         <TextBlock Grid.Row="1" Grid.Column="3"
                    Style="{StaticResource ObsidianText}"
                    FontSize="26"
@@ -86,8 +86,8 @@
 
         <Separator Grid.Row="2"
                    Grid.ColumnSpan="4"
-                   Style="{StaticResource ObsidianSeparator}"/>        
-        
+                   Style="{StaticResource ObsidianSeparator}"/>
+
         <Grid Grid.Row="3" Grid.ColumnSpan="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -114,7 +114,7 @@
                        FontSize="18"
                        TextAlignment="Right"
                        ToolTip="This is the type of target you wish to cast on."/>
-            
+
             <ComboBox Name="targetModeComboBox"
                       Grid.Column="1"
                       Grid.ColumnSpan="3"
@@ -131,12 +131,12 @@
                 <settings:UserSetting Key="Character" DisplayText="Alternate Character" Value="Character"/>
                 <settings:UserSetting Key="RelativeTile" DisplayText="Relative Tile" Value="RelativeTile"/>
                 <settings:UserSetting Key="RelativeRadius" DisplayText="Relative Tile Radius" Value="RelativeRadius"/>
-                <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>                
+                <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>
                 <settings:UserSetting Key="AbsoluteTile" DisplayText="Absolute Tile" Value="AbsoluteTile"/>
                 <settings:UserSetting Key="AbsoluteRadius" DisplayText="Absolute Tile Radius" Value="AbsoluteRadius"/>
-                <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>                
+                <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>
             </ComboBox>
-            
+
             <TextBlock Grid.Row="1"
                        Text="Target Character:"
                        Style="{StaticResource ObsidianText}"
@@ -144,7 +144,7 @@
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=characterComboBox, Path=Visibility}"
                        ToolTip="This is the alternate character you wish to target."/>
-            
+
             <ComboBox Name="characterComboBox" 
                       Grid.Row="1"
                       Grid.Column="1"
@@ -257,7 +257,7 @@
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
                        ToolTip="This is the pixel coordinate, relative to yourself, that you wish to target."/>
-            
+
             <ctl:NumericUpDown x:Name="relativeXUpDown"
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="3"
@@ -367,7 +367,7 @@
                                Value="7"
                                Margin="8,4"
                                Visibility="Collapsed"/>
-            
+
             <TextBlock Grid.Row="8"
                        Text="Offset X,Y:"
                        Style="{StaticResource ObsidianText}"
@@ -408,9 +408,9 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>            
-            
-            <CheckBox Name="maxLevelCheckBox"
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Name="maxLevelCheckBox"
                       Grid.Column="1"
                       Content="Cast until Spell reaches Level:"
                       Style="{StaticResource ObsidianCheckBox}"

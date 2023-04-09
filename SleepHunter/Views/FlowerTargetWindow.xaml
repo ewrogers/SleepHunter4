@@ -55,10 +55,10 @@
             <settings:UserSetting Key="Character" DisplayText="Alternate Character" Value="Character"/>
             <settings:UserSetting Key="RelativeTile" DisplayText="Relative Tile" Value="RelativeTile"/>
             <settings:UserSetting Key="RelativeRadius" DisplayText="Relative Radius" Value="RelativeRadius"/>
-            <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>            
+            <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>
             <settings:UserSetting Key="AbsoluteTile" DisplayText="Absolute Tile" Value="AbsoluteTile"/>
             <settings:UserSetting Key="AbsoluteRadius" DisplayText="Absolute Radius" Value="AbsoluteRadius"/>
-            <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>            
+            <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>
         </ComboBox>
 
         <TextBlock Grid.Row="1"
@@ -291,7 +291,7 @@
                            Value="7"
                            Margin="8,4"
                            Visibility="Collapsed"/>
-        
+
         <TextBlock Grid.Row="8"
                    Text="Offset X,Y:"
                    Style="{StaticResource ObsidianText}"
@@ -349,7 +349,7 @@
                   Margin="8,6"
                   Visibility="{Binding ElementName=manaThresholdUpDown, Path=Visibility}"
                   ToolTip="When the target character's mana is less than this value, they will be flowered."/>
-        
+
         <ctl:NumericUpDown x:Name="manaThresholdUpDown" 
                            Style="{StaticResource ObsidianNumericUpDown}"
                            Grid.Row="11"

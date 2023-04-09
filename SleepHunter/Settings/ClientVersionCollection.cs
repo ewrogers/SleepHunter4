@@ -5,45 +5,45 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
 {
-  [Serializable]
-  [XmlRoot("ClientVersions")]
-  public sealed class ClientVersionCollection
-  {
-    string version;
-    List<ClientVersion> versions;
-
-    [XmlAttribute("FileVersion")]
-    [DefaultValue(null)]
-    public string Version
+    [Serializable]
+    [XmlRoot("ClientVersions")]
+    public sealed class ClientVersionCollection
     {
-      get { return version; }
-      set { version = value; }
-    }
+        string version;
+        List<ClientVersion> versions;
 
-    [XmlIgnore]
-    public int Count { get { return versions.Count; } }
+        [XmlAttribute("FileVersion")]
+        [DefaultValue(null)]
+        public string Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
 
-    [XmlArray("Clients")]
-    [XmlArrayItem("Client")]
-    public List<ClientVersion> Versions
-    {
-      get { return versions; }
-      private set { versions = value; }
-    }
+        [XmlIgnore]
+        public int Count { get { return versions.Count; } }
 
-    public ClientVersionCollection()
-    {
-      versions = new List<ClientVersion>();
-    }
+        [XmlArray("Clients")]
+        [XmlArrayItem("Client")]
+        public List<ClientVersion> Versions
+        {
+            get { return versions; }
+            private set { versions = value; }
+        }
 
-    public ClientVersionCollection(int capacity)
-    {
-      versions = new List<ClientVersion>(capacity);
-    }
+        public ClientVersionCollection()
+        {
+            versions = new List<ClientVersion>();
+        }
 
-    public ClientVersionCollection(IEnumerable<ClientVersion> collection)
-    {
-      versions = new List<ClientVersion>(collection);
+        public ClientVersionCollection(int capacity)
+        {
+            versions = new List<ClientVersion>(capacity);
+        }
+
+        public ClientVersionCollection(IEnumerable<ClientVersion> collection)
+        {
+            versions = new List<ClientVersion>(collection);
+        }
     }
-  }
 }

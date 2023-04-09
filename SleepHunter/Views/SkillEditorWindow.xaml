@@ -28,13 +28,13 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        
+
         <TextBlock Text="Skill Name:"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
                    FontSize="18"
                    Focusable="False"/>
-        
+
         <TextBox Name="nameTextBox" 
                  Grid.Column="1" 
                  Width="250" Height="32"
@@ -56,7 +56,7 @@
                  Style="{StaticResource ObsidianTextBox}"
                  TextAlignment="Center"
                  Margin="4"/>
-        
+
         <TextBlock Text="Mana Cost:"
                    Grid.Row="2"
                    Style="{StaticResource ObsidianText}"
@@ -87,7 +87,7 @@
                  Style="{StaticResource ObsidianTextBox}"
                  TextAlignment="Center"
                  Margin="4"/>
-        
+
         <CheckBox Name="assailCheckBox" 
                   Grid.Row="4"
                   Grid.Column="1"
