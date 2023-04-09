@@ -50,10 +50,36 @@ namespace SleepHunter.Views
       var buildDate = new DateTime(buildYear, buildMonth, buildDay);
 
       buildText.Text = string.Format("Build {0}", buildNumber);
-      buildDateText.Text = buildDate.ToString("MMMM dd, yyyy");
+      buildDateText.Text = $"{buildDate:MMMM} {buildDate.Day}{GetDayOrdinal(buildDate.Day)} {buildDate:yyyy}";
 
       if (isDebug)
         buildText.Text += "  (Debug)";
+    }
+
+    static string GetDayOrdinal(int dayOfMonth)
+    {
+      if (dayOfMonth <= 0)
+        return string.Empty;
+
+      switch (dayOfMonth)
+      {
+        case 11:
+        case 12:
+        case 13:
+        return "th";
+      }
+
+      switch(dayOfMonth % 10)
+      {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
     }
 
     void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
