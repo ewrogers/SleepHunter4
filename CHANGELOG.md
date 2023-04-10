@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New `Updates` section in `Settings` window
-- New `Auto-Update` window
+- New `Updates` section in `Settings` window allowing version checking and requesting updates
+- New `Auto-Update` window for downloading updates and launching the updater
+- New `SleepHunter.Updater` child project for applying auto-updates
+- New scanline overlay for displaying modals
 
 ### Changed
 
