@@ -39,6 +39,19 @@
     <SolidColorBrush x:Key="ObsidianDisabled" Color="#505050"/>
     <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>
 
+    <VisualBrush x:Key="ScanlineBrush"
+                 TileMode="Tile"
+                 Viewport="0,0,2,2"
+                 Viewbox="0,0,2,2"
+                 ViewportUnits="Absolute"
+                 ViewboxUnits="Absolute">
+        <VisualBrush.Visual>
+            <Canvas>
+                <Rectangle Fill="Black" Width="2" Height="1"/>
+            </Canvas>
+        </VisualBrush.Visual>
+    </VisualBrush>
+
     <!-- Font Parameters -->
     <FontFamily x:Key="ObsidianFontFamily">Segoe UI</FontFamily>
     <FontFamily x:Key="ObsidianSymbolFontFamily">Segoe UI Symbol</FontFamily>

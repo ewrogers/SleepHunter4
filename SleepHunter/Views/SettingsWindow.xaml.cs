@@ -40,6 +40,7 @@ namespace SleepHunter.Views
         {
             InitializeComponent();
             GetVersion();
+            ToggleDownloadUpdateButton(false);
         }
 
         void GetVersion()
@@ -69,6 +70,8 @@ namespace SleepHunter.Views
             if (isCheckingForVersion)
                 return;
 
+            ToggleDownloadUpdateButton(false);
+
             isCheckingForVersion = true;
 
             try
@@ -81,17 +84,30 @@ namespace SleepHunter.Views
                 var version = latestRelease.Version;
 
                 latestVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
+
+                latestVersionPlaceholderText.Visibility = Visibility.Collapsed;
+                latestVersionText.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                latestVersionText.Text = string.Empty;
+                latestVersionPlaceholderText.Text = "Unknown";
+
+                latestVersionPlaceholderText.Visibility = Visibility.Visible;
+                latestVersionText.Visibility = Visibility.Collapsed;
+
+                this.ShowMessageBox("Network Error", "Unable to check for latest version:", ex.Message, MessageBoxButton.OK);
             }
             finally
             {
-                latestVersionPlaceholderText.Visibility = Visibility.Collapsed;
-                latestVersionText.Visibility = Visibility.Visible;
                 checkForUpdateButton.IsEnabled = true;
 
                 isCheckingForVersion = false;
 
                 downloadUpdateButton.IsEnabled = true;
             }
+
+            ToggleDownloadUpdateButton(latestRelease != null);
         }
 
         static string GetDayOrdinal(int dayOfMonth)
@@ -118,6 +134,11 @@ namespace SleepHunter.Views
                 default:
                     return "th";
             }
+        }
+
+        void ToggleDownloadUpdateButton(bool showHide)
+        {
+            downloadUpdateButton.Visibility =showHide ? Visibility.Visible : Visibility.Collapsed;
         }
 
         void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
@@ -219,11 +240,9 @@ namespace SleepHunter.Views
                 return;
 
             downloadUpdateButton.IsEnabled = false;
-            try
-            {
-                mainWindow.DownloadAndInstallUpdate();
-            }
-            finally { downloadUpdateButton.IsEnabled = true; }
+
+            Close();
+            mainWindow.DownloadAndInstallUpdate();
         }
     }
 }

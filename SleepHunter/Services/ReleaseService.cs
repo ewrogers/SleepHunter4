@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -61,7 +62,9 @@ namespace SleepHunter.Services
         public async Task<string> DownloadLatestReleaseAsync(IProgress<long> progress = null)
         {
             var release = await GetLatestReleaseAsync();
-            var tempFilePath = Path.Combine(Path.GetTempPath(), "update.zip");
+            var filename = release.DownloadUri.Segments.Last().ToString();
+
+            var tempFilePath = Path.Combine(Path.GetTempPath(), filename);
 
             var buffer = new byte[DOWNLOAD_BUFFER_SIZE];
             var totalBytesRead = 0;
@@ -77,8 +80,7 @@ namespace SleepHunter.Services
                         await outputStream.WriteAsync(buffer, 0, bytesRead);
                         totalBytesRead += bytesRead;
 
-                        var percentage = (totalBytesRead * 100) / release.ContentSize;
-                        progress?.Report(percentage);
+                        progress?.Report(totalBytesRead);
                     }
                     else break;
                 }

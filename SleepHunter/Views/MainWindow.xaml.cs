@@ -941,6 +941,11 @@ namespace SleepHunter.Views
         }
         #endregion
 
+        void ToggleModalOverlay(bool showHide)
+        {
+            modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
+        }
+
         void ToggleSpellQueue(bool showQueue)
         {
             if (spellQueueListBox == null)
@@ -991,16 +996,23 @@ namespace SleepHunter.Views
 
         void ShowUpdateProgressWindow()
         {
-            
             var updateProgressWindow = new UpdateProgressWindow() {  Owner = this };
             updateProgressWindow.ShowDialog();
 
-            Debug.WriteLine($"ShouldInstall = {updateProgressWindow.ShouldInstall}");
+            Debug.WriteLine($"ShouldInstall = {updateProgressWindow.ShouldInstall}, DownloadPath={updateProgressWindow.DownloadPath}");
         }
 
         public void DownloadAndInstallUpdate()
         {
-            ShowUpdateProgressWindow();
+            ToggleModalOverlay(true);
+            try
+            {
+                ShowUpdateProgressWindow();
+            }
+            finally
+            {
+                ToggleModalOverlay(false);
+            }
         }
 
         IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)

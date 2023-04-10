@@ -163,7 +163,7 @@ In order to do that, I knew I would need to be able to read more character state
 perform more actions like equipping items and having alternate characters assist others.
 
 It became obvious to me that this was untennable from a "scripting" perspective, at least if the layperson was going to be able to use it.
-So the user experience was drastically changed. Instead you could simple double-click to add spells and skills to a queue and be on your way.
+So the user experience was drastically changed. Instead you could simply double-click to add spells and skills to a queue and be on your way.
 
 The macro engine let you set a variety of parameters but for the most part it was automatic.
 It could detect when to switch staves for better cast times, wait for mana regeneration, and even flower other characters for nearly-inifite mana.
@@ -183,10 +183,16 @@ There was also a slight UI facelift in 2016 as well, mostly toning down font siz
 While SleepHunter v4 continues to be the current version and fairly stable, there were always things I wanted to improve upon or add.
 The infamous "Auto-Update" that never actually functioned is one of many.
 
+A proper user manual hosted as this repositories GitHub Pages would also be useful, and can be linked from the application itself.
+
 I also was never happy that despite using WPF, I ended up building it very WinForms-y in terms of code-behind instead of a proper MVVM data-binding application.
+It's probably too much work to refactor for no apparent gain, but for anyone considering writing a WPF application today -- use MVVM.
 
 There's still a few bugs I want to fix as well. I am still humbled by the fact people still use this application over two decades later.
 That and I am surprised the game itself is still online, even if only a husk of its former self.
+
+I absolutely accept PRs for this application! If you have a feature or bug fix that you want to implement yourself, have at it.
+It should be much easier to coordinate and distribute once Auto-Update is live.
 
 #### Why didn't you go network (packet-based) instead?
 

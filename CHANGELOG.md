@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - New `Updates` section in `Settings` window
+- New `Auto-Update` window
 
 ### Changed
 
@@ -17,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Dead code for MVVM (use `CommunityToolkit.Mvvm` instead)
-
+- Old `Debug.WriteLine` calls (only used in Debug mode)
 
 ## [4.0.1] - 2023-04-09
 

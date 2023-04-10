@@ -7,10 +7,11 @@
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         xmlns:sh="clr-namespace:SleepHunter"
         Title="Auto-Update"
-        Width="480" Height="240"
+        Width="480" Height="280"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -25,20 +26,21 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Margin="16">
-            <TextBlock Text="Downloading..."
+            <TextBlock Name="statusText"
+                       Text="Fetching Update..."
             		   TextAlignment="Left"
-                       Margin="0"
+                       Margin="0,8"
             		   Style="{StaticResource ObsidianText}"/>
 
             <Grid>
                 <!-- Progress Bar -->
-                <ProgressBar x:Name="downloadProgressBar"
+                <ProgressBar x:Name="progressBar"
                              Style="{StaticResource ObsidianProgressBar}"
                              Minimum="0"
                              Maximum="100"
                              Height="32"
                              Value="50"
-                             Margin="0,2">
+                             Margin="0,4">
                 </ProgressBar>
 
 
@@ -69,7 +71,8 @@
                 Grid.Row="3"
                 Style="{StaticResource ObsidianButton}"
                 Width="200"
-                Margin="8"
+                Height="40"
+                Margin="12,16"
                 HorizontalAlignment="Left"
                 IsDefault="true"
                 Click="installButton_Click" Content="_Install"/>
@@ -80,7 +83,8 @@
                 Grid.Column="1"
                 Style="{StaticResource ObsidianButton}"
                 Width="200"
-                Margin="8"
+                Height="40"
+                Margin="12,16"
                 HorizontalAlignment="Right"
                 IsCancel="true"
                 Click="cancelButton_Click" Content="_Cancel"/>
