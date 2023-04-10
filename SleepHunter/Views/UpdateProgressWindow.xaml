@@ -1,0 +1,88 @@
+﻿<Window x:Class="SleepHunter.Views.UpdateProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:ctl="clr-namespace:SleepHunter.Controls"
+        xmlns:models="clr-namespace:SleepHunter.Models"
+        xmlns:settings="clr-namespace:SleepHunter.Settings"
+        xmlns:sh="clr-namespace:SleepHunter"
+        Title="Auto-Update"
+        Width="480" Height="240"
+        Style="{StaticResource ObsidianWindow}"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Margin="16">
+            <TextBlock Text="Downloading..."
+            		   TextAlignment="Left"
+                       Margin="0"
+            		   Style="{StaticResource ObsidianText}"/>
+
+            <Grid>
+                <!-- Progress Bar -->
+                <ProgressBar x:Name="downloadProgressBar"
+                             Style="{StaticResource ObsidianProgressBar}"
+                             Minimum="0"
+                             Maximum="100"
+                             Height="32"
+                             Value="50"
+                             Margin="0,2">
+                </ProgressBar>
+
+
+                <!-- Progress Percentage Text -->
+                <TextBlock Name="progressPercentText"
+                           Text="50%"
+            		       TextAlignment="Center"
+                           Margin="0"
+                           FontSize="16"
+                           FontWeight="Normal"
+            		       Style="{StaticResource ObsidianText}"/>
+            </Grid>
+
+            <!-- Progress Text -->
+            <TextBlock Name="progressSizeText"
+                       Text="128.4 KB / 256.8 KB"
+            		   TextAlignment="Center"
+                       Margin="0"
+                       FontSize="14"
+                       Foreground="{StaticResource ObsidianInactive}"
+            		   Style="{StaticResource ObsidianText}"/>
+        </StackPanel>
+
+        <Separator Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource ObsidianSeparator}"/>
+
+        <!-- Install Update Button -->
+        <Button x:Name="installButton"
+                Grid.Row="3"
+                Style="{StaticResource ObsidianButton}"
+                Width="200"
+                Margin="8"
+                HorizontalAlignment="Left"
+                IsDefault="true"
+                Click="installButton_Click" Content="_Install"/>
+
+        <!-- Cancel Button -->
+        <Button x:Name="cancelButton"
+                Grid.Row="3"
+                Grid.Column="1"
+                Style="{StaticResource ObsidianButton}"
+                Width="200"
+                Margin="8"
+                HorizontalAlignment="Right"
+                IsCancel="true"
+                Click="cancelButton_Click" Content="_Cancel"/>
+    </Grid>
+</Window>

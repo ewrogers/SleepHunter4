@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using SleepHunter.Models;
 
 namespace SleepHunter.Services
 {
@@ -7,8 +8,8 @@ namespace SleepHunter.Services
     {
         Uri GetLatestReleaseNotesUri();
 
-        Task<Version> GetLatestReleaseVersionAsync();
+        Task<ReleaseInfo> GetLatestReleaseAsync();
 
-        Task<Uri> GetLatestReleaseDownloadUriAsync();
+        Task<string> DownloadLatestReleaseAsync(IProgress<long> progress = null);
     }
 }

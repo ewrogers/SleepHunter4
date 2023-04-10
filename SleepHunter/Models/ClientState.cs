@@ -116,8 +116,6 @@ namespace SleepHunter.Models
             bool isDialogOpen;
             bool isUserChatting;
 
-            Debug.WriteLine($"Updating client state (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -158,13 +156,6 @@ namespace SleepHunter.Models
                 }
             }
             finally { stream?.Dispose(); }
-
-            Debug.WriteLine($"ActivePanel = {ActivePanel}");
-            Debug.WriteLine($"IsInventoryExpanded = {IsInventoryExpanded}");
-            Debug.WriteLine($"IsMinimizedMode = {IsMinimizedMode}");
-            Debug.WriteLine($"IsDialogOpen = {IsDialogOpen}");
-            Debug.WriteLine($"IsSenseOpen = {IsSenseOpen}");
-            Debug.WriteLine($"IsUserChatting = {IsUserChatting}");
         }
 
         public void ResetDefaults()

@@ -112,8 +112,6 @@ namespace SleepHunter.Models
             int mapX, mapY;
             string mapName;
 
-            Debug.WriteLine($"Updating map location (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -144,10 +142,6 @@ namespace SleepHunter.Models
                 }
             }
             finally { stream?.Dispose(); }
-            Debug.WriteLine($"MapNumber = {MapNumber}");
-            Debug.WriteLine($"MapName = {MapName}");
-            Debug.WriteLine($"X = {X}");
-            Debug.WriteLine($"Y = {Y}");
         }
 
         public void ResetDefaults()

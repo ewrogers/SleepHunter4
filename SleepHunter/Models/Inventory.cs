@@ -101,8 +101,6 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Debug.WriteLine($"Updating inventory (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -133,9 +131,6 @@ namespace SleepHunter.Models
                             inventory[i].IsEmpty = !hasItem;
                             inventory[i].IconIndex = iconIndex;
                             inventory[i].Name = name.StripNumbers();
-
-                            if (!inventory[i].IsEmpty)
-                                Debug.WriteLine($"Inventory slot {i + 1}: {inventory[i].Name} (icon={inventory[i].IconIndex.ToString("X")})");
                         }
                         catch { }
                     }

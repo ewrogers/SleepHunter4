@@ -68,6 +68,7 @@
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
+    <Compile Include="Models\ReleaseInfo.cs" />
     <Compile Include="Services\IReleaseService.cs" />
     <Compile Include="Services\ReleaseService.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs" />
@@ -94,6 +95,9 @@
     <Compile Include="Views\SpellTargetWindow.xaml.cs" />
     <Compile Include="Views\StaffEditorWindow.xaml.cs" />
     <Compile Include="Extensions\StringExtender.cs" />
+    <Compile Include="Views\UpdateProgressWindow.xaml.cs">
+      <DependentUpon>UpdateProgressWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Win32\MemoryBasicInformation.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
     <Compile Include="Win32\ProcessAccessFlags.cs" />
@@ -255,6 +259,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\UpdateProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Media\ColorPalette.cs" />
@@ -300,9 +308,7 @@
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

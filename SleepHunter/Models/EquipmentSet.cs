@@ -228,8 +228,6 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Debug.WriteLine($"Updating equipment (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {

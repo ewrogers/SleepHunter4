@@ -24,6 +24,7 @@ using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
+using SleepHunter.Services;
 
 namespace SleepHunter.Views
 {
@@ -54,9 +55,12 @@ namespace SleepHunter.Views
         int recentSettingsTabIndex;
         MetadataEditorWindow metadataWindow;
         SettingsWindow settingsWindow;
+
         BackgroundWorker processUpdateWorker;
         BackgroundWorker clientUpdateWorker;
         BackgroundWorker flowerUpdateWorker;
+
+        IReleaseService releaseService = new ReleaseService();
 
         PlayerMacroState selectedMacro;
 
@@ -985,6 +989,20 @@ namespace SleepHunter.Views
             settingsWindow.Show();
         }
 
+        void ShowUpdateProgressWindow()
+        {
+            
+            var updateProgressWindow = new UpdateProgressWindow() {  Owner = this };
+            updateProgressWindow.ShowDialog();
+
+            Debug.WriteLine($"ShouldInstall = {updateProgressWindow.ShouldInstall}");
+        }
+
+        public void DownloadAndInstallUpdate()
+        {
+            ShowUpdateProgressWindow();
+        }
+
         IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
         {
             if (message == WM_HOTKEY)
@@ -1030,7 +1048,9 @@ namespace SleepHunter.Views
             }
 
             if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
-                CheckForUpdate(false);
+            {
+
+            }
         }
 
         void Window_Closing(object sender, CancelEventArgs e)
@@ -1858,14 +1878,6 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
-        }
-
-        public void CheckForUpdate(bool showWindow = true)
-        {
-            if (showWindow)
-                this.ShowMessageBox("Not Implemented",
-                   "Sorry, this feature is not currently implemented!",
-                   "It should be implemented very soon.");
         }
     }
 }

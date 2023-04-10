@@ -159,8 +159,6 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Debug.WriteLine($"Updating spellbook (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -242,9 +240,6 @@ namespace SleepHunter.Models
                                 spells[i].CanImprove = true;
                                 spells[i].IsOnCooldown = false;
                             }
-
-                            if (!spells[i].IsEmpty)
-                                Debug.WriteLine($"Spell slot {i + 1}: {spells[i].Name} (cur={spells[i].CurrentLevel}, max={spells[i].MaximumLevel}, lines={spells[i].NumberOfLines}, icon={spells[i].IconIndex})");
                         }
                         catch { }
                     }

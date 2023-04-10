@@ -36,8 +36,6 @@ namespace SleepHunter.Models
         {
             if (accessor == null)
                 throw new ArgumentNullException("accessor");
-
-            Debug.WriteLine($"Updating modifiers (pid={accessor.ProcessId})...");
         }
     }
 }

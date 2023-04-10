@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using SleepHunter.Extensions;
+using SleepHunter.Models;
 using SleepHunter.Services;
 using SleepHunter.Settings;
 
@@ -23,7 +24,7 @@ namespace SleepHunter.Views
         public static readonly int AboutTabIndex = 8;
 
         private readonly IReleaseService releaseService = new ReleaseService();
-        private Version latestVersion;
+        private ReleaseInfo latestRelease;
         private bool isCheckingForVersion;
 
         public int SelectedTabIndex
@@ -34,7 +35,6 @@ namespace SleepHunter.Views
 
         public static readonly DependencyProperty SelectedTabIndexProperty =
             DependencyProperty.Register("SelectedTabIndex", typeof(int), typeof(SettingsWindow), new PropertyMetadata(0));
-
 
         public SettingsWindow()
         {
@@ -77,9 +77,10 @@ namespace SleepHunter.Views
                 latestVersionPlaceholderText.Visibility = Visibility.Visible;
                 latestVersionText.Visibility = Visibility.Collapsed;
 
-                latestVersion = await releaseService.GetLatestReleaseVersionAsync();
+                latestRelease = await releaseService.GetLatestReleaseAsync();
+                var version = latestRelease.Version;
 
-                latestVersionText.Text = $"{latestVersion.Major}.{latestVersion.Minor}.{latestVersion.Build}";
+                latestVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
             }
             finally
             {
@@ -88,6 +89,8 @@ namespace SleepHunter.Views
                 checkForUpdateButton.IsEnabled = true;
 
                 isCheckingForVersion = false;
+
+                downloadUpdateButton.IsEnabled = true;
             }
         }
 
@@ -189,7 +192,7 @@ namespace SleepHunter.Views
 
             if (tabItem.TabIndex == UpdatesTabIndex)
             {
-                if (latestVersion == null)
+                if (latestRelease == null)
                     await CheckForLatestVersion();
             }
         }
@@ -207,6 +210,20 @@ namespace SleepHunter.Views
         {
             var uri = releaseService.GetLatestReleaseNotesUri();
             Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+
+        void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Owner as MainWindow;
+            if (mainWindow == null)
+                return;
+
+            downloadUpdateButton.IsEnabled = false;
+            try
+            {
+                mainWindow.DownloadAndInstallUpdate();
+            }
+            finally { downloadUpdateButton.IsEnabled = true; }
         }
     }
 }
