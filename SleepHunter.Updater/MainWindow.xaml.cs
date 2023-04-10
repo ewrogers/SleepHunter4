@@ -56,7 +56,11 @@ namespace SleepHunter.Updater
         public void SetProgressFile(string filename) => progressFileText.Text = filename;
 
         public void SetProgressCount(int current, int max) => progressCountText.Text = $"{current} of {max} files";
-        public void SetErrorMessage(string message) => errorMessageText.Text = message;
+        public void SetErrorMessage(string message)
+        {
+            warningIcon.Visibility = !string.IsNullOrWhiteSpace(message) ? Visibility.Visible : Visibility.Collapsed;
+            errorMessageText.Text = message;
+        }
 
         public void PerformAppUpdate(string updateFilePath, string destinationFolder)
         {
@@ -66,6 +70,9 @@ namespace SleepHunter.Updater
             {
                 if (!File.Exists(updateFilePath))
                     throw new FileNotFoundException("Missing update file", updateFilePath);
+
+                if (!Directory.Exists(destinationFolder))
+                    Directory.CreateDirectory(destinationFolder);
 
                 var extractedCount = 0;
 
@@ -86,7 +93,11 @@ namespace SleepHunter.Updater
                         SetProgressCount(extractedCount + 1, entryCount);
 
                         var outputFile = Path.Combine(destinationFolder, fileEntry.Name);
-                        fileEntry.ExtractToFile(outputFile, true);
+
+                        // Do not overwrite a user's Settings.xml file!
+                        var overwrite = fileEntry.Name != "Settings.xml";
+
+                        fileEntry.ExtractToFile(outputFile, overwrite);
 
                         extractedCount++;
                         var percentCompleted = (extractedCount * 100) / entryCount;
@@ -96,11 +107,6 @@ namespace SleepHunter.Updater
 
                 SetStatusText("Update Completed");
                 SetProgress(100);
-            }
-            catch (Exception ex)
-            {
-                SetErrorMessage(ex.Message);
-                throw ex;
             }
             finally { isUpdating = false; }
         }

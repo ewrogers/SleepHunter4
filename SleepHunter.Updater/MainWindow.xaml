@@ -99,6 +99,8 @@
                        VerticalAlignment="Center"
             	       TextAlignment="Center"
                        FontSize="16"
+                       TextWrapping="WrapWithOverflow"
+                       MaxWidth="380"
                        Foreground="{StaticResource ObsidianActive}"
             	       Style="{StaticResource ObsidianText}"/>
         </StackPanel>

@@ -994,25 +994,39 @@ namespace SleepHunter.Views
             settingsWindow.Show();
         }
 
-        void ShowUpdateProgressWindow()
-        {
-            var updateProgressWindow = new UpdateProgressWindow() {  Owner = this };
-            updateProgressWindow.ShowDialog();
-
-            Debug.WriteLine($"ShouldInstall = {updateProgressWindow.ShouldInstall}, DownloadPath={updateProgressWindow.DownloadPath}");
-        }
-
         public void DownloadAndInstallUpdate()
         {
             ToggleModalOverlay(true);
             try
             {
-                ShowUpdateProgressWindow();
+                var updateProgressWindow = new UpdateProgressWindow() { Owner = this };
+                updateProgressWindow.ShowDialog();
+
+                if (!updateProgressWindow.ShouldInstall)
+                    return;
+
+                var downloadPath = updateProgressWindow.DownloadPath;
+                var installationPath = Directory.GetCurrentDirectory();
+
+                RunUpdater(downloadPath, installationPath);
             }
             finally
             {
                 ToggleModalOverlay(false);
             }
+        }
+
+        void RunUpdater(string updateFile, string installationPath)
+        {
+            var updaterExecutable = Path.Combine(installationPath, "Updater.exe");
+            if (!File.Exists(updaterExecutable))
+            {
+                this.ShowMessageBox("Missing Updater", "Unable to start auto-updater executable.", "You may need to install the update manually.");
+                return;
+            }
+
+            Process.Start(updaterExecutable, $"{updateFile} {installationPath}");
+            Application.Current.Shutdown();
         }
 
         IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
