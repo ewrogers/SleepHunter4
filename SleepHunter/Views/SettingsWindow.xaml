@@ -994,21 +994,37 @@
                                Text="Checking..."
             		           TextAlignment="Left"
             		           Style="{StaticResource ObsidianText}"
-                               FontSize="20"
+                               FontSize="18"
                                FontWeight="Light"
                                Foreground="{StaticResource ObsidianInactive}"/>
 
-                    <!-- Latest Version Text -->
-                    <TextBlock x:Name="latestVersionText"
-                               Grid.Row="1"
-                               Grid.Column="1"
-                               Text=""
-            		           TextAlignment="Left"
-            		           Style="{StaticResource ObsidianText}"
-                               FontSize="24"
-                               FontWeight="Normal"
-                               ToolTip="This is the latest version of SleepHunter available."/>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <!-- Latest Version Text -->
+                        <TextBlock x:Name="latestVersionText"
+                                     Text=""
+                                     MinWidth="64"
+            		                 TextAlignment="Left"
+            		                 Style="{StaticResource ObsidianText}"
+                                     FontSize="24"
+                                     FontWeight="Normal"
+                                     ToolTip="This is the latest version of SleepHunter available."/>
 
+                        <!-- Download Update Button -->
+                        <Button Name="downloadUpdateButton"
+                                Style="{StaticResource ObsidianButton}"
+                                Height="36"
+                                Margin="4,2"
+                                Padding="16,2"
+                                HorizontalAlignment="Right"
+                                FontSize="16"
+                                FontWeight="Normal"
+                                IsEnabled="false"
+                                Click="downloadUpdateButton_Click">
+                            _Update
+                        </Button>
+                    </StackPanel>
+
+                    
                     <!-- Show Release Notes Link Button -->
                     <Button Grid.Row="3"
                             Grid.ColumnSpan="2"
@@ -1025,20 +1041,6 @@
                                Grid.ColumnSpan="2"
                                Style="{StaticResource ObsidianSeparator}"
                                Margin="4,8"/>
-
-                    <!-- Download Update Button -->
-                    <Button Name="downloadUpdateButton"
-                            Grid.Row="5"
-                            Grid.ColumnSpan="2"
-                            Style="{StaticResource ObsidianButton}"
-                            Width="320"
-                            Height="40"
-                            Margin="4,8"
-                            HorizontalAlignment="Center"
-                            IsEnabled="false"
-                            Click="downloadUpdateButton_Click">
-                        _Download &amp; Install Update
-                    </Button>
 
                     <!-- Manually Check for Update Button -->
                     <Button Name="checkForUpdateButton"
