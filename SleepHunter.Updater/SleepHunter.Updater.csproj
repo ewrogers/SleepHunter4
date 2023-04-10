@@ -43,6 +43,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -103,6 +104,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter-Updater.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SleepHunter\SleepHunter.csproj">
+      <Project>{9b964768-970e-4190-8574-ebef7be09e7e}</Project>
+      <Name>SleepHunter</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

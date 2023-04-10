@@ -67,12 +67,15 @@ namespace SleepHunter.Views
             progressBar.Value = Math.Max(0, Math.Min(percentage, 100));
             progressPercentText.Text = $"{percentage}%";
 
-            if (contentSize > 0) {
-                var downloadedKb = downloadedSize / 1024.0;
-                var contentKb = contentSize / 1024.0;
-                progressSizeText.Text = $"{downloadedKb:0.0} KB / {contentKb:0.0} KB";
-            }
-            else progressSizeText.Text = string.Empty;
+            var downloadedKb = Math.Ceiling(downloadedSize / 1024.0);
+            var contentKb = Math.Ceiling(contentSize / 1024.0);
+
+            if (downloadedSize >= contentSize)
+                progressSizeText.Text = $"{contentKb:0} KB"; 
+            else if (contentSize > 0)
+                progressSizeText.Text = $"{downloadedKb:0} KB / {contentKb:0} KB";
+            else
+                progressSizeText.Text = string.Empty;
         }
 
         void installButton_Click(object sender, RoutedEventArgs e)
