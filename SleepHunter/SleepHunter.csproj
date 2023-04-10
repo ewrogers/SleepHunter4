@@ -68,7 +68,8 @@
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
-    <Compile Include="Models\ReleaseInfo.cs" />
+    <Compile Include="Models\ReleaseAsset.cs" />
+    <Compile Include="Models\ReleaseVersion.cs" />
     <Compile Include="Services\IReleaseService.cs" />
     <Compile Include="Services\ReleaseService.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs" />

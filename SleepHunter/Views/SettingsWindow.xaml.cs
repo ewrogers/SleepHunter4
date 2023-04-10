@@ -24,7 +24,7 @@ namespace SleepHunter.Views
         public static readonly int AboutTabIndex = 8;
 
         private readonly IReleaseService releaseService = new ReleaseService();
-        private ReleaseInfo latestRelease;
+        private ReleaseVersion latestRelease;
         private bool isCheckingForVersion;
 
         public int SelectedTabIndex
@@ -80,7 +80,7 @@ namespace SleepHunter.Views
                 latestVersionPlaceholderText.Visibility = Visibility.Visible;
                 latestVersionText.Visibility = Visibility.Collapsed;
 
-                latestRelease = await releaseService.GetLatestReleaseAsync();
+                latestRelease = await releaseService.GetLatestReleaseVersionAsync();
                 var version = latestRelease.Version;
 
                 latestVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";

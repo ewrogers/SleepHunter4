@@ -8,8 +8,10 @@ namespace SleepHunter.Services
     {
         Uri GetLatestReleaseNotesUri();
 
-        Task<ReleaseInfo> GetLatestReleaseAsync();
+        Task<ReleaseVersion> GetLatestReleaseVersionAsync();
 
-        Task<string> DownloadLatestReleaseAsync(IProgress<long> progress = null);
+        Task<ReleaseAsset> GetLatestReleaseAsync();
+
+        Task<string> DownloadLatestReleaseAsync(Uri downloadUri, IProgress<long> progress = null);
     }
 }

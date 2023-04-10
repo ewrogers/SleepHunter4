@@ -10,7 +10,7 @@ namespace SleepHunter.Views
         private readonly IReleaseService releaseService = new ReleaseService();
 
         public bool ShouldInstall { get; private set; }
-        public ReleaseInfo ReleaseInfo { get; private set; }
+        public ReleaseAsset ReleaseInfo { get; private set; }
         public string DownloadPath { get; private set; }
 
         public UpdateProgressWindow()
@@ -41,7 +41,7 @@ namespace SleepHunter.Views
             {
                 SetStatusText($"Downloading version {ReleaseInfo.VersionString}...");
                 var progressReporter = new Progress<long>(UpdateProgress);
-                DownloadPath = await releaseService.DownloadLatestReleaseAsync(progressReporter);
+                DownloadPath = await releaseService.DownloadLatestReleaseAsync(ReleaseInfo.DownloadUri, progressReporter);
             } 
             catch (Exception ex)
             {
