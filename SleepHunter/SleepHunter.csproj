@@ -70,6 +70,7 @@
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
+    <Compile Include="Extensions\VersionExtender.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
     <Compile Include="Services\IReleaseService.cs" />

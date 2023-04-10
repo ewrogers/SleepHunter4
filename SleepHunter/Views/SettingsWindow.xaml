@@ -991,12 +991,13 @@
                     <TextBlock x:Name="latestVersionPlaceholderText"
                                Grid.Row="1"
                                Grid.Column="1"
-                               Text="Checking..."
+                               Text="&#xE117;"
             		           TextAlignment="Left"
-            		           Style="{StaticResource ObsidianText}"
-                               FontSize="18"
+            		           Style="{StaticResource ObsidianSymbolText}"
+                               FontSize="20"
+                               Padding="4,0"
                                FontWeight="Light"
-                               Foreground="{StaticResource ObsidianInactive}"/>
+                               Foreground="{StaticResource ObsidianForeground}"/>
 
                     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
                         <!-- Latest Version Text -->
@@ -1024,9 +1025,18 @@
                         </Button>
                     </StackPanel>
 
-                    
+                    <!-- Update Available Text -->
+                    <TextBlock x:Name="updateAvailableText"
+                               Grid.Row="3"
+                               Grid.ColumnSpan="2"
+                               Text="You have the latest version."
+            		           TextAlignment="Center"
+            		           Style="{StaticResource ObsidianText}"
+                               Foreground="{StaticResource ObsidianInactive}"
+                               FontSize="14"/>
+
                     <!-- Show Release Notes Link Button -->
-                    <Button Grid.Row="3"
+                    <Button Grid.Row="4"
                             Grid.ColumnSpan="2"
             		        Style="{StaticResource ObsidianLinkButton}"
                             Width="140"
@@ -1037,7 +1047,7 @@
                         </TextBlock>
                     </Button>
 
-                    <Separator Grid.Row="4"
+                    <Separator Grid.Row="5"
                                Grid.ColumnSpan="2"
                                Style="{StaticResource ObsidianSeparator}"
                                Margin="4,8"/>

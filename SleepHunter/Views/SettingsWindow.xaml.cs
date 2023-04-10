@@ -24,6 +24,7 @@ namespace SleepHunter.Views
         public static readonly int AboutTabIndex = 8;
 
         private readonly IReleaseService releaseService = new ReleaseService();
+        private Version currentVersion;
         private ReleaseVersion latestRelease;
         private bool isCheckingForVersion;
 
@@ -45,9 +46,9 @@ namespace SleepHunter.Views
 
         void GetVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
-            versionText.Text = $"Version {version.Major}.{version.Minor}.{version.Build}";
+            versionText.Text = $"Version {currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
             var buildNumber = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             var buildYear = Convert.ToInt32(buildNumber.Substring(0, 2)) + 2000;
@@ -59,7 +60,7 @@ namespace SleepHunter.Views
             buildText.Text = $"Build {buildNumber}";
             buildDateText.Text = $"{buildDate:MMMM} {buildDate.Day}{GetDayOrdinal(buildDate.Day)} {buildDate:yyyy}";
 
-            currentVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
+            currentVersionText.Text = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
             if (isDebug)
                 buildText.Text += "  (Debug)";
@@ -73,6 +74,7 @@ namespace SleepHunter.Views
             ToggleDownloadUpdateButton(false);
 
             isCheckingForVersion = true;
+            updateAvailableText.Text = "Checking for updates...";
 
             try
             {
@@ -101,13 +103,13 @@ namespace SleepHunter.Views
             finally
             {
                 checkForUpdateButton.IsEnabled = true;
-
                 isCheckingForVersion = false;
 
-                downloadUpdateButton.IsEnabled = true;
-            }
+                var isUpdateAvaialble = latestRelease != null && latestRelease.Version.IsNewerThan(currentVersion);
+                updateAvailableText.Text = isUpdateAvaialble ? "There is an update available." : "You have the latest version.";
 
-            ToggleDownloadUpdateButton(latestRelease != null);
+                ToggleDownloadUpdateButton(isUpdateAvaialble);
+            }
         }
 
         static string GetDayOrdinal(int dayOfMonth)
@@ -138,7 +140,8 @@ namespace SleepHunter.Views
 
         void ToggleDownloadUpdateButton(bool showHide)
         {
-            downloadUpdateButton.Visibility =showHide ? Visibility.Visible : Visibility.Collapsed;
+            downloadUpdateButton.IsEnabled = showHide;
+            downloadUpdateButton.Visibility = showHide ? Visibility.Visible : Visibility.Collapsed;
         }
 
         void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
