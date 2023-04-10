@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
 using SleepHunter.Extensions;
+using SleepHunter.Services;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views
@@ -17,9 +19,12 @@ namespace SleepHunter.Views
         public static readonly int SkillMacrosTabIndex = 4;
         public static readonly int SpellMacrosTabIndex = 5;
         public static readonly int FloweringTabIndex = 6;
-        public static readonly int NotificationsTabIndex = 7;
+        public static readonly int UpdatesTabIndex = 7;
         public static readonly int AboutTabIndex = 8;
-        public static readonly int DebugTabIndex = 9;
+
+        private readonly IReleaseService releaseService = new ReleaseService();
+        private Version latestVersion;
+        private bool isCheckingForVersion;
 
         public int SelectedTabIndex
         {
@@ -29,6 +34,7 @@ namespace SleepHunter.Views
 
         public static readonly DependencyProperty SelectedTabIndexProperty =
             DependencyProperty.Register("SelectedTabIndex", typeof(int), typeof(SettingsWindow), new PropertyMetadata(0));
+
 
         public SettingsWindow()
         {
@@ -40,7 +46,7 @@ namespace SleepHunter.Views
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
-            versionText.Text = string.Format("Version {0}.{1}.{2}", version.Major.ToString(), version.Minor.ToString(), version.Build.ToString());
+            versionText.Text = $"Version {version.Major}.{version.Minor}.{version.Build}";
 
             var buildNumber = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             var buildYear = Convert.ToInt32(buildNumber.Substring(0, 2)) + 2000;
@@ -49,11 +55,40 @@ namespace SleepHunter.Views
 
             var buildDate = new DateTime(buildYear, buildMonth, buildDay);
 
-            buildText.Text = string.Format("Build {0}", buildNumber);
+            buildText.Text = $"Build {buildNumber}";
             buildDateText.Text = $"{buildDate:MMMM} {buildDate.Day}{GetDayOrdinal(buildDate.Day)} {buildDate:yyyy}";
+
+            currentVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
 
             if (isDebug)
                 buildText.Text += "  (Debug)";
+        }
+
+        async Task CheckForLatestVersion()
+        {
+            if (isCheckingForVersion)
+                return;
+
+            isCheckingForVersion = true;
+
+            try
+            {
+                checkForUpdateButton.IsEnabled = false;
+                latestVersionPlaceholderText.Visibility = Visibility.Visible;
+                latestVersionText.Visibility = Visibility.Collapsed;
+
+                latestVersion = await releaseService.GetLatestReleaseVersionAsync();
+
+                latestVersionText.Text = $"{latestVersion.Major}.{latestVersion.Minor}.{latestVersion.Build}";
+            }
+            finally
+            {
+                latestVersionPlaceholderText.Visibility = Visibility.Collapsed;
+                latestVersionText.Visibility = Visibility.Visible;
+                checkForUpdateButton.IsEnabled = true;
+
+                isCheckingForVersion = false;
+            }
         }
 
         static string GetDayOrdinal(int dayOfMonth)
@@ -130,14 +165,14 @@ namespace SleepHunter.Views
 
         void metadataEditorButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = this.Owner as MainWindow;
+            var mainWindow = Owner as MainWindow;
             if (mainWindow == null)
                 return;
 
             mainWindow.ShowMetadataWindow();
         }
 
-        void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var tabControl = sender as TabControl;
             if (tabControl == null)
@@ -146,25 +181,32 @@ namespace SleepHunter.Views
             var tabItem = tabControl.SelectedItem as TabItem;
             if (tabItem == null)
             {
-                this.Title = "Settings";
+                Title = "Settings";
                 return;
             }
 
-            this.Title = string.Format("Settings - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+            Title = string.Format("Settings - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+
+            if (tabItem.TabIndex == UpdatesTabIndex)
+            {
+                if (latestVersion == null)
+                    await CheckForLatestVersion();
+            }
         }
 
-        void updateButton_Click(object sender, RoutedEventArgs e)
+        async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = this.Owner as MainWindow;
+            var mainWindow = Owner as MainWindow;
             if (mainWindow == null)
                 return;
 
-            mainWindow.CheckForUpdate();
+            await CheckForLatestVersion();
         }
 
-        private void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
+        void releaseNotesLink_Click(object sender, RoutedEventArgs e)
         {
-
+            var uri = releaseService.GetLatestReleaseNotesUri();
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
         }
     }
 }

@@ -49,6 +49,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -67,6 +68,8 @@
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
+    <Compile Include="Services\IReleaseService.cs" />
+    <Compile Include="Services\ReleaseService.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs" />
     <Compile Include="Views\LineModifiersEditorWindow.xaml.cs" />
     <Compile Include="Views\MainWindow.xaml.cs" />
@@ -296,6 +299,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
