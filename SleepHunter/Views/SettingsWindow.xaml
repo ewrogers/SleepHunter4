@@ -42,7 +42,7 @@
                     <!-- Process Update Interval -->
                     <ComboBox Name="processUpdateIntervalComboBox"
             		          Grid.Column="1"
-            		          Width="180"
+            		          Width="200"
             		          Style="{StaticResource ObsidianComboBox}"
             		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
             		          SelectedValue="{Binding Settings.ProcessUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
@@ -70,7 +70,7 @@
                     <ComboBox Name="clientUpdateIntervalComboBox"
             		          Grid.Row="1"
             		          Grid.Column="1"
-            		          Width="180"
+            		          Width="200"
             		          Style="{StaticResource ObsidianComboBox}"
             		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
             		          SelectedValue="{Binding Settings.ClientUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
@@ -186,7 +186,7 @@
 
                             <!-- Color Themes -->
                             <ComboBox Name="themeColorComboBox"
-                                      Width="280" Height="36"
+                                      Width="300" Height="36"
                                       Style="{StaticResource ObsidianComboBox}"
                                       ItemTemplate="{StaticResource ColorThemeDataTemplate}"
                                       ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
@@ -234,7 +234,7 @@
                         <!-- Icon Size -->
                         <ComboBox Name="skillIconSizeComboBox"
                                   Grid.Row="3" Grid.Column="1"
-                                  Width="160" Height="32"
+                                  Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
@@ -255,7 +255,7 @@
                         <!-- Tem/Med Skills per Row -->
                         <ComboBox Name="skillGridWidthComboBox"
                                   Grid.Row="4" Grid.Column="1"
-                                  Width="160" Height="32"
+                                  Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
@@ -287,7 +287,7 @@
                         <!-- World Skills per Row -->
                         <ComboBox Name="worldSkillGridWidthComboBox"
                                   Grid.Row="5" Grid.Column="1"
-                                  Width="160" Height="32"
+                                  Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
@@ -319,7 +319,7 @@
                         <!-- Tem/Med Spells per Row -->
                         <ComboBox Name="spellGridWidthComboBox"
                                   Grid.Row="6" Grid.Column="1"
-                                  Width="160" Height="32"
+                                  Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
@@ -351,7 +351,7 @@
                         <!-- World Spells per Row -->
                         <ComboBox Name="worldSpellGridWidthComboBox"
                                   Grid.Row="7" Grid.Column="1"
-                                  Width="160" Height="32"
+                                  Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
@@ -475,7 +475,7 @@
 
                         <!-- Client Version ComboBox -->
                         <ComboBox Name="clientVersionComboBox"
-                                  Width="180" Height="36"
+                                  Width="240" Height="36"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ClientVersionDataTemplate}"
                                   ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
@@ -660,7 +660,7 @@
                     <!-- Assail Mode CheckBox -->
                     <ComboBox Name="assailModeComboBox"
                               Grid.Column="1"
-                              Width="240" Height="32"
+                              Width="260" Height="32"
                               Style="{StaticResource ObsidianComboBox}"
                               ItemTemplate="{StaticResource StringDataTemplate}"
                               SelectedValuePath="Value"
@@ -821,16 +821,16 @@
                             <!-- Fas Spiorad CheckBox -->
                             <CheckBox Name="fasSpioradCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8"
+                                      Margin="14,8"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
-                                      Content="Fas Spiorad if Mana Less Than "
+                                      Content="Fas Spiorad If Mana &lt;"
                                       ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
 
                             <!-- Fas Spiorad Up Down -->
                             <ctl:NumericUpDown x:Name="fasSpioradUpDown"
                                                Style="{StaticResource ObsidianNumericUpDown}"
-                                               Width="140"
+                                               Width="160"
                                                Minimum="1"
                                                Maximum="1000000"
                                                SmallIncrement="100"
@@ -843,7 +843,7 @@
                             <!-- Fas Spiorad On Demand CheckBox -->
                             <CheckBox Name="fasSpioradOnDemandCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8"
+                                      Margin="14,8"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
                                       Content="Fas Spiorad when Insufficient Mana"
@@ -953,7 +953,7 @@
                         <!-- Flower Minimum Mana Down -->
                         <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
                                            Style="{StaticResource ObsidianNumericUpDown}"
-                                           Width="140"
+                                           Width="160"
                                            Minimum="1"
                                            Maximum="1000000"
                                            SmallIncrement="100"
@@ -981,7 +981,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.1*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
@@ -989,7 +989,7 @@
                     <TextBlock Text="Current Version:"
             		           TextAlignment="Right"
             		           Style="{StaticResource ObsidianText}"
-                               FontSize="24"/>
+                               FontSize="20"/>
 
                     <!-- Current Version Text -->
                     <TextBlock x:Name="currentVersionText"
@@ -997,7 +997,7 @@
                                Text="4.0.1"
             		           TextAlignment="Left"
             		           Style="{StaticResource ObsidianText}"
-                               FontSize="24"
+                               FontSize="20"
                                FontWeight="Normal"
                                ToolTip="This is the current version of SleepHunter running."/>
 
@@ -1006,7 +1006,7 @@
                                Text="Latest Version:"
             		           TextAlignment="Right"
             		           Style="{StaticResource ObsidianText}"
-                               FontSize="24"/>
+                               FontSize="20"/>
 
                     <!-- Latest Version Placeholder Text -->
                     <TextBlock x:Name="latestVersionPlaceholderText"
@@ -1027,14 +1027,14 @@
                                      MinWidth="64"
             		                 TextAlignment="Left"
             		                 Style="{StaticResource ObsidianText}"
-                                     FontSize="24"
+                                     FontSize="20"
                                      FontWeight="Normal"
                                      ToolTip="This is the latest version of SleepHunter available."/>
 
                         <!-- Download Update Button -->
                         <Button Name="downloadUpdateButton"
                                 Style="{StaticResource ObsidianButton}"
-                                Height="36"
+                                Height="32"
                                 Margin="4,2"
                                 Padding="16,2"
                                 HorizontalAlignment="Right"

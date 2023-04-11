@@ -111,7 +111,7 @@
 
             <TextBlock Text="Target Mode:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        ToolTip="This is the type of target you wish to cast on."/>
 
@@ -140,7 +140,7 @@
             <TextBlock Grid.Row="1"
                        Text="Target Character:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=characterComboBox, Path=Visibility}"
                        ToolTip="This is the alternate character you wish to target."/>
@@ -161,7 +161,7 @@
             <TextBlock Grid.Row="2"
                        Text="Relative Tile:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=relativeTileXComboBox, Path=Visibility}"
                        ToolTip="This is the tile, relative to yourself, that you will target."/>
@@ -253,7 +253,7 @@
             <TextBlock Grid.Row="3"
                        Text="Relative X,Y:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
                        ToolTip="This is the pixel coordinate, relative to yourself, that you wish to target."/>
@@ -279,7 +279,7 @@
             <TextBlock Grid.Row="4"
                        Text="Absolute Tile:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=absoluteTileXUpDown, Path=Visibility}"
                        ToolTip="This is the absolute tile coordinate, on the map, that you wish to target."/>
@@ -305,7 +305,7 @@
             <TextBlock Grid.Row="5"
                        Text="Absolute X,Y:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=absoluteXUpDown, Path=Visibility}"
                        ToolTip="This is the absolute pixel coordinate, in the game window, that you wish to target."/>
@@ -331,7 +331,7 @@
             <TextBlock Grid.Row="6"
                        Text="Inner Radius:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=innerRadiusUpDown, Path=Visibility}"
                        ToolTip="This is how many tiles to skip from the center point to begin the circle at. Zero includes self, one is adjacent."/>
@@ -351,7 +351,7 @@
             <TextBlock Grid.Row="7"
                        Text="Outer Radius:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=outerRadiusUpDown, Path=Visibility}"
                        ToolTip="This is how many tiles the circle will be extended from the center point. The maximum is ten tiles."/>
@@ -371,7 +371,7 @@
             <TextBlock Grid.Row="8"
                        Text="Offset X,Y:"
                        Style="{StaticResource ObsidianText}"
-                       FontSize="18"
+                       FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=offsetXUpDown, Path=Visibility}"
                        ToolTip="This is the amount to offset the final pixel-coordinate, used for fine-tuning target locations."/>

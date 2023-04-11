@@ -930,6 +930,60 @@
         </Setter>
     </Style>
 
+    <!-- Vertical Tab Item Style -->
+    <Style x:Key="ObsidianVerticalTabItem" TargetType="TabItem">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="Padding" Value="4,4"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="ContentSite"
+                                          ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          Margin="12,2"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False"/>
+                                <Condition Property="IsSelected" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Panel Tab Item Style -->
     <Style x:Key="ObsidianPanelTabItem" TargetType="TabItem" BasedOn="{StaticResource ObsidianTabItem}">
         <Setter Property="Padding" Value="4,4,4,0"/>
@@ -983,7 +1037,7 @@
     <Style x:Key="ObsidianVerticalTabControl" TargetType="TabControl">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianTabItem}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianVerticalTabItem}"/>
         <Setter Property="BorderThickness" Value="2,0,0,0"/>
         <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=SelectedItem.Background}"/>
         <Setter Property="Padding" Value="8,16"/>

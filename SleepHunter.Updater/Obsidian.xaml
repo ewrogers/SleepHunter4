@@ -4,7 +4,31 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
+    <!-- Rainbow Brush -->
+    <LinearGradientBrush x:Key="RainbowBackground" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0.000" Color="#AF0000"/>
+        <GradientStop Offset="0.166" Color="#AF0000"/>
+
+        <GradientStop Offset="0.166" Color="#AF6F00"/>
+        <GradientStop Offset="0.332" Color="#AF6F00"/>
+
+        <GradientStop Offset="0.332" Color="#AFAF00"/>
+        <GradientStop Offset="0.498" Color="#AFAF00"/>
+
+        <GradientStop Offset="0.498" Color="#00AF00"/>
+        <GradientStop Offset="0.664" Color="#00AF00"/>
+
+        <GradientStop Offset="0.664" Color="#0000AF"/>
+        <GradientStop Offset="0.830" Color="#0000AF"/>
+
+        <GradientStop Offset="0.830" Color="#6F00AF"/>
+        <GradientStop Offset="1.000" Color="#6F00AF"/>
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
+
     <!-- Backgrounds & Foregrounds -->
+    <!-- Blue 800 -->
     <SolidColorBrush x:Key="ObsidianBackground" Color="#1e40af"/>
 
     <!-- Neutral 50 -->
@@ -46,7 +70,7 @@
     <sys:Double x:Key="ObsidianFontSize">14</sys:Double>
     <sys:Double x:Key="ObsidianSymbolFontSize">20</sys:Double>
     <FontWeight x:Key="ObsidianFontWeight">Light</FontWeight>
-    <sys:Double x:Key="ObsidianWindowTitleFontSize">28</sys:Double>
+    <sys:Double x:Key="ObsidianWindowTitleFontSize">24</sys:Double>
 
     <!-- Scroll Bar Thumb Style -->
     <Style x:Key="ObsidianScrollBarThumb" TargetType="Thumb">
@@ -143,7 +167,7 @@
     <Style x:Key="ObsidianText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="8,4"/>
@@ -163,7 +187,7 @@
     <Style x:Key="ObsidianHyperlinkText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="TextDecorations" Value="Underline"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -297,8 +321,8 @@
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-        <Setter Property="Width" Value="16"/>
-        <Setter Property="Height" Value="16"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="1,1"/>
@@ -338,7 +362,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="16"/>
-        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="4"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="SelectionOpacity" Value="0.4"/>
@@ -399,7 +423,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="16"/>
-        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="4"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="SelectionOpacity" Value="0.4"/>
@@ -535,7 +559,7 @@
         <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="1"/>
         <Setter Property="Margin" Value="0"/>
@@ -642,7 +666,7 @@
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="4,2,4,4"/>
         <Setter Property="Margin" Value="4,2"/>
@@ -849,9 +873,63 @@
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
-        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="4,4"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="ContentSite"
+                                          ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          Margin="12,2"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False"/>
+                                <Condition Property="IsSelected" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Vertical Tab Item Style -->
+    <Style x:Key="ObsidianVerticalTabItem" TargetType="TabItem">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="Padding" Value="4,4"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
@@ -948,7 +1026,7 @@
     <Style x:Key="ObsidianVerticalTabControl" TargetType="TabControl">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianTabItem}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianVerticalTabItem}"/>
         <Setter Property="BorderThickness" Value="2,0,0,0"/>
         <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=SelectedItem.Background}"/>
         <Setter Property="Padding" Value="8,16"/>

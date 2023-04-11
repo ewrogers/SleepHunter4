@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - SleepHunter can now update the Updater prior to installing new versions
+- Visual separate between vertical tabs (settings window)
 
 ### Changed
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Better file handling for potentially missing files when client path is invalid
+- Numeric up/down now highlights border when it has focus
 
 ## [4.2.1] - 2023-04-11
 
