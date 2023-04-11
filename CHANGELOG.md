@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Crash related to new Flower logic changes
+- Revert macro core changes, causes crashes when flowering sometimes
 
 ## [4.2.0] - 2023-04-11
 
