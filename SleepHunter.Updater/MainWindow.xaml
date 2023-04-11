@@ -6,121 +6,12 @@
         xmlns:local="clr-namespace:SleepHunter.Updater"
         mc:Ignorable="d"
         Title="SleepHunter Updater"
-        Width="560" Height="380"
-        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Width="480" Height="320"
         ResizeMode="NoResize"
-        Style="{StaticResource ObsidianWindow}"
-        Loaded="Window_Loaded"
-        Closing="Window_Closing">
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource ObsidianWindow}">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <StackPanel Orientation="Vertical" Margin="16,8">
-            <!-- Status Text -->
-            <TextBlock Name="statusText"
-                       Text="Extracting files..."
-            	       TextAlignment="Left"
-                       Margin="0,8"
-            	       Style="{StaticResource ObsidianText}"/>
-
-            <Grid>
-                <!-- Progress Bar -->
-                <ProgressBar x:Name="progressBar"
-                             Style="{StaticResource ObsidianProgressBar}"
-                             Minimum="0"
-                             Maximum="100"
-                             Height="32"
-                             Value="50"
-                             Margin="0,4">
-                </ProgressBar>
-
-
-                <!-- Progress Percentage Text -->
-                <TextBlock Name="progressPercentText"
-                           Text="50%"
-            		       TextAlignment="Center"
-                           Margin="0"
-                           FontSize="16"
-                           FontWeight="Normal"
-            		       Style="{StaticResource ObsidianText}"/>
-            </Grid>
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Progress File Text -->
-                <TextBlock Name="progressFileText"
-                           Text="SleepHunter.exe"
-            		       TextAlignment="Left"
-                           Margin="4,0"
-                           FontSize="14"
-                           Foreground="{StaticResource ObsidianInactive}"
-            		       Style="{StaticResource ObsidianText}"/>
-
-                <!-- Progress Count Text -->
-                <TextBlock Name="progressCountText"
-                           Grid.Column="1"
-                           Text="1 of 6 files"
-            		       TextAlignment="Right"
-                           Margin="4,0"
-                           FontSize="14"
-                           Foreground="{StaticResource ObsidianInactive}"
-            		       Style="{StaticResource ObsidianText}"/>
-
-            </Grid>
-        </StackPanel>
-
-        <Separator Grid.Row="1" Style="{StaticResource ObsidianSeparator}"/>
-
-        <!-- Retry Button -->
-        <Button Name="retryButton"
-                Grid.Row="2"
-                MaxWidth="280"
-                Margin="8,4"
-                Content="_Retry Update"
-                Click="retryButton_Click"
-                Style="{StaticResource ObsidianButton}"/>
-
-        <!-- Error Message Text -->
-        <TextBlock Name="errorMessageText"
-                   Grid.Row="3"
-                   Text="The quick brown fox jumps over the lazy dog."
-                   TextAlignment="Center"
-                   FontSize="16"
-                   TextWrapping="WrapWithOverflow"
-                   Foreground="{StaticResource ObsidianActive}"
-            	   Style="{StaticResource ObsidianText}"/>
-
-        <Separator Grid.Row="4" Style="{StaticResource ObsidianSeparator}"/>
-
-        <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
-                   Text="SleepHunter will be re-launched after the update is completed."
-            	   TextAlignment="Center"
-                   Margin="8,4"
-                   FontSize="14"
-                   Foreground="{StaticResource ObsidianInactive}"
-            	   Style="{StaticResource ObsidianText}"/>
-
-        <TextBlock Name="versionText"
-                   Grid.Row="6"
-                   Text="Updater - v0.0.0" 
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Top"
-                   Margin="8"
-                   Foreground="{StaticResource ObsidianDisabled}"
-                   FontSize="14"
-            	   Style="{StaticResource ObsidianText}"/>
+        
     </Grid>
 </Window>

@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
-namespace SleepHunter.Themes
+namespace SleepHunter.Updater
 {
     internal partial class Obsidian
     {

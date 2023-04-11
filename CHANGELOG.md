@@ -4,6 +4,16 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.2] - 2023-04-11
+
+### Added
+
+- SleepHunter can now update the Updater prior to installing new versions
+
+### Changed
+
+- Updater now has custom UI and is independent of SleepHunter (so it can update properly)
+
 ## [4.2.1] - 2023-04-11
 
 ### Added
