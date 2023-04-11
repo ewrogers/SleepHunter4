@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 
-using SleepHunter.Common;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
@@ -596,7 +595,6 @@ namespace SleepHunter.Macro
                 var lyliac = GetLyliacPlant(nextTarget.Target);
                 CastSpell(lyliac);
 
-
                 nextTarget.LastUsedTimestamp = DateTime.Now;
                 nextTarget.ResetTimer();
                 return true;
@@ -694,15 +692,15 @@ namespace SleepHunter.Macro
             }
         }
 
-        bool FlowerNextAltWaitingForMana(int manaThreshold = 0)
+        bool FlowerNextAltWaitingForMana()
         {
-            var waitingAlt = FindAltWaitingOnMana(manaThreshold);
+            var waitingAlt = FindAltWaitingOnMana();
 
             if (waitingAlt == null)
                 return false;
 
             client.Update(PlayerFieldFlags.Location);
-            waitingAlt.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
+            waitingAlt.Update(PlayerFieldFlags.Location);
 
             if (!client.Location.IsWithinRange(waitingAlt.Location))
                 return false;
@@ -754,7 +752,7 @@ namespace SleepHunter.Macro
             return false;
         }
 
-        Player FindAltWaitingOnMana(int manaThreshold = 0)
+        Player FindAltWaitingOnMana()
         {
             Player waitingAlt = null;
 
@@ -762,10 +760,7 @@ namespace SleepHunter.Macro
             {
                 if (macro.Status == MacroStatus.Running && macro.IsWaitingOnMana)
                 {
-                    var canFlowerYet = waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower;
-                    var isWithinThreshold = manaThreshold <= 0 || waitingAlt.Stats.CurrentMana < manaThreshold;
-
-                    if ((waitingAlt == null || canFlowerYet) && isWithinThreshold)
+                    if (waitingAlt == null || waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower)
                         waitingAlt = macro.client;
                 }
             }
@@ -865,37 +860,60 @@ namespace SleepHunter.Macro
             if (flowerQueueIndex >= flowerQueue.Count)
                 flowerQueueIndex = 0;
 
-            if (flowerQueue.Count <= 0)
+            if (flowerQueue.Count < 1)
                 return null;
-
-            if (prioritizeAlts)
-            {
-                var nextAltToFlower = GetNextAltQueuedForFlower();
-                if (nextAltToFlower != null)
-                    return nextAltToFlower;
-            }
 
             var currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
             var currentId = currentTarget.Id;
+            bool isWithinManaThreshold = false;
 
-            while (!currentTarget.IsReady)
+            if (prioritizeAlts)
             {
+                lock (flowerQueueLock)
+                {
+                    foreach (var altTarget in flowerQueue)
+                    {
+                        if (altTarget.Target.Units != TargetCoordinateUnits.Character)
+                            continue;
+
+                        var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
+
+                        if (altClient == null)
+                            continue;
+
+                        client.Update(PlayerFieldFlags.Location);
+                        altClient.Update(PlayerFieldFlags.Location);
+
+                        if (!client.Location.IsWithinRange(altClient.Location))
+                            continue;
+
+                        altClient.Update(PlayerFieldFlags.Stats);
+                        isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
+
+                        if (altTarget.IsReady || isWithinManaThreshold)
+                            return altTarget;
+                    }
+                }
+            }
+
+            isWithinManaThreshold = false;
+
+            while (!currentTarget.IsReady && !isWithinManaThreshold)
+            {
+                isWithinManaThreshold = false;
+
                 if (++flowerQueueIndex >= flowerQueue.Count)
                     flowerQueueIndex = 0;
 
                 currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
 
-                if (currentTarget.Target.Units == TargetCoordinateUnits.Character)
+                if (currentTarget.Target.Units == TargetCoordinateUnits.Character && currentTarget.ManaThreshold.HasValue)
                 {
                     var altClient = PlayerManager.Instance.GetPlayerByName(currentTarget.Target.CharacterName);
-
                     if (altClient != null)
                     {
-                        altClient.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
-                        var isWithinManaThreshold = !currentTarget.ManaThreshold.HasValue || altClient.Stats.CurrentMana < currentTarget.ManaThreshold.Value;
-
-                        if (isWithinManaThreshold)
-                            break;
+                        altClient.Update(PlayerFieldFlags.Stats);
+                        isWithinManaThreshold = altClient.Stats.CurrentMana < currentTarget.ManaThreshold.Value;
                     }
                 }
 
@@ -905,36 +923,6 @@ namespace SleepHunter.Macro
 
             flowerQueueIndex++;
             return currentTarget;
-        }
-
-        FlowerQueueItem GetNextAltQueuedForFlower()
-        {
-            lock (flowerQueueLock)
-            {
-                foreach (var altTarget in flowerQueue)
-                {
-                    if (altTarget.Target.Units != TargetCoordinateUnits.Character)
-                        continue;
-
-                    var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
-
-                    if (altClient == null)
-                        continue;
-
-                    client.Update(PlayerFieldFlags.Location);
-                    altClient.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
-
-                    if (!client.Location.IsWithinRange(altClient.Location))
-                        continue;
-
-                    var isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
-
-                    if (altTarget.IsReady || isWithinManaThreshold)
-                        return altTarget;
-                }
-            }
-
-            return null;
         }
 
         bool CastSpell(SpellQueueItem item)
