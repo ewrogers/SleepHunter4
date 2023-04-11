@@ -29,23 +29,23 @@ namespace SleepHunter.Services.Logging
 
         ~Logger() => Dispose(false);
 
-        public void LogInfo(string message)
+        public void LogInfo(string message, string category = "")
         {
             CheckIfDisposed();
-            Log(message, "info");
+            Log(message, "info", category);
         }
 
-        public void LogWarn(string message)
+        public void LogWarn(string message, string category = "")
         {
-            Log(message, "warn");
+            Log(message, "warn", category);
         }
 
-        public void LogError(string message)
+        public void LogError(string message, string category = "")
         {
-            Log(message, "error");
+            Log(message, "error", category);
         }
 
-        public void LogException(Exception ex, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1)
+        public void LogException(Exception ex, string category = "", [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1)
         {
             CheckIfDisposed();
 
@@ -53,17 +53,17 @@ namespace SleepHunter.Services.Logging
             var fileName = Path.GetFileName(filePath);
 
             var messageWithTrace = $"{exceptionName} thrown in {fileName}:{lineNumber} ({memberName}): {ex.Message}\nStack Trace:\n{ex.StackTrace}";
-            Log(messageWithTrace, "exception");
+            Log(messageWithTrace, "exception", category);
         }
 
-        public void LogDebug(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1)
+        public void LogDebug(string message, string category = "", [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1)
         {
             CheckIfDisposed();
 
             var fileName = Path.GetFileName(filePath);
             var messageWithContext = $"{fileName}:{lineNumber} ({memberName}): {message}";
 
-            Log(messageWithContext, "debug");
+            Log(messageWithContext, "debug", category);
         }
 
         public void AddFileTransport(string filePath)
@@ -81,10 +81,12 @@ namespace SleepHunter.Services.Logging
             transports.Add(writer);
         }
 
-        private void Log(string message, string level = "info")
+        private void Log(string message, string level = "info", string category = "")
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-            var formattedLine = $"{timestamp} {level.ToUpperInvariant()}: {message}";
+            var formattedLine = !string.IsNullOrEmpty(category)
+                ? $"{timestamp} {level.ToUpperInvariant()}: {message}"
+                : $"{timestamp} {level.ToUpperInvariant()} [{category}]: {message}";
 
             if (level != "debug")
                 Trace.WriteLine(formattedLine);

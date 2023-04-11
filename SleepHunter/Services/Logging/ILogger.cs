@@ -7,12 +7,12 @@ namespace SleepHunter.Services.Logging
     {
         bool AutoFlush { get; set; }
 
-        void LogInfo(string message);
-        void LogWarn(string message);
-        void LogError(string message);
+        void LogInfo(string message, string category = "");
+        void LogWarn(string message, string category = "");
+        void LogError(string message, string category = "");
 
-        void LogException(Exception exception, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1);
-        void LogDebug(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1);
+        void LogException(Exception exception, string category = "", [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1);
+        void LogDebug(string message, string category = "", [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 1);
 
         void AddFileTransport(string filePath);
     }

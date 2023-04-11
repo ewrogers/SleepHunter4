@@ -592,7 +592,7 @@ namespace SleepHunter.Macro
                 if (nextTarget.ManaThreshold > 0 && !string.IsNullOrEmpty(nextTarget.Target.CharacterName))
                 {
                     var altState = MacroManager.Instance.Macros
-                        .FirstOrDefault(state => string.Equals(state.Name, nextTarget.Target.CharacterName, StringComparison.OrdinalIgnoreCase));
+                        .FirstOrDefault(state => string.Equals(state.Client.Name, nextTarget.Target.CharacterName, StringComparison.OrdinalIgnoreCase));
 
                     shouldFlowerTarget = altState != null && altState.Client.Stats.CurrentMana < nextTarget.ManaThreshold;
                 }
