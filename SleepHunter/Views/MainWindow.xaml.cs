@@ -476,8 +476,6 @@ namespace SleepHunter.Views
 
         private void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
         {
-            logger.LogInfo("Spell manager updated");
-
             if (selectedMacro == null)
                 return;
 
@@ -487,7 +485,7 @@ namespace SleepHunter.Views
 
         private void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
         {
-            logger.LogInfo($"Player character added: {e.Player.Name}");
+            logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
             Dispatcher.InvokeIfRequired(() =>
                {
@@ -498,7 +496,7 @@ namespace SleepHunter.Views
 
         private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
         {
-            logger.LogInfo($"Player character removed: {e.Player.Name}");
+            logger.LogInfo($"Game client process removed with pid: {e.Player.Process.ProcessId}");
 
             OnPlayerLoggedOut(e.Player);
 
@@ -524,7 +522,7 @@ namespace SleepHunter.Views
                         OnPlayerLoggedIn(player);
                 }
 
-                BindingOperations.GetBindingExpression(clientListBox, ListView.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
                 clientListBox.Items.Refresh();
 
                 var selectedPlayer = clientListBox.SelectedItem as Player;
@@ -555,18 +553,24 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
-            var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
+            logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
+
+            var shouldRecallMacroState = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
 
             try
             {
-                if (shouldSaveMacroStates && macro != null)
+                if (shouldRecallMacroState && macro != null)
                 {
+                    logger.LogInfo($"Attempting to load previous macro state for character: {player.Name}");
                     LoadMacroState(player);
                 }
             }
             catch (Exception ex)
             {
+                logger.LogError($"Failed to load previous macro state for character: {player.Name}");
+                logger.LogException(ex);
+
                 Dispatcher.Invoke((Action)delegate
                 {
                     this.ShowMessageBox("Load State Error",
@@ -583,17 +587,24 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
+            logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
+
             var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
 
             try
             {
                 if (shouldSaveMacroStates && macro != null)
+                {
+                    logger.LogInfo($"Attempting to save macro state for character: {player.Name}");
                     SaveMacroState(macro);
-
+                }
             }
             catch (Exception ex)
             {
+                logger.LogError($"Failed to save macro state for character: {player.Name}");
+                logger.LogException(ex);
+
                 Dispatcher.Invoke((Action)delegate
                 {
                     this.ShowMessageBox("Save State Error",
@@ -930,17 +941,23 @@ namespace SleepHunter.Views
                 flowerUpdateWorker.RunWorkerAsync(updateInterval);
             };
 
-            // Start immediately!
-            flowerUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
+            flowerUpdateWorker.RunWorkerAsync(updateInterval);
             logger.LogInfo($"Flower update background worker has started, interval = {updateInterval.TotalMilliseconds:0}ms");
         }
 
         private void ApplyTheme()
         {
             if (!UserSettingsManager.Instance.Settings.RainbowMode)
-                ColorThemeManager.Instance.ApplyTheme(UserSettingsManager.Instance.Settings.SelectedTheme);
+            {
+                var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+                logger.LogInfo($"Applying UI theme: {themeName}");
+                ColorThemeManager.Instance.ApplyTheme(themeName);
+            }
             else
+            {
+                logger.LogInfo("Applying rainbow UI theme");
                 ColorThemeManager.Instance.ApplyRainbowMode();
+            }
         }
 
         private void ActivateHotkey(Key key, ModifierKeys modifiers)
@@ -962,23 +979,30 @@ namespace SleepHunter.Views
             if (hotkeyPlayer == null)
                 return;
 
+            logger.LogInfo($"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated for character: {hotkeyPlayer.Name}");
+
             var macroState = MacroManager.Instance.GetMacroState(hotkeyPlayer);
 
             if (macroState == null)
                 return;
 
             if (macroState.Status == MacroStatus.Running)
+            {
                 macroState.Pause();
+                logger.LogInfo($"Paused macro state for character: {hotkeyPlayer.Name} (hotkey)");
+            }
             else
             {
                 hotkeyPlayer.Update(PlayerFieldFlags.Location);
                 macroState.Start();
+
+                logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
             }
         }
         #endregion
 
         #region Client Add/Remove/Update Methods
-        void UpdateSkillSpellGridWidths()
+        private void UpdateSkillSpellGridWidths()
         {
             var settings = UserSettingsManager.Instance.Settings;
 
@@ -988,7 +1012,7 @@ namespace SleepHunter.Views
             SetWorldSpellGridWidth(settings.WorldSpellGridWidth);
         }
 
-        void SetSkillGridWidth(int units)
+        private void SetSkillGridWidth(int units)
         {
             if (units < 1)
             {
@@ -1000,7 +1024,7 @@ namespace SleepHunter.Views
             temuairSkillListBox.MaxWidth = medeniaSkillListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
-        void SetWorldSkillGridWidth(int units)
+        private void SetWorldSkillGridWidth(int units)
         {
             if (units < 1)
             {
@@ -1012,7 +1036,7 @@ namespace SleepHunter.Views
             worldSkillListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
-        void SetSpellGridWidth(int units)
+        private void SetSpellGridWidth(int units)
         {
             if (units < 1)
             {
@@ -1024,7 +1048,7 @@ namespace SleepHunter.Views
             temuairSpellListBox.MaxWidth = medeniaSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
-        void SetWorldSpellGridWidth(int units)
+        private void SetWorldSpellGridWidth(int units)
         {
             if (units < 1)
             {
@@ -1036,11 +1060,11 @@ namespace SleepHunter.Views
             worldSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
-        void UpdateUIForMacroStatus(MacroStatus status)
+        private void UpdateUIForMacroStatus(MacroStatus status)
         {
             if (!CheckAccess())
             {
-                this.Dispatcher.InvokeIfRequired<MacroStatus>(UpdateUIForMacroStatus, status, DispatcherPriority.DataBind);
+                Dispatcher.InvokeIfRequired(UpdateUIForMacroStatus, status, DispatcherPriority.DataBind);
                 return;
             }
 
@@ -1070,12 +1094,9 @@ namespace SleepHunter.Views
         }
         #endregion
 
-        void ToggleModalOverlay(bool showHide)
-        {
-            modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
-        }
+        private void ToggleModalOverlay(bool showHide) => modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
 
-        void ToggleSpellQueue(bool showQueue)
+        private void ToggleSpellQueue(bool showQueue)
         {
             if (spellQueueListBox == null)
                 return;
@@ -1096,13 +1117,16 @@ namespace SleepHunter.Views
         {
             if (metadataWindow == null || !metadataWindow.IsLoaded)
             {
-                metadataWindow = new MetadataEditorWindow();
-                metadataWindow.Owner = this;
+                metadataWindow = new MetadataEditorWindow
+                {
+                    Owner = this
+                };
             }
 
             if (selectedTabIndex >= 0)
                 metadataWindow.SelectedTabIndex = selectedTabIndex;
 
+            logger.LogInfo("Showing metadata editor window");
             metadataWindow.Show();
         }
 
@@ -1116,7 +1140,16 @@ namespace SleepHunter.Views
             else
                 settingsWindow.SelectedTabIndex = recentSettingsTabIndex;
 
-            settingsWindow.Closing += (sender, e) => { recentSettingsTabIndex = (sender as SettingsWindow).SelectedTabIndex; };
+            settingsWindow.Closing += (sender, e) =>
+            {
+                recentSettingsTabIndex = (sender as SettingsWindow).SelectedTabIndex;
+            };
+            settingsWindow.Closed += (sender, e) =>
+            {
+                logger.LogInfo($"Settings window has been closed");
+            };
+
+            logger.LogInfo($"Showing settings window (tabIndex = {selectedTabIndex})");
             settingsWindow.Show();
         }
 
@@ -1125,16 +1158,26 @@ namespace SleepHunter.Views
             ToggleModalOverlay(true);
             try
             {
+                logger.LogInfo("Attempting to download latest update");
+
                 var updateProgressWindow = new UpdateProgressWindow() { Owner = this };
                 updateProgressWindow.ShowDialog();
 
                 if (!updateProgressWindow.ShouldInstall)
+                {
+                    logger.LogInfo("User has cancelled the update");
                     return;
+                }
 
                 var downloadPath = updateProgressWindow.DownloadPath;
                 var installationPath = Directory.GetCurrentDirectory();
 
                 RunUpdater(downloadPath, installationPath);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Unable to download and install update");
+                logger.LogException(ex);
             }
             finally
             {
@@ -1142,20 +1185,25 @@ namespace SleepHunter.Views
             }
         }
 
-        void RunUpdater(string updateFile, string installationPath)
+        private void RunUpdater(string updateFile, string installationPath)
         {
             var updaterExecutable = Path.Combine(installationPath, "Updater.exe");
+            logger.LogInfo($"Attempting start the updater executable: {updaterExecutable}");
+
             if (!File.Exists(updaterExecutable))
             {
+                logger.LogError("Updater executable was not found");
+
                 this.ShowMessageBox("Missing Updater", "Unable to start auto-updater executable.", "You may need to install the update manually.");
                 return;
             }
 
+            logger.LogInfo($"Starting the updater with arguments: {updateFile} {installationPath}");
             Process.Start(updaterExecutable, $"{updateFile} {installationPath}");
             Application.Current.Shutdown();
         }
 
-        IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        private IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
         {
             if (message == WM_HOTKEY)
             {
@@ -1168,7 +1216,7 @@ namespace SleepHunter.Views
             return IntPtr.Zero;
         }
 
-        void Window_Shown(object sender, EventArgs e)
+        private void Window_Shown(object sender, EventArgs e)
         {
             InitializeHotkeyHook();
 
@@ -1203,85 +1251,113 @@ namespace SleepHunter.Views
                 CheckForNewVersion();
         }
 
-        void Window_Closing(object sender, CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
 
             try
             {
+                logger.LogInfo("Unregistering all hotkeys");
                 HotkeyManager.Instance.UnregisterAllHotkeys(windowSource.Handle);
             }
-            catch { }
-
-            try
-            { ClientVersionManager.Instance.SaveToFile(ClientVersionManager.VersionsFile); }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving client versions to file:\n{0}", ex.Message),
-                   "You may have to reset client versions the next time you start the program.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Failed to unregister all hotkeys");
+                logger.LogException(ex);
             }
 
             try
-            { ColorThemeManager.Instance.SaveToFile(ColorThemeManager.ThemesFile); }
+            {
+                var versionsFile = ClientVersionManager.VersionsFile;
+
+                if (!File.Exists(versionsFile))
+                {
+                    logger.LogInfo($"Client versions file does not exist, saving to file: {versionsFile}");
+                    ClientVersionManager.Instance.SaveToFile(versionsFile);
+                }
+            }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving color themes to file:\n{0}", ex.Message),
-                   "You may have to reset color themes the next time you start the program.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Unable to save client versions file");
+                logger.LogException(ex);
             }
 
             try
-            { UserSettingsManager.Instance.SaveToFile(UserSettingsManager.SettingsFile); }
+            {
+                var themesFile = ColorThemeManager.ThemesFile;
+
+                if (!File.Exists(themesFile))
+                {
+                    logger.LogInfo($"Themes file does not exist, saving to file: {themesFile}");
+                    ColorThemeManager.Instance.SaveToFile(ColorThemeManager.ThemesFile);
+                }
+            }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving user settings to file:\n{0}", ex.Message),
-                   "User settings may be reset to the defaults next time you start the program.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Unable to save themes file");
+                logger.LogException(ex);
             }
 
             try
-            { SkillMetadataManager.Instance.SaveToFile(SkillMetadataManager.SkillMetadataFile); }
+            {
+                var settingsFile = UserSettingsManager.SettingsFile;
+
+                logger.LogInfo($"Saving user settings to file: {settingsFile}");
+                UserSettingsManager.Instance.SaveToFile(settingsFile);
+            }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving skill metadata to file:\n{0}", ex.Message),
-                   "Information on skills may be lost and cause the program to not run properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Unable to save user settings file");
+                logger.LogException(ex);
             }
 
             try
-            { SpellMetadataManager.Instance.SaveToFile(SpellMetadataManager.SpellMetadataFile); }
+            {
+                var skillsFile = SkillMetadataManager.SkillMetadataFile;
+
+                logger.LogInfo($"Saving skills metadata to file: {skillsFile}");
+                SkillMetadataManager.Instance.SaveToFile(skillsFile);
+            }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving spell metadata to file:\n{0}", ex.Message),
-                   "Information on spells may be lost and cause the program to not run properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Unable to save skills metadata file");
+                logger.LogException(ex);
             }
 
             try
-            { StaffMetadataManager.Instance.SaveToFile(StaffMetadataManager.StaffMetadataFile); }
+            {
+                var spellsFile = SpellMetadataManager.SpellMetadataFile;
+
+                logger.LogInfo($"Saving spells metadata to file: {spellsFile}");
+                SpellMetadataManager.Instance.SaveToFile(spellsFile);
+            }
             catch (Exception ex)
             {
-                this.ShowMessageBox("Save Error",
-                   string.Format("There was an error saving staff metadata to file:\n{0}", ex.Message),
-                   "Information on staves may be lost and cause the program to not run properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogError("Unable to save spells metadata file");
+                logger.LogException(ex);
             }
 
             try
-            { FileArchiveManager.Instance.ClearArchives(); }
-            catch { }
+            {
+                var stavesFile = StaffMetadataManager.StaffMetadataFile;
+
+                logger.LogInfo($"Saving staves metadata to file: {stavesFile}");
+                StaffMetadataManager.Instance.SaveToFile(stavesFile);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Unable to save staves metadata file");
+                logger.LogException(ex);
+            }
+
+            try
+            { 
+                FileArchiveManager.Instance.ClearArchives();
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+            }
 
             try
             {
@@ -1290,7 +1366,8 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unable to create saves directory: {ex.Message}");
+                logger.LogError("Failed to create saves directory");
+                logger.LogException(ex);
                 return;
             }
 
@@ -1320,7 +1397,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SaveMacroState(PlayerMacroState macro)
+        private void SaveMacroState(PlayerMacroState macro)
         {
             if (macro == null)
                 throw new ArgumentNullException("macro");
@@ -1328,10 +1405,11 @@ namespace SleepHunter.Views
             var filename = Path.Combine("saves", string.Format("{0}.xml", macro.Client.Name.Trim()));
             var state = new SavedMacroState(macro);
 
+            logger.LogInfo($"Saving macro state to file: {filename}");
             state.SaveToFile(filename);
         }
 
-        void LoadMacroState(Player player)
+        private void LoadMacroState(Player player)
         {
             if (player == null)
                 throw new ArgumentNullException("player");
@@ -1344,6 +1422,7 @@ namespace SleepHunter.Views
             if (!File.Exists(filename))
                 return;
 
+            logger.LogInfo($"Loading macro state from file: {filename}");
             var macroState = SavedMacroState.LoadFromFile(filename);
 
             if (macroState == null)
@@ -1356,65 +1435,58 @@ namespace SleepHunter.Views
         }
 
         #region Toolbar Button Click Methods
-        void startNewClientButton_Click(object sender, RoutedEventArgs e)
-        {
-            LaunchClient();
-        }
+        private void startNewClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
 
-        void startMacroButton_Click(object sender, RoutedEventArgs e)
+        private void startMacroButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
 
             selectedMacro.Client.Update(PlayerFieldFlags.Location);
-            var location = selectedMacro.Client.Location;
-
             selectedMacro.Start();
+
+            logger.LogInfo($"Started macro state for character: {selectedMacro.Client.Name} (toolbar)");
         }
 
-        void pauseMacroButton_Click(object sender, RoutedEventArgs e)
+        private void pauseMacroButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
 
             selectedMacro.Pause();
+            logger.LogInfo($"Paused macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
-        void stopMacroButton_Click(object sender, RoutedEventArgs e)
+        private void stopMacroButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
 
             selectedMacro.Stop();
+            logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
-        void settingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            ShowSettingsWindow();
-        }
+        private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
 
-        void clientListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void clientListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var player = listBoxItem.Content as Player;
-            if (player == null)
+            if (!(listBoxItem.Content is Player player))
                 return;
 
             NativeMethods.SetForegroundWindow(player.Process.WindowHandle);
+            logger.LogInfo($"Setting foreground window for client: {player.Name} (double-click)");
         }
 
-        void spellQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void spellQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var queueItem = listBoxItem.Content as SpellQueueItem;
-            if (queueItem == null)
+            if (!(listBoxItem.Content is SpellQueueItem queueItem))
                 return;
 
             if (selectedMacro == null)
@@ -1426,9 +1498,12 @@ namespace SleepHunter.Views
             if (spell == null)
                 return;
 
-            var dialog = new SpellTargetWindow(spell, queueItem);
-            dialog.Owner = this;
+            var dialog = new SpellTargetWindow(spell, queueItem)
+            {
+                Owner = this
+            };
 
+            logger.LogInfo($"Showing spell '{spell.Name}' target dialog for character: {player.Name}");
             var result = dialog.ShowDialog();
 
             if (!result.HasValue || !result.Value)
@@ -1437,14 +1512,12 @@ namespace SleepHunter.Views
             dialog.SpellQueueItem.CopyTo(queueItem);
         }
 
-        void spellQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void spellQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var spell = listBoxItem.Content as SpellQueueItem;
-            if (spell == null)
+            if (!(listBoxItem.Content is SpellQueueItem spell))
                 return;
 
             if (selectedMacro == null)
@@ -1452,12 +1525,14 @@ namespace SleepHunter.Views
 
             if (e.Key == Key.Delete || e.Key == Key.Back)
             {
+                logger.LogInfo($"Removing spell '{spell.Name}' from spell queue for character: {selectedMacro.Client.Name}");
+
                 if (selectedMacro.RemoveFromSpellQueue(spell))
                     RefreshSpellQueue();
             }
         }
 
-        void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+        private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
@@ -1467,7 +1542,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void spellQueueListBox_Drop(object sender, DragEventArgs e)
+        private void spellQueueListBox_Drop(object sender, DragEventArgs e)
         {
             var droppedItem = e.Data.GetData(typeof(SpellQueueItem)) as SpellQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as SpellQueueItem;
@@ -1490,22 +1565,23 @@ namespace SleepHunter.Views
             }
         }
 
-        void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var queueItem = listBoxItem.Content as FlowerQueueItem;
-            if (queueItem == null)
+            if (!(listBoxItem.Content is FlowerQueueItem queueItem))
                 return;
 
             if (selectedMacro == null)
                 return;
 
-            var dialog = new FlowerTargetWindow(queueItem);
-            dialog.Owner = this;
+            var dialog = new FlowerTargetWindow(queueItem)
+            {
+                Owner = this
+            };
 
+            logger.LogInfo($"Showing flower target dialog for character: {selectedMacro.Client.Name}");
             var result = dialog.ShowDialog();
 
             if (!result.HasValue || !result.Value)
@@ -1514,14 +1590,12 @@ namespace SleepHunter.Views
             dialog.FlowerQueueItem.CopyTo(queueItem);
         }
 
-        void flowerQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void flowerQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var flower = listBoxItem.Content as FlowerQueueItem;
-            if (flower == null)
+            if (!(listBoxItem.Content is FlowerQueueItem flower))
                 return;
 
             if (selectedMacro == null)
@@ -1529,12 +1603,14 @@ namespace SleepHunter.Views
 
             if (e.Key == Key.Delete || e.Key == Key.Back)
             {
+                logger.LogInfo($"Removing '{flower.Target}' from flower queue for character: {selectedMacro.Name}");
+
                 if (selectedMacro.RemoveFromFlowerQueue(flower))
                     RefreshFlowerQueue();
             }
         }
 
-        void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+        private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
@@ -1544,7 +1620,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void flowerQueueListBox_Drop(object sender, DragEventArgs e)
+        private void flowerQueueListBox_Drop(object sender, DragEventArgs e)
         {
             var droppedItem = e.Data.GetData(typeof(FlowerQueueItem)) as FlowerQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as FlowerQueueItem;
@@ -1567,15 +1643,14 @@ namespace SleepHunter.Views
             }
         }
 
-        void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var listBox = sender as ListBox;
-            if (listBox == null)
+            if (!(sender is ListBox listBox))
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
 
-                this.Title = "SleepHunter";
+                Title = "SleepHunter";
                 selectedMacro = null;
                 ToggleSpellQueue(false);
                 ToggleSkills(false);
@@ -1584,13 +1659,12 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var player = listBox.SelectedItem as Player;
-            if (player == null)
+            if (!(listBox.SelectedItem is Player player))
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
 
-                this.Title = "SleepHunter";
+                Title = "SleepHunter";
                 selectedMacro = null;
                 ToggleSpellQueue(false);
                 ToggleSkills(false);
@@ -1602,9 +1676,11 @@ namespace SleepHunter.Views
             var macroState = MacroManager.Instance.GetMacroState(player);
 
             if (player.IsLoggedIn)
-                this.Title = string.Format("SleepHunter - {0}", player.Name);
-            else
-                this.Title = "SleepHunter";
+            {
+                Title = string.Format("SleepHunter - {0}", player.Name);
+                logger.LogInfo($"Selected charcter: {player.Name}");
+            }
+            else Title = "SleepHunter";
 
             if (macroState == null)
             {
@@ -1667,17 +1743,15 @@ namespace SleepHunter.Views
             }
         }
 
-        void clientListBox_KeyDown(object sender, KeyEventArgs e)
+        private void clientListBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.None)
                 return;
 
-            var listBoxItem = sender as ListBoxItem;
-            if (listBoxItem == null)
+            if (!(sender is ListBoxItem listBoxItem))
                 return;
 
-            var player = listBoxItem.Content as Player;
-            if (player == null)
+            if (!(listBoxItem.Content is Player player))
                 return;
 
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
@@ -1701,7 +1775,10 @@ namespace SleepHunter.Views
                 if (e.Key == Key.Delete || e.Key == Key.Back || e.Key == Key.Escape)
                 {
                     if (player.Hotkey != null)
+                    {
+                        logger.LogInfo($"Clearing hotkey for character: {player.Name}");
                         HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
+                    }
 
                     player.Hotkey = null;
                 }
@@ -1738,6 +1815,8 @@ namespace SleepHunter.Views
 
             if (!HotkeyManager.Instance.RegisterHotkey(windowSource.Handle, hotkey))
             {
+                logger.LogError($"Unable to set hotkey {hotkey.Modifiers}+{hotkey.Key} for character: {player.Name}");
+
                 this.ShowMessageBox("Set Hotkey Error",
                    "There was an error setting the hotkey, please try again.",
                    "If this continues, try restarting the application.",
@@ -1755,10 +1834,9 @@ namespace SleepHunter.Views
             e.Handled = true;
         }
 
-        void selectedMacro_SpellQueueChanged(object sender, SpellQueueItemEventArgs e)
+        private void selectedMacro_SpellQueueChanged(object sender, SpellQueueItemEventArgs e)
         {
-            var macro = sender as PlayerMacroState;
-            if (macro == null)
+            if (!(sender is PlayerMacroState macro))
                 return;
 
             spellQueueListBox.ItemsSource = macro.QueuedSpells;
@@ -1767,20 +1845,18 @@ namespace SleepHunter.Views
             ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && macro.TotalSpellsCount > 0);
         }
 
-        void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
+        private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
         {
-            var macro = sender as PlayerMacroState;
-            if (macro == null)
+            if (!(sender is PlayerMacroState macro))
                 return;
 
             flowerListBox.ItemsSource = macro.FlowerTargets;
             RefreshFlowerQueue();
         }
 
-        void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var tabControl = sender as TabControl;
-            if (tabControl == null)
+            if (!(sender is TabControl))
             {
                 ToggleSpellQueue(false);
                 return;
@@ -1805,54 +1881,50 @@ namespace SleepHunter.Views
                 TabSelected(newTab);
         }
 
-        void TabDeselected(TabItem tab)
+        private void TabDeselected(TabItem tab)
         {
             if (selectedMacro == null)
                 return;
         }
 
-        void TabSelected(TabItem tab)
+        private void TabSelected(TabItem tab)
         {
             if (selectedMacro == null)
                 return;
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
+
             ToggleSpellQueue(selectedMacro.TotalSpellsCount > 0);
             ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
-        void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListBoxItem;
-            if (item == null)
+            if (!(sender is ListBoxItem item))
                 return;
 
-            var skill = item.Content as Skill;
-            if (skill == null)
+            if (!(item.Content is Skill skill))
                 return;
 
-            var player = clientListBox.SelectedItem as Player;
-            if (player == null)
+            if (!(clientListBox.SelectedItem is Player player))
                 return;
 
             if (skill.IsEmpty || string.IsNullOrWhiteSpace(skill.Name))
                 return;
 
+            logger.LogInfo($"Toggling skill '{skill.Name}' for character: {player.Name}");
             player.Skillbook.ToggleActive(skill.Name);
         }
 
-        void spellListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void spellListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListBoxItem;
-            if (item == null)
+            if (!(sender is ListBoxItem item))
                 return;
 
-            var spell = item.Content as Spell;
-            if (spell == null)
+            if (!(item.Content is Spell spell))
                 return;
 
-            var player = clientListBox.SelectedItem as Player;
-            if (player == null)
+            if (!(clientListBox.SelectedItem is Player player))
                 return;
 
             if (spell.IsEmpty || string.IsNullOrWhiteSpace(spell.Name))
@@ -1871,9 +1943,12 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            var spellTargetWindow = new SpellTargetWindow(spell);
-            spellTargetWindow.Owner = this;
+            var spellTargetWindow = new SpellTargetWindow(spell)
+            {
+                Owner = this
+            };
 
+            logger.LogInfo($"Showing spell '{spell.Name}' target dialog for character: {player.Name}");
             var result = spellTargetWindow.ShowDialog();
 
             if (!result.HasValue || !result.Value)
@@ -1885,47 +1960,55 @@ namespace SleepHunter.Views
 
             if (isAlreadyQueued && UserSettingsManager.Instance.Settings.WarnOnDuplicateSpells)
             {
-                var okToAddAgain = this.ShowMessageBox("Already Queued",
+                logger.LogInfo($"Spell '{spell.Name}' is already queued for character {player.Name}, asking user to override");
+
+                var userOverride = this.ShowMessageBox("Already Queued",
                    string.Format("The spell '{0}' is already queued.\nDo you want to queue it again anyways?", spell.Name),
                    "This warning message can be disabled in the Spell Macro settings.",
                    MessageBoxButton.YesNo,
                    460, 240);
 
-                if (!okToAddAgain.HasValue || !okToAddAgain.Value)
+                if (!userOverride.HasValue || !userOverride.Value)
                     return;
             }
 
             selectedMacro.AddToSpellQueue(queueItem);
+            logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
         }
 
-        void removeSelectedSpellButton_Click(object sender, RoutedEventArgs e)
+        private void removeSelectedSpellButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedSpell = spellQueueListBox.SelectedItem as SpellQueueItem;
-
-            if (selectedMacro == null || selectedSpell == null)
+            if (selectedMacro == null || !(spellQueueListBox.SelectedItem is SpellQueueItem selectedSpell))
                 return;
 
             selectedMacro.RemoveFromSpellQueue(selectedSpell);
             RefreshSpellQueue();
+
+            logger.LogInfo($"Spell '{selectedSpell.Name}' removed from spell queue for character: {selectedMacro.Client.Name}");
         }
 
-        void removeAllSpellsButton_Click(object sender, RoutedEventArgs e)
+        private void removeAllSpellsButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
 
             selectedMacro.ClearSpellQueue();
             RefreshSpellQueue();
+
+            logger.LogInfo($"Spell queue cleared for character: {selectedMacro.Client.Name}");
         }
 
-        void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
+        private void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
 
-            var flowerTargetDialog = new FlowerTargetWindow();
-            flowerTargetDialog.Owner = this;
+            var flowerTargetDialog = new FlowerTargetWindow
+            {
+                Owner = this
+            };
 
+            logger.LogInfo($"Showing flower target dialog for character: {selectedMacro.Client.Name}");
             var result = flowerTargetDialog.ShowDialog();
             if (!result.HasValue || !result.Value)
                 return;
@@ -1933,9 +2016,11 @@ namespace SleepHunter.Views
             var queueItem = flowerTargetDialog.FlowerQueueItem;
             queueItem.LastUsedTimestamp = DateTime.Now;
             selectedMacro.AddToFlowerQueue(queueItem);
+
+            logger.LogInfo($"Added '{queueItem.Target}' to flower queue for character: {selectedMacro.Client.Name}");
         }
 
-        void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
+        private void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedTarget = flowerListBox.SelectedItem as FlowerQueueItem;
 
@@ -1944,23 +2029,28 @@ namespace SleepHunter.Views
 
             selectedMacro.RemoveFromFlowerQueue(selectedTarget);
             RefreshFlowerQueue();
+
+            logger.LogInfo($"Removed '{selectedTarget.Target}' from flower queue for character: {selectedMacro.Client.Name}");
         }
 
 
-        void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
+        private void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
 
             selectedMacro.ClearFlowerQueue();
             RefreshFlowerQueue();
+
+            logger.LogInfo($"Cleared flower queue for character: {selectedMacro.Client.Name}");
         }
 
-        void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            UserSettings settings = sender as UserSettings;
-            if (settings == null)
+            if (!(sender is UserSettings settings))
                 return;
+
+            logger.LogInfo($"User setting property changed: {e.PropertyName}");
 
             if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
@@ -1984,17 +2074,16 @@ namespace SleepHunter.Views
                 UpdateSkillSpellGridWidths();
         }
 
-        void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var macro = sender as PlayerMacroState;
-            if (macro == null)
+            if (!(sender is PlayerMacroState macro))
                 return;
 
             if (string.Equals("Status", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 UpdateUIForMacroStatus(macro.Status);
         }
 
-        void flowerVineyardCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void flowerVineyardCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
@@ -2003,7 +2092,7 @@ namespace SleepHunter.Views
                 selectedMacro.UseLyliacVineyard = flowerVineyardCheckBox.IsChecked.Value;
         }
 
-        void flowerAlternateCharactersCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void flowerAlternateCharactersCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null)
                 return;
@@ -2012,19 +2101,19 @@ namespace SleepHunter.Views
                 selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
         }
 
-        void ToggleSkills(bool show = true)
+        private void ToggleSkills(bool show = true)
         {
             temuairSkillListBox.Visibility = medeniaSkillListBox.Visibility = worldSkillListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             skillsTab.IsEnabled = show;
         }
 
-        void ToggleSpells(bool show = true)
+        private void ToggleSpells(bool show = true)
         {
             temuairSpellListBox.Visibility = medeniaSpellListBox.Visibility = worldSpellListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             spellsTab.IsEnabled = show;
         }
 
-        void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
+        private void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
         {
             flowerTab.IsEnabled = hasLyliacPlant || hasLyliacVineyard;
 
@@ -2038,24 +2127,36 @@ namespace SleepHunter.Views
                 flowerVineyardCheckBox.IsChecked = false;
         }
 
-        async void CheckForNewVersion()
+        private async void CheckForNewVersion()
         {
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            logger.LogInfo($"Checking for new version of the application (current = {currentVersion})");
 
             try
             {
                 var latestRelease = await releaseService.GetLatestReleaseVersionAsync();
+                logger.LogInfo($"Latest version is {latestRelease.Version}");
+
                 if (!latestRelease.Version.IsNewerThan(currentVersion))
                     return;
 
+                logger.LogInfo("Prompting the user to update");
                 var result = this.ShowMessageBox("New Version Available", $"A newer version ({latestRelease.VersionString}) is available.\n\nDo you want to update now?", "You can disable this on startup in Settings->Updates.", MessageBoxButton.YesNo);
+
                 if (!result.HasValue || !result.Value)
+                {
+                    logger.LogInfo("User has declined the update");
                     return;
+                }
 
                 ShowSettingsWindow(SettingsWindow.UpdatesTabIndex);
             }
             catch (Exception ex)
             {
+                logger.LogError($"Unable to check for latest version");
+                logger.LogException(ex);
+
                 this.ShowMessageBox("Check for Updates", $"Unable to check for a newer version:\n{ex.Message}", "You can disable this on startup in Settings->Updates.");
                 return;
             }
