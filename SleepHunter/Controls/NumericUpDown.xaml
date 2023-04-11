@@ -30,6 +30,7 @@
                          Style="{StaticResource ObsidianNonEraseTextBox}"
                          BorderThickness="0"
                          FontSize="{Binding ElementName=Root, Path=FontSize}"
+                         FontWeight="Normal"
                          Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter}}"
                          TextAlignment="Center"
                          Padding="1"

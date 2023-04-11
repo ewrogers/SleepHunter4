@@ -409,7 +409,7 @@
                            Style="{StaticResource ObsidianText}"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
-                           FontSize="20"
+                           FontSize="18"
                            Padding="4,2"/>
             </Border>
 
