@@ -23,6 +23,9 @@ namespace SleepHunter.Win32
         [DllImport("user32", EntryPoint = "GetWindowText", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(IntPtr windowHandle, StringBuilder windowText, int maxLength);
 
+        [DllImport("user32", EntryPoint = "SetWindowText", CharSet = CharSet.Auto)]
+        internal static extern bool SetWindowText(IntPtr windowHandle, string windowText);
+
         [DllImport("user32", EntryPoint = "GetWindowThreadProcessId", CharSet = CharSet.Auto)]
         internal static extern int GetWindowThreadProcessId(IntPtr windowHandle, out int processId);
 

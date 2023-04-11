@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LoggingEnabled` user setting to enable generating log files (off by default)
 - Logging throughout the application
 - Basic inversion of control (IoC) framework
+- Dark Ages client titles now renamed to `Darkages - ${Character}` for identifying multiple instances
+- Dark Ages client titles renamed back to `Darkages` when logged out of a character
 
 ### Changed
 

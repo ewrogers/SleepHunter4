@@ -555,6 +555,9 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
 
+            if (!string.IsNullOrEmpty(player.Name))
+                NativeMethods.SetWindowText(player.Process.WindowHandle, $"Darkages - {player.Name}");
+
             var shouldRecallMacroState = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
 
@@ -588,6 +591,8 @@ namespace SleepHunter.Views
                 return;
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
+
+            NativeMethods.SetWindowText(player.Process.WindowHandle, "Darkages");
 
             var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
