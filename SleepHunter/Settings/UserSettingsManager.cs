@@ -87,6 +87,8 @@ namespace SleepHunter.Settings
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add("", "");
 
+            // Update version when saving
+            settings.Version = UserSettings.CurrentVersion;
             serializer.Serialize(stream, settings, namespaces);
         }
         #endregion

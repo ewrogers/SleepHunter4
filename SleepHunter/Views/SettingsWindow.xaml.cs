@@ -6,7 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.Models;
-using SleepHunter.Services;
+using SleepHunter.Services.Logging;
+using SleepHunter.Services.Releases;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views
@@ -23,7 +24,9 @@ namespace SleepHunter.Views
         public static readonly int UpdatesTabIndex = 7;
         public static readonly int AboutTabIndex = 8;
 
-        private readonly IReleaseService releaseService = new ReleaseService();
+        private readonly ILogger logger;
+        private readonly IReleaseService releaseService;
+
         private Version currentVersion;
         private ReleaseVersion latestRelease;
         private bool isCheckingForVersion;
@@ -39,6 +42,9 @@ namespace SleepHunter.Views
 
         public SettingsWindow()
         {
+            logger = App.Current.Services.GetService<ILogger>();
+            releaseService = App.Current.Services.GetService<IReleaseService>();
+
             InitializeComponent();
             GetVersion();
             ToggleDownloadUpdateButton(false);

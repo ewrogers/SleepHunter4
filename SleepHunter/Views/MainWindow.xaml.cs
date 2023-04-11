@@ -24,7 +24,8 @@ using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
-using SleepHunter.Services;
+using SleepHunter.Services.Logging;
+using SleepHunter.Services.Releases;
 using System.Reflection;
 
 namespace SleepHunter.Views
@@ -50,6 +51,9 @@ namespace SleepHunter.Views
         static readonly int SpellsTabIndex = 1;
         // static readonly int FlowerTabIndex = 2;
 
+        private readonly ILogger logger;
+        private readonly IReleaseService releaseService;
+
         bool isDisposed;
         HwndSource windowSource;
 
@@ -61,8 +65,6 @@ namespace SleepHunter.Views
         BackgroundWorker clientUpdateWorker;
         BackgroundWorker flowerUpdateWorker;
 
-        IReleaseService releaseService = new ReleaseService();
-
         PlayerMacroState selectedMacro;
 
         Exception loadSkillsException;
@@ -71,6 +73,9 @@ namespace SleepHunter.Views
 
         public MainWindow()
         {
+            logger = App.Current.Services.GetService<ILogger>();
+            releaseService = App.Current.Services.GetService<IReleaseService>();
+
             InitializeComponent();
             InitializeViews();
 
@@ -412,6 +417,7 @@ namespace SleepHunter.Views
             windowSource = HwndSource.FromHwnd(helper.Handle);
 
             windowSource.AddHook(WindowMessageHook);
+            logger.LogInfo("Hotkey hook initialized");
         }
 
         void InitializeViews()
@@ -981,10 +987,7 @@ namespace SleepHunter.Views
         public void ShowSettingsWindow(int selectedTabIndex = -1)
         {
             if (settingsWindow == null || !settingsWindow.IsLoaded)
-            {
-                settingsWindow = new SettingsWindow();
-                settingsWindow.Owner = this;
-            }
+                settingsWindow = new SettingsWindow() { Owner = this };
 
             if (selectedTabIndex >= 0)
                 settingsWindow.SelectedTabIndex = selectedTabIndex;
@@ -1160,30 +1163,36 @@ namespace SleepHunter.Views
 
             try
             {
-                var shouldSaveStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
-
                 if (!Directory.Exists("saves"))
                     Directory.CreateDirectory("saves");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to create saves directory: {ex.Message}");
+                return;
+            }
 
-                if (shouldSaveStates)
+            var shouldSaveStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
+
+            if (shouldSaveStates)
+            {
+                foreach (var macro in MacroManager.Instance.Macros)
                 {
-                    foreach (var macro in MacroManager.Instance.Macros)
+                    try
                     {
                         if (macro.Client == null || !macro.Client.IsLoggedIn)
                             continue;
 
                         if (!string.IsNullOrEmpty(macro.Client.Name))
+                        {
+                            macro.Stop();
                             SaveMacroState(macro);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                this.ShowMessageBox("Save State Error",
-                   string.Format("There was an error saving macro state:\n{0}", ex.Message),
-                   "Your character macro states may not be preserved properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
             }
         }
 
