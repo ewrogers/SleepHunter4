@@ -121,14 +121,14 @@
                     <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,6,0,0">
                         <TextBlock Text="HP"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="12"
+                               FontSize="14"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=HealthBar, Path=Visibility}"/>
 
                         <TextBlock Name="HealthText"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="12"
+                               FontSize="14"
                                TextAlignment="Right"
                                FontWeight="Normal"
                                Margin="4,1"
@@ -153,14 +153,14 @@
                     <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,4,0,0">
                         <TextBlock Text="MP"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="12"
+                               FontSize="14"
                                FontWeight="Normal"
                                Margin="4,1"
                                Visibility="{Binding ElementName=ManaBar, Path=Visibility}"/>
 
                         <TextBlock Name="ManaText"
                                Style="{StaticResource ObsidianText}"
-                               FontSize="12"
+                               FontSize="14"
                                TextAlignment="Right"
                                FontWeight="Normal"
                                Margin="4,1"

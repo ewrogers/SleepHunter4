@@ -36,15 +36,15 @@
     <SolidColorBrush x:Key="ObsidianForeground" Color="#FAFAFA"/>
     <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#FAFAFA"/>
     <SolidColorBrush x:Key="ObsidianActive" Color="#FAFAFA"/>
-    
-    <!-- Neutral 300 -->
-    <SolidColorBrush x:Key="ObsidianMouseOver" Color="#D4D4D4"/>
-    
-    <!-- Neutral 500 -->
-    <SolidColorBrush x:Key="ObsidianInactive" Color="#737373"/>
-    
-    <!-- Neutral 600 -->
-    <SolidColorBrush x:Key="ObsidianDisabled" Color="#525252"/>
+
+    <!-- Neutral 200 -->
+    <SolidColorBrush x:Key="ObsidianMouseOver" Color="#E5E5E5"/>
+
+    <!-- Neutral 400 -->
+    <SolidColorBrush x:Key="ObsidianInactive" Color="#A3A3A3"/>
+
+    <!-- Neutral 700 -->
+    <SolidColorBrush x:Key="ObsidianDisabled" Color="#404040"/>
     
     <!-- Neutral 800 -->
     <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#262626"/>
@@ -71,7 +71,7 @@
     <sys:Double x:Key="ObsidianFontSize">14</sys:Double>
     <sys:Double x:Key="ObsidianSymbolFontSize">20</sys:Double>
     <FontWeight x:Key="ObsidianFontWeight">Light</FontWeight>
-    <sys:Double x:Key="ObsidianWindowTitleFontSize">28</sys:Double>
+    <sys:Double x:Key="ObsidianWindowTitleFontSize">24</sys:Double>
 
     <Style x:Key="ObsidianNumericUpDown" TargetType="ctl:NumericUpDown">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -178,7 +178,7 @@
     <Style x:Key="ObsidianText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="8,4"/>
@@ -198,7 +198,7 @@
     <Style x:Key="ObsidianHyperlinkText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="TextDecorations" Value="Underline"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -570,7 +570,7 @@
         <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="1"/>
         <Setter Property="Margin" Value="0"/>
@@ -677,7 +677,7 @@
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="4,2,4,4"/>
         <Setter Property="Margin" Value="4,2"/>
@@ -884,7 +884,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
-        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="Padding" Value="4,4"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>

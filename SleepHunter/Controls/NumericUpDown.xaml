@@ -8,7 +8,7 @@
              xmlns:converters="clr-namespace:SleepHunter.Converters"
              mc:Ignorable="d"
              d:DesignHeight="32" d:DesignWidth="200"
-             FontSize="18">
+             FontSize="16">
     <UserControl.Resources>
         <converters:NumericConverter x:Key="NumericConverter"/>
     </UserControl.Resources>

@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Main window title font slighly reduced
+- Other font sizes reduced throughout
+- HP/MP font size slightly increased
+- Spell queue current/max level font size slightly increased
 - Slightly better contrast with UI colors
 - Updater now is independent of SleepHunter (so it can update properly)
 

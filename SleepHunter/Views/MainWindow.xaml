@@ -43,18 +43,19 @@
                     <Button Name="startNewClientButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="startNewClientButton_Click"
-                            Padding="8,2">
+                            Padding="8,8,8,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Start _New Client"
                                    Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
-                                   Margin="0"/>
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                        Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
-                                       FontSize="24"
-                                       Margin="0,8,0,0"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
                                        Text="&#xE1E2;"/>
                         </DockPanel>
                     </Button>
@@ -64,18 +65,19 @@
                     <Button Name="startMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="startMacroButton_Click"
-                            Padding="4,2">
+                            Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Sta_rt Macroing"
                                    Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
-                                   Margin="0"/>
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                        Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
-                                       FontSize="24"
-                                       Margin="0,4,0,0"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
                                        Text="&#xE102;"/>
                         </DockPanel>
                     </Button>
@@ -83,18 +85,19 @@
                     <Button Name="pauseMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="pauseMacroButton_Click"
-                            Padding="4,2">
+                            Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="_Pause Macroing"
                                    Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
-                                   Margin="0"/>
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                        Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
-                                       FontSize="24"
-                                       Margin="0,4,0,0"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
                                        Text="&#xE103;"/>
                         </DockPanel>
                     </Button>
@@ -102,18 +105,19 @@
                     <Button Name="stopMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="stopMacroButton_Click"
-                            Padding="4,2">
+                            Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="S_top Macroing"
                                    Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
-                                   Margin="0"/>
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                        Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
-                                       FontSize="24"
-                                       Margin="0,4,0,0"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
                                        Text="&#xE20D;"/>
                         </DockPanel>
                     </Button>
@@ -123,17 +127,18 @@
                     <Button Name="settingsButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="settingsButton_Click"
-                            Padding="8,2">
+                            Padding="8,8,8,2">
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="App Settin_gs"
                                    Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
-                                   Margin="0"/>
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                        Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
-                                       FontSize="24"
+                                       FontSize="20"
                                        Margin="0"
                                        Text="&#xE2FC;"/>
                         </DockPanel>

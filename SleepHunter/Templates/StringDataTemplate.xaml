@@ -7,7 +7,7 @@
                            Foreground="{Binding RelativeSource={RelativeSource AncestorType=ComboBox}, Path=Foreground}"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding}"
-                           FontSize="18"
+                           FontSize="16"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
                            Margin="2,3,2,2"/>
@@ -20,7 +20,7 @@
                 <TextBlock Name="Text"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding}"
-                           FontSize="18"
+                           FontSize="16"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
                            Margin="2,3,2,2"/>
