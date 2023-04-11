@@ -73,8 +73,15 @@
     <Compile Include="Extensions\VersionExtender.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
-    <Compile Include="Services\IReleaseService.cs" />
-    <Compile Include="Services\ReleaseService.cs" />
+    <Compile Include="Services\Logging\ILogger.cs" />
+    <Compile Include="Services\Releases\IReleaseService.cs" />
+    <Compile Include="Services\IServiceProvider.cs" />
+    <Compile Include="Services\Logging\Logger.cs" />
+    <Compile Include="Services\Releases\ReleaseService.cs" />
+    <Compile Include="Services\ServiceCollection.cs" />
+    <Compile Include="Services\ServiceLifetime.cs" />
+    <Compile Include="Services\ServiceMapping.cs" />
+    <Compile Include="Services\ServiceProvider.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs">
       <DependentUpon>FlowerTargetWindow.xaml</DependentUpon>
     </Compile>

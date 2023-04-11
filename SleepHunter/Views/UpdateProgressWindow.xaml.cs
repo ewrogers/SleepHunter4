@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Windows;
 using SleepHunter.Models;
-using SleepHunter.Services;
+using SleepHunter.Services.Releases;
 
 namespace SleepHunter.Views
 {
     public partial class UpdateProgressWindow : Window
     {
-        private readonly IReleaseService releaseService = new ReleaseService();
+        private readonly IReleaseService releaseService;
 
         public bool ShouldInstall { get; private set; }
         public ReleaseAsset ReleaseInfo { get; private set; }
@@ -15,6 +15,8 @@ namespace SleepHunter.Views
 
         public UpdateProgressWindow()
         {
+            releaseService = App.Current.Services.GetService<IReleaseService>();
+
             InitializeComponent();
         }
 

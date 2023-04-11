@@ -4,6 +4,37 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2023-04-11
+
+### Added
+
+- Support for logging to files
+- `LoggingEnabled` user setting to enable generating log files (off by default)
+- Logging throughout the application
+- Basic inversion of control (IoC) framework
+- Dark Ages client titles now renamed to `Darkages - ${Character}` for identifying multiple instances
+- Dark Ages client titles renamed back to `Darkages` when logged out of a character
+
+### Changed
+
+- User settings version is now `1.1`
+- User settings version is now updated on save
+- Initialize services on startup before app load
+- Improved wording on several error dialogs
+- Flower worker is now more responsive (100ms -> 16ms delay)
+- Client versions (`Versions.xml`) are only saved when the existing file does not exist
+- Color themes (`Themes.xml`) are only saved when the existing file does not exist
+
+### Removed
+
+- Annoying "unable to save file" popups on close, are logged instead
+- More dead code
+
+### Fixed
+
+- Flowering target should now wait for `If Mana < X` thresholds for alts
+- Flowering targets should better multiple alts (not getting stuck queue)
+
 ## [4.1.0] - 2023-04-10
 
 ### Added

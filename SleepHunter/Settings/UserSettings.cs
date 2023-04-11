@@ -11,7 +11,7 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.0";
+        public static readonly string CurrentVersion = "1.1";
 
         bool isDebugMode;
 
@@ -63,6 +63,9 @@ namespace SleepHunter.Settings
         bool flowerHasMinimum;
         int flowerMinimumMana;
         bool autoUpdateEnabled;
+
+        // debug settings
+        bool loggingEnabled;
 
         [XmlIgnore]
         public bool IsDebugMode
@@ -466,6 +469,13 @@ namespace SleepHunter.Settings
             set { SetProperty(ref autoUpdateEnabled, value); }
         }
 
+        [XmlElement("LoggingEnabled")]
+        public bool LoggingEnabled
+        {
+            get { return loggingEnabled; }
+            set { SetProperty(ref loggingEnabled, value); }
+        }
+
         public UserSettings() { }
 
         public static UserSettings CreateDefaults()
@@ -532,6 +542,9 @@ namespace SleepHunter.Settings
             FlowerMinimumMana = 10000;
 
             AutoUpdateEnabled = true;
+
+            // debug settings
+            LoggingEnabled = false;
 
             foreach (var theme in ColorThemeManager.Instance.Themes)
                 if (theme.IsDefault)
