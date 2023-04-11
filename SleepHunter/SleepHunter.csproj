@@ -81,6 +81,7 @@
     <Compile Include="Services\ServiceCollection.cs" />
     <Compile Include="Services\ServiceLifetime.cs" />
     <Compile Include="Services\ServiceMapping.cs" />
+    <Compile Include="Services\ServiceProvider.cs" />
     <Compile Include="Views\FlowerTargetWindow.xaml.cs">
       <DependentUpon>FlowerTargetWindow.xaml</DependentUpon>
     </Compile>

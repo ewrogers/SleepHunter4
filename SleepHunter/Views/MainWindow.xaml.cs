@@ -32,9 +32,8 @@ namespace SleepHunter.Views
 {
     public partial class MainWindow : Window, IDisposable
     {
-        static readonly int WM_HOTKEY = 0x312;
-
-        enum ClientLoadResult
+        private static readonly int WM_HOTKEY = 0x312;
+        private enum ClientLoadResult
         {
             Success = 0,
             ClientPathInvalid,
@@ -45,43 +44,45 @@ namespace SleepHunter.Views
             PatchingFailed
         }
 
-        static readonly int IconPadding = 14;
+        private static readonly int IconPadding = 14;
 
-        // static readonly int SkillsTabIndex = 0;
-        static readonly int SpellsTabIndex = 1;
-        // static readonly int FlowerTabIndex = 2;
+        // private static readonly int SkillsTabIndex = 0;
+        private static readonly int SpellsTabIndex = 1;
+        // private static readonly int FlowerTabIndex = 2;
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
 
-        bool isDisposed;
-        HwndSource windowSource;
+        private bool isDisposed;
+        private HwndSource windowSource;
 
-        int recentSettingsTabIndex;
-        MetadataEditorWindow metadataWindow;
-        SettingsWindow settingsWindow;
+        private int recentSettingsTabIndex;
+        private MetadataEditorWindow metadataWindow;
+        private SettingsWindow settingsWindow;
 
-        BackgroundWorker processUpdateWorker;
-        BackgroundWorker clientUpdateWorker;
-        BackgroundWorker flowerUpdateWorker;
+        private BackgroundWorker processScannerWorker;
+        private BackgroundWorker clientUpdateWorker;
+        private BackgroundWorker flowerUpdateWorker;
 
-        PlayerMacroState selectedMacro;
+        private PlayerMacroState selectedMacro;
 
-        Exception loadSkillsException;
-        Exception loadSpellsException;
-        Exception loadStavesException;
+        private Exception loadSkillsException;
+        private Exception loadSpellsException;
+        private Exception loadStavesException;
 
         public MainWindow()
         {
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
 
+            LoadSettings();
+            InitializeLogger();
+
             InitializeComponent();
             InitializeViews();
 
             LoadVersions();
             LoadThemes();
-            LoadSettings();
 
             LoadSkills();
             LoadSpells();
@@ -89,8 +90,7 @@ namespace SleepHunter.Views
             CalculateLines();
 
             ApplyTheme();
-            ApplySettings();
-            ApplyDebugSettings();
+            UpdateSkillSpellGridWidths();
 
             StartUpdateTimers();
         }
@@ -102,38 +102,33 @@ namespace SleepHunter.Views
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
             if (isDisposing)
             {
-                if (processUpdateWorker != null)
-                    processUpdateWorker.Dispose();
-
-                if (clientUpdateWorker != null)
-                    clientUpdateWorker.Dispose();
-
-                if (flowerUpdateWorker != null)
-                    flowerUpdateWorker.Dispose();
+                processScannerWorker?.Dispose();
+                clientUpdateWorker?.Dispose();
+                flowerUpdateWorker?.Dispose();
             }
 
-            if (windowSource != null)
-                windowSource.Dispose();
+            windowSource?.Dispose();
 
             isDisposed = true;
         }
         #endregion
 
         #region Client Launch Methods
-        void LaunchClient()
+        private void LaunchClient()
         {
             startNewClientButton.IsEnabled = false;
 
             var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
-            var clientHash = string.Empty;
             var result = ClientLoadResult.Success;
+
+            logger.LogInfo($"Attempting to launch client executable: {clientPath}");
 
             try
             {
@@ -141,6 +136,7 @@ namespace SleepHunter.Views
                 if (!File.Exists(clientPath))
                 {
                     result = ClientLoadResult.ClientPathInvalid;
+                    logger.LogError("Client executable not found, unable to launch");
                     return;
                 }
 
@@ -158,8 +154,11 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                this.ShowMessageBox(ex.GetType().Name,
-                   ex.Message, "This error occured trying to launch a new client.",
+                logger.LogError($"Unable to launch a new client! Path = {clientPath}");
+                logger.LogException(ex);
+
+                this.ShowMessageBox("Launch Client Failed",
+                   ex.Message, "Check that the executable exists and the version is correct.",
                    MessageBoxButton.OK,
                    440,
                    280);
@@ -171,7 +170,7 @@ namespace SleepHunter.Views
             }
         }
 
-        ClientVersion DetectClientVersion(string clientPath, out ClientLoadResult result)
+        private ClientVersion DetectClientVersion(string clientPath, out ClientLoadResult result)
         {
             ClientVersion clientVersion = null;
             var clientHash = string.Empty;
@@ -185,6 +184,7 @@ namespace SleepHunter.Views
             {
                 if (string.Equals("Auto-Detect", clientKey, StringComparison.OrdinalIgnoreCase))
                 {
+                    logger.LogInfo($"Attempting to auto-detect client version for executable: {clientPath}");
 
                     inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     using (var md5 = new MD5CryptoServiceProvider())
@@ -200,12 +200,17 @@ namespace SleepHunter.Views
                     if (clientKey == null)
                     {
                         result = ClientLoadResult.AutoDetectFailed;
-                        return clientVersion;
+                        logger.LogError($"No client version known for hash: {clientHash.ToLowerInvariant()}");
+
+                        return null;
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError("Failed to calculate client hash");
+                logger.LogException(ex);
+
                 result = ClientLoadResult.HashError;
                 return clientVersion;
             }
@@ -215,18 +220,23 @@ namespace SleepHunter.Views
             clientVersion = ClientVersionManager.Instance.GetVersion(clientKey);
 
             if (clientVersion == null)
+            {
                 result = ClientLoadResult.BadVersion;
+                logger.LogWarn($"Unknown client version, key = {clientKey}");
+            }
+            else
+            {
+                logger.LogInfo($"Client executable was detected as version: {clientVersion.Key} (md5 = {clientVersion.Hash.ToLowerInvariant()})");
+            }
 
             return clientVersion;
         }
 
-
-        ProcessInformation StartClientProcess(string clientPath, out ClientLoadResult result)
+        private ProcessInformation StartClientProcess(string clientPath, out ClientLoadResult result)
         {
             result = ClientLoadResult.Success;
 
             // Create Process
-            ProcessInformation processInformation;
             var startupInfo = new StartupInfo { Size = Marshal.SizeOf(typeof(StartupInfo)) };
 
             var processSecurity = new SecurityAttributes();
@@ -235,6 +245,8 @@ namespace SleepHunter.Views
             processSecurity.Size = Marshal.SizeOf(processSecurity);
             threadSecurity.Size = Marshal.SizeOf(threadSecurity);
 
+            logger.LogInfo($"Attempting to create process for executable: {clientPath}");
+
             bool wasCreated = NativeMethods.CreateProcess(clientPath,
                null,
                ref processSecurity, ref threadSecurity,
@@ -242,21 +254,30 @@ namespace SleepHunter.Views
                ProcessCreationFlags.Suspended,
                IntPtr.Zero,
                null,
-               ref startupInfo, out processInformation);
+               ref startupInfo, out var processInformation);
 
-            // Check Process
+            // Ensure the process was actually created
             if (!wasCreated || processInformation.ProcessId == 0)
+            {
                 result = ClientLoadResult.CreateProcessFailed;
+                logger.LogError("Failed to create client process");
+            }
+            else
+            {
+                logger.LogInfo($"Created client process successfully with pid {processInformation.ProcessId}");
+            }
 
             return processInformation;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
+        private void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
+
+            var pid = process.ProcessId;
+            logger.LogInfo($"Attempting to patch client process {pid}");
 
             // Patch Process
             ProcessMemoryAccessor accessor = null;
@@ -265,13 +286,14 @@ namespace SleepHunter.Views
             BinaryWriter writer = null;
             try
             {
-                accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.ReadWrite);
+                accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
                 patchStream = accessor.GetStream();
                 reader = new BinaryReader(patchStream);
                 writer = new BinaryWriter(patchStream);
 
                 if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
                 {
+                    logger.LogInfo($"Applying multiple instance patch to process {pid} (0x{version.MultipleInstanceAddress:x8})");
                     patchStream.Position = version.MultipleInstanceAddress;
                     writer.Write((byte)0x31);        // XOR
                     writer.Write((byte)0xC0);        // EAX, EAX
@@ -283,6 +305,7 @@ namespace SleepHunter.Views
 
                 if (patchIntroVideo && version.IntroVideoAddress > 0)
                 {
+                    logger.LogInfo($"Applying skip intro video patch to process {pid} (0x{version.IntroVideoAddress:x8})");
                     patchStream.Position = version.IntroVideoAddress;
                     writer.Write((byte)0x83);        // CMP
                     writer.Write((byte)0xFA);        // EDX
@@ -294,6 +317,7 @@ namespace SleepHunter.Views
 
                 if (patchNoWalls && version.NoWallAddress > 0)
                 {
+                    logger.LogInfo($"Applying no walls patch to process {pid} (0x{version.NoWallAddress:x8})");
                     patchStream.Position = version.NoWallAddress;
                     writer.Write((byte)0xEB);        // JMP SHORT
                     writer.Write((byte)0x17);        // +0x17
@@ -302,8 +326,11 @@ namespace SleepHunter.Views
 
                 result = ClientLoadResult.Success;
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError($"Failed to patch client process {pid}");
+                logger.LogException(ex);
+
                 result = ClientLoadResult.PatchingFailed;
             }
             finally
@@ -320,7 +347,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void HandleClientLoadResult(ClientLoadResult result)
+        private void HandleClientLoadResult(ClientLoadResult result)
         {
             // Client Path Invalid
             if (result == ClientLoadResult.ClientPathInvalid)
@@ -411,7 +438,21 @@ namespace SleepHunter.Views
 
         #region Initialize Methods
 
-        void InitializeHotkeyHook()
+        private void InitializeLogger()
+        {
+            if (!UserSettingsManager.Instance.Settings.LoggingEnabled)
+                return;
+
+            var logsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            var logFile = $"session-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
+
+            var logFilePath = Path.Combine(logsDirectory, logFile);
+            logger.AddFileTransport(logFilePath);
+
+            logger.LogInfo("Logging initialized");
+        }
+
+        private void InitializeHotkeyHook()
         {
             var helper = new WindowInteropHelper(this);
             windowSource = HwndSource.FromHwnd(helper.Handle);
@@ -420,7 +461,7 @@ namespace SleepHunter.Views
             logger.LogInfo("Hotkey hook initialized");
         }
 
-        void InitializeViews()
+        private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionAdd;
             PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionAdd;
@@ -433,8 +474,10 @@ namespace SleepHunter.Views
             SpellMetadataManager.Instance.SpellRemoved += OnSpellManagerUpdated;
         }
 
-        void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
+        private void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
         {
+            logger.LogInfo("Spell manager updated");
+
             if (selectedMacro == null)
                 return;
 
@@ -442,33 +485,36 @@ namespace SleepHunter.Views
                 spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
         }
 
-        void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
+        private void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
         {
-            this.Dispatcher.InvokeIfRequired(() =>
+            logger.LogInfo($"Player character added: {e.Player.Name}");
+
+            Dispatcher.InvokeIfRequired(() =>
                {
-                   BindingOperations.GetBindingExpression(clientListBox, ListView.ItemsSourceProperty).UpdateTarget();
+                   BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
                }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
+        private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
         {
+            logger.LogInfo($"Player character removed: {e.Player.Name}");
+
             OnPlayerLoggedOut(e.Player);
 
-            this.Dispatcher.InvokeIfRequired(() =>
+            Dispatcher.InvokeIfRequired(() =>
             {
-                BindingOperations.GetBindingExpression(clientListBox, ListView.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var player = sender as Player;
-            if (player == null)
+            if (!(sender is Player player))
                 return;
 
-            this.Dispatcher.InvokeIfRequired(() =>
+            Dispatcher.InvokeIfRequired(() =>
             {
                 if (string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -504,7 +550,7 @@ namespace SleepHunter.Views
             }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerLoggedIn(Player player)
+        private void OnPlayerLoggedIn(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
@@ -521,7 +567,7 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                this.Dispatcher.Invoke((Action)delegate
+                Dispatcher.Invoke((Action)delegate
                 {
                     this.ShowMessageBox("Load State Error",
                    string.Format("There was an error loading the macro state:\n{0}", ex.Message),
@@ -532,7 +578,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void OnPlayerLoggedOut(Player player)
+        private void OnPlayerLoggedOut(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
@@ -548,18 +594,18 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                this.Dispatcher.Invoke((Action)delegate
+                Dispatcher.Invoke((Action)delegate
                 {
                     this.ShowMessageBox("Save State Error",
-                   string.Format("There was an error saving the macro state:\n{0}", ex.Message),
-                   string.Format("{0}'s macro state may not be preserved upon next login.", player.Name),
-                   MessageBoxButton.OK, 460, 260);
+                       string.Format("There was an error saving the macro state:\n{0}", ex.Message),
+                       string.Format("{0}'s macro state may not be preserved upon next login.", player.Name),
+                       MessageBoxButton.OK, 460, 260);
 
                 }, DispatcherPriority.Normal, null);
             }
             finally
             {
-                this.Dispatcher.InvokeIfRequired(() =>
+                Dispatcher.InvokeIfRequired(() =>
                 {
                     if (player.HasHotkey)
                         HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
@@ -575,11 +621,11 @@ namespace SleepHunter.Views
             }
         }
 
-        void RefreshSpellQueue()
+        private void RefreshSpellQueue()
         {
             if (!CheckAccess())
             {
-                this.Dispatcher.InvokeIfRequired((Action)RefreshSpellQueue, DispatcherPriority.DataBind);
+                Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
                 return;
             }
 
@@ -587,11 +633,11 @@ namespace SleepHunter.Views
             spellQueueListBox.Items.Refresh();
         }
 
-        void RefreshFlowerQueue()
+        private void RefreshFlowerQueue()
         {
             if (!CheckAccess())
             {
-                this.Dispatcher.InvokeIfRequired((Action)RefreshFlowerQueue, DispatcherPriority.DataBind);
+                Dispatcher.InvokeIfRequired(RefreshFlowerQueue, DispatcherPriority.DataBind);
                 return;
             }
 
@@ -599,47 +645,84 @@ namespace SleepHunter.Views
             flowerListBox.Items.Refresh();
         }
 
-        void LoadVersions()
+        private void LoadVersions()
         {
+            var versionsFile = ClientVersionManager.VersionsFile;
+            logger.LogInfo($"Attempting to load client versions from file: {versionsFile}");
+
             try
             {
-                if (File.Exists(ClientVersionManager.VersionsFile))
-                    ClientVersionManager.Instance.LoadFromFile(ClientVersionManager.VersionsFile);
+                if (File.Exists(versionsFile))
+                {
+                    ClientVersionManager.Instance.LoadFromFile(versionsFile);
+                    logger.LogInfo("Client versions successfully loaded");
+                }
                 else
+                {
                     ClientVersionManager.Instance.LoadDefaultVersions();
+                    logger.LogInfo("No client version file was found, using defaults");
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError("Failed to load client versions, resetting to defaults");
+                logger.LogException(ex);
+
                 ClientVersionManager.Instance.LoadDefaultVersions();
             }
         }
 
-        void LoadThemes()
+        private void LoadThemes()
         {
+            var themesFile = ColorThemeManager.ThemesFile;
+            logger.LogInfo($"Attempting to load themes from file: {themesFile}");
+
             try
             {
-                if (File.Exists(ColorThemeManager.ThemesFile))
-                    ColorThemeManager.Instance.LoadFromFile(ColorThemeManager.ThemesFile);
+                if (File.Exists(themesFile))
+                {
+                    ColorThemeManager.Instance.LoadFromFile(themesFile);
+                    logger.LogInfo("Themes successfully lodaded");
+                }
                 else
+                {
+
                     ColorThemeManager.Instance.LoadDefaultThemes();
+                    logger.LogInfo("No themes file was found, using defaults");
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError("Failed to load themes, resetting to defaults");
+                logger.LogException(ex);
+
                 ColorThemeManager.Instance.LoadDefaultThemes();
             }
         }
 
-        void LoadSettings()
+        private void LoadSettings()
         {
+            var settingsFile = UserSettingsManager.SettingsFile;
+            logger.LogInfo($"Attempting to user settings from file: {settingsFile}");
+
             try
             {
-                if (File.Exists(UserSettingsManager.SettingsFile))
-                    UserSettingsManager.Instance.LoadFromFile(UserSettingsManager.SettingsFile);
+                if (File.Exists(settingsFile))
+                {
+                    UserSettingsManager.Instance.LoadFromFile(settingsFile);
+                    logger.LogInfo("User settings loaded successfully");
+                }
                 else
+                {
                     UserSettingsManager.Instance.Settings.ResetDefaults();
+                    logger.LogInfo("No user settings file was found, using defaults");
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError("Failed to load user settings, resetting to defaults");
+                logger.LogException(ex);
+
                 UserSettingsManager.Instance.Settings.ResetDefaults();
             }
             finally
@@ -648,161 +731,211 @@ namespace SleepHunter.Views
             }
         }
 
-        void LoadSkills()
+        private void LoadSkills()
         {
+            var skillsFile = SkillMetadataManager.SkillMetadataFile;
+            logger.LogInfo($"Attempting to skills metadata from file: {skillsFile}");
+
             try
             {
-                if (File.Exists(SkillMetadataManager.SkillMetadataFile))
-                    SkillMetadataManager.Instance.LoadFromFile(SkillMetadataManager.SkillMetadataFile);
+                if (File.Exists(skillsFile))
+                {
+                    SkillMetadataManager.Instance.LoadFromFile(skillsFile);
+                    logger.LogInfo("Skill metadata successfully loaded");
+                }
+                else
+                {
+                    logger.LogWarn("No skills metadata file was found");
+                }
             }
             catch (Exception ex)
             {
+                logger.LogError("Failed to load skills metadata");
+                logger.LogException(ex);
+
                 loadSkillsException = ex;
             }
         }
 
-        void LoadSpells()
+        private void LoadSpells()
         {
+            var spellsFile = SpellMetadataManager.SpellMetadataFile;
+            logger.LogInfo($"Attempting to spells metadata from file: {spellsFile}");
+
             try
             {
-                if (File.Exists(SpellMetadataManager.SpellMetadataFile))
-                    SpellMetadataManager.Instance.LoadFromFile(SpellMetadataManager.SpellMetadataFile);
+                if (File.Exists(spellsFile))
+                {
+                    SpellMetadataManager.Instance.LoadFromFile(spellsFile);
+                    logger.LogInfo("Spell metadata successfully loaded");
+                }
+                else
+                {
+                    logger.LogWarn("No spells metadata file was found");
+                }
             }
             catch (Exception ex)
             {
+                logger.LogError("Failed to load spells metadata");
+                logger.LogException(ex);
+
                 loadSpellsException = ex;
             }
         }
 
-        void LoadStaves()
+        private void LoadStaves()
         {
+            var stavesFile = StaffMetadataManager.StaffMetadataFile;
+            logger.LogInfo($"Attempting to staves metadata from file: {stavesFile}");
+
             try
             {
-                if (File.Exists(StaffMetadataManager.StaffMetadataFile))
-                    StaffMetadataManager.Instance.LoadFromFile(StaffMetadataManager.StaffMetadataFile);
+                if (File.Exists(stavesFile))
+                {
+                    StaffMetadataManager.Instance.LoadFromFile(stavesFile);
+                    logger.LogInfo("Staves metadata successfully loaded");
+                }
+                else
+                {
+                    logger.LogWarn("No staves metadata file was found");
+                }
             }
             catch (Exception ex)
             {
+                logger.LogError("Failed to load staves metadata");
+                logger.LogException(ex);
+
                 loadStavesException = ex;
             }
         }
 
-        void CalculateLines()
+        private void CalculateLines()
         {
+            logger.LogInfo("Reculating all staff lines");
             StaffMetadataManager.Instance.RecalculateAllStaves();
         }
 
-        void StartUpdateTimers()
+        private void StartUpdateTimers()
         {
             IconManager.Instance.Context = TaskScheduler.FromCurrentSynchronizationContext();
 
-            StartProcessUpdate();
+            StartProcessScanner();
             StartClientUpdate();
             StartFlowerUpdate();
         }
 
-        void StartProcessUpdate()
+        private void StartProcessScanner()
         {
-            processUpdateWorker = new BackgroundWorker();
-            processUpdateWorker.WorkerSupportsCancellation = true;
+            processScannerWorker = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true
+            };
 
-            processUpdateWorker.DoWork += (sender, e) =>
-               {
-                   var delayTime = (TimeSpan)e.Argument;
+            processScannerWorker.DoWork += (sender, e) =>
+            {
+                var delayTime = (TimeSpan)e.Argument;
 
-                   if (delayTime > TimeSpan.Zero)
-                       Thread.Sleep(delayTime);
+                if (delayTime > TimeSpan.Zero)
+                    Thread.Sleep(delayTime);
 
-                   ProcessManager.Instance.ScanForProcesses();
-               };
+                ProcessManager.Instance.ScanForProcesses();
+            };
 
-            processUpdateWorker.RunWorkerCompleted += (sender, e) =>
-               {
-                   if (e.Cancelled)
-                       return;
+            processScannerWorker.RunWorkerCompleted += (sender, e) =>
+            {
+                if (e.Cancelled)
+                    return;
 
-                   // Dead Clients
-                   while (ProcessManager.Instance.DeadClientCount > 0)
-                   {
-                       var deadClient = ProcessManager.Instance.DequeueDeadClient();
-                       PlayerManager.Instance.RemovePlayer(deadClient.ProcessId);
-                   }
+                // Dead Clients
+                while (ProcessManager.Instance.DeadClientCount > 0)
+                {
+                    var deadClient = ProcessManager.Instance.DequeueDeadClient();
+                    PlayerManager.Instance.RemovePlayer(deadClient.ProcessId);
+                }
 
-                   // New Clients
-                   while (ProcessManager.Instance.NewClientCount > 0)
-                   {
-                       var newClient = ProcessManager.Instance.DequeueNewClient();
-                       PlayerManager.Instance.AddNewClient(newClient);
-                   }
+                // New Clients
+                while (ProcessManager.Instance.NewClientCount > 0)
+                {
+                    var newClient = ProcessManager.Instance.DequeueNewClient();
+                    PlayerManager.Instance.AddNewClient(newClient);
+                }
 
-                   if (clientListBox.SelectedIndex == -1 && clientListBox.Items.Count > 0)
-                       clientListBox.SelectedIndex = 0;
+                if (clientListBox.SelectedIndex == -1 && clientListBox.Items.Count > 0)
+                    clientListBox.SelectedIndex = 0;
 
-                   processUpdateWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ProcessUpdateInterval);
-               };
+                processScannerWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ProcessUpdateInterval);
+            };
 
             // Start immediately!
-            processUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
+            processScannerWorker.RunWorkerAsync(TimeSpan.Zero);
+            logger.LogInfo("Process scanner background worker has started");
         }
 
-        void StartClientUpdate()
+        private void StartClientUpdate()
         {
-            clientUpdateWorker = new BackgroundWorker();
-            clientUpdateWorker.WorkerSupportsCancellation = true;
+            clientUpdateWorker = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true
+            };
 
             clientUpdateWorker.DoWork += (sender, e) =>
-               {
-                   var delayTime = (TimeSpan)e.Argument;
+            {
+                var delayTime = (TimeSpan)e.Argument;
 
-                   if (delayTime > TimeSpan.Zero)
-                       Thread.Sleep(delayTime);
+                if (delayTime > TimeSpan.Zero)
+                    Thread.Sleep(delayTime);
 
-                   PlayerManager.Instance.UpdateClients();
-               };
+                PlayerManager.Instance.UpdateClients();
+            };
 
             clientUpdateWorker.RunWorkerCompleted += (sender, e) =>
-               {
-                   if (e.Cancelled)
-                       return;
+            {
+                if (e.Cancelled)
+                    return;
 
-                   clientUpdateWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ClientUpdateInterval);
-               };
+                clientUpdateWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ClientUpdateInterval);
+            };
 
             // Start immediately!
             clientUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
+            logger.LogInfo("Client update background worker has started");
         }
 
-        void StartFlowerUpdate()
+        private void StartFlowerUpdate()
         {
-            flowerUpdateWorker = new BackgroundWorker();
-            flowerUpdateWorker.WorkerReportsProgress = true;
+            var updateInterval = TimeSpan.FromMilliseconds(16);
 
-            var updateInterval = TimeSpan.FromMilliseconds(100);
+            flowerUpdateWorker = new BackgroundWorker
+            {
+                WorkerReportsProgress = true
+            };
 
             flowerUpdateWorker.DoWork += (sender, e) =>
-               {
-                   var delayTime = (TimeSpan)e.Argument;
+            {
+                var delayTime = (TimeSpan)e.Argument;
 
-                   if (delayTime > TimeSpan.Zero)
-                       Thread.Sleep(delayTime);
+                if (delayTime > TimeSpan.Zero)
+                    Thread.Sleep(delayTime);
 
-                   foreach (var macro in MacroManager.Instance.Macros)
-                       if (macro.Status == MacroStatus.Running)
-                           macro.TickFlowerTimers(updateInterval);
-               };
+                foreach (var macro in MacroManager.Instance.Macros)
+                    if (macro.Status == MacroStatus.Running)
+                        macro.TickFlowerTimers(updateInterval);
+            };
 
             flowerUpdateWorker.RunWorkerCompleted += (sender, e) =>
-               {
-                   if (e.Cancelled)
-                       return;
+            {
+                if (e.Cancelled)
+                    return;
 
-                   flowerUpdateWorker.RunWorkerAsync(updateInterval);
-               };
+                flowerUpdateWorker.RunWorkerAsync(updateInterval);
+            };
 
+            // Start immediately!
             flowerUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
+            logger.LogInfo($"Flower update background worker has started, interval = {updateInterval.TotalMilliseconds:0}ms");
         }
 
-        void ApplyTheme()
+        private void ApplyTheme()
         {
             if (!UserSettingsManager.Instance.Settings.RainbowMode)
                 ColorThemeManager.Instance.ApplyTheme(UserSettingsManager.Instance.Settings.SelectedTheme);
@@ -810,12 +943,7 @@ namespace SleepHunter.Views
                 ColorThemeManager.Instance.ApplyRainbowMode();
         }
 
-        void ApplySettings()
-        {
-            UpdateSkillSpellGridWidths();
-        }
-
-        void ActivateHotkey(Key key, ModifierKeys modifiers)
+        private void ActivateHotkey(Key key, ModifierKeys modifiers)
         {
             var hotkey = HotkeyManager.Instance.GetHotkey(key, modifiers);
 
@@ -846,12 +974,6 @@ namespace SleepHunter.Views
                 hotkeyPlayer.Update(PlayerFieldFlags.Location);
                 macroState.Start();
             }
-        }
-
-        [Conditional("DEBUG")]
-        void ApplyDebugSettings()
-        {
-            var settings = UserSettingsManager.Instance.Settings.IsDebugMode = true;
         }
         #endregion
 
@@ -1191,6 +1313,8 @@ namespace SleepHunter.Views
                     }
                     catch (Exception ex)
                     {
+                        logger.LogError($"Failed to save macro state for character '{macro.Name}'!");
+                        logger.LogException(ex);
                     }
                 }
             }
@@ -1929,7 +2053,7 @@ namespace SleepHunter.Views
                     return;
 
                 ShowSettingsWindow(SettingsWindow.UpdatesTabIndex);
-            } 
+            }
             catch (Exception ex)
             {
                 this.ShowMessageBox("Check for Updates", $"Unable to check for a newer version:\n{ex.Message}", "You can disable this on startup in Settings->Updates.");

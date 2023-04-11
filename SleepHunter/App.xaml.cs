@@ -26,6 +26,12 @@ namespace SleepHunter
             mainWindow.Show();
         }
 
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Services.Dispose();
+            base.OnExit(e);
+        }
+
         private static IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
@@ -33,10 +39,10 @@ namespace SleepHunter
             // Services
             services.AddSingleton<ILogger, Logger>();
             services.AddSingleton<IReleaseService, ReleaseService>();
-            
+
             // ViewModels
 
-            return services;
+            return services.BuildServiceProvider();
         }
     }
 }

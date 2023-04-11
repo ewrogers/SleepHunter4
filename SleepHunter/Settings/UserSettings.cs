@@ -65,7 +65,7 @@ namespace SleepHunter.Settings
         bool autoUpdateEnabled;
 
         // debug settings
-        bool logFileEnabled;
+        bool loggingEnabled;
 
         [XmlIgnore]
         public bool IsDebugMode
@@ -470,10 +470,10 @@ namespace SleepHunter.Settings
         }
 
         [XmlElement("LoggingEnabled")]
-        public bool LogFileEnabled
+        public bool LoggingEnabled
         {
-            get { return logFileEnabled; }
-            set { SetProperty(ref logFileEnabled, value); }
+            get { return loggingEnabled; }
+            set { SetProperty(ref loggingEnabled, value); }
         }
 
         public UserSettings() { }
@@ -544,7 +544,7 @@ namespace SleepHunter.Settings
             AutoUpdateEnabled = true;
 
             // debug settings
-            LogFileEnabled = false;
+            LoggingEnabled = false;
 
             foreach (var theme in ColorThemeManager.Instance.Themes)
                 if (theme.IsDefault)

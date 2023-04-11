@@ -8,18 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Logging support through the application
+- Support for logging to files
 - `LoggingEnabled` user setting to enable generating log files (off by default)
 - Basic inversion of control (IoC) framework
+- Logging throughout the application
 
 ### Changed
 
 - User settings version is now `1.1`
 - User settings version is now updated on save
+- Initialize services on startup before app load
+- Improved wording on several error dialogs
+- Flower worker is now more responsive (100ms -> 16ms delay)
 
 ### Removed
 
 - Annoying "unable to save character state" popups on close, are logged instead
+- More dead code
 
 ## [4.1.0] - 2023-04-10
 
