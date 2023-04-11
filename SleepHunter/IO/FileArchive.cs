@@ -30,6 +30,9 @@ namespace SleepHunter.IO
 
         public FileArchive(string filename)
         {
+            if (!File.Exists(filename))
+                throw new FileNotFoundException("File archive was not found", filename);
+
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, null, HandleInheritability.None, true);

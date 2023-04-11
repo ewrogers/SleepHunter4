@@ -29,15 +29,28 @@
     <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
 
     <!-- Backgrounds & Foregrounds -->
-    <SolidColorBrush x:Key="ObsidianBackground" Color="#104898"/>
-    <SolidColorBrush x:Key="ObsidianControlBackground" Color="#181818"/>
-    <SolidColorBrush x:Key="ObsidianForeground" Color="#F8F8F8"/>
-    <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ObsidianMouseOver" Color="#C0C0C0"/>
-    <SolidColorBrush x:Key="ObsidianActive" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="ObsidianInactive" Color="#909090"/>
-    <SolidColorBrush x:Key="ObsidianDisabled" Color="#505050"/>
-    <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>
+    <!-- Blue 800 -->
+    <SolidColorBrush x:Key="ObsidianBackground" Color="#1e40af"/>
+
+    <!-- Neutral 50 -->
+    <SolidColorBrush x:Key="ObsidianForeground" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="ObsidianActive" Color="#FAFAFA"/>
+    
+    <!-- Neutral 300 -->
+    <SolidColorBrush x:Key="ObsidianMouseOver" Color="#D4D4D4"/>
+    
+    <!-- Neutral 500 -->
+    <SolidColorBrush x:Key="ObsidianInactive" Color="#737373"/>
+    
+    <!-- Neutral 600 -->
+    <SolidColorBrush x:Key="ObsidianDisabled" Color="#525252"/>
+    
+    <!-- Neutral 800 -->
+    <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#262626"/>
+
+    <!-- Neutral 900 -->
+    <SolidColorBrush x:Key="ObsidianControlBackground" Color="#171717"/>
 
     <VisualBrush x:Key="ScanlineBrush"
                  TileMode="Tile"

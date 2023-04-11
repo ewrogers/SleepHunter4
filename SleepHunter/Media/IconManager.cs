@@ -197,7 +197,7 @@ namespace SleepHunter.Media
             var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
             var archive = FileArchiveManager.Instance.GetArchive(archivePath);
 
-            if (!archive.ContainsFile(paletteFile))
+            if (archive == null || !archive.ContainsFile(paletteFile))
                 return null;
 
             try
@@ -215,7 +215,7 @@ namespace SleepHunter.Media
             var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
             var archive = FileArchiveManager.Instance.GetArchive(archivePath);
 
-            if (!archive.ContainsFile(epfFile))
+            if (archive == null || !archive.ContainsFile(epfFile))
                 return null;
 
             try

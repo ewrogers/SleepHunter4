@@ -4,6 +4,8 @@ namespace SleepHunter.Updater
 {
     public partial class App : Application
     {
+        private static readonly string[] IgnoredFilenames = new string[] { "Updater.exe", "Settings.xml" };
+
         protected override void OnStartup(StartupEventArgs e)
         {
             // Invalid number of arguments, exit

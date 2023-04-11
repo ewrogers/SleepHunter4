@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 
 namespace SleepHunter.IO
@@ -33,6 +34,9 @@ namespace SleepHunter.IO
         {
             if (archives.ContainsKey(filename))
                 return archives[filename];
+
+            if (!File.Exists(filename))
+                return null;
 
             try
             {

@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.2.2] - 2023-04-11
+## [4.3.0] - 2023-04-11
 
 ### Added
 
@@ -12,7 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updater now has custom UI and is independent of SleepHunter (so it can update properly)
+- Main window title font slighly reduced
+- Slightly better contrast with UI colors
+- Updater now is independent of SleepHunter (so it can update properly)
+
+### Fixed
+
+- Better file handling for potentially missing files when client path is invalid
 
 ## [4.2.1] - 2023-04-11
 
