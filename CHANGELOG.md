@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Annoying "unable to save file" popups on close, are logged instead
 - More dead code
 
+### Fixed
+
+- Flowering target should now wait for `If Mana < X` thresholds for alts
+
 ## [4.1.0] - 2023-04-10
 
 ### Added

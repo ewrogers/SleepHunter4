@@ -586,19 +586,35 @@ namespace SleepHunter.Macro
 
             if (nextTarget != null)
             {
-                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana))
+                var shouldFlowerTarget = true;
+
+                // Do not flower an alt unless the mana threshold is passed
+                if (nextTarget.ManaThreshold > 0 && !string.IsNullOrEmpty(nextTarget.Target.CharacterName))
                 {
-                    var fasSpiorad = GetFasSpiorad();
-                    CastSpell(fasSpiorad);
-                    return false;
+                    var altState = MacroManager.Instance.Macros
+                        .FirstOrDefault(state => string.Equals(state.Name, nextTarget.Target.CharacterName, StringComparison.OrdinalIgnoreCase));
+
+                    shouldFlowerTarget = altState != null && altState.Client.Stats.CurrentMana < nextTarget.ManaThreshold;
                 }
 
-                var lyliac = GetLyliacPlant(nextTarget.Target);
-                CastSpell(lyliac);
+                if (shouldFlowerTarget)
+                {
+                    if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana))
+                    {
+                        var fasSpiorad = GetFasSpiorad();
+                        CastSpell(fasSpiorad);
+                        return false;
+                    }
 
-                nextTarget.LastUsedTimestamp = DateTime.Now;
-                nextTarget.ResetTimer();
-                return true;
+                    var lyliac = GetLyliacPlant(nextTarget.Target);
+                    CastSpell(lyliac);
+
+
+                    nextTarget.LastUsedTimestamp = DateTime.Now;
+                    nextTarget.ResetTimer();
+                    return true;
+                }
+                else return false;
             }
 
             if (!checkedAlts)
@@ -693,9 +709,9 @@ namespace SleepHunter.Macro
             }
         }
 
-        bool FlowerNextAltWaitingForMana()
+        bool FlowerNextAltWaitingForMana(int manaThreshold = 0)
         {
-            var waitingAlt = FindAltWaitingOnMana();
+            var waitingAlt = FindAltWaitingOnMana(manaThreshold);
 
             if (waitingAlt == null)
                 return false;
@@ -753,7 +769,7 @@ namespace SleepHunter.Macro
             return false;
         }
 
-        Player FindAltWaitingOnMana()
+        Player FindAltWaitingOnMana(int manaThreshold = 0)
         {
             Player waitingAlt = null;
 
@@ -761,7 +777,10 @@ namespace SleepHunter.Macro
             {
                 if (macro.Status == MacroStatus.Running && macro.IsWaitingOnMana)
                 {
-                    if (waitingAlt == null || waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower)
+                    var canFlowerYet = waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower;
+                    var isWithinThreshold = manaThreshold <= 0 || waitingAlt.Stats.CurrentMana < manaThreshold;
+
+                    if ((waitingAlt == null || canFlowerYet) && isWithinThreshold)
                         waitingAlt = macro.client;
                 }
             }
