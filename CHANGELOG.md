@@ -6,9 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.2.1] - 2023-04-11
 
+### Added
+
+- Updater now has a retry button on failure
+
 ### Fixed
 
 - Revert macro core changes, causes crashes when flowering sometimes
+- Updater now waits for `SleepHunter.exe` instances to terminate before updating
 
 ## [4.2.0] - 2023-04-11
 

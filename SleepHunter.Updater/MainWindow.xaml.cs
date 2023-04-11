@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,8 @@ namespace SleepHunter.Updater
         private static readonly string[] IgnoredFilenames = new string[] { "Updater.exe", "Settings.xml" };
         private bool isUpdating;
 
+        public event EventHandler RetryRequested;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -22,15 +25,9 @@ namespace SleepHunter.Updater
             LoadSettings();
             LoadThemes();
             ApplyTheme();
-
-            SetStatusText("Opening update file...");
-            SetProgress(0);
-            SetErrorMessage(string.Empty);
-
-            progressFileText.Text = string.Empty;
-            progressCountText.Text = string.Empty;
-
             GetVersion();
+
+            ResetState();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -97,6 +94,17 @@ namespace SleepHunter.Updater
                 versionText.Text += "  (Debug)";
         }
 
+        public void ResetState()
+        {
+            SetStatusText("Opening update file...");
+            SetProgress(0);
+            SetErrorMessage(string.Empty);
+            ToggleRetryButton(false);
+
+            progressFileText.Text = string.Empty;
+            progressCountText.Text = string.Empty;
+        }
+
         public void SetStatusText(string message) => statusText.Text = message;
 
         public void SetProgress(int progress)
@@ -108,11 +116,9 @@ namespace SleepHunter.Updater
         public void SetProgressFile(string filename) => progressFileText.Text = filename;
 
         public void SetProgressCount(int current, int max) => progressCountText.Text = $"{current} of {max} files";
-        public void SetErrorMessage(string message)
-        {
-            warningIcon.Visibility = !string.IsNullOrWhiteSpace(message) ? Visibility.Visible : Visibility.Collapsed;
-            errorMessageText.Text = message;
-        }
+        public void SetErrorMessage(string message) => errorMessageText.Text = message;
+
+        public void ToggleRetryButton(bool showHide) => retryButton.Visibility = showHide ? Visibility.Visible : Visibility.Collapsed;
 
         public void PerformAppUpdate(string updateFilePath, string destinationFolder)
         {
@@ -162,5 +168,7 @@ namespace SleepHunter.Updater
             }
             finally { isUpdating = false; }
         }
+
+        private void retryButton_Click(object sender, RoutedEventArgs e) => RetryRequested?.Invoke(this, EventArgs.Empty);
     }
 }

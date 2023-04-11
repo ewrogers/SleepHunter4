@@ -16,6 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -23,7 +24,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" Margin="16">
+        <StackPanel Orientation="Vertical" Margin="16,8">
             <!-- Status Text -->
             <TextBlock Name="statusText"
                        Text="Extracting files..."
@@ -63,7 +64,7 @@
                 <TextBlock Name="progressFileText"
                            Text="SleepHunter.exe"
             		       TextAlignment="Left"
-                           Margin="4,2"
+                           Margin="4,0"
                            FontSize="14"
                            Foreground="{StaticResource ObsidianInactive}"
             		       Style="{StaticResource ObsidianText}"/>
@@ -73,7 +74,7 @@
                            Grid.Column="1"
                            Text="1 of 6 files"
             		       TextAlignment="Right"
-                           Margin="4,2"
+                           Margin="4,0"
                            FontSize="14"
                            Foreground="{StaticResource ObsidianInactive}"
             		       Style="{StaticResource ObsidianText}"/>
@@ -83,31 +84,28 @@
 
         <Separator Grid.Row="1" Style="{StaticResource ObsidianSeparator}"/>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="8,4">
-            <!-- Error Icon -->
-            <Path Name="warningIcon"
-                  StrokeThickness="4"
-                  Stroke="{DynamicResource ObsidianBackground}"
-                  Data="M 0,2 h 64 l -32,-62 z m 32,-32 v 12 m 0,2 v 4"
-                  Margin="32,64,32,0"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"/>
-            
-            <!-- Error Message Text -->
-            <TextBlock Name="errorMessageText"
-                       Text="The quick brown fox jumps over the lazy dog."
-                       VerticalAlignment="Center"
-            	       TextAlignment="Center"
-                       FontSize="16"
-                       TextWrapping="WrapWithOverflow"
-                       MaxWidth="380"
-                       Foreground="{StaticResource ObsidianActive}"
-            	       Style="{StaticResource ObsidianText}"/>
-        </StackPanel>
+        <!-- Retry Button -->
+        <Button Name="retryButton"
+                Grid.Row="2"
+                MaxWidth="280"
+                Margin="8,4"
+                Content="_Retry Update"
+                Click="retryButton_Click"
+                Style="{StaticResource ObsidianButton}"/>
 
-        <Separator Grid.Row="3" Style="{StaticResource ObsidianSeparator}"/>
+        <!-- Error Message Text -->
+        <TextBlock Name="errorMessageText"
+                   Grid.Row="3"
+                   Text="The quick brown fox jumps over the lazy dog."
+                   TextAlignment="Center"
+                   FontSize="16"
+                   TextWrapping="WrapWithOverflow"
+                   Foreground="{StaticResource ObsidianActive}"
+            	   Style="{StaticResource ObsidianText}"/>
 
-        <TextBlock Grid.Row="4" Grid.ColumnSpan="2"
+        <Separator Grid.Row="4" Style="{StaticResource ObsidianSeparator}"/>
+
+        <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
                    Text="SleepHunter will be re-launched after the update is completed."
             	   TextAlignment="Center"
                    Margin="8,4"
@@ -116,7 +114,7 @@
             	   Style="{StaticResource ObsidianText}"/>
 
         <TextBlock Name="versionText"
-                   Grid.Row="5"
+                   Grid.Row="6"
                    Text="Updater - v0.0.0" 
                    HorizontalAlignment="Center"
                    VerticalAlignment="Top"
