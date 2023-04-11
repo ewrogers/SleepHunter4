@@ -1,15 +1,13 @@
 
 # SleepHunter
-<img src="SleepHunter/SleepHunter.ico" width=32 height=32/>
-Dark Ages Automation Tool
-
-**Disclaimer: Much of the code here does not follow proper MVVM conventions or project structure.**
+<img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
+Dark Ages Automation Tool + Updater
 
 <img src="Screenshots/About-1.5.0.PNG"/>
 
 ## Requirements
 
-- [Dark Ages](https://www.darkages.com) Client 7.41
+- [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
 - [.NET Framework 4.8.1](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481) (or newer)
 
 ## Installation
@@ -19,6 +17,27 @@ Dark Ages Automation Tool
 3. Open `SleepHunter.exe`
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
+
+## Auto-Update
+
+Starting with version 4.1.0, the long awaited auto-update functionality is now working!
+It pulls from the [latest release](https://github.com/ewrogers/SleepHunter4/releases) section.
+
+This means you can update from within the SleepHunter application itself by going to `Settings->Updates`.
+If there is a new version available, you can update to it which will download, install, and restart SleepHunter.
+
+**NOTE**: Your user settings **will be preserved**, but all other existing data files will be overwritten.
+
+## Contributing
+
+I am always accepting of pull requests (PRs) against this repository for additional features, bug fixes, and enhancements.
+Now that Auto-Update is functional, it should be much easier to distribute these changes to users of the application.
+
+It is recommended that you use [Visual Studio 2022+](https://visualstudio.microsoft.com/vs/0) for developing on Windows.
+I am not sure of WPF support within other IDEs.
+
+Unfortunately this repository does not have *any* unit tests, so you will have to test for regressions manually.
+Please be mindful of the users of this application, and thoroughly test any functionality for breaking changes.
 
 ## What is SleepHunter?
 
@@ -163,7 +182,7 @@ In order to do that, I knew I would need to be able to read more character state
 perform more actions like equipping items and having alternate characters assist others.
 
 It became obvious to me that this was untennable from a "scripting" perspective, at least if the layperson was going to be able to use it.
-So the user experience was drastically changed. Instead you could simple double-click to add spells and skills to a queue and be on your way.
+So the user experience was drastically changed. Instead you could simply double-click to add spells and skills to a queue and be on your way.
 
 The macro engine let you set a variety of parameters but for the most part it was automatic.
 It could detect when to switch staves for better cast times, wait for mana regeneration, and even flower other characters for nearly-inifite mana.
@@ -181,12 +200,18 @@ There was also a slight UI facelift in 2016 as well, mostly toning down font siz
 #### Going Forward
 
 While SleepHunter v4 continues to be the current version and fairly stable, there were always things I wanted to improve upon or add.
-The infamous "Auto-Update" that never actually functioned is one of many.
+The infamous "Auto-Update" that never actually functioned is one of many (now available in v4.1.0+).
+
+A proper user manual hosted as this repositories GitHub Pages would also be useful, and can be linked from the application itself.
 
 I also was never happy that despite using WPF, I ended up building it very WinForms-y in terms of code-behind instead of a proper MVVM data-binding application.
+It's probably too much work to refactor for no apparent gain, but for anyone considering writing a WPF application today -- [use MVVM](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/).
 
 There's still a few bugs I want to fix as well. I am still humbled by the fact people still use this application over two decades later.
 That and I am surprised the game itself is still online, even if only a husk of its former self.
+
+I absolutely accept PRs for this application! If you have a feature or bug fix that you want to implement yourself, have at it.
+It should be much easier to coordinate and distribute once Auto-Update is live.
 
 #### Why didn't you go network (packet-based) instead?
 

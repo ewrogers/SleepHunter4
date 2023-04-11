@@ -21,6 +21,12 @@
             <ColumnDefinition Width="260" MinWidth="200" MaxWidth="360"/>
         </Grid.ColumnDefinitions>
 
+        <!-- Overlay when showing Modal Dialogs -->
+        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="3" Panel.ZIndex="10" Visibility="Hidden">
+            <Border Background="Black" Opacity="0.3"/>
+            <Border Background="{StaticResource ScanlineBrush}" Opacity="0.7"/>
+        </Grid>
+
         <!-- Tool Bar -->
         <Border Grid.ColumnSpan="3" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
@@ -461,7 +467,8 @@
         <!-- Status Bar -->
         <Border Grid.Row="2"
                 Grid.ColumnSpan="3"
-                Background="{DynamicResource ObsidianBackground}">
+                Background="{DynamicResource ObsidianBackground}"
+                Panel.ZIndex="11">
             <DockPanel>
                 <Path Name="WindowResizeGrip" 
                       DockPanel.Dock="Right"

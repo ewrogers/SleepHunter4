@@ -49,6 +49,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -63,21 +64,38 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.xaml.cs" />
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
-    <Compile Include="Views\FlowerTargetWindow.xaml.cs" />
-    <Compile Include="Commands\AsyncDelegateCommand.cs" />
-    <Compile Include="Commands\DelegateCommand.cs" />
-    <Compile Include="Commands\IAsyncCommand.cs" />
-    <Compile Include="Commands\IRaiseCanExecuteChanged.cs" />
-    <Compile Include="Views\LineModifiersEditorWindow.xaml.cs" />
-    <Compile Include="Views\MainWindow.xaml.cs" />
-    <Compile Include="Views\MessageBoxWindow.xaml.cs" />
-    <Compile Include="Views\MetadataEditorWindow.xaml.cs" />
-    <Compile Include="Obsidian.xaml.cs" />
-    <Compile Include="Views\SettingsWindow.xaml.cs" />
+    <Compile Include="Extensions\VersionExtender.cs" />
+    <Compile Include="Models\ReleaseAsset.cs" />
+    <Compile Include="Models\ReleaseVersion.cs" />
+    <Compile Include="Services\IReleaseService.cs" />
+    <Compile Include="Services\ReleaseService.cs" />
+    <Compile Include="Views\FlowerTargetWindow.xaml.cs">
+      <DependentUpon>FlowerTargetWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LineModifiersEditorWindow.xaml.cs">
+      <DependentUpon>LineModifiersEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MessageBoxWindow.xaml.cs">
+      <DependentUpon>MessageBoxWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MetadataEditorWindow.xaml.cs">
+      <DependentUpon>MetadataEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Obsidian.xaml.cs">
+      <DependentUpon>Obsidian.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\ClientVersion.cs" />
     <Compile Include="Settings\ClientVersionCollection.cs" />
     <Compile Include="Settings\ClientVersionEventArgs.cs" />
@@ -90,12 +108,22 @@
     <Compile Include="Settings\UserSetting.cs" />
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />
-    <Compile Include="Views\SkillEditorWindow.xaml.cs" />
-    <Compile Include="Views\SpellEditorWindow.xaml.cs" />
-    <Compile Include="Views\SpellTargetWindow.xaml.cs" />
-    <Compile Include="Views\StaffEditorWindow.xaml.cs" />
+    <Compile Include="Views\SkillEditorWindow.xaml.cs">
+      <DependentUpon>SkillEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SpellEditorWindow.xaml.cs">
+      <DependentUpon>SpellEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SpellTargetWindow.xaml.cs">
+      <DependentUpon>SpellTargetWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StaffEditorWindow.xaml.cs">
+      <DependentUpon>StaffEditorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\StringExtender.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\UpdateProgressWindow.xaml.cs">
+      <DependentUpon>UpdateProgressWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Win32\MemoryBasicInformation.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
     <Compile Include="Win32\ProcessAccessFlags.cs" />
@@ -257,6 +285,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\UpdateProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Media\ColorPalette.cs" />
@@ -302,6 +334,7 @@
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

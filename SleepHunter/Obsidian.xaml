@@ -39,6 +39,19 @@
     <SolidColorBrush x:Key="ObsidianDisabled" Color="#505050"/>
     <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#282828"/>
 
+    <VisualBrush x:Key="ScanlineBrush"
+                 TileMode="Tile"
+                 Viewport="0,0,2,2"
+                 Viewbox="0,0,2,2"
+                 ViewportUnits="Absolute"
+                 ViewboxUnits="Absolute">
+        <VisualBrush.Visual>
+            <Canvas>
+                <Rectangle Fill="Black" Width="2" Height="1"/>
+            </Canvas>
+        </VisualBrush.Visual>
+    </VisualBrush>
+
     <!-- Font Parameters -->
     <FontFamily x:Key="ObsidianFontFamily">Segoe UI</FontFamily>
     <FontFamily x:Key="ObsidianSymbolFontFamily">Segoe UI Symbol</FontFamily>
@@ -166,6 +179,18 @@
         <Setter Property="FontWeight" Value="Regular"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="2"/>
+    </Style>
+
+    <!-- Hyperlink Text Style -->
+    <Style x:Key="ObsidianHyperlinkText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+        <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="TextDecorations" Value="Underline"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="8,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
     </Style>
 
     <!-- Command Label Style -->
@@ -625,6 +650,36 @@
                             <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Hyperlink Button -->
+    <Style x:Key="ObsidianLinkButton" TargetType="Button">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="Padding" Value="4,2,4,4"/>
+        <Setter Property="Margin" Value="4,2"/>
+        <Setter Property="MinWidth" Value="20"/>
+        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="Border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

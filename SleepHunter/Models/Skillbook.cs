@@ -195,8 +195,6 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Debug.WriteLine($"Updating skillbok (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -264,9 +262,6 @@ namespace SleepHunter.Models
                             }
 
                             skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader);
-
-                            if (!skills[i].IsEmpty)
-                                Debug.WriteLine($"Skill slot {i + 1}: {skills[i].Name} (cur={skills[i].CurrentLevel}, max={skills[i].MaximumLevel}, icon={skills[i].IconIndex})");
                         }
                         catch { }
                     }

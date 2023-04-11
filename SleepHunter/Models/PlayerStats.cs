@@ -157,8 +157,6 @@ namespace SleepHunter.Models
             long currentMana, maximumMana;
             long level, abilityLevel;
 
-            Debug.WriteLine($"Updating stats (pid={accessor.ProcessId})...");
-
             Stream stream = null;
             try
             {
@@ -205,13 +203,6 @@ namespace SleepHunter.Models
                 }
             }
             finally { stream?.Dispose(); }
-
-            Debug.WriteLine($"CurrentHealth = {CurrentHealth}");
-            Debug.WriteLine($"MaximumHealth = {MaximumHealth}");
-            Debug.WriteLine($"CurrentMana = {CurrentMana}");
-            Debug.WriteLine($"MaximumMana = {MaximumMana}");
-            Debug.WriteLine($"Level = {Level}");
-            Debug.WriteLine($"AbilityLevel = {AbilityLevel}");
         }
 
         public void ResetDefaults()

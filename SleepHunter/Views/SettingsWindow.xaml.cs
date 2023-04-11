@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
 using SleepHunter.Extensions;
+using SleepHunter.Models;
+using SleepHunter.Services;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views
@@ -17,9 +20,13 @@ namespace SleepHunter.Views
         public static readonly int SkillMacrosTabIndex = 4;
         public static readonly int SpellMacrosTabIndex = 5;
         public static readonly int FloweringTabIndex = 6;
-        public static readonly int NotificationsTabIndex = 7;
+        public static readonly int UpdatesTabIndex = 7;
         public static readonly int AboutTabIndex = 8;
-        public static readonly int DebugTabIndex = 9;
+
+        private readonly IReleaseService releaseService = new ReleaseService();
+        private Version currentVersion;
+        private ReleaseVersion latestRelease;
+        private bool isCheckingForVersion;
 
         public int SelectedTabIndex
         {
@@ -34,13 +41,14 @@ namespace SleepHunter.Views
         {
             InitializeComponent();
             GetVersion();
+            ToggleDownloadUpdateButton(false);
         }
 
         void GetVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
-            versionText.Text = string.Format("Version {0}.{1}.{2}", version.Major.ToString(), version.Minor.ToString(), version.Build.ToString());
+            versionText.Text = $"Version {currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
             var buildNumber = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             var buildYear = Convert.ToInt32(buildNumber.Substring(0, 2)) + 2000;
@@ -49,11 +57,59 @@ namespace SleepHunter.Views
 
             var buildDate = new DateTime(buildYear, buildMonth, buildDay);
 
-            buildText.Text = string.Format("Build {0}", buildNumber);
+            buildText.Text = $"Build {buildNumber}";
             buildDateText.Text = $"{buildDate:MMMM} {buildDate.Day}{GetDayOrdinal(buildDate.Day)} {buildDate:yyyy}";
+
+            currentVersionText.Text = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
             if (isDebug)
                 buildText.Text += "  (Debug)";
+        }
+
+        async Task CheckForLatestVersion()
+        {
+            if (isCheckingForVersion)
+                return;
+
+            ToggleDownloadUpdateButton(false);
+
+            isCheckingForVersion = true;
+            updateAvailableText.Text = "Checking for updates...";
+
+            try
+            {
+                checkForUpdateButton.IsEnabled = false;
+                latestVersionPlaceholderText.Visibility = Visibility.Visible;
+                latestVersionText.Visibility = Visibility.Collapsed;
+
+                latestRelease = await releaseService.GetLatestReleaseVersionAsync();
+                var version = latestRelease.Version;
+
+                latestVersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
+
+                latestVersionPlaceholderText.Visibility = Visibility.Collapsed;
+                latestVersionText.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                latestVersionText.Text = string.Empty;
+                latestVersionPlaceholderText.Text = "Unknown";
+
+                latestVersionPlaceholderText.Visibility = Visibility.Visible;
+                latestVersionText.Visibility = Visibility.Collapsed;
+
+                this.ShowMessageBox("Network Error", "Unable to check for latest version:", ex.Message, MessageBoxButton.OK);
+            }
+            finally
+            {
+                checkForUpdateButton.IsEnabled = true;
+                isCheckingForVersion = false;
+
+                var isUpdateAvaialble = latestRelease != null && latestRelease.Version.IsNewerThan(currentVersion);
+                updateAvailableText.Text = isUpdateAvaialble ? "There is an update available." : "You have the latest version.";
+
+                ToggleDownloadUpdateButton(isUpdateAvaialble);
+            }
         }
 
         static string GetDayOrdinal(int dayOfMonth)
@@ -80,6 +136,12 @@ namespace SleepHunter.Views
                 default:
                     return "th";
             }
+        }
+
+        void ToggleDownloadUpdateButton(bool showHide)
+        {
+            downloadUpdateButton.IsEnabled = showHide;
+            downloadUpdateButton.Visibility = showHide ? Visibility.Visible : Visibility.Collapsed;
         }
 
         void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
@@ -130,14 +192,14 @@ namespace SleepHunter.Views
 
         void metadataEditorButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = this.Owner as MainWindow;
+            var mainWindow = Owner as MainWindow;
             if (mainWindow == null)
                 return;
 
             mainWindow.ShowMetadataWindow();
         }
 
-        void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var tabControl = sender as TabControl;
             if (tabControl == null)
@@ -146,20 +208,44 @@ namespace SleepHunter.Views
             var tabItem = tabControl.SelectedItem as TabItem;
             if (tabItem == null)
             {
-                this.Title = "Settings";
+                Title = "Settings";
                 return;
             }
 
-            this.Title = string.Format("Settings - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+            Title = string.Format("Settings - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+
+            if (tabItem.TabIndex == UpdatesTabIndex)
+            {
+                if (latestRelease == null)
+                    await CheckForLatestVersion();
+            }
         }
 
-        void updateButton_Click(object sender, RoutedEventArgs e)
+        async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = this.Owner as MainWindow;
+            var mainWindow = Owner as MainWindow;
             if (mainWindow == null)
                 return;
 
-            mainWindow.CheckForUpdate();
+            await CheckForLatestVersion();
+        }
+
+        void releaseNotesLink_Click(object sender, RoutedEventArgs e)
+        {
+            var uri = releaseService.GetLatestReleaseNotesUri();
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+
+        void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Owner as MainWindow;
+            if (mainWindow == null)
+                return;
+
+            downloadUpdateButton.IsEnabled = false;
+
+            Close();
+            mainWindow.DownloadAndInstallUpdate();
         }
     }
 }

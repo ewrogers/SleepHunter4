@@ -304,7 +304,6 @@ namespace SleepHunter.Models
         {
             GameClient.VersionKey = Version?.Key ?? "Unknown";
 
-            Debug.WriteLine($"Updating values from memory (pid={process.ProcessId}, fields={updateFields})...");
             try
             {
                 if (updateFields.HasFlag(PlayerFieldFlags.Name))
@@ -362,8 +361,6 @@ namespace SleepHunter.Models
 
             if (version != null && version.ContainsVariable(CharacterNameKey))
             {
-                Debug.WriteLine($"Updating character name (pid={accessor.ProcessId})...");
-
                 Stream stream = null;
                 try
                 {
@@ -377,8 +374,6 @@ namespace SleepHunter.Models
                     }
                 }
                 finally { stream?.Dispose(); }
-
-                Debug.WriteLine($"CharacterName = {name}");
             }
 
             if (!string.IsNullOrWhiteSpace(name))

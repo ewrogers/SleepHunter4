@@ -17,7 +17,7 @@
                     SelectedIndex="{Binding ElementName=Window, Path=SelectedTabIndex}"
                     SelectionChanged="tabControl_SelectionChanged">
             <!-- General Tab-->
-            <TabItem Header="_General">
+            <TabItem Header="_General" TabIndex="0">
                 <Grid Height="442" Width="436">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -129,7 +129,7 @@
             </TabItem>
 
             <!-- UI Tab-->
-            <TabItem Header="_User Interface">
+            <TabItem Header="_User Interface" TabIndex="1">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
@@ -411,7 +411,7 @@
             </TabItem>
 
             <!-- Game Client Tab -->
-            <TabItem Header="Game _Client">
+            <TabItem Header="Game _Client" TabIndex="2">
 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -430,7 +430,7 @@
                     <TextBlock Text="Client Path:"
                                Grid.Row="0" Grid.ColumnSpan="2"
                                TextAlignment="Left"
-                               Margin="24,2"
+                               Margin="20,2"
                                Style="{StaticResource ObsidianText}"
                                ToolTip="This is the folder path to the game client executable."/>
 
@@ -438,10 +438,10 @@
                     <TextBox Name="clientPathTextBox"
                              Grid.Row="1"
                              Grid.ColumnSpan="2"
-                             Width="400"
+                             Width="440"
                              Style="{StaticResource ObsidianTextBox}"
                              Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
-                             Margin="4,2,4,6"/>
+                             Margin="0,2,0,6"/>
 
                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -516,7 +516,7 @@
             </TabItem>
 
             <!-- All Macros Tab -->
-            <TabItem Header="_All Macros">
+            <TabItem Header="_All Macros" TabIndex="3">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -618,7 +618,7 @@
             </TabItem>
 
             <!-- Skill Tab -->
-            <TabItem Header="S_kill Macros">
+            <TabItem Header="S_kill Macros" TabIndex="4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -662,7 +662,7 @@
             </TabItem>
 
             <!-- Spell Tab -->
-            <TabItem Header="S_pell Macros">
+            <TabItem Header="S_pell Macros" TabIndex="5">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
@@ -875,7 +875,7 @@
             </TabItem>
 
             <!-- Flowering Tab -->
-            <TabItem Header="_Flowering">
+            <TabItem Header="_Flowering" TabIndex="6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -945,8 +945,141 @@
                 </Grid>
             </TabItem>
 
+            <!-- Updates Tab -->
+            <TabItem Header="Up_dates" TabIndex="7">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Current Version Label Text -->
+                    <TextBlock Text="Current Version:"
+            		           TextAlignment="Right"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"/>
+
+                    <!-- Current Version Text -->
+                    <TextBlock x:Name="currentVersionText"
+                               Grid.Column="1"
+                               Text="4.0.1"
+            		           TextAlignment="Left"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"
+                               FontWeight="Normal"
+                               ToolTip="This is the current version of SleepHunter running."/>
+
+                    <!-- Latest Version Label Text -->
+                    <TextBlock Grid.Row="1"
+                               Text="Latest Version:"
+            		           TextAlignment="Right"
+            		           Style="{StaticResource ObsidianText}"
+                               FontSize="24"/>
+
+                    <!-- Latest Version Placeholder Text -->
+                    <TextBlock x:Name="latestVersionPlaceholderText"
+                               Grid.Row="1"
+                               Grid.Column="1"
+                               Text="&#xE117;"
+            		           TextAlignment="Left"
+            		           Style="{StaticResource ObsidianSymbolText}"
+                               FontSize="20"
+                               Padding="4,0"
+                               FontWeight="Light"
+                               Foreground="{StaticResource ObsidianForeground}"/>
+
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <!-- Latest Version Text -->
+                        <TextBlock x:Name="latestVersionText"
+                                     Text=""
+                                     MinWidth="64"
+            		                 TextAlignment="Left"
+            		                 Style="{StaticResource ObsidianText}"
+                                     FontSize="24"
+                                     FontWeight="Normal"
+                                     ToolTip="This is the latest version of SleepHunter available."/>
+
+                        <!-- Download Update Button -->
+                        <Button Name="downloadUpdateButton"
+                                Style="{StaticResource ObsidianButton}"
+                                Height="36"
+                                Margin="4,2"
+                                Padding="16,2"
+                                HorizontalAlignment="Right"
+                                FontSize="16"
+                                FontWeight="Normal"
+                                IsEnabled="false"
+                                Click="downloadUpdateButton_Click">
+                            _Update
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Update Available Text -->
+                    <TextBlock x:Name="updateAvailableText"
+                               Grid.Row="3"
+                               Grid.ColumnSpan="2"
+                               Text="You have the latest version."
+            		           TextAlignment="Center"
+            		           Style="{StaticResource ObsidianText}"
+                               Foreground="{StaticResource ObsidianInactive}"
+                               FontSize="14"/>
+
+                    <!-- Show Release Notes Link Button -->
+                    <Button Grid.Row="4"
+                            Grid.ColumnSpan="2"
+            		        Style="{StaticResource ObsidianLinkButton}"
+                            Width="140"
+                            Click="releaseNotesLink_Click"
+                            ToolTip="Opens the release notes in the browser.">
+                        <TextBlock Style="{StaticResource ObsidianHyperlinkText}">
+                            Release Notes
+                        </TextBlock>
+                    </Button>
+
+                    <Separator Grid.Row="5"
+                               Grid.ColumnSpan="2"
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="4,8"/>
+
+                    <!-- Manually Check for Update Button -->
+                    <Button Name="checkForUpdateButton"
+                            Grid.Row="6"
+                            Grid.ColumnSpan="2"
+                            Style="{StaticResource ObsidianButton}"
+                            Width="320"
+                            Height="40"
+                            Margin="4,8"
+                            HorizontalAlignment="Center"
+                            Click="checkForUpdateButton_Click">
+                        _Check for Updates
+                    </Button>
+
+                    <CheckBox Name="autoUpdateCheckBox"
+                              Grid.Row="7"
+                              Grid.ColumnSpan="2"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="4"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
+                              Content="Check for Updates on _Startup"/>
+
+                </Grid>
+            </TabItem>
+
             <!-- About Tab -->
-            <TabItem Header="_About">
+            <TabItem Header="A_bout" TabIndex="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1025,24 +1158,6 @@
                                TextAlignment="Center"
                                Opacity="0.75"
                                Margin="4,4"/>
-
-                    <CheckBox Name="autoUpdateCheckBox"
-                              Grid.Row="11"
-                              Style="{StaticResource ObsidianCheckBox}"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              Margin="4"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
-                              Content="_Automatically Check for Updates"/>
-
-                    <Button Name="updateButton"
-                            Grid.Row="12"
-                            Width="320"
-                            Height="32"
-                            Margin="8"
-                            Style="{StaticResource ObsidianButton}"
-                            Click="updateButton_Click">Check for _Updates
-                    </Button>
                 </Grid>
             </TabItem>
         </TabControl>

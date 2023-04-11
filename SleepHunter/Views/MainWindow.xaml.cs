@@ -24,6 +24,8 @@ using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
+using SleepHunter.Services;
+using System.Reflection;
 
 namespace SleepHunter.Views
 {
@@ -54,9 +56,12 @@ namespace SleepHunter.Views
         int recentSettingsTabIndex;
         MetadataEditorWindow metadataWindow;
         SettingsWindow settingsWindow;
+
         BackgroundWorker processUpdateWorker;
         BackgroundWorker clientUpdateWorker;
         BackgroundWorker flowerUpdateWorker;
+
+        IReleaseService releaseService = new ReleaseService();
 
         PlayerMacroState selectedMacro;
 
@@ -937,6 +942,11 @@ namespace SleepHunter.Views
         }
         #endregion
 
+        void ToggleModalOverlay(bool showHide)
+        {
+            modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
+        }
+
         void ToggleSpellQueue(bool showQueue)
         {
             if (spellQueueListBox == null)
@@ -985,6 +995,41 @@ namespace SleepHunter.Views
             settingsWindow.Show();
         }
 
+        public void DownloadAndInstallUpdate()
+        {
+            ToggleModalOverlay(true);
+            try
+            {
+                var updateProgressWindow = new UpdateProgressWindow() { Owner = this };
+                updateProgressWindow.ShowDialog();
+
+                if (!updateProgressWindow.ShouldInstall)
+                    return;
+
+                var downloadPath = updateProgressWindow.DownloadPath;
+                var installationPath = Directory.GetCurrentDirectory();
+
+                RunUpdater(downloadPath, installationPath);
+            }
+            finally
+            {
+                ToggleModalOverlay(false);
+            }
+        }
+
+        void RunUpdater(string updateFile, string installationPath)
+        {
+            var updaterExecutable = Path.Combine(installationPath, "Updater.exe");
+            if (!File.Exists(updaterExecutable))
+            {
+                this.ShowMessageBox("Missing Updater", "Unable to start auto-updater executable.", "You may need to install the update manually.");
+                return;
+            }
+
+            Process.Start(updaterExecutable, $"{updateFile} {installationPath}");
+            Application.Current.Shutdown();
+        }
+
         IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
         {
             if (message == WM_HOTKEY)
@@ -1030,7 +1075,7 @@ namespace SleepHunter.Views
             }
 
             if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
-                CheckForUpdate(false);
+                CheckForNewVersion();
         }
 
         void Window_Closing(object sender, CancelEventArgs e)
@@ -1860,12 +1905,27 @@ namespace SleepHunter.Views
                 flowerVineyardCheckBox.IsChecked = false;
         }
 
-        public void CheckForUpdate(bool showWindow = true)
+        async void CheckForNewVersion()
         {
-            if (showWindow)
-                this.ShowMessageBox("Not Implemented",
-                   "Sorry, this feature is not currently implemented!",
-                   "It should be implemented very soon.");
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            try
+            {
+                var latestRelease = await releaseService.GetLatestReleaseVersionAsync();
+                if (!latestRelease.Version.IsNewerThan(currentVersion))
+                    return;
+
+                var result = this.ShowMessageBox("New Version Available", $"A newer version ({latestRelease.VersionString}) is available.\n\nDo you want to update now?", "You can disable this on startup in Settings->Updates.", MessageBoxButton.YesNo);
+                if (!result.HasValue || !result.Value)
+                    return;
+
+                ShowSettingsWindow(SettingsWindow.UpdatesTabIndex);
+            } 
+            catch (Exception ex)
+            {
+                this.ShowMessageBox("Check for Updates", $"Unable to check for a newer version:\n{ex.Message}", "You can disable this on startup in Settings->Updates.");
+                return;
+            }
         }
     }
 }
