@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for logging to files
 - `LoggingEnabled` user setting to enable generating log files (off by default)
-- Basic inversion of control (IoC) framework
 - Logging throughout the application
+- Basic inversion of control (IoC) framework
 
 ### Changed
 

@@ -85,8 +85,8 @@ namespace SleepHunter.Services.Logging
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
             var formattedLine = !string.IsNullOrEmpty(category)
-                ? $"{timestamp} {level.ToUpperInvariant()}: {message}"
-                : $"{timestamp} {level.ToUpperInvariant()} [{category}]: {message}";
+                ? $"{timestamp} {level.ToUpperInvariant()} [{category}] {message}"
+                : $"{timestamp} {level.ToUpperInvariant()} {message}";
 
             if (level != "debug")
                 Trace.WriteLine(formattedLine);

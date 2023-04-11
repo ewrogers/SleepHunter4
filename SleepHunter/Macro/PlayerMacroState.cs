@@ -586,35 +586,20 @@ namespace SleepHunter.Macro
 
             if (nextTarget != null)
             {
-                var shouldFlowerTarget = true;
-
-                // Do not flower an alt unless the mana threshold is passed
-                if (nextTarget.ManaThreshold > 0 && !string.IsNullOrEmpty(nextTarget.Target.CharacterName))
+                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana))
                 {
-                    var altState = MacroManager.Instance.Macros
-                        .FirstOrDefault(state => string.Equals(state.Client.Name, nextTarget.Target.CharacterName, StringComparison.OrdinalIgnoreCase));
-
-                    shouldFlowerTarget = altState != null && altState.Client.Stats.CurrentMana < nextTarget.ManaThreshold;
+                    var fasSpiorad = GetFasSpiorad();
+                    CastSpell(fasSpiorad);
+                    return false;
                 }
 
-                if (shouldFlowerTarget)
-                {
-                    if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana))
-                    {
-                        var fasSpiorad = GetFasSpiorad();
-                        CastSpell(fasSpiorad);
-                        return false;
-                    }
-
-                    var lyliac = GetLyliacPlant(nextTarget.Target);
-                    CastSpell(lyliac);
+                var lyliac = GetLyliacPlant(nextTarget.Target);
+                CastSpell(lyliac);
 
 
-                    nextTarget.LastUsedTimestamp = DateTime.Now;
-                    nextTarget.ResetTimer();
-                    return true;
-                }
-                else return false;
+                nextTarget.LastUsedTimestamp = DateTime.Now;
+                nextTarget.ResetTimer();
+                return true;
             }
 
             if (!checkedAlts)
@@ -717,7 +702,7 @@ namespace SleepHunter.Macro
                 return false;
 
             client.Update(PlayerFieldFlags.Location);
-            waitingAlt.Update(PlayerFieldFlags.Location);
+            waitingAlt.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
 
             if (!client.Location.IsWithinRange(waitingAlt.Location))
                 return false;
@@ -880,60 +865,37 @@ namespace SleepHunter.Macro
             if (flowerQueueIndex >= flowerQueue.Count)
                 flowerQueueIndex = 0;
 
-            if (flowerQueue.Count < 1)
+            if (flowerQueue.Count <= 0)
                 return null;
-
-            var currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
-            var currentId = currentTarget.Id;
-            bool isWithinManaThreshold = false;
 
             if (prioritizeAlts)
             {
-                lock (flowerQueueLock)
-                {
-                    foreach (var altTarget in flowerQueue)
-                    {
-                        if (altTarget.Target.Units != TargetCoordinateUnits.Character)
-                            continue;
-
-                        var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
-
-                        if (altClient == null)
-                            continue;
-
-                        client.Update(PlayerFieldFlags.Location);
-                        altClient.Update(PlayerFieldFlags.Location);
-
-                        if (!client.Location.IsWithinRange(altClient.Location))
-                            continue;
-
-                        altClient.Update(PlayerFieldFlags.Stats);
-                        isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
-
-                        if (altTarget.IsReady || isWithinManaThreshold)
-                            return altTarget;
-                    }
-                }
+                var nextAltToFlower = GetNextAltQueuedForFlower();
+                if (nextAltToFlower != null)
+                    return nextAltToFlower;
             }
 
-            isWithinManaThreshold = false;
+            var currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
+            var currentId = currentTarget.Id;
 
-            while (!currentTarget.IsReady && !isWithinManaThreshold)
+            while (!currentTarget.IsReady)
             {
-                isWithinManaThreshold = false;
-
                 if (++flowerQueueIndex >= flowerQueue.Count)
                     flowerQueueIndex = 0;
 
                 currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
 
-                if (currentTarget.Target.Units == TargetCoordinateUnits.Character && currentTarget.ManaThreshold.HasValue)
+                if (currentTarget.Target.Units == TargetCoordinateUnits.Character)
                 {
                     var altClient = PlayerManager.Instance.GetPlayerByName(currentTarget.Target.CharacterName);
+
                     if (altClient != null)
                     {
-                        altClient.Update(PlayerFieldFlags.Stats);
-                        isWithinManaThreshold = altClient.Stats.CurrentMana < currentTarget.ManaThreshold.Value;
+                        altClient.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
+                        var isWithinManaThreshold = !currentTarget.ManaThreshold.HasValue || altClient.Stats.CurrentMana < currentTarget.ManaThreshold.Value;
+
+                        if (isWithinManaThreshold)
+                            break;
                     }
                 }
 
@@ -943,6 +905,36 @@ namespace SleepHunter.Macro
 
             flowerQueueIndex++;
             return currentTarget;
+        }
+
+        FlowerQueueItem GetNextAltQueuedForFlower()
+        {
+            lock (flowerQueueLock)
+            {
+                foreach (var altTarget in flowerQueue)
+                {
+                    if (altTarget.Target.Units != TargetCoordinateUnits.Character)
+                        continue;
+
+                    var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
+
+                    if (altClient == null)
+                        continue;
+
+                    client.Update(PlayerFieldFlags.Location);
+                    altClient.Update(PlayerFieldFlags.Location | PlayerFieldFlags.Stats);
+
+                    if (!client.Location.IsWithinRange(altClient.Location))
+                        continue;
+
+                    var isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
+
+                    if (altTarget.IsReady || isWithinManaThreshold)
+                        return altTarget;
+                }
+            }
+
+            return null;
         }
 
         bool CastSpell(SpellQueueItem item)
