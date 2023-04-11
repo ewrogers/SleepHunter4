@@ -25,6 +25,7 @@ using SleepHunter.Models;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
 using SleepHunter.Services;
+using System.Reflection;
 
 namespace SleepHunter.Views
 {
@@ -1074,9 +1075,7 @@ namespace SleepHunter.Views
             }
 
             if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
-            {
-
-            }
+                CheckForNewVersion();
         }
 
         void Window_Closing(object sender, CancelEventArgs e)
@@ -1904,6 +1903,29 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
+        }
+
+        async void CheckForNewVersion()
+        {
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            try
+            {
+                var latestRelease = await releaseService.GetLatestReleaseVersionAsync();
+                if (!latestRelease.Version.IsNewerThan(currentVersion))
+                    return;
+
+                var result = this.ShowMessageBox("New Version Available", $"A newer version ({latestRelease.VersionString}) is available.\n\nDo you want to update now?", "You can disable this on startup in Settings->Updates.", MessageBoxButton.YesNo);
+                if (!result.HasValue || !result.Value)
+                    return;
+
+                ShowSettingsWindow(SettingsWindow.UpdatesTabIndex);
+            } 
+            catch (Exception ex)
+            {
+                this.ShowMessageBox("Check for Updates", $"Unable to check for a newer version:\n{ex.Message}", "You can disable this on startup in Settings->Updates.");
+                return;
+            }
         }
     }
 }
