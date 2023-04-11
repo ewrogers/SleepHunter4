@@ -33,7 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Flowering target should now wait for `If Mana < X` thresholds for alts
-- Flowering targets should better multiple alts (not getting stuck queue)
+- Flowering targets should better multiple handle alts (not getting stuck queue)
+- Updater throwing error when `Settings.xml` already exists
+- Updater should use same color theme as main application
 
 ## [4.1.0] - 2023-04-10
 

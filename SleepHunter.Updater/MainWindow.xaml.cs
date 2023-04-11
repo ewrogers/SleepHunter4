@@ -1,14 +1,15 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using SleepHunter.Settings;
 
 namespace SleepHunter.Updater
 {
     public partial class MainWindow : Window
     {
+        private static readonly string[] IgnoredFilenames = new string[] { "Updater.exe", "Settings.xml" };
         private bool isUpdating;
 
         public MainWindow()
@@ -16,8 +17,12 @@ namespace SleepHunter.Updater
             InitializeComponent();
         }
 
-        void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadSettings();
+            LoadThemes();
+            ApplyTheme();
+
             SetStatusText("Opening update file...");
             SetProgress(0);
             SetErrorMessage(string.Empty);
@@ -28,13 +33,60 @@ namespace SleepHunter.Updater
             GetVersion();
         }
 
-        void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Disallow closing the window while updating
             e.Cancel = isUpdating;
         }
 
-        void GetVersion()
+        private void LoadSettings()
+        {
+            var settingsFile = UserSettingsManager.SettingsFile;
+            if (File.Exists(settingsFile))
+            {
+                try
+                {
+                    UserSettingsManager.Instance.LoadFromFile(settingsFile);
+                }
+                catch
+                {
+                    UserSettingsManager.Instance.Settings.ResetDefaults();
+                }
+            }
+            else UserSettingsManager.Instance.Settings.ResetDefaults();
+        }
+
+        private void LoadThemes()
+        {
+            var themesFile = ColorThemeManager.ThemesFile;
+            if (File.Exists(themesFile))
+            {
+                try
+                {
+                    ColorThemeManager.Instance.LoadFromFile(themesFile);
+                }
+                catch
+                {
+                    ColorThemeManager.Instance.LoadDefaultThemes();
+                }
+            }
+            else ColorThemeManager.Instance.LoadDefaultThemes();
+        }
+
+        private void ApplyTheme()
+        {
+            if (!UserSettingsManager.Instance.Settings.RainbowMode)
+            {
+                var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+                ColorThemeManager.Instance.ApplyTheme(themeName);
+            }
+            else
+            {
+                ColorThemeManager.Instance.ApplyRainbowMode();
+            }
+        }
+
+        private void GetVersion()
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
@@ -79,7 +131,7 @@ namespace SleepHunter.Updater
                 using (var archive = ZipFile.OpenRead(updateFilePath))
                 {
                     var entries = from entry in archive.Entries
-                                  where entry.Name != "Updater.exe"
+                                  where !IgnoredFilenames.Contains(entry.Name)
                                   select entry;
 
                     var entryCount = entries.Count();
@@ -97,7 +149,7 @@ namespace SleepHunter.Updater
                         // Do not overwrite a user's Settings.xml file!
                         var overwrite = fileEntry.Name != "Settings.xml";
 
-                        fileEntry.ExtractToFile(outputFile, overwrite);
+                        fileEntry.ExtractToFile(outputFile, true);
 
                         extractedCount++;
                         var percentCompleted = (extractedCount * 100) / entryCount;
