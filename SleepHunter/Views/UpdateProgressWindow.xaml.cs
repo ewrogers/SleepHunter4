@@ -53,7 +53,7 @@ namespace SleepHunter.Views
             }
 
             SetStatusText("Ready to Install");
-            installButton.Content = $"_Install v{ReleaseInfo.VersionString}";
+            installButton.Content = $"_Install {ReleaseInfo.VersionString}";
             installButton.FontWeight = FontWeights.Normal;
             installButton.IsEnabled = true;
             installButton.Focus();

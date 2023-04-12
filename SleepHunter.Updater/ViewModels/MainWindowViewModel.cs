@@ -14,7 +14,7 @@ namespace SleepHunter.Updater.ViewModels
         private string statusText = "Preparing...";
         private int progressPercent = 50;
         private string currentFilename = "SleepHunter.exe";
-        private string fileCountText = "1 of 6 files";
+        private string fileCountText = "1 of 10 files";
         private string errorTitle;
         private string errorMessage;
         private bool hasError;
@@ -24,13 +24,16 @@ namespace SleepHunter.Updater.ViewModels
         private readonly ICommand retryCommand;
         private readonly ICommand cancelCommand;
 
+        public event EventHandler RetryRequested;
+        public event EventHandler CancelRequested;
+
         public event PropertyChangedEventHandler PropertyChanged;
         public event PropertyChangingEventHandler PropertyChanging;
 
         public MainWindowViewModel()
         {
-            retryCommand = new DelegateCommand(OnRetryRequested, _ => CanRetry);
-            cancelCommand = new DelegateCommand(OnCancelRequested, _ => CanCancel);
+            retryCommand = new DelegateCommand(() => RetryRequested?.Invoke(this, EventArgs.Empty), _ => CanRetry);
+            cancelCommand = new DelegateCommand(() => CancelRequested?.Invoke(this, EventArgs.Empty), _ => CanCancel);
         }
 
         public string VersionString
@@ -147,14 +150,5 @@ namespace SleepHunter.Updater.ViewModels
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         private void OnPropertyChanging(string propertyName) => PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
 
-        private void OnRetryRequested()
-        {
-
-        }
-
-        private void OnCancelRequested()
-        {
-
-        }
     }
 }
