@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using SleepHunter.Updater.Commands;
 
 namespace SleepHunter.Updater.ViewModels
 {
@@ -18,8 +21,26 @@ namespace SleepHunter.Updater.ViewModels
         private bool canRetry;
         private bool canCancel;
 
+        private readonly ICommand retryCommand;
+        private readonly ICommand cancelCommand;
+
         public event PropertyChangedEventHandler PropertyChanged;
         public event PropertyChangingEventHandler PropertyChanging;
+
+        public MainWindowViewModel()
+        {
+            retryCommand = new DelegateCommand(OnRetryRequested, _ => CanRetry);
+            cancelCommand = new DelegateCommand(OnCancelRequested, _ => CanCancel);
+        }
+
+        public string VersionString
+        {
+            get
+            {
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                return $"{version.Major}.{version.Minor}.{version.Build}";
+            }
+        }
 
         public bool IsBusy
         {
@@ -81,18 +102,33 @@ namespace SleepHunter.Updater.ViewModels
             set => SetProperty(ref canCancel, value);
         }
 
-        public void SetError(string title, string message)
+        public ICommand RetryCommand => retryCommand;
+        public ICommand CancelCommand => cancelCommand;
+
+        public void SetError(string title, string message, bool canRetry = true)
         {
             ErrorTitle = title;
             ErrorMessage = message;
             HasError = true;
+
+            CanRetry= canRetry;
+            CanCancel = true;
+
+            // Forces commands to re-evaluate their CanExecute state
+            CommandManager.InvalidateRequerySuggested();
         }
 
         public void ClearError()
         {
             ErrorTitle = null;
-            ErrorMessage= null;
+            ErrorMessage = null;
             HasError = false;
+
+            CanRetry = false;
+            CanCancel = false;
+
+            // Forces commands to re-evaluate their CanExecute state
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private bool SetProperty<T>(ref T value, T newValue, Action<T> onChanged = null, [CallerMemberName] string propertyName = "")
@@ -110,5 +146,15 @@ namespace SleepHunter.Updater.ViewModels
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         private void OnPropertyChanging(string propertyName) => PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+
+        private void OnRetryRequested()
+        {
+
+        }
+
+        private void OnCancelRequested()
+        {
+
+        }
     }
 }

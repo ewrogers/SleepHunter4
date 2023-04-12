@@ -10,16 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - SleepHunter can now update the Updater prior to installing new versions
 - Visual separate between vertical tabs (settings window)
+- New standalone Updater (no references to main app)
+- Basic MVVM code for Updater
 
 ### Changed
 
-- Main window title font slighly reduced
-- Other font sizes reduced throughout
+- Main window title font reduced
+- Font size reduced throughout most text
 - HP/MP font size slightly increased
 - Dropdown and text input boxes wider in most places
 - Spell queue current/max level font size slightly increased
-- Slightly better contrast with UI colors
-- Updater now is independent of SleepHunter (so it can update properly)
+- Slightly adjusted UI background and text colors for contrast
 
 ### Fixed
 

@@ -21,6 +21,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <TextBlock Style="{StaticResource ObsidianText}"
+                   Foreground="{StaticResource ObsidianDisabled}"
+                   Text="{Binding VersionString, StringFormat=v{0}}"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Top"
+                   TextAlignment="Right"/>
+
         <!-- Status Text -->
         <StackPanel Orientation="Vertical">
             <TextBlock Style="{StaticResource ObsidianText}"
@@ -99,14 +106,14 @@
                 <Button Style="{StaticResource ObsidianButton}"
                         Content="_Retry"
                         IsDefault="true"
-                        IsEnabled="{Binding CanRetry}"
+                        Command="{Binding RetryCommand}"
                         Margin="8,4,16,8"/>
 
                 <Button Grid.Column="1"
                         Style="{StaticResource ObsidianButton}"
                         Content="_Cancel"
                         IsCancel="true"
-                        IsEnabled="{Binding CanCancel}"
+                        Command="{Binding CancelCommand}"
                         Margin="16,4,16,8"/>
             </Grid>
         </StackPanel>

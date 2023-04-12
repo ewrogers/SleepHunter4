@@ -40,10 +40,10 @@ namespace SleepHunter.Updater
             // Start the update
             while (true)
             {
-                await Task.Delay(2000);
+                await Task.Delay(5000);
                 viewModel.SetError("File Not Found", "The update file was not found.\nTry downloading it again.");
 
-                await Task.Delay(2000);
+                await Task.Delay(5000);
                 viewModel.ClearError();
             }
         }
