@@ -1,0 +1,6 @@
+[book]
+authors = ["Erik 'SiLo' Rogers"]
+language = "en"
+multilingual = false
+src = "src"
+title = "SleepHunter v4"

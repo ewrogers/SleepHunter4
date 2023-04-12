@@ -1,0 +1,18 @@
+name: test-docs
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install mdbook
+        run: |
+          mkdir bin
+          curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.28/mdbook-v0.4.28-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=bin
+          echo "$(pwd)/bin" >> $GITHUB_PATH
+      - name: Run tests
+        run: |
+          cd docs
+          mdbook test

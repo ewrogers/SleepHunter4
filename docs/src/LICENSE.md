@@ -1,3 +1,5 @@
+# License
+
 The MIT License (MIT)
 
 Copyright (c) 2004-2023 Erik Rogers
