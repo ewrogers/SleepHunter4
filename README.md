@@ -5,7 +5,7 @@ Dark Ages Automation Tool + Updater
 
 ---
 
-<img src="docs/screenshots/SleepHunter.png"/>
+<img src="docs/src/screenshots/SleepHunter.png"/>
 
 ## Requirements
 
@@ -20,6 +20,15 @@ Dark Ages Automation Tool + Updater
 3. Open `SleepHunter.exe`
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
+
+## Documentation
+
+The documentation for SleepHunter is located in the [docs](./docs) folder.
+It is written in [Markdown](https://www.markdownguide.org/) and can be viewed in any text editor.
+
+There is a GitHub action that will automatically build the documentation into a static website and publish it to GitHub Pages.
+
+[View Documentation](https://ewrogers.github.io/SleepHunter4/)
 
 ## Auto-Update
 
