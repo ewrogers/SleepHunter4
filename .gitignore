@@ -195,6 +195,12 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
+# macOS Files
+.DS_Store
+
+# Windows Files
+Thumbs.db
+
 # JetBrains IDE
 .idea/
 

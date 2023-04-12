@@ -3,12 +3,15 @@
 <img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
 Dark Ages Automation Tool + Updater
 
-<img src="Screenshots/About-1.5.0.PNG"/>
+---
+
+<img src="docs/screenshots/SleepHunter.png"/>
 
 ## Requirements
 
 - [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
 - [.NET Framework 4.8.1](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481) (or newer)
+- Windows 7, 10, 11 (64-bit)
 
 ## Installation
 

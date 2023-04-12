@@ -9,6 +9,8 @@ The current version is **4.x**, which is the culmination of over a decade of exp
 
 You can view the [release notes](./CHANGELOG.md) to see what has changed in each version.
 
+![image](../screenshots/SleepHunter.png)
+
 ## What was it made using?
 
 SleepHunter is written in C# using the [Windows Presentation Foundation](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/overview/?view=netdesktop-7.0) (WPF) framework.
