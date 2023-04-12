@@ -9,7 +9,7 @@ The current version is **4.x**, which is the culmination of over a decade of exp
 
 You can view the [release notes](./CHANGELOG.md) to see what has changed in each version.
 
-![image](../screenshots/SleepHunter.png)
+![image](./screenshots/SleepHunter.png)
 
 ## What was it made using?
 
