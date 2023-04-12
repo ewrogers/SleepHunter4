@@ -1,32 +1,8 @@
-﻿<ResourceDictionary x:Class="SleepHunter.Themes.Obsidian"
+﻿<ResourceDictionary x:Class="SleepHunter.Updater.Obsidian"
                     x:ClassModifier="internal"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                    xmlns:ctl="clr-namespace:SleepHunter.Controls">
-
-    <!-- Rainbow Brush -->
-    <LinearGradientBrush x:Key="RainbowBackground" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Offset="0.000" Color="#AF0000"/>
-        <GradientStop Offset="0.166" Color="#AF0000"/>
-
-        <GradientStop Offset="0.166" Color="#AF6F00"/>
-        <GradientStop Offset="0.332" Color="#AF6F00"/>
-
-        <GradientStop Offset="0.332" Color="#AFAF00"/>
-        <GradientStop Offset="0.498" Color="#AFAF00"/>
-
-        <GradientStop Offset="0.498" Color="#00AF00"/>
-        <GradientStop Offset="0.664" Color="#00AF00"/>
-
-        <GradientStop Offset="0.664" Color="#0000AF"/>
-        <GradientStop Offset="0.830" Color="#0000AF"/>
-
-        <GradientStop Offset="0.830" Color="#6F00AF"/>
-        <GradientStop Offset="1.000" Color="#6F00AF"/>
-    </LinearGradientBrush>
-
-    <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Backgrounds & Foregrounds -->
     <!-- Blue 900 -->
@@ -45,7 +21,7 @@
 
     <!-- Neutral 700 -->
     <SolidColorBrush x:Key="ObsidianDisabled" Color="#404040"/>
-    
+
     <!-- Neutral 800 -->
     <SolidColorBrush x:Key="ObsidianSeparatorColor" Color="#262626"/>
 
@@ -72,16 +48,6 @@
     <sys:Double x:Key="ObsidianSymbolFontSize">20</sys:Double>
     <FontWeight x:Key="ObsidianFontWeight">Light</FontWeight>
     <sys:Double x:Key="ObsidianWindowTitleFontSize">24</sys:Double>
-
-    <Style x:Key="ObsidianNumericUpDown" TargetType="ctl:NumericUpDown">
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding IsKeyboardFocusWithin}" Value="True">
-                <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
 
     <!-- Scroll Bar Thumb Style -->
     <Style x:Key="ObsidianScrollBarThumb" TargetType="Thumb">

@@ -15,7 +15,7 @@
                 <TextBlock Name="Text"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding StringFormat={}{0} Right, Converter={StaticResource AbsoluteValueConverter}}"
-                           FontSize="18"
+                           FontSize="16"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
                            Margin="2,3,2,2"/>
@@ -37,7 +37,7 @@
                 <TextBlock Name="Text"
                            Style="{StaticResource ObsidianText}"
                            Text="{Binding StringFormat={}{0} Down, Converter={StaticResource AbsoluteValueConverter}}"
-                           FontSize="18"
+                           FontSize="16"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
                            Margin="2,3,2,2"/>
@@ -127,7 +127,7 @@
 
                             <TextBlock Name="CurrentLevelText"
                                        Style="{StaticResource ObsidianText}"
-                                       FontSize="12"
+                                       FontSize="14"
                                        FontWeight="Normal"
                                        Text="{Binding CurrentLevel}"
                                        TextWrapping="WrapWithOverflow"
@@ -137,7 +137,7 @@
 
                             <ProgressBar Name="ProgressBar"
                                          Grid.Column="1"
-                                         Height="8"
+                                         Height="10"
                                          Value="{Binding PercentCompleted, Mode=OneWay}"
                                          Style="{StaticResource ObsidianProgressBar}"
                                          VerticalAlignment="Center"
@@ -146,7 +146,7 @@
                             <TextBlock Name="TargetLevelText"
                                        Grid.Column="2"
                                        Style="{StaticResource ObsidianText}"
-                                       FontSize="12"
+                                       FontSize="14"
                                        FontWeight="Normal"
                                        Text="{Binding TargetLevel}"
                                        TextWrapping="WrapWithOverflow"

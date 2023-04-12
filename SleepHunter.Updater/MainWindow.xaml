@@ -4,55 +4,98 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SleepHunter.Updater"
+        xmlns:vm="clr-namespace:SleepHunter.Updater.ViewModels"
         mc:Ignorable="d"
         Title="SleepHunter Updater"
-        Width="560" Height="380"
-        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Width="480" Height="170"
         ResizeMode="NoResize"
-        Style="{StaticResource ObsidianWindow}"
-        Loaded="Window_Loaded"
-        Closing="Window_Closing">
-    <Grid>
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid Margin="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" Margin="16,8">
-            <!-- Status Text -->
-            <TextBlock Name="statusText"
-                       Text="Extracting files..."
-            	       TextAlignment="Left"
-                       Margin="0,8"
-            	       Style="{StaticResource ObsidianText}"/>
+        <TextBlock Style="{StaticResource ObsidianText}"
+                   Foreground="{StaticResource ObsidianDisabled}"
+                   Text="{Binding VersionString, StringFormat=v{0}}"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Top"
+                   TextAlignment="Right"/>
 
+        <!-- Status Text -->
+        <StackPanel Orientation="Vertical">
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       FontSize="20"
+                       Margin="12,4"
+                       Text="{Binding StatusText}"/>
+
+            <!-- Progress Bar with Text-->
             <Grid>
-                <!-- Progress Bar -->
-                <ProgressBar x:Name="progressBar"
-                             Style="{StaticResource ObsidianProgressBar}"
+                <ProgressBar Style="{StaticResource ObsidianProgressBar}"
                              Minimum="0"
                              Maximum="100"
+                             Value="{Binding ProgressPercent}"
                              Height="32"
-                             Value="50"
-                             Margin="0,4">
-                </ProgressBar>
+                             Margin="8,2"/>
 
-
-                <!-- Progress Percentage Text -->
-                <TextBlock Name="progressPercentText"
-                           Text="50%"
-            		       TextAlignment="Center"
-                           Margin="0"
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Text="{Binding Path=ProgressPercent, StringFormat={}{0}%}"
                            FontSize="16"
                            FontWeight="Normal"
-            		       Style="{StaticResource ObsidianText}"/>
+                           TextAlignment="Center"/>
             </Grid>
+
+            <!-- File name and count -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Foreground="{StaticResource ObsidianInactive}"
+                           Text="{Binding CurrentFilename}"
+                           TextAlignment="Left"
+                           Margin="12,0"/>
+
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Grid.Column="1"
+                           Foreground="{StaticResource ObsidianInactive}"
+                           Text="{Binding FileCountText}"
+                           TextAlignment="Right"
+                           Margin="12,0"/>
+
+            </Grid>
+
+            <Separator Style="{StaticResource ObsidianSeparator}"/>
+        </StackPanel>
+
+        <StackPanel Name="ErrorPanel"  Grid.Row="1"  VerticalAlignment="Center">
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       FontSize="16"
+                       FontWeight="Normal"
+                       Text="{Binding ErrorTitle}"
+                       TextAlignment="Center"
+                       TextWrapping="WrapWithOverflow"
+                       Margin="8,2"/>
+
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="14"
+                       Text="{Binding ErrorMessage}"
+                       TextAlignment="Center"
+                       TextWrapping="WrapWithOverflow"
+                       Margin="8,2"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <Separator Style="{StaticResource ObsidianSeparator}"/>
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -60,67 +103,49 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Progress File Text -->
-                <TextBlock Name="progressFileText"
-                           Text="SleepHunter.exe"
-            		       TextAlignment="Left"
-                           Margin="4,0"
-                           FontSize="14"
-                           Foreground="{StaticResource ObsidianInactive}"
-            		       Style="{StaticResource ObsidianText}"/>
+                <Button Style="{StaticResource ObsidianButton}"
+                        Content="_Retry"
+                        IsDefault="true"
+                        Command="{Binding RetryCommand}"
+                        Margin="8,4,16,8"/>
 
-                <!-- Progress Count Text -->
-                <TextBlock Name="progressCountText"
-                           Grid.Column="1"
-                           Text="1 of 6 files"
-            		       TextAlignment="Right"
-                           Margin="4,0"
-                           FontSize="14"
-                           Foreground="{StaticResource ObsidianInactive}"
-            		       Style="{StaticResource ObsidianText}"/>
-
+                <Button Grid.Column="1"
+                        Style="{StaticResource ObsidianButton}"
+                        Content="_Cancel"
+                        IsCancel="true"
+                        Command="{Binding CancelCommand}"
+                        Margin="16,4,16,8"/>
             </Grid>
         </StackPanel>
-
-        <Separator Grid.Row="1" Style="{StaticResource ObsidianSeparator}"/>
-
-        <!-- Retry Button -->
-        <Button Name="retryButton"
-                Grid.Row="2"
-                MaxWidth="280"
-                Margin="8,4"
-                Content="_Retry Update"
-                Click="retryButton_Click"
-                Style="{StaticResource ObsidianButton}"/>
-
-        <!-- Error Message Text -->
-        <TextBlock Name="errorMessageText"
-                   Grid.Row="3"
-                   Text="The quick brown fox jumps over the lazy dog."
-                   TextAlignment="Center"
-                   FontSize="16"
-                   TextWrapping="WrapWithOverflow"
-                   Foreground="{StaticResource ObsidianActive}"
-            	   Style="{StaticResource ObsidianText}"/>
-
-        <Separator Grid.Row="4" Style="{StaticResource ObsidianSeparator}"/>
-
-        <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
-                   Text="SleepHunter will be re-launched after the update is completed."
-            	   TextAlignment="Center"
-                   Margin="8,4"
-                   FontSize="14"
-                   Foreground="{StaticResource ObsidianInactive}"
-            	   Style="{StaticResource ObsidianText}"/>
-
-        <TextBlock Name="versionText"
-                   Grid.Row="6"
-                   Text="Updater - v0.0.0" 
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Top"
-                   Margin="8"
-                   Foreground="{StaticResource ObsidianDisabled}"
-                   FontSize="14"
-            	   Style="{StaticResource ObsidianText}"/>
     </Grid>
+    <Window.Resources>
+        <!-- Expand Height on Error -->
+        <Storyboard x:Key="ExpandStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Height"
+                             To="320"
+                             Duration="0:0:0.3"/>
+        </Storyboard>
+        <!-- Collapse Height on No Error -->
+        <Storyboard x:Key="CollapseStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Height"
+                             To="170"
+                             Duration="0:0:0.3"/>
+        </Storyboard>
+    </Window.Resources>
+    <Window.Style>
+        <Style BasedOn="{StaticResource ObsidianWindow}" TargetType="{x:Type Window}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <StopStoryboard BeginStoryboardName="BeginCollapse"/>
+                        <BeginStoryboard Name="BeginExpand" Storyboard="{StaticResource ExpandStoryboard}"/>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="BeginExpand"/>
+                        <BeginStoryboard Name="BeginCollapse" Storyboard="{StaticResource CollapseStoryboard}"/>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
 </Window>

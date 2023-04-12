@@ -8,69 +8,67 @@
              xmlns:converters="clr-namespace:SleepHunter.Converters"
              mc:Ignorable="d"
              d:DesignHeight="32" d:DesignWidth="200"
-             FontSize="18">
+             FontSize="16">
     <UserControl.Resources>
         <converters:NumericConverter x:Key="NumericConverter"/>
     </UserControl.Resources>
     <Grid>
-        <Border Name="Border"
-                BorderBrush="{Binding ElementName=Root, Path=BorderBrush}"
-                BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Name="PART_Value" 
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Name="PART_Value" 
                          Grid.RowSpan="2"
                          Style="{StaticResource ObsidianNonEraseTextBox}"
-                         BorderThickness="0"
+                         BorderThickness="1,1,0,1"
                          FontSize="{Binding ElementName=Root, Path=FontSize}"
+                         FontWeight="Normal"
                          Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter}}"
                          TextAlignment="Center"
                          Padding="1"
+                         Margin="0"
                          IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}}"
                          PreviewTextInput="TextBox_PreviewTextInput"
                          TextChanged="TextBox_TextChanged"
                          LostFocus="TextBox_LostFocus"
                          MouseWheel="TextBox_MouseWheel">
-                </TextBox>
+            </TextBox>
 
-                <!-- Increment Button -->
-                <RepeatButton Name="incrementButton" 
+            <!-- Increment Button -->
+            <RepeatButton Name="incrementButton" 
                               Grid.Column="1"
-                              Width="28"
+                              Width="26"
                               Focusable="False"
                               Style="{StaticResource ObsidianSpinButton}"
-                              BorderThickness="1,0,0,0"
+                              BorderThickness="0"
                               BorderBrush="{Binding ElementName=Root, Path=BorderBrush, Mode=OneWay}"
                               Click="incrementButton_Click">
-                    <Path Fill="{Binding ElementName=incrementButton, Path=Foreground}"
+                <Path Fill="{Binding ElementName=incrementButton, Path=Foreground}"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
-                          Data="M 0,9 l 6,-10 l 6,10 Z"/>
-                </RepeatButton>
+                          Data="M 0,9 l 6,-8 l 6,8 Z"/>
+            </RepeatButton>
 
-                <!-- Decrement Button -->
-                <RepeatButton Name="decrementButton" 
+            <!-- Decrement Button -->
+            <RepeatButton Name="decrementButton" 
                               Grid.Row="1" 
                               Grid.Column="1"
-                              Width="28"
+                              Width="26"
                               Focusable="False"
                               Style="{StaticResource ObsidianSpinButton}"
-                              BorderThickness="1,0,0,0"
+                              BorderThickness="0"
                               BorderBrush="{Binding ElementName=Root, Path=BorderBrush, Mode=OneWay}"
                               Click="decrementButton_Click">
-                    <Path Fill="{Binding ElementName=decrementButton, Path=Foreground}"
+                <Path Fill="{Binding ElementName=decrementButton, Path=Foreground}"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
-                          Data="M 0,0 l 6,10 l 6,-10 Z"/>
-                </RepeatButton>
-            </Grid>
-        </Border>
+                          Data="M 0,0 l 6,8 l 6,-8 Z"/>
+            </RepeatButton>
+        </Grid>
     </Grid>
 </UserControl>

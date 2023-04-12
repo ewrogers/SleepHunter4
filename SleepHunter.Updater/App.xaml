@@ -1,12 +1,10 @@
 ﻿<Application x:Class="SleepHunter.Updater.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SleepHunter.Updater">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Import the Obsidian UI style from SleepHunter -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/SleepHunter;component/Obsidian.xaml"/>
+                <ResourceDictionary Source="Obsidian.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -1,14 +1,23 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using SleepHunter.Updater.ViewModels;
+using SleepHunter.Updater.Win32;
 
 namespace SleepHunter.Updater
 {
     public partial class App : Application
     {
-        protected override async void OnStartup(StartupEventArgs e)
+        private static readonly string[] IgnoredFilenames = new string[] { "Updater.exe", "Settings.xml" };
+
+        private MainWindowViewModel viewModel;
+
+        protected override void OnStartup(StartupEventArgs e)
         {
             // Invalid number of arguments, exit
             // Usage: Updater.exe <zip file> <install path>
@@ -23,99 +32,170 @@ namespace SleepHunter.Updater
 
             base.OnStartup(e);
 
-            var mainWindow = new MainWindow();
-            mainWindow.RetryRequested += async (sender, _) =>
+            // Create the view model and main window
+            viewModel = new MainWindowViewModel();
+            var mainWindow = new MainWindow
             {
-                mainWindow.ResetState();
+                DataContext = viewModel
+            };
+            mainWindow.Closing += MainWindow_Closing;
 
-                var retrySuccess = await PerformUpdate(mainWindow, updateFilePath, installationPath);
-                if (!retrySuccess)
-                    mainWindow.ToggleRetryButton(true);
-                else
-                    Shutdown();
+            // Listen for retry and cancel events
+            viewModel.RetryRequested += async (sender, _) =>
+            {
+                ResetViewState();
+                await Task.Delay(1000);
+
+                ApplyUpdate(updateFilePath, installationPath);
             };
 
+            viewModel.CancelRequested += (sender, _) =>
+            {
+                mainWindow.Close();
+                Shutdown();
+            };
+
+            // Show the window and begin update
             mainWindow.Show();
 
-            var success = await PerformUpdate(mainWindow, updateFilePath, installationPath);
-            if (!success)
-                mainWindow.ToggleRetryButton(true);
-            else
-                Shutdown();
+            ResetViewState();
+            ApplyUpdate(updateFilePath, installationPath);
         }
 
-        private async Task<bool> PerformUpdate(MainWindow mainWindow, string updateFilePath, string installationPath)
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
-            var executableFile = Path.Combine(installationPath, "SleepHunter.exe");
+            // Do not allow closing of the window while it is busy updating
+            e.Cancel = viewModel.IsBusy;
+        }
 
-            // Check that the update file exists, show error if missing
-            if (!File.Exists(updateFilePath))
-            {
-                mainWindow.SetStatusText("Unable to Update");
-                mainWindow.SetErrorMessage("Missing update file.\nYou can try again within SleepHunter, or install it manually.");
-                return false;
-            }
+        private void ResetViewState()
+        {
+            viewModel.StatusText = "Preparing...";
+            viewModel.CurrentFilename = string.Empty;
+            viewModel.FileCountText = string.Empty;
+            viewModel.ProgressPercent = 0;
 
-            // Terminate any existing SleepHunter instances
+            viewModel.ClearError();
+        }
+
+        private async void ApplyUpdate(string updateFilePath, string installationPath)
+        {
+            if (viewModel.IsBusy)
+                return;
+
+            viewModel.IsBusy = true;
+            var executableName = Path.Combine(installationPath, "SleepHunter.exe");
+
             try
             {
-                mainWindow.SetStatusText("Waiting for SleepHunter...");
-                await Task.Delay(3000);
-                TerminateAllAndWait("SleepHunter");
-            }
-            catch (Exception ex)
-            {
-                mainWindow.SetStatusText("Unable to Update");
-                mainWindow.SetErrorMessage(ex.Message);
-                return false;
-            }
+                // Ensure the update file exists
+                if (!File.Exists(updateFilePath))
+                {
+                    viewModel.SetError("Missing Update File", "You can try downloading it again, or installing the update manually.", false);
+                    return;
+                }
 
-            // Try to update, and display an error if something goes wrong
-            try
-            {
-                mainWindow.PerformAppUpdate(updateFilePath, installationPath);
-            }
-            catch (Exception ex)
-            {
-                mainWindow.SetStatusText("Unable to Update");
-                mainWindow.SetErrorMessage(ex.Message);
-                return false;
-            }
+                try
+                {
+                    // Ensure the output directory exists
+                    if (!Directory.Exists(installationPath))
+                        Directory.CreateDirectory(installationPath);
+                }
+                catch
+                {
+                    viewModel.SetError("Invalid Installation Directory", $"The SleepHunter installation directory does not exist.\nYou should reinstall the application.", true);
+                    return;
+                }
 
-            // Check that the executable exists, show error if missing
-            if (!File.Exists(executableFile))
-            {
-                mainWindow.SetStatusText("Unable to Restart");
-                mainWindow.SetErrorMessage("Missing SleepHunter executable in installation folder.\nYou may need to apply the update manually.");
-                return false;
-            }
+                try
+                {
+                    // Close all running instances of the executable so it can be updated
+                    viewModel.StatusText = "Waiting for SleepHunter...";
+                    TerminateAndWait(executableName);
+                }
+                catch
+                {
+                    viewModel.SetError("SleepHunter Still Running", "Close all running instances of the application and try again.", true);
+                    return;
+                }
 
-            // Restart SleepHunter
-            mainWindow.SetStatusText("Restarting SleepHunter...");
-            try
-            {
-                Process.Start(executableFile);
-                return true;
+                try
+                {
+                    viewModel.StatusText = "Checking update file...";
+                    using (var zipFile = ZipFile.OpenRead(updateFilePath))
+                    {
+                        // Do not extract files that should be ignored
+                        var entries = from entry in zipFile.Entries
+                                      where !IgnoredFilenames.Contains(entry.Name)
+                                      select entry;
+
+                        var totalCount = entries.Count();
+                        var extractedCount = 0;
+
+                        viewModel.StatusText = "Extracting files...";
+
+                        foreach (var entry in entries)
+                        {
+                            viewModel.CurrentFilename = entry.Name;
+                            viewModel.FileCountText = $"{extractedCount + 1} of {totalCount} files";
+
+                            var outputFile = Path.Combine(installationPath, entry.FullName);
+                            entry.ExtractToFile(outputFile, true);
+
+                            extractedCount++;
+                            viewModel.ProgressPercent = (extractedCount * 100) / totalCount;
+
+                            await Task.Delay(100);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    viewModel.SetError("Unable to Extract Files", ex.Message, true);
+                    return;
+                }
+
+                if (!File.Exists(executableName))
+                {
+                    viewModel.SetError("Missing SleepHunter Executable", "The SleepHunter executable could not be found.\nYou may have to reinstall the application.", true);
+                    return;
+                }
+
+                try
+                {
+                    // Start SleepHunter process and bring to front
+                    var process = Process.Start(executableName);
+                    NativeMethods.SetForegroundWindow(process.MainWindowHandle);
+
+                    Shutdown();
+                }
+                catch
+                {
+                    viewModel.SetError("Unable to Start SleepHunter", "You can restart it manually and check that the update succeeded.", false);
+                    return;
+                }
             }
-            catch
+            finally
             {
-                mainWindow.SetStatusText("Unable to Restart");
-                mainWindow.SetErrorMessage("Unable to restart SleepHunter automatically.\nYou can try launching it manually.");
-                return false;
+                viewModel.IsBusy = false;
             }
         }
 
-        private async void TerminateAllAndWait(string processName)
+        private void TerminateAndWait(string executableFile, int timeoutSeconds = 10)
         {
-            var matchingProcesses = Process.GetProcessesByName(processName);
+            var processName = Path.GetFileNameWithoutExtension(executableFile);
+            var processes = Enumerable.Empty<Process>();
 
-            foreach (var process in matchingProcesses)
+            processes = from process in Process.GetProcessesByName(processName)
+                        where process.MainModule.FileName == executableFile
+                        select process;
+
+            foreach (var process in processes)
+            {
                 process.Kill();
 
-            while (matchingProcesses.Length > 0)
-            {
-                await Task.Delay(3000);
-                matchingProcesses = Process.GetProcessesByName(processName);
+                if (!process.WaitForExit(timeoutSeconds * 1000))
+                    throw new TimeoutException("Timeout elapsed with processes still running");
             }
         }
     }

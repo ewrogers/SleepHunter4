@@ -4,6 +4,29 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2023-04-11
+
+### Added
+
+- SleepHunter can now update the Updater prior to installing new versions
+- Visual separate between vertical tabs (settings window)
+- New standalone Updater (no references to main app)
+- Basic MVVM code for Updater
+
+### Changed
+
+- Main window title font reduced
+- Font size reduced throughout most text
+- HP/MP font size slightly increased
+- Dropdown and text input boxes wider in most places
+- Spell queue current/max level font size slightly increased
+- Slightly adjusted UI background and text colors for contrast
+
+### Fixed
+
+- Better file handling for potentially missing files when client path is invalid
+- Numeric up/down now highlights border when it has focus
+
 ## [4.2.1] - 2023-04-11
 
 ### Added

@@ -27,6 +27,8 @@ using SleepHunter.Win32;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.IO.Compression;
 
 namespace SleepHunter.Views
 {
@@ -1177,6 +1179,7 @@ namespace SleepHunter.Views
                 var downloadPath = updateProgressWindow.DownloadPath;
                 var installationPath = Directory.GetCurrentDirectory();
 
+                UpdateUpdater(downloadPath, installationPath);
                 RunUpdater(downloadPath, installationPath);
             }
             catch (Exception ex)
@@ -1187,6 +1190,38 @@ namespace SleepHunter.Views
             finally
             {
                 ToggleModalOverlay(false);
+            }
+        }
+
+        private void UpdateUpdater(string updateFile, string installationPath)
+        {
+            if (!File.Exists(updateFile))
+            {
+                logger.LogError($"Missing update file, unable to update: {updateFile}");
+                return;
+            }
+
+            try
+            {
+                using (var archive = ZipFile.OpenRead(updateFile))
+                {
+                    var entry = archive.GetEntry("Updater.exe");
+                    if (entry == null)
+                    {
+                        logger.LogWarn($"Updater tool was not found in the update file: {updateFile}");
+                        return;
+                    }
+
+                    var outputFile = Path.Combine(installationPath, entry.Name);
+                    entry.ExtractToFile(outputFile, true);
+
+                    logger.LogInfo($"Successfully updated the Updater tool: {outputFile}");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Unable to update the Updater tool");
+                logger.LogException(ex);
             }
         }
 
@@ -1356,7 +1391,7 @@ namespace SleepHunter.Views
             }
 
             try
-            { 
+            {
                 FileArchiveManager.Instance.ClearArchives();
             }
             catch (Exception ex)
