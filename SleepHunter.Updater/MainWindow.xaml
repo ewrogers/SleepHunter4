@@ -4,14 +4,141 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SleepHunter.Updater"
+        xmlns:vm="clr-namespace:SleepHunter.Updater.ViewModels"
         mc:Ignorable="d"
         Title="SleepHunter Updater"
         WindowStyle="None"
-        Width="480" Height="320"
+        Width="480" Height="170"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
-        Style="{StaticResource ObsidianWindow}">
-    <Grid>
-        
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Status Text -->
+        <StackPanel Orientation="Vertical">
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       FontSize="20"
+                       Margin="12,4"
+                       Text="{Binding StatusText}"/>
+
+            <!-- Progress Bar with Text-->
+            <Grid>
+                <ProgressBar Style="{StaticResource ObsidianProgressBar}"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding ProgressPercent}"
+                             Height="32"
+                             Margin="8,2"/>
+
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Text="{Binding Path=ProgressPercent, StringFormat={}{0}%}"
+                           FontSize="16"
+                           FontWeight="Normal"
+                           TextAlignment="Center"/>
+            </Grid>
+
+            <!-- File name and count -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Foreground="{StaticResource ObsidianInactive}"
+                           Text="{Binding CurrentFilename}"
+                           TextAlignment="Left"
+                           Margin="12,0"/>
+
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Grid.Column="1"
+                           Foreground="{StaticResource ObsidianInactive}"
+                           Text="{Binding FileCountText}"
+                           TextAlignment="Right"
+                           Margin="12,0"/>
+
+            </Grid>
+
+            <Separator Style="{StaticResource ObsidianSeparator}"/>
+        </StackPanel>
+
+        <StackPanel Name="ErrorPanel"  Grid.Row="1"  VerticalAlignment="Center">
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       FontSize="16"
+                       FontWeight="Normal"
+                       Text="{Binding ErrorTitle}"
+                       TextAlignment="Center"
+                       TextWrapping="WrapWithOverflow"
+                       Margin="8,2"/>
+
+            <TextBlock Style="{StaticResource ObsidianText}"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="14"
+                       Text="{Binding ErrorMessage}"
+                       TextAlignment="Center"
+                       TextWrapping="WrapWithOverflow"
+                       Margin="8,2"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <Separator Style="{StaticResource ObsidianSeparator}"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Style="{StaticResource ObsidianButton}"
+                        Content="_Retry"
+                        IsDefault="true"
+                        IsEnabled="{Binding CanRetry}"
+                        Margin="8,4,16,8"/>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource ObsidianButton}"
+                        Content="_Cancel"
+                        IsCancel="true"
+                        IsEnabled="{Binding CanCancel}"
+                        Margin="16,4,16,8"/>
+            </Grid>
+        </StackPanel>
     </Grid>
+    <Window.Resources>
+        <!-- Expand Height on Error -->
+        <Storyboard x:Key="ExpandStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Height"
+                             To="320"
+                             Duration="0:0:0.3"/>
+        </Storyboard>
+        <!-- Collapse Height on No Error -->
+        <Storyboard x:Key="CollapseStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Height"
+                             To="170"
+                             Duration="0:0:0.3"/>
+        </Storyboard>
+    </Window.Resources>
+    <Window.Style>
+        <Style BasedOn="{StaticResource ObsidianWindow}" TargetType="{x:Type Window}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <StopStoryboard BeginStoryboardName="BeginCollapse"/>
+                        <BeginStoryboard Name="BeginExpand" Storyboard="{StaticResource ExpandStoryboard}"/>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="BeginExpand"/>
+                        <BeginStoryboard Name="BeginCollapse" Storyboard="{StaticResource CollapseStoryboard}"/>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
 </Window>

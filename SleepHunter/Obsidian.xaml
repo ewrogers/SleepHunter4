@@ -29,8 +29,8 @@
     <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
 
     <!-- Backgrounds & Foregrounds -->
-    <!-- Blue 800 -->
-    <SolidColorBrush x:Key="ObsidianBackground" Color="#1e40af"/>
+    <!-- Blue 900 -->
+    <SolidColorBrush x:Key="ObsidianBackground" Color="#1e3a8a"/>
 
     <!-- Neutral 50 -->
     <SolidColorBrush x:Key="ObsidianForeground" Color="#FAFAFA"/>

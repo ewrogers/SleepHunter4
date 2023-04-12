@@ -72,6 +72,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Obsidian.xaml.cs">
       <DependentUpon>Obsidian.xaml</DependentUpon>
     </Compile>
