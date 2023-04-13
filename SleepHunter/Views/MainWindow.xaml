@@ -69,7 +69,7 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="Sta_rt Macroing"
+                                   Content="Sta_rt Macro"
                                    Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
@@ -89,7 +89,7 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="_Pause Macroing"
+                                   Content="_Pause Macro"
                                    Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
@@ -109,7 +109,7 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="S_top Macroing"
+                                   Content="S_top Macro"
                                    Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>

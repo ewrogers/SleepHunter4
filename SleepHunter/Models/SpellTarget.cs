@@ -14,7 +14,6 @@ namespace SleepHunter.Models
         Self,
         Character,
         RelativeTile,
-        RelativeXY,
         AbsoluteTile,
         AbsoluteXY,
         RelativeRadius,
@@ -282,9 +281,6 @@ namespace SleepHunter.Models
 
                 case TargetCoordinateUnits.RelativeTile:
                     return string.Format("{0}", ToRelativeString(location));
-
-                case TargetCoordinateUnits.RelativeXY:
-                    return string.Format("Relative {0}, {1}", location.X.ToString(), location.Y.ToString());
 
                 case TargetCoordinateUnits.Self:
                     return string.Format("Self");

@@ -242,9 +242,6 @@ namespace SleepHunter.Views
                 case TargetCoordinateUnits.RelativeTile:
                     return new Point((int)relativeTileXComboBox.SelectedValue, (int)relativeTileYComboBox.SelectedValue);
 
-                case TargetCoordinateUnits.RelativeXY:
-                    return new Point(relativeXUpDown.Value, relativeYUpDown.Value);
-
                 case TargetCoordinateUnits.RelativeRadius:
                     goto case TargetCoordinateUnits.RelativeTile;
 
@@ -284,11 +281,6 @@ namespace SleepHunter.Views
                     relativeTileYComboBox.SelectedItem = (int)target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.RelativeXY:
-                    relativeXUpDown.Value = target.Location.X;
-                    relativeYUpDown.Value = target.Location.Y;
-                    break;
-
                 case TargetCoordinateUnits.RelativeRadius:
                     innerRadiusUpDown.Value = target.InnerRadius;
                     outerRadiusUpDown.Value = target.OuterRadius;
@@ -315,9 +307,6 @@ namespace SleepHunter.Views
 
             if (relativeTileXComboBox != null)
                 relativeTileXComboBox.Visibility = (units == TargetCoordinateUnits.RelativeTile || units == TargetCoordinateUnits.RelativeRadius) ? Visibility.Visible : Visibility.Collapsed;
-
-            if (relativeXUpDown != null)
-                relativeXUpDown.Visibility = (units == TargetCoordinateUnits.RelativeXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (absoluteTileXUpDown != null)
                 absoluteTileXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.AbsoluteRadius) ? Visibility.Visible : Visibility.Collapsed;

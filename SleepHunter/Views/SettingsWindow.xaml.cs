@@ -163,14 +163,6 @@ namespace SleepHunter.Views
                 UserSettingsManager.Instance.Settings.ResetDefaults();
         }
 
-        void metadataEditorButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!(Owner is MainWindow mainWindow))
-                return;
-
-            mainWindow.ShowMetadataWindow();
-        }
-
         async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is TabControl tabControl))

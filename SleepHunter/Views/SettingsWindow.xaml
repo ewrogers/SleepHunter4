@@ -18,8 +18,9 @@
                     SelectionChanged="tabControl_SelectionChanged">
             <!-- General Tab-->
             <TabItem Header="_General" TabIndex="0">
-                <Grid Height="442" Width="436">
+                <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -89,7 +90,11 @@
                         <sys:TimeSpan>0:1:00</sys:TimeSpan>
                     </ComboBox>
 
-                    <StackPanel Grid.Row="2"
+                    <Separator Grid.Row="2" Grid.ColumnSpan="2" 
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="4,8"/>
+                    
+                    <StackPanel Grid.Row="3"
                                 Grid.ColumnSpan="2"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
@@ -99,34 +104,21 @@
                                   Width="280"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SaveMacroStates}"
                                   Margin="8"
-                                  ToolTip="This will save character macro states on logout and reload them on login.">
-                            _Remember Last Known Macro State
+                                  ToolTip="This will automatically save character macro states on logout and reload them on login.">
+                            Auto-_Save Macro States
                         </CheckBox>
                     </StackPanel>
 
-                    <!-- Metadata Editor Button -->
-                    <Button Name="metadataEditorButton"
-                            Grid.Row="4"
-                            Grid.ColumnSpan="2"
-                            Style="{StaticResource ObsidianButton}"
-                            Width="320"
-                            Margin="4,54"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom"
-                            Click="metadataEditorButton_Click">
-                        Show _Metadata Editor
-                    </Button>
-
                     <!-- Reset Defaults Button -->
                     <Button x:Name="resetDefaultsButton"
-            		        Grid.Row="4"
+            		        Grid.Row="5"
             		        Grid.ColumnSpan="2"
             		        Style="{StaticResource ObsidianButton}"
             		        Width="320"
             		        Margin="4,8"
             		        HorizontalAlignment="Center"
             		        VerticalAlignment="Bottom"
-            		        Click="resetDefaultsButton_Click" Content="Reset Default _Settings"/>
+            		        Click="resetDefaultsButton_Click" Content="_Reset All Settings"/>
                 </Grid>
             </TabItem>
 
@@ -398,17 +390,16 @@
                     </Grid.RowDefinitions>
 
                     <!-- Client Executable Path -->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="4,2">
+                    <StackPanel Orientation="Vertical"
+                                Margin="8,4">
                         <TextBlock Text="Client Path:"
-                                   Width="100"
-                                   Margin="8,2"
+                                   Margin="2,2"
+                                   TextAlignment="Left"
                                    Style="{StaticResource ObsidianText}"
                                    ToolTip="This is the folder path to the game client executable."/>
 
                         <!-- Client Path TextBox -->
                         <TextBox Name="clientPathTextBox"
-                                 Width="340"
                                  Height="40"
                                  Style="{StaticResource ObsidianTextBox}"
                                  Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
@@ -421,13 +412,13 @@
                         <!-- Client Version-->
                         <TextBlock Text="Client Version:"
                                    Width="100"
-                                   Margin="8,2"
+                                   Margin="10,2"
                                    Style="{StaticResource ObsidianText}"
                                    ToolTip="This is the client version to expect for patching and memory reading."/>
 
                         <!-- Client Version ComboBox -->
                         <ComboBox Name="clientVersionComboBox"
-                                  Width="340" Height="32"
+                                  Width="180" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ClientVersionDataTemplate}"
                                   ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
@@ -444,7 +435,7 @@
                                 Orientation="Vertical"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                Margin="114,0,0,0">
+                                Margin="116,0,0,0">
 
                         <!-- Patch Multiple Instance CheckBox -->
                         <CheckBox Name="patchMultipleInstanceCheckBox"

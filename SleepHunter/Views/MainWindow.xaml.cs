@@ -29,6 +29,7 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.IO.Compression;
+using System.Linq;
 
 namespace SleepHunter.Views
 {
@@ -83,6 +84,8 @@ namespace SleepHunter.Views
 
             InitializeComponent();
             InitializeViews();
+
+            DisableToolbarButtons();
 
             LoadVersions();
             LoadThemes();
@@ -508,6 +511,12 @@ namespace SleepHunter.Views
                 BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
+
+            if (PlayerManager.Instance.Count < 1)
+                DisableToolbarButtons();
+
+            if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
+                SelectNextAvailablePlayer();
         }
 
         private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -637,6 +646,19 @@ namespace SleepHunter.Views
             {
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
+            }
+
+            if (selectedMacro != null && selectedMacro.Name == player.Name)
+                SelectNextAvailablePlayer();
+        }
+
+        private void SelectNextAvailablePlayer()
+        {
+            if (PlayerManager.Instance.Count < 1 || PlayerManager.Instance.Players.All(p => !p.IsLoggedIn))
+            {
+                clientListBox.SelectedItem = null;
+                DisableToolbarButtons();
+                return;
             }
         }
 
@@ -1252,7 +1274,7 @@ namespace SleepHunter.Views
         }
 
         private void Window_Shown(object sender, EventArgs e)
-        {
+        { 
             InitializeHotkeyHook();
 
             if (loadSkillsException != null)
@@ -1437,6 +1459,13 @@ namespace SleepHunter.Views
         private void Window_Closed(object sender, EventArgs e)
         {
             logger.LogInfo("Main window has been closed");
+        }
+
+        private void DisableToolbarButtons()
+        {
+            startMacroButton.IsEnabled = false;
+            pauseMacroButton.IsEnabled = false;
+            stopMacroButton.IsEnabled = false;
         }
 
         private void SaveMacroState(PlayerMacroState macro)
@@ -1769,7 +1798,10 @@ namespace SleepHunter.Views
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
 
-            UpdateUIForMacroStatus(selectedMacro.Status);
+            if (selectedMacro.Client.IsLoggedIn)
+                UpdateUIForMacroStatus(selectedMacro.Status);
+            else
+                DisableToolbarButtons();
 
             if (selectedMacro != null)
             {

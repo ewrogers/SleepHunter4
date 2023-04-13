@@ -1099,10 +1099,6 @@ namespace SleepHunter.Macro
                     pt = GetRelativeTilePoint((int)target.Location.X, (int)target.Location.Y);
                     break;
 
-                case TargetCoordinateUnits.RelativeXY:
-                    pt = new Point(315 + target.Location.X, 160 + target.Location.Y);
-                    break;
-
                 case TargetCoordinateUnits.Self:
                     pt = new Point(315, 160);
                     break;

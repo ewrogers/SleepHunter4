@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.3.1] - 2023-04-13
+## [4.3.1] - Unreleased
 
 ### Added
 
@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved debug logging option to new `Debug` section in `Settings` window
 - Accessibility shortcuts for tabs in the `Settings` window
 - Better control alignment and layout in the `Settings` window sections
+- Shortened toolbar button text as `Start Macro`, `Pause Macro`, `Stop Macro` instead
+- Metadata editor is now launched from toolbar directly (instead of `Settings->General`)
+- Improved wording on auto-save macro state setting
 
 ### Removed
 
@@ -28,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-
+- Disable start/pause/stop buttons on app load, until client login
+- Disable start/pause/stop buttons on client logout
 
 ## [4.3.0] - 2023-04-11
 
