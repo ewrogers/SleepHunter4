@@ -65,7 +65,7 @@ It will also switch staves and cast `fas spiorad` as needed to regain mana.
 You can assign custom hotkeys to each of your characters by selecting them in SleepHunter and pressing the hotkey combination you wish to use.
 This will toggle their macro state when you press the hotkey, even if the main SleepHunter window is not in focus.
 
-To remove the hotkey, simply press the `Delete` or `Backspace` key key while the character is selected.
+To remove the hotkey, simply press the `Delete` or `Backspace` key while the character is selected.
 If you assign the same hotkey to another character, the previous character will have the hotkey unbound.
 
 There is a visual indicator on the character list item to show if a hotkey is assigned.
@@ -87,4 +87,5 @@ You can also configure SleepHunter to close the game client entirely when you le
 ## Can I customize certain behaviors?
 
 Yes, many of the behaviors of SleepHunter can be customized to your liking in the `Settings` tab.
-It is recommended that you review the settings and adjust them to your liking before starting macroing.
+It is recommended that you review the settings before starting macroing.
+The default settings are designed to work for most users, but you may want to customize them to your needs.
