@@ -124,11 +124,31 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Metadata Editor Button -->
+                    <Button Name="metadataEditorButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="metadataEditorButton_Click"
+                            Padding="4,8,4,2">
+                        <DockPanel VerticalAlignment="Stretch">
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Metadata Editor"
+                                   Foreground="{Binding ElementName=metadataEditorButton, Path=Foreground}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=metadataEditorButton, Path=Foreground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0"
+                                       Text="&#xE104;"/>
+                        </DockPanel>
+                    </Button>
                     <!-- Settings Button -->
                     <Button Name="settingsButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="settingsButton_Click"
-                            Padding="8,8,8,2">
+                            Padding="4,8,8,2">
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="App Settin_gs"

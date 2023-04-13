@@ -1537,6 +1537,7 @@ namespace SleepHunter.Views
             logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
+        private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
 
