@@ -12,6 +12,9 @@
 # User Interface
 
 - [Main Window](./user-interface/main-window.md)
+- [Spell Target](./user-interface/spell-target.md)
+- [Flower Target](./user-interface/flower-target.md)
+- [Metadata Editor](./user-interface/metadata-editor.md)
 
 # Settings
 

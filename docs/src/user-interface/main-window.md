@@ -88,6 +88,41 @@ You can mouse over a spell to see the tooltip for that spell.
 
 ### Flowering Tab
 
+Shows the targets for casting `Lyliac Plant` and option to enable `Lyliac Vineyard` (if available).
+
+![image](../screenshots/flowering-tab.png)
+
+The user-selected flower target in the queue will have a left-side highlight indicator.
+
+The `Add New` button at the bottom will bring up the [Flower Target](./flower-target.md) dialog for flowering.
+This dialog allows you to select a target for the spell and add it to the `Flower Queue`.
+
+The `Flower Queue` is the list contained in the `Flowering` tab itself.
+Here all targets for `Lyliac Planet` will be displayed, with the condition set as well as a countdown timer.
+
+Double-clicking a flower target will bring up the [Flower Target](./flower-target.md) dialog for modifying the cast target.
+
+You can re-arrange the order of the targets by dragging and dropping them.
+
+Targets can be removed from the queue by clicking the `Remove` or `Clear All` buttons at the bottom.
+Alternatively, you can select a target and press the `Delete` or `Backspace` key.
+
 ## Spell Queue
 
+Shows the targets for casting spells being macroed.
+
+![image](../screenshots/spell-queue.png)
+
+The user-selected spell in the queue will have a left-side highlight indicator.
+While being cast, the spell will be highlighted white and a thick border will be displayed around the spell.
+
+Double-clicking a spell will bring up the [Spell Target](./spell-target.md) dialog for modifying the cast target.
+
+You can re-arrange the order of the targets by dragging and dropping them.
+
+Targets can be removed from the queue by clicking the `Remove` or `Clear All` buttons at the bottom.
+Alternatively, you can select a target and press the `Delete` or `Backspace` key.
+
 ## Status Bar
+
+The status bar is currently unused, but provides a way to resize the window on the bottom-right corner.
