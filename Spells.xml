@@ -103,6 +103,7 @@
     <Spell Name="Groo 8" Class="Wizard" Group="Groo" Mana="2850" Lines="2" />
     <Spell Name="Groo 9" Class="Wizard" Group="Groo" Mana="2875" Lines="2" />
     <Spell Name="Hail of Feathers 4" Class="Monk" Group="Hail of Feathers" Mana="870" />
+    <Spell Name="Hail of Feathers 7" Class="Monk" Group="Hail of Feathers" Mana="2000" />
     <Spell Name="Hide" Class="Rogue" Mana="200" />
     <Spell Name="Howl" Class="Monk" Mana="360" Lines="5" />
     <Spell Name="Inner Fire" Class="Monk" Mana="360" Lines="5" />

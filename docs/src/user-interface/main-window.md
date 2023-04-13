@@ -19,6 +19,8 @@ It is divided into main sections:
 The `Skills` and `Spells` tabs are also divided into sections for `Temuair`, `Medenia` and `World` abilities.
 These correspond to the three different skill and spell panels in the game client.
 
+**NOTE:** All of these sections can be modified in real-time without needing to stop and re-start the macro.
+
 ## Toolbar
 
 ![image](../screenshots/toolbar.png)

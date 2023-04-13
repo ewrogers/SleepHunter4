@@ -3,6 +3,7 @@
 # Overview
 
 - [Introduction](./introduction.md)
+- [History](./history.md)
 - [Features](./features.md)
 - [Installation](./installation.md)
 - [Getting Started](./getting-started.md)
