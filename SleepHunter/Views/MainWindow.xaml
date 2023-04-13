@@ -8,7 +8,8 @@
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterScreen"
         ContentRendered="Window_Shown"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Closed="Window_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

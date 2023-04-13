@@ -11,17 +11,16 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.1";
+        public static readonly string CurrentVersion = "1.2";
 
         bool isDebugMode;
+        string version;
 
         // Regular Settings
-        string version;
         TimeSpan processUpdateInterval;
         TimeSpan clientUpdateInterval;
         bool saveMacroStates;
         string selectedTheme;
-        bool rainbowMode;
         double skillIconSize;
         int skillGridWidth;
         int worldSkillGridWidth;
@@ -109,7 +108,6 @@ namespace SleepHunter.Settings
             set { this.ClientUpdateInterval = TimeSpan.FromSeconds(value); }
         }
 
-
         [XmlElement("SaveMacroStates")]
         public bool SaveMacroStates
         {
@@ -122,13 +120,6 @@ namespace SleepHunter.Settings
         {
             get { return selectedTheme; }
             set { SetProperty(ref selectedTheme, value); }
-        }
-
-        [XmlElement("RainbowMode")]
-        public bool RainbowMode
-        {
-            get { return rainbowMode; }
-            set { SetProperty(ref rainbowMode, value); }
         }
 
         [XmlElement("SkillIconSize")]
@@ -494,7 +485,6 @@ namespace SleepHunter.Settings
             SaveMacroStates = true;
 
             SelectedTheme = "Default";
-            RainbowMode = false;
             SkillIconSize = 46;
             SkillGridWidth = 12;
             WorldSkillGridWidth = 6;

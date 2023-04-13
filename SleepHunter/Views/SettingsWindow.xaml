@@ -23,8 +23,6 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -106,26 +104,9 @@
                         </CheckBox>
                     </StackPanel>
 
-                    <Separator Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource ObsidianSeparator}"/>
-
-                    <StackPanel Grid.Row="4"
-                                Grid.ColumnSpan="2"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <!-- Save Macro State -->
-                        <CheckBox Name="loggingEnabledCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  Width="280"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
-                                  Margin="8"
-                                  ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
-                            Enable Debug _Logging
-                        </CheckBox>
-                    </StackPanel>
-                    
                     <!-- Metadata Editor Button -->
                     <Button Name="metadataEditorButton"
-                            Grid.Row="6"
+                            Grid.Row="4"
                             Grid.ColumnSpan="2"
                             Style="{StaticResource ObsidianButton}"
                             Width="320"
@@ -138,7 +119,7 @@
 
                     <!-- Reset Defaults Button -->
                     <Button x:Name="resetDefaultsButton"
-            		        Grid.Row="6"
+            		        Grid.Row="4"
             		        Grid.ColumnSpan="2"
             		        Style="{StaticResource ObsidianButton}"
             		        Width="320"
@@ -150,7 +131,7 @@
             </TabItem>
 
             <!-- UI Tab-->
-            <TabItem Header="_User Interface" TabIndex="1">
+            <TabItem Header="User _Interface" TabIndex="1">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
@@ -186,7 +167,7 @@
 
                             <!-- Color Themes -->
                             <ComboBox Name="themeColorComboBox"
-                                      Width="300" Height="36"
+                                      Width="340" Height="36"
                                       Style="{StaticResource ObsidianComboBox}"
                                       ItemTemplate="{StaticResource ColorThemeDataTemplate}"
                                       ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
@@ -194,30 +175,6 @@
                                       SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
                                       Margin="4,6"/>
                         </StackPanel>
-
-                        <!-- Rainbow Mode -->
-                        <CheckBox Name="rainbowModeCheckBox"
-                                  Grid.Row="1"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RainbowMode}"
-                                  ToolTip="Aren't you curious?">
-                            _Rainbow Mode
-                        </CheckBox>
-
-                        <!-- Reset Themes Button -->
-                        <Button Name="resetThemesButton"
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Style="{StaticResource ObsidianButton}"
-                                Width="190"
-                                Margin="4,1"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Click="resetThemesButton_Click">
-                            Reset _Color Themes
-                        </Button>
 
                         <Separator Grid.Row="2"
                                    Grid.ColumnSpan="2"
@@ -378,9 +335,8 @@
                                    Margin="4,8"/>
 
                         <WrapPanel Grid.Row="9"
-                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Top"
-                                   Margin="4">
+                                   Margin="48,4,4,4">
                             <!-- Show Skill Names  -->
                             <CheckBox Name="showSkillNamesCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -405,9 +361,8 @@
                         </WrapPanel>
 
                         <WrapPanel Grid.Row="9" Grid.Column="1"
-                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Top"
-                                   Margin="4">
+                                   Margin="10,4,4,4">
                             <!-- Show Skill Levels  -->
                             <CheckBox Name="showSkillLevelsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -439,100 +394,85 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <!-- Client Path -->
-                    <TextBlock Text="Client Path:"
-                               Grid.Row="0" Grid.ColumnSpan="2"
-                               TextAlignment="Left"
-                               Margin="20,2"
-                               Style="{StaticResource ObsidianText}"
-                               ToolTip="This is the folder path to the game client executable."/>
+                    <!-- Client Executable Path -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="4,2">
+                        <TextBlock Text="Client Path:"
+                                   Width="100"
+                                   Margin="8,2"
+                                   Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the folder path to the game client executable."/>
 
-                    <!-- Client Path TextBox -->
-                    <TextBox Name="clientPathTextBox"
-                             Grid.Row="1"
-                             Grid.ColumnSpan="2"
-                             Width="440"
-                             Style="{StaticResource ObsidianTextBox}"
-                             Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
-                             Margin="0,2,0,6"/>
+                        <!-- Client Path TextBox -->
+                        <TextBox Name="clientPathTextBox"
+                                 Width="340"
+                                 Height="40"
+                                 Style="{StaticResource ObsidianTextBox}"
+                                 Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
+                                 Margin="0,4"/>
+                    </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
-                                HorizontalAlignment="Center">
+                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
+                                Orientation="Horizontal"
+                                Margin="4,2">
                         <!-- Client Version-->
                         <TextBlock Text="Client Version:"
-                                   Margin="8,1"
-                                   TextAlignment="Right"
+                                   Width="100"
+                                   Margin="8,2"
                                    Style="{StaticResource ObsidianText}"
                                    ToolTip="This is the client version to expect for patching and memory reading."/>
 
                         <!-- Client Version ComboBox -->
                         <ComboBox Name="clientVersionComboBox"
-                                  Width="240" Height="36"
+                                  Width="340" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ClientVersionDataTemplate}"
                                   ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
                                   SelectedValuePath="Key"
                                   SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedVersion}"
-                                  Margin="4,6"/>
+                                  Margin="0,2"/>
                     </StackPanel>
 
-                    <Separator Grid.Row="3" 
-            		           Grid.ColumnSpan="2"
+                    <Separator Grid.Row="2" 
             		           Style="{StaticResource ObsidianSeparator}"
             		           Margin="4,6"/>
 
-                    <StackPanel Grid.Row="4" Grid.ColumnSpan="2" 
+                    <StackPanel Grid.Row="3"
                                 Orientation="Vertical"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top">
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="114,0,0,0">
+
                         <!-- Patch Multiple Instance CheckBox -->
                         <CheckBox Name="patchMultipleInstanceCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to allow multiple instances to be launched.">
+                                    Style="{StaticResource ObsidianCheckBox}"
+                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
+                                    Margin="8"
+                                    ToolTip="This will patch the client to allow multiple instances to be launched.">
                             Allow _Multiple Instances
                         </CheckBox>
 
                         <!-- Patch Intro Video CheckBox -->
                         <CheckBox Name="patchIntroVideoCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to skip the introduction video.">
+                                    Style="{StaticResource ObsidianCheckBox}"
+                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
+                                    Margin="8"
+                                    ToolTip="This will patch the client to skip the introduction video.">
                             Skip Intro _Video
                         </CheckBox>
 
                         <!-- Patch Walls CheckBox -->
                         <CheckBox Name="patchNoWallsCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to not render foreground (wall) tiles.">
+                                   Style="{StaticResource ObsidianCheckBox}"
+                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
+                                   Margin="8"
+                                   ToolTip="This will patch the client to not render foreground (wall) tiles.">
                             No Foreground _Walls
                         </CheckBox>
                     </StackPanel>
-
-                    <!-- Reset Versions Button -->
-                    <Button Name="resetVersionsButton"
-                            Grid.Row="4"
-                            Grid.ColumnSpan="2"
-                            Style="{StaticResource ObsidianButton}"
-                            Width="240"
-                            Margin="4,8"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom"
-                            Click="resetVersionsButton_Click">
-                        Reset Client _Versions
-                    </Button>
                 </Grid>
             </TabItem>
 
@@ -859,7 +799,7 @@
                         <StackPanel Grid.Row="8"
                                     Grid.ColumnSpan="2"
                                     Orientation="Vertical"
-                                    HorizontalAlignment="Center"
+                                    Margin="54,0"
                                     VerticalAlignment="Top">
                             <!-- Mana Requirement CheckBox -->
                             <CheckBox Name="manaCheckCheckBox"
@@ -911,7 +851,7 @@
 
                     <StackPanel Orientation="Vertical"
                                 Grid.ColumnSpan="2"
-                                HorizontalAlignment="Center">
+                                Margin="46,0">
                         <!-- Flowering Priority CheckBox -->
                         <CheckBox Name="flowerPrioritizesAltsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
@@ -967,7 +907,7 @@
             </TabItem>
 
             <!-- Updates Tab -->
-            <TabItem Header="Up_dates" TabIndex="7">
+            <TabItem Header="_Updates" TabIndex="7">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1099,8 +1039,29 @@
                 </Grid>
             </TabItem>
 
+            <!-- Debug Tab -->
+            <TabItem Header="_Debug" TabIndex="8">
+                <StackPanel Orientation="Vertical" Margin="16">
+                    <StackPanel Orientation="Horizontal" Margin="16" HorizontalAlignment="Center">
+                        <!-- Enable Logging -->
+                        <CheckBox Name="loggingEnabledCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      Margin="8,8,0,8"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
+                                      ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
+                            Enable Debug _Logging
+                        </CheckBox>
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Foreground="{StaticResource ObsidianDisabled}"
+                                   FontSize="14"
+                                   Padding="0,2,0,0"
+                                   Text="(requires restart)"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+
             <!-- About Tab -->
-            <TabItem Header="A_bout" TabIndex="8">
+            <TabItem Header="A_bout" TabIndex="9">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

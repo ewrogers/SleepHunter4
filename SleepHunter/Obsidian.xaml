@@ -791,7 +791,7 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
         <Setter Property="MinWidth" Value="80"/>
-        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="MinHeight" Value="24"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>

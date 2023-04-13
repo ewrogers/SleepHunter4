@@ -58,6 +58,7 @@ namespace SleepHunter.Views
         private bool isDisposed;
         private HwndSource windowSource;
 
+        private bool isFirstRun;
         private int recentSettingsTabIndex;
         private MetadataEditorWindow metadataWindow;
         private SettingsWindow settingsWindow;
@@ -734,6 +735,8 @@ namespace SleepHunter.Views
                 {
                     UserSettingsManager.Instance.Settings.ResetDefaults();
                     logger.LogInfo("No user settings file was found, using defaults");
+
+                    isFirstRun = true;
                 }
             }
             catch (Exception ex)
@@ -954,17 +957,9 @@ namespace SleepHunter.Views
 
         private void ApplyTheme()
         {
-            if (!UserSettingsManager.Instance.Settings.RainbowMode)
-            {
-                var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
-                logger.LogInfo($"Applying UI theme: {themeName}");
-                ColorThemeManager.Instance.ApplyTheme(themeName);
-            }
-            else
-            {
-                logger.LogInfo("Applying rainbow UI theme");
-                ColorThemeManager.Instance.ApplyRainbowMode();
-            }
+            var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+            logger.LogInfo($"Applying UI theme: {themeName}");
+            ColorThemeManager.Instance.ApplyTheme(themeName);
         }
 
         private void ActivateHotkey(Key key, ModifierKeys modifiers)
@@ -1293,6 +1288,8 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            logger.LogInfo("Application is shutting down");
+
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
 
             try
@@ -1435,6 +1432,11 @@ namespace SleepHunter.Views
                     }
                 }
             }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            logger.LogInfo("Main window has been closed");
         }
 
         private void SaveMacroState(PlayerMacroState macro)
