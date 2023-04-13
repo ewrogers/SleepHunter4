@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <SkillMetadata>
   <Skills>
+    <Skill Name="Ambush" Class="Monk" Cooldown="6" />
     <Skill Name="Analyze Item" Class="Wizard" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
     <Skill Name="Appraise" Class="Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="14" />
     <Skill Name="Archery 1" Class="Rogue" Group="Bow Skill" CanImprove="false" />

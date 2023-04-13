@@ -3,7 +3,7 @@
 ## What is SleepHunter?
 
 SleepHunter is an automation tool for [Dark Ages](https://www.darkages.com), a massively multiplayer online role-playing game (MMORPG).
-It is used to automate the repetitive process of level a character's abilities.
+It is used to automate the repetitive process of leveling a character's abilities.
 
 The current version is **4.x**, which is the culmination of over a decade of experience, testing, and enhancements from user feedback.
 
