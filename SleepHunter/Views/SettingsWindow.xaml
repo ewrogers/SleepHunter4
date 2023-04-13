@@ -408,7 +408,8 @@
 
                     <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
                                 Orientation="Horizontal"
-                                Margin="4,2">
+                                HorizontalAlignment="Right"
+                                Margin="8,2">
                         <!-- Client Version-->
                         <TextBlock Text="Client Version:"
                                    Width="100"
@@ -435,7 +436,7 @@
                                 Orientation="Vertical"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                Margin="116,0,0,0">
+                                Margin="116,8,0,0">
 
                         <!-- Patch Multiple Instance CheckBox -->
                         <CheckBox Name="patchMultipleInstanceCheckBox"

@@ -7,7 +7,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Choose Target" 
-        Width="500" Height="330"
+        Width="500" Height="340"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
@@ -101,6 +101,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -131,7 +132,6 @@
                 <settings:UserSetting Key="Character" DisplayText="Alternate Character" Value="Character"/>
                 <settings:UserSetting Key="RelativeTile" DisplayText="Relative Tile" Value="RelativeTile"/>
                 <settings:UserSetting Key="RelativeRadius" DisplayText="Relative Tile Radius" Value="RelativeRadius"/>
-                <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>
                 <settings:UserSetting Key="AbsoluteTile" DisplayText="Absolute Tile" Value="AbsoluteTile"/>
                 <settings:UserSetting Key="AbsoluteRadius" DisplayText="Absolute Tile Radius" Value="AbsoluteRadius"/>
                 <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>
@@ -432,8 +432,12 @@
                                    IsEnabled="{Binding ElementName=maxLevelCheckBox, Path=IsChecked}"/>
             </Grid>
 
+            <Separator Grid.Row="11"
+                   Grid.ColumnSpan="3"
+                   Style="{StaticResource ObsidianSeparator}"/>
+
             <Button Name="okButton"
-                    Grid.Row="11"
+                    Grid.Row="12"
                     Grid.ColumnSpan="4"
                     Width="320"
                     Height="36"

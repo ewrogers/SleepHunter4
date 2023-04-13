@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shortened toolbar button text as `Start Macro`, `Pause Macro`, `Stop Macro` instead
 - Metadata editor is now launched from toolbar directly (instead of `Settings->General`)
 - Improved wording on auto-save macro state setting
+- Minimum flower "less than mana" threshold is 1 mana (instead of zero)
+- Tweaked layout of spell/flower target windows slightly
 
 ### Removed
 
@@ -33,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Disable start/pause/stop buttons on app load, until client login
 - Disable start/pause/stop buttons on client logout
+- Numeric inputs now use regex and allow much better text input of values
+- Numeric input boxes now validate/update on lost focus
 
 ## [4.3.0] - 2023-04-11
 

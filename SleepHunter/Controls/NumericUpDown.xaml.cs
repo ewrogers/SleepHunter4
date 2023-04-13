@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,6 +13,12 @@ namespace SleepHunter.Controls
 {
     public partial class NumericUpDown : UserControl
     {
+        private static readonly Regex UnsignedIntegerRegex = new Regex(@"^\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex UnsignedDoubleRegex = new Regex(@"^\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SignedIntegerRegex = new Regex(@"^-?\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SignedDoubleRegex = new Regex(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex HexadecimalRegex = new Regex(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         new public Brush BorderBrush
         {
             get { return base.BorderBrush; }
@@ -112,31 +120,51 @@ namespace SleepHunter.Controls
 
         void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            var textBox = sender as TextBox;
-            if (textBox == null)
+            if (!(sender is TextBox textBox))
                 return;
 
-            var currentText = textBox.Text;
-            var isValid = true;
+            var newText = textBox.Text.Remove(textBox.SelectionStart, textBox.SelectionLength)
+                .Insert(textBox.SelectionStart, e.Text);
 
-            foreach (char c in e.Text)
+            var allowNegative = Minimum < 0;
+            if (newText == "-" && allowNegative)
+                return;
+
+            if (IsHexadecimal) {
+                e.Handled = !HexadecimalRegex.IsMatch(newText);
+            }
+            else if (DecimalPlaces > 0)
             {
-                if (c == '\r' || c == '\n')
+                Match match;
+
+                // If allow negative, use signed, otherwise use unsigned pattern
+                if (allowNegative)
+                    match = SignedDoubleRegex.Match(newText);
+                else 
+                    match = UnsignedDoubleRegex.Match(newText);
+
+                if (!match.Success)
                 {
-                    isValid = false;
-                    break;
+                    e.Handled = true;
+                    return;
                 }
 
-                if (IsHexadecimal)
-                    isValid = c.IsValidHexDigit(allowControl: true);
-                else
-                    isValid = c.IsValidDecimalCharacter(allowControl: true) || (DecimalPlaces > 0 && c == '.') || c == '-';
-
-                if (!isValid)
-                    break;
+                // If more decimal places than allowed, reject
+                var valueDecimalPlaces = match.Groups[1].Length - 1;
+                if (valueDecimalPlaces > DecimalPlaces)
+                {
+                    e.Handled = true;
+                    return;
+                }
             }
-
-            e.Handled = !isValid;
+            else
+            {
+                // If allow negative, use signed otherwise use unsigned pattern
+                if (allowNegative)
+                    e.Handled = !SignedIntegerRegex.IsMatch(newText);
+                else
+                    e.Handled = !UnsignedIntegerRegex.IsMatch(newText);
+            }
         }
 
         void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -153,20 +181,19 @@ namespace SleepHunter.Controls
 
         void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            UpdateValue();
-        }
+            if (!(sender is TextBox textBox))
+                return;
 
-        void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
+            if (string.IsNullOrWhiteSpace(textBox.Text) || textBox.Text == "-")
+                textBox.Text = IsHexadecimal ? "0x0" : "0";
+
             UpdateValue();
         }
 
         void UpdateValue()
         {
             var binding = BindingOperations.GetBindingExpression(PART_Value, TextBox.TextProperty);
-
-            if (binding != null)
-                binding.UpdateSource();
+            binding?.UpdateSource();
 
             Value = Math.Max(Minimum, Math.Min(Maximum, Value));
         }

@@ -34,7 +34,6 @@
                          Margin="0"
                          IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}}"
                          PreviewTextInput="TextBox_PreviewTextInput"
-                         TextChanged="TextBox_TextChanged"
                          LostFocus="TextBox_LostFocus"
                          MouseWheel="TextBox_MouseWheel">
             </TextBox>

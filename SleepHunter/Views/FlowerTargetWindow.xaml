@@ -5,9 +5,8 @@
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
         xmlns:models="clr-namespace:SleepHunter.Models"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
-        xmlns:sh="clr-namespace:SleepHunter"
         Title="Add Flower Target"
-        Width="500" Height="330"
+        Width="500" Height="300"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
@@ -55,7 +54,6 @@
             <settings:UserSetting Key="Character" DisplayText="Alternate Character" Value="Character"/>
             <settings:UserSetting Key="RelativeTile" DisplayText="Relative Tile" Value="RelativeTile"/>
             <settings:UserSetting Key="RelativeRadius" DisplayText="Relative Radius" Value="RelativeRadius"/>
-            <settings:UserSetting Key="RelativeXY" DisplayText="Relative Coordinates" Value="RelativeXY"/>
             <settings:UserSetting Key="AbsoluteTile" DisplayText="Absolute Tile" Value="AbsoluteTile"/>
             <settings:UserSetting Key="AbsoluteRadius" DisplayText="Absolute Radius" Value="AbsoluteRadius"/>
             <settings:UserSetting Key="AbsoluteXY" DisplayText="Absolute Coordinates" Value="AbsoluteXY"/>
@@ -319,53 +317,50 @@
                    Grid.ColumnSpan="3"
                    Style="{StaticResource ObsidianSeparator}"/>
 
-        <CheckBox Name="intervalCheckBox" 
-                  Grid.Row="10"
-                  Grid.ColumnSpan="2"
-                  Content="Flower Interval:"
-                  Style="{StaticResource ObsidianCheckBox}"
-                  IsChecked="True"
-                  HorizontalAlignment="Right"
-                  Margin="8,6"
-                  Visibility="{Binding ElementName=intervalTextBox, Path=Visibility}"
-                  ToolTip="This is how often the target will be flowered. Use zero for continuous flower."/>
+        <StackPanel Grid.Row="10" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="16,2">
+            <CheckBox Name="intervalCheckBox"
+                      Content="Flower Interval:"
+                      Style="{StaticResource ObsidianCheckBox}"
+                      IsChecked="True"
+                      HorizontalAlignment="Right"
+                      Margin="8,6"
+                      Visibility="{Binding ElementName=intervalTextBox, Path=Visibility}"
+                      ToolTip="This is how often the target will be flowered. Use zero for continuous flower."/>
 
-        <TextBox Name="intervalTextBox" 
-                 Grid.Row="10"
-                 Grid.Column="2"
-                 Style="{StaticResource ObsidianTextBox}"
-                 Text="5 seconds"
-                 TextAlignment="Center"
-                 IsEnabled="{Binding ElementName=intervalCheckBox, Path=IsChecked}"
-                 Margin="8,4"/>
+                <TextBox Name="intervalTextBox" 
+                         Style="{StaticResource ObsidianTextBox}"
+                         Text="5 seconds"
+                         TextAlignment="Center"
+                         IsEnabled="{Binding ElementName=intervalCheckBox, Path=IsChecked}"
+                         Margin="8,4"/>
+        </StackPanel>
 
-        <CheckBox Name="manaThresholdCheckBox" 
-                  Grid.Row="11"
-                  Grid.ColumnSpan="2"
-                  Content="Flower if Mana Less Than:"
-                  Style="{StaticResource ObsidianCheckBox}"
-                  IsChecked="True"
-                  HorizontalAlignment="Right"
-                  Margin="8,6"
-                  Visibility="{Binding ElementName=manaThresholdUpDown, Path=Visibility}"
-                  ToolTip="When the target character's mana is less than this value, they will be flowered."/>
+        <StackPanel Grid.Row="11" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="16,2">
+            <CheckBox Name="manaThresholdCheckBox" 
+                      Content="Flower if Mana is Less Than:"
+                      Style="{StaticResource ObsidianCheckBox}"
+                      IsChecked="True"
+                      HorizontalAlignment="Right"
+                      Margin="8,6"
+                      Visibility="{Binding ElementName=manaThresholdUpDown, Path=Visibility}"
+                      ToolTip="When the target character's mana is less than this value, they will be flowered."/>
 
-        <ctl:NumericUpDown x:Name="manaThresholdUpDown" 
-                           Style="{StaticResource ObsidianNumericUpDown}"
-                           Grid.Row="11"
-                           Grid.Column="2"
-                           IsEnabled="{Binding ElementName=manaThresholdCheckBox, Path=IsChecked}"
-                           Value="1000"
-                           Minimum="0"
-                           Maximum="1000000"
-                           Margin="8,4"/>
+            <ctl:NumericUpDown x:Name="manaThresholdUpDown" 
+                               Style="{StaticResource ObsidianNumericUpDown}"
+                               IsEnabled="{Binding ElementName=manaThresholdCheckBox, Path=IsChecked}"
+                               Value="1000"
+                               Minimum="1"
+                               Maximum="1000000"
+                               Width="140"
+                               Margin="8,4"/>
+        </StackPanel>
 
         <Separator Grid.Row="12"
                    Grid.ColumnSpan="3"
                    Style="{StaticResource ObsidianSeparator}"/>
 
         <Button Name="okButton"
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.ColumnSpan="3"
                 Width="320"
                 Height="36"

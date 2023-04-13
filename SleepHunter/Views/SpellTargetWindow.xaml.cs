@@ -15,7 +15,8 @@ namespace SleepHunter.Views
 {
     public partial class SpellTargetWindow : Window
     {
-        SpellQueueItem spellQueueItem = new SpellQueueItem();
+        private double baseHeight;
+        private SpellQueueItem spellQueueItem = new SpellQueueItem();
 
         public SpellQueueItem SpellQueueItem
         {
@@ -46,11 +47,11 @@ namespace SleepHunter.Views
         {
             if (isEditMode)
             {
-                this.Title = "Edit Target";
+                Title = "Edit Target";
                 okButton.Content = "_Save Changes";
             }
 
-            this.SpellQueueItem.Id = item.Id;
+            SpellQueueItem.Id = item.Id;
             SetTargetForMode(item.Target);
 
             maxLevelCheckBox.IsChecked = item.HasTargetLevel;
@@ -58,13 +59,13 @@ namespace SleepHunter.Views
             if (item.HasTargetLevel)
                 maxLevelUpDown.Value = item.TargetLevel.Value;
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
         }
 
         public SpellTargetWindow(Spell spell)
            : this()
         {
-            this.Spell = spell;
+            Spell = spell;
 
             maxLevelUpDown.Value = spell.MaximumLevel;
             maxLevelCheckBox.IsChecked = spell.CurrentLevel < spell.MaximumLevel;
@@ -99,7 +100,7 @@ namespace SleepHunter.Views
             WarningBorder.Visibility = Visibility.Collapsed;
         }
 
-        void InitializeViews()
+        private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
@@ -108,25 +109,24 @@ namespace SleepHunter.Views
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
         }
 
-        void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
+        private void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            this.Dispatcher.InvokeIfRequired(() =>
+            Dispatcher.InvokeIfRequired(() =>
             {
                 BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var player = sender as Player;
-            if (player == null)
+            if (!(sender is Player player))
                 return;
 
             if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
                string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
-                this.Dispatcher.InvokeIfRequired(() =>
+                Dispatcher.InvokeIfRequired(() =>
                 {
                     BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
                     characterComboBox.Items.Refresh();
@@ -135,17 +135,17 @@ namespace SleepHunter.Views
             }
         }
 
-        bool ValidateSpellTarget()
+        private bool ValidateSpellTarget()
         {
             #region Spell Check
-            if (this.Spell == null)
+            if (Spell == null)
             {
                 this.ShowMessageBox("Invalid Spell",
                    "This spell is no longer valid.",
                    "This spell window will now close, please try again.",
                    MessageBoxButton.OK);
 
-                this.Close();
+                Close();
                 return false;
             }
             #endregion
@@ -153,7 +153,7 @@ namespace SleepHunter.Views
             var selectedMode = GetSelectedMode();
 
             #region Check Target Mode
-            if (this.Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
+            if (Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
             {
                 this.ShowMessageBox("Target Required",
                    "This spell requires a target.",
@@ -191,13 +191,13 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            spellQueueItem.Icon = this.Spell.Icon;
-            spellQueueItem.Name = this.Spell.Name;
-            spellQueueItem.CurrentLevel = this.Spell.CurrentLevel;
-            spellQueueItem.MaximumLevel = this.Spell.MaximumLevel;
+            spellQueueItem.Icon = Spell.Icon;
+            spellQueueItem.Name = Spell.Name;
+            spellQueueItem.CurrentLevel = Spell.CurrentLevel;
+            spellQueueItem.MaximumLevel = Spell.MaximumLevel;
 
-            if (!this.IsEditMode)
-                spellQueueItem.StartingLevel = this.Spell.CurrentLevel;
+            if (!IsEditMode)
+                spellQueueItem.StartingLevel = Spell.CurrentLevel;
 
             spellQueueItem.Target.Units = selectedMode;
 
@@ -228,22 +228,21 @@ namespace SleepHunter.Views
             return true;
         }
 
-        TargetCoordinateUnits GetSelectedMode()
+        private TargetCoordinateUnits GetSelectedMode()
         {
             TargetCoordinateUnits mode = TargetCoordinateUnits.None;
 
             if (targetModeComboBox == null)
                 return mode;
 
-            var setting = targetModeComboBox.SelectedValue as string;
-            if (setting == null)
+            if (!(targetModeComboBox.SelectedValue is string setting))
                 return mode;
 
             Enum.TryParse(setting, out mode);
             return mode;
         }
 
-        Point GetLocationForMode(TargetCoordinateUnits units)
+        private Point GetLocationForMode(TargetCoordinateUnits units)
         {
             switch (units)
             {
@@ -267,7 +266,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SetTargetForMode(SpellTarget target)
+        private void SetTargetForMode(SpellTarget target)
         {
             if (target == null)
                 return;
@@ -310,7 +309,7 @@ namespace SleepHunter.Views
             offsetYUpDown.Value = target.Offset.Y;
         }
 
-        void ToggleTargetMode(TargetCoordinateUnits units)
+        private void ToggleTargetMode(TargetCoordinateUnits units)
         {
             var requiresTarget = units != TargetCoordinateUnits.None;
             var isSelfTarget = units == TargetCoordinateUnits.Self;
@@ -337,7 +336,11 @@ namespace SleepHunter.Views
             if (outerRadiusUpDown != null)
                 outerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
 
-            var height = 330;
+            // Store this the first time before resizing
+            if (baseHeight <= 0)
+                baseHeight = Height;
+
+            var height = baseHeight;
 
             if (requiresTarget)
                 height += 40;
@@ -348,10 +351,10 @@ namespace SleepHunter.Views
             if (!isSelfTarget && requiresTarget)
                 height += 40;
 
-            this.Height = height;
+            Height = height;
         }
 
-        void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count < 1)
             {
@@ -359,28 +362,25 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var item = e.AddedItems[0] as UserSetting;
-            if (item == null)
+            if (!(e.AddedItems[0] is UserSetting item))
             {
                 ToggleTargetMode(TargetCoordinateUnits.None);
                 return;
             }
 
-            TargetCoordinateUnits mode;
-
-            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out mode))
+            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out var mode))
                 mode = TargetCoordinateUnits.None;
 
             ToggleTargetMode(mode);
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateSpellTarget())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
     }
 }
