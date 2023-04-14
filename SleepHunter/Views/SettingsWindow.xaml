@@ -11,6 +11,21 @@
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner">
     <Grid>
+
+        <!-- Show Release Notes Link Button -->
+        <Button Panel.ZIndex="10"
+                Style="{StaticResource ObsidianLinkButton}"
+                Width="130"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="0,8"
+                Click="userManualLink_Click"
+                ToolTip="Opens the user manual in the browser.">
+            <TextBlock Style="{StaticResource ObsidianHyperlinkText}">
+                User Manual
+            </TextBlock>
+        </Button>
+
         <!-- Tabs -->
         <TabControl Name="tabControl"
                     Style="{StaticResource ObsidianVerticalTabControl}"

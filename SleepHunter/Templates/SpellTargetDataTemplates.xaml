@@ -96,6 +96,7 @@
                                 VerticalAlignment="Center">
                         <TextBlock Name="NameText"
                                    Style="{StaticResource ObsidianText}"
+                                   Foreground="{StaticResource ObsidianForeground}"
                                    FontSize="16"
                                    Text="{Binding Name}"
                                    TextWrapping="WrapWithOverflow"
@@ -105,6 +106,7 @@
                                    Grid.Column="1"
                                    Grid.ColumnSpan="3"
                                    Style="{StaticResource ObsidianText}"
+                                   Foreground="{StaticResource ObsidianForeground}"
                                    FontSize="14"
                                    Text="{Binding Target, StringFormat=Targeting {0}}"
                                    TextWrapping="WrapWithOverflow"
@@ -120,6 +122,7 @@
 
                             <TextBlock Name="CurrentLevelText"
                                        Style="{StaticResource ObsidianText}"
+                                       Foreground="{StaticResource ObsidianForeground}"
                                        FontSize="14"
                                        FontWeight="Normal"
                                        Text="{Binding CurrentLevel}"
@@ -139,6 +142,7 @@
                             <TextBlock Name="TargetLevelText"
                                        Grid.Column="2"
                                        Style="{StaticResource ObsidianText}"
+                                       Foreground="{StaticResource ObsidianForeground}"
                                        FontSize="14"
                                        FontWeight="Normal"
                                        Text="{Binding TargetLevel}"
@@ -150,7 +154,7 @@
 
                         <TextBlock Name="CompletedText"
                                    Style="{StaticResource ObsidianText}"
-                                   Foreground="{StaticResource ObsidianDisabled}"
+                                   Foreground="{StaticResource ObsidianInactive}"
                                    FontSize="12"
                                    FontWeight="Normal"
                                    Visibility="Collapsed"
@@ -222,6 +226,11 @@
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
+                <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+                <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+                <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+                <Setter TargetName="TargetLevelText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+                <Setter TargetName="CompletedText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding HasTargetLevel}" Value="False">
                 <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>

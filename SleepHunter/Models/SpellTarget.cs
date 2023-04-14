@@ -277,7 +277,7 @@ namespace SleepHunter.Models
                     return string.Format("Tile {0}, {1}", location.X.ToString(), location.Y.ToString());
 
                 case TargetCoordinateUnits.AbsoluteXY:
-                    return string.Format("{0}, {1}", location.X.ToString(), location.Y.ToString());
+                    return string.Format("Screen {0}, {1}", location.X.ToString(), location.Y.ToString());
 
                 case TargetCoordinateUnits.RelativeTile:
                     return string.Format("{0}", ToRelativeString(location));

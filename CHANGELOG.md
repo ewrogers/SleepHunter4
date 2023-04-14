@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Height resize animations to spell and flower dialogs when selecting target types
 - [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application
 - On first run the application will ask the user if they wish to open the user manual docs in the browser
+- User manual link in settings window (below all tabs)
 
 ### Changed
 
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable start/pause/stop buttons on client logout
 - Numeric inputs now use regex and allow much better text input of values
 - Numeric input boxes now validate/update on lost focus
+- Spell queue "disabled" selected text is now white instead of gray on gray
 
 ## [4.3.0] - 2023-04-11
 

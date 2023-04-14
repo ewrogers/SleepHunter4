@@ -186,6 +186,11 @@ namespace SleepHunter.Views
             }
         }
 
+        void userManualLink_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
+        }
+
         async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
             if (!(Owner is MainWindow mainWindow))
