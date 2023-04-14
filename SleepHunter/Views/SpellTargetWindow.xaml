@@ -387,7 +387,7 @@
                       FontSize="16"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
-                      Margin="8,6,40,4"
+                      Margin="8,6,64,4"
                       Visibility="{Binding ElementName=maxLevelUpDown, Path=Visibility}"
                       ToolTip="This is the level that macroing for this spell will stop."/>
 
@@ -397,7 +397,7 @@
                                Grid.ColumnSpan="3"
                                Style="{StaticResource ObsidianNumericUpDown}"
                                DecoratorText="Level"
-                               Width="204"
+                               Width="196"
                                HorizontalAlignment="Right"
                                Minimum="0"
                                Maximum="100"

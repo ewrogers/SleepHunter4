@@ -27,7 +27,6 @@ using SleepHunter.Win32;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.IO.Compression;
 using System.Linq;
 
@@ -69,10 +68,6 @@ namespace SleepHunter.Views
         private BackgroundWorker flowerUpdateWorker;
 
         private PlayerMacroState selectedMacro;
-
-        private Exception loadSkillsException;
-        private Exception loadSpellsException;
-        private Exception loadStavesException;
 
         public MainWindow()
         {
@@ -795,8 +790,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load skills metadata");
                 logger.LogException(ex);
-
-                loadSkillsException = ex;
             }
         }
 
@@ -821,8 +814,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load spells metadata");
                 logger.LogException(ex);
-
-                loadSpellsException = ex;
             }
         }
 
@@ -847,8 +838,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load staves metadata");
                 logger.LogException(ex);
-
-                loadStavesException = ex;
             }
         }
 
@@ -1277,31 +1266,10 @@ namespace SleepHunter.Views
         { 
             InitializeHotkeyHook();
 
-            if (loadSkillsException != null)
+            if (isFirstRun)
             {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading skill metadata from file:\n{0}", loadSkillsException.Message),
-                   "Information for skills is required for some features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
-            }
-
-            if (loadSpellsException != null)
-            {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading spell metadata from file:\n{0}", loadSpellsException.Message),
-                   "Information for spells is required for some casting features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
-            }
-
-            if (loadStavesException != null)
-            {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading staff metadata from file:\n{0}", loadStavesException.Message),
-                   "Information on staves is required for some casting features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogInfo("Is first launch, prompting user to view the manual...");
+                PromptUserToOpenUserManual();
             }
 
             if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
@@ -1459,6 +1427,32 @@ namespace SleepHunter.Views
         private void Window_Closed(object sender, EventArgs e)
         {
             logger.LogInfo("Main window has been closed");
+        }
+
+        private void PromptUserToOpenUserManual()
+        {
+            var result = this.ShowMessageBox("Welcome to SleepHunter",
+                "It appears to be your first time running the application.\nDo you want to open the user manual?\n\n(This is recommended for new users)",
+                "This prompt will not be displayed again.",
+                MessageBoxButton.YesNo,
+                480, 280);
+
+            if (result.HasValue && result.Value)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInfo("Unable to open the user manual");
+                    logger.LogException(ex);
+                }
+            }
+            else
+            {
+                logger.LogInfo("User declined to view the user manual");
+            }
         }
 
         private void DisableToolbarButtons()

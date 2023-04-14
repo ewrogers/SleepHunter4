@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Ambush` in the skills metadata file
 - `Hail of Feathers 7` in the spells metadata file
 - `Debug` tab in `Settings` window
-- Expand/collapse animations to spell and flower dialogs when selecting target types
+- MP cost display in spell target dialog
+- Height resize animations to spell and flower dialogs when selecting target types
+- [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application
+- On first run the application will ask the user if they wish to open the user manual docs in the browser
 
 ### Changed
 
@@ -23,17 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metadata editor is now launched from toolbar directly (instead of `Settings->General`)
 - Improved wording on auto-save macro state setting
 - Minimum flower "less than mana" threshold is 1 mana (instead of zero)
-- Numeric inputs can now have prefix/unit decorators
-- Improved layout of spell/flower target windows, now include mana cost as well
+- Numeric inputs can now have prefix/unit contextual decorators
+- Redesigned layout of spell and flower target dialogs
 - Increased padding on flowering options under the main window tab
 - Spell queue now highlights icon in white instead of color to be consistent with skill macros
-- Renamed `Tile Radius` to `Tile Area` for more clairity
-- Renamed `Absolute X/Y` to `Screen Position` for more clarity
+- Renamed `Tile Radius` to `Tile Area` target type for more clairity
+- Renamed `Absolute X/Y` to `Screen Position` target type for more clarity
 - Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension
 - Slightly narrower dropdown button
 
 ### Removed
 
+- Data file error dialogs on launch
 - `Relative Coordinates` target type, as it is redundant with `Self` and x/y offsets
 - `Rainbow Mode` as it is not very useful, visually
 - `Reset Themes` button in `Settings->User Interface` section

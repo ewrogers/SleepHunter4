@@ -33,7 +33,7 @@ namespace SleepHunter.Extensions
                 action(value);
         }
 
-        public static bool? ShowMessageBox(this Window owner, string windowTitle, string messageText, string subText = null, MessageBoxButton buttons = MessageBoxButton.OK, int width = 420, int height = 260)
+        public static bool? ShowMessageBox(this Window owner, string windowTitle, string messageText, string subText = null, MessageBoxButton buttons = MessageBoxButton.OK, int width = 420, int height = 280)
         {
             var messageBox = new MessageBoxWindow();
             messageBox.Title = windowTitle ?? string.Empty;
