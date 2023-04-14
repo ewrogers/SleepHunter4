@@ -9,6 +9,9 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value is string stringValue)
+                return string.IsNullOrWhiteSpace(stringValue) ? Visibility.Collapsed : Visibility.Visible;
+
             var boolean = (bool)value;
             var parameterString = parameter as string;
 

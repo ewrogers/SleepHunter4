@@ -172,32 +172,6 @@
             <sys:Int32>15</sys:Int32>
         </ComboBox>
 
-        <TextBlock Grid.Row="3"
-                   Text="Relative X,Y:"
-                   Style="{StaticResource ObsidianText}"
-                   FontSize="18"
-                   TextAlignment="Right"
-                   Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
-                   ToolTip="This is the pixel coordinate, relative to yourself, that you wish to target."/>
-
-        <ctl:NumericUpDown x:Name="relativeXUpDown"
-                           Style="{StaticResource ObsidianNumericUpDown}"
-                           Grid.Row="3"
-                           Grid.Column="1"
-                           Margin="8,4"
-                           Minimum="-1280"
-                           Maximum="1280"
-                           Visibility="Collapsed"/>
-
-        <ctl:NumericUpDown x:Name="relativeYUpDown"
-                           Style="{StaticResource ObsidianNumericUpDown}"
-                           Grid.Row="3"
-                           Grid.Column="2"
-                           Minimum="-1280"
-                           Maximum="1280"
-                           Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
-                           Margin="8,4"/>
-
         <TextBlock Grid.Row="4"
                    Text="Absolute Tile:"
                    Style="{StaticResource ObsidianText}"
@@ -208,6 +182,7 @@
 
         <ctl:NumericUpDown x:Name="absoluteTileXUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
+                           DecoratorText="Tile X"
                            Grid.Row="4"
                            Grid.Column="1"
                            Minimum="0"
@@ -217,6 +192,7 @@
 
         <ctl:NumericUpDown x:Name="absoluteTileYUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
+                           DecoratorText="Tile Y"
                            Grid.Row="4"
                            Grid.Column="2"
                            Minimum="0"

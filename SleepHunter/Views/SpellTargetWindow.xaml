@@ -16,75 +16,81 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
 
-        <Border Grid.RowSpan="2" 
-                BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                BorderThickness="1"
-                Padding="2" Width="64" Height="64"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Margin="8,4">
-            <Image Source="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
-                    Width="62" Height="62"
-                    RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-        </Border>
+        <!-- Icon, Name, Mana Cost, Level-->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Column="1"
-                   Grid.RowSpan="2"
-                   Text="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Name, Mode=OneWay}"
-                   Style="{StaticResource ObsidianText}"
-                   FontSize="26"
-                   TextWrapping="WrapWithOverflow"
-                   Margin="4,1,4,2"/>
+            <!-- Spell Icon -->
+            <Border Grid.RowSpan="2" 
+                    BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                    BorderThickness="1"
+                    Padding="2" Width="64" Height="64"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="8,4">
+                <Image Source="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Icon, Mode=OneWay}"
+                       Width="62" Height="62"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            </Border>
 
-        <Border Name="WarningBorder" 
-                Grid.Column="2"
-                Grid.RowSpan="2"
-                Background="Transparent"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Margin="6,2,10,2"
-                ToolTip="This spell is not defined in metadata, may not cast properly."
-                Visibility="Collapsed">
-            <Path Name="WarningIcon"
-                  StrokeThickness="2"
-                  Stroke="{DynamicResource ObsidianBackground}"
-                  Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"/>
-        </Border>
+            <!-- Spell Name -->
+            <TextBlock Grid.Column="1"
+                       Text="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.Name, Mode=OneWay}"
+                       Style="{StaticResource ObsidianText}"
+                       FontSize="24"
+                       Margin="4,2"/>
 
-        <TextBlock Grid.Column="3" Text="Level"
-                   Style="{StaticResource ObsidianText}"
-                   TextAlignment="Center"
-                   FontSize="18"
-                   Opacity="0.5"
-                   Margin="4,2"/>
+            <!-- Spell Mana Cost -->
+            <TextBlock Grid.Column="1"
+                       Grid.Row="1"
+                       Text="{Binding RelativeSource={RelativeSource AncestorType=views:SpellTargetWindow}, Path=Spell.ManaCost, Mode=OneWay, StringFormat={}{0} MP}"
+                       Style="{StaticResource ObsidianText}"
+                       VerticalAlignment="Top"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="18"
+                       Margin="4,2"/>
 
-        <TextBlock Grid.Row="1" Grid.Column="3"
-                   Style="{StaticResource ObsidianText}"
-                   FontSize="26"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   Opacity="0.75"
-                   Margin="8,-8,8,4">
-            <TextBlock.Text>
-                <MultiBinding StringFormat="{}{0} / {1}">
-                    <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.CurrentLevel" Mode="OneWay"/>
-                    <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.MaximumLevel" Mode="OneWay"/>
-                </MultiBinding>
-            </TextBlock.Text>
-        </TextBlock>
+            <!-- Spell Level -->
+            <TextBlock Grid.Column="2"
+                       Style="{StaticResource ObsidianText}"
+                       TextAlignment="Center"
+                       Text="Level"
+                       FontSize="24"
+                       Opacity="0.5"
+                       Margin="16,2"/>
 
-        <Separator Grid.Row="2"
+            <TextBlock Grid.Column="2"
+                       Grid.Row="1"
+                       Style="{StaticResource ObsidianText}"
+                       FontSize="20"
+                       FontWeight="Normal"
+                       TextAlignment="Center"
+                       VerticalAlignment="Top"
+                       TextWrapping="Wrap"
+                       Opacity="0.75"
+                       Margin="16,2">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} / {1}">
+                        <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.CurrentLevel" Mode="OneWay"/>
+                        <Binding RelativeSource="{RelativeSource AncestorType=views:SpellTargetWindow}" Path="Spell.MaximumLevel" Mode="OneWay"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+        </Grid>
+
+        <Separator Grid.Row="1"
                    Grid.ColumnSpan="4"
                    Style="{StaticResource ObsidianSeparator}"/>
 
@@ -250,32 +256,6 @@
                 <sys:Int32>15</sys:Int32>
             </ComboBox>
 
-            <TextBlock Grid.Row="3"
-                       Text="Relative X,Y:"
-                       Style="{StaticResource ObsidianText}"
-                       FontSize="16"
-                       TextAlignment="Right"
-                       Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
-                       ToolTip="This is the pixel coordinate, relative to yourself, that you wish to target."/>
-
-            <ctl:NumericUpDown x:Name="relativeXUpDown"
-                               Style="{StaticResource ObsidianNumericUpDown}"
-                               Grid.Row="3"
-                               Grid.Column="1"
-                               Margin="8,4"
-                               Minimum="-1280"
-                               Maximum="1280"
-                               Visibility="Collapsed"/>
-
-            <ctl:NumericUpDown x:Name="relativeYUpDown"
-                               Style="{StaticResource ObsidianNumericUpDown}"
-                               Grid.Row="3"
-                               Grid.Column="2"
-                               Minimum="-1280"
-                               Maximum="1280"
-                               Visibility="{Binding ElementName=relativeXUpDown, Path=Visibility}"
-                               Margin="8,4"/>
-
             <TextBlock Grid.Row="4"
                        Text="Absolute Tile:"
                        Style="{StaticResource ObsidianText}"
@@ -288,6 +268,7 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="4"
                                Grid.Column="1"
+                               DecoratorText="Tile X"
                                Minimum="0"
                                Maximum="255"
                                Margin="8,4"
@@ -297,13 +278,14 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="4"
                                Grid.Column="2"
+                               DecoratorText="Tile Y"
                                Minimum="0"
                                Maximum="255"
                                Visibility="{Binding ElementName=absoluteTileXUpDown, Path=Visibility}"
                                Margin="8,4"/>
 
             <TextBlock Grid.Row="5"
-                       Text="Absolute X,Y:"
+                       Text="Absolute Coords:"
                        Style="{StaticResource ObsidianText}"
                        FontSize="16"
                        TextAlignment="Right"
@@ -314,6 +296,7 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="5"
                                Grid.Column="1"
+                               DecoratorText="X"
                                Minimum="-2560"
                                Maximum="2560"
                                Margin="8,4"
@@ -323,6 +306,7 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="5"
                                Grid.Column="2"
+                               DecoratorText="Y"
                                Minimum="-2560"
                                Maximum="2560"
                                Visibility="{Binding ElementName=absoluteXUpDown, Path=Visibility}"
@@ -341,6 +325,7 @@
                                Grid.Row="6"
                                Grid.Column="1"
                                Grid.ColumnSpan="2"
+                               DecoratorText="Tiles"
                                Minimum="0"
                                Maximum="9"
                                LargeIncrement="2"
@@ -361,6 +346,7 @@
                                Grid.Row="7"
                                Grid.Column="1"
                                Grid.ColumnSpan="2"
+                               DecoratorText="Tiles"
                                Minimum="1"
                                Maximum="10"
                                LargeIncrement="2"
@@ -369,7 +355,7 @@
                                Visibility="Collapsed"/>
 
             <TextBlock Grid.Row="8"
-                       Text="Offset X,Y:"
+                       Text="Offset Coords:"
                        Style="{StaticResource ObsidianText}"
                        FontSize="16"
                        TextAlignment="Right"
@@ -380,6 +366,7 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="8"
                                Grid.Column="1"
+                               DecoratorText="X"
                                Minimum="-2560"
                                Maximum="2560"
                                Margin="8,4"
@@ -389,6 +376,7 @@
                                Style="{StaticResource ObsidianNumericUpDown}"
                                Grid.Row="8"
                                Grid.Column="2"
+                               DecoratorText="Y"
                                Minimum="-2560"
                                Maximum="2560"
                                Margin="8,4"
@@ -425,6 +413,7 @@
                 <ctl:NumericUpDown x:Name="maxLevelUpDown"
                                    Style="{StaticResource ObsidianNumericUpDown}"
                                    Grid.Column="2"
+                                   DecoratorText="Ass"
                                    Width="140"
                                    Margin="8,4"
                                    Minimum="0"

@@ -80,14 +80,7 @@ namespace SleepHunter.Views
 
             if (!SpellMetadataManager.Instance.ContainsSpell(spell.Name))
             {
-                WarningBorder.Visibility = Visibility.Visible;
-
-                var opacityAnimation = new DoubleAnimation(1.0, 0.25, new Duration(TimeSpan.FromSeconds(0.4)));
-                opacityAnimation.AccelerationRatio = 0.75;
-                opacityAnimation.AutoReverse = true;
-                opacityAnimation.RepeatBehavior = RepeatBehavior.Forever;
-
-                WarningIcon.BeginAnimation(FrameworkElement.OpacityProperty, opacityAnimation);
+                // Warn on missing spell?
             }
         }
 
@@ -97,7 +90,6 @@ namespace SleepHunter.Views
             InitializeViews();
 
             ToggleTargetMode(TargetCoordinateUnits.None);
-            WarningBorder.Visibility = Visibility.Collapsed;
         }
 
         private void InitializeViews()

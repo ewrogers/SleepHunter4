@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.3.1] - Unreleased
+## [4.4.0] - Unreleased
 
 ### Added
 
@@ -22,7 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metadata editor is now launched from toolbar directly (instead of `Settings->General`)
 - Improved wording on auto-save macro state setting
 - Minimum flower "less than mana" threshold is 1 mana (instead of zero)
-- Tweaked layout of spell/flower target windows slightly
+- Numeric inputs can now have prefix/unit decorators
+- Improved layout of spell/flower target windows, now include mana cost as well
+- Spell queue now highlights icon in white instead of color to be consistent with skill macros
 
 ### Removed
 
@@ -30,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Rainbow Mode` as it is not very useful, visually
 - `Reset Themes` button in `Settings->User Interface` section
 - `Reset Version` button in `Settings->Game Client` section
+- Missing spell indicator warning (now shows as zero MP)
 
 ### Fixed
 

@@ -86,15 +86,8 @@
                                    Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
                                    Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
                                    Source="{Binding Icon}"
+                                   Opacity="0.5"
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                            <Rectangle Name="ActiveRectangle"
-                                       Fill="{DynamicResource ObsidianBackground}"
-                                       Opacity="0.25"
-                                       Visibility="Collapsed">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="{Binding Icon}"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
                         </Grid>
                     </Border>
 
@@ -237,7 +230,7 @@
                 <Setter TargetName="TargetText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="Icon" Property="Opacity" Value="1"/>
                 <Setter TargetName="IconBorder" Property="BorderThickness" Value="3"/>
                 <Setter TargetName="IconBorder" Property="Margin" Value="5,2"/>
             </DataTrigger>

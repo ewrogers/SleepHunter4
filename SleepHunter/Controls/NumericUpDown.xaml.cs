@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-
-using SleepHunter.Extensions;
 
 namespace SleepHunter.Controls
 {
@@ -72,6 +69,15 @@ namespace SleepHunter.Controls
             get { return (bool)GetValue(AllowTextInputProperty); }
             set { SetValue(AllowTextInputProperty, value); }
         }
+
+        public string DecoratorText
+        {
+            get { return (string)GetValue(DecoratorTextProperty); }
+            set { SetValue(DecoratorTextProperty, value); }
+        }
+
+        public static readonly DependencyProperty DecoratorTextProperty =
+            DependencyProperty.Register("DecoratorText", typeof(string), typeof(NumericUpDown), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty AllowTextInputProperty =
             DependencyProperty.Register("AllowTextInput", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(true));

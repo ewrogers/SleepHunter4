@@ -19,28 +19,45 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox Name="PART_Value" 
-                         Grid.RowSpan="2"
-                         Style="{StaticResource ObsidianNonEraseTextBox}"
-                         BorderThickness="1,1,0,1"
-                         FontSize="{Binding ElementName=Root, Path=FontSize}"
-                         FontWeight="Normal"
-                         Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter}}"
-                         TextAlignment="Center"
-                         Padding="1"
-                         Margin="0"
-                         IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}}"
-                         PreviewTextInput="TextBox_PreviewTextInput"
-                         LostFocus="TextBox_LostFocus"
-                         MouseWheel="TextBox_MouseWheel">
-            </TextBox>
+            
+            <!-- Decorator Text -->
+            <Border Grid.RowSpan="2"
+                    Background="{Binding ElementName=incrementButton, Path=Background, Mode=OneWay}"
+                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Converter={StaticResource VisibilityConverter}}">
+                <TextBlock Style="{StaticResource ObsidianText}"
+                           Foreground="{Binding ElementName=incrementButton, Path=Foreground}"
+                           MinWidth="20"
+                           FontSize="16"
+                           FontWeight="Normal"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText}"
+                           TextAlignment="Center"
+                           Margin="4,2"/>
+            </Border>
+            
+            <!-- Text Input -->
+            <TextBox Name="PART_Value"
+                     Grid.Column="1"
+                     Grid.RowSpan="2"
+                     Style="{StaticResource ObsidianNonEraseTextBox}"
+                     BorderThickness="1"
+                     FontSize="{Binding ElementName=Root, Path=FontSize}"
+                     FontWeight="Normal"
+                     Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter}}"
+                     TextAlignment="Center"
+                     Padding="1"
+                     Margin="0"
+                     IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}}"
+                     PreviewTextInput="TextBox_PreviewTextInput"
+                     LostFocus="TextBox_LostFocus"
+                     MouseWheel="TextBox_MouseWheel"/>
 
             <!-- Increment Button -->
             <RepeatButton Name="incrementButton" 
-                              Grid.Column="1"
+                              Grid.Column="2"
                               Width="26"
                               Focusable="False"
                               Style="{StaticResource ObsidianSpinButton}"
@@ -56,7 +73,7 @@
             <!-- Decrement Button -->
             <RepeatButton Name="decrementButton" 
                               Grid.Row="1" 
-                              Grid.Column="1"
+                              Grid.Column="2"
                               Width="26"
                               Focusable="False"
                               Style="{StaticResource ObsidianSpinButton}"
