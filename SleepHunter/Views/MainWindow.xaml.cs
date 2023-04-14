@@ -1537,6 +1537,10 @@ namespace SleepHunter.Views
 
         private void clientListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1549,6 +1553,10 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1633,6 +1641,10 @@ namespace SleepHunter.Views
 
         private void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1969,6 +1981,10 @@ namespace SleepHunter.Views
 
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem item))
                 return;
 
@@ -1987,6 +2003,10 @@ namespace SleepHunter.Views
 
         private void spellListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem item))
                 return;
 

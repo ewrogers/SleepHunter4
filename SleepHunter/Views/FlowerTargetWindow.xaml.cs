@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 using SleepHunter.Extensions;
@@ -296,8 +297,6 @@ namespace SleepHunter.Views
 
         private void ToggleTargetMode(TargetCoordinateUnits units)
         {
-            var requiresTarget = units != TargetCoordinateUnits.None;
-            var isSelfTarget = units == TargetCoordinateUnits.Self;
             var isRadius = units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius;
 
             if (characterComboBox != null)
@@ -329,22 +328,28 @@ namespace SleepHunter.Views
                     manaThresholdCheckBox.IsChecked = false;
             }
 
-            // Store this the first time before resizing
-            if (baseHeight <= 0)
-                baseHeight = Height;
+            SizeToFit(units, IsLoaded);
+        }
 
-            var height = baseHeight;
+        private void SizeToFit(TargetCoordinateUnits units, bool animate = true)
+        {
+            var measuredHeight = 346;
 
-            if (requiresTarget)
-                height += 40;
+            if (units == TargetCoordinateUnits.Character)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.RelativeTile)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
+                measuredHeight += 84;
 
-            if (isRadius)
-                height += 90;
+            if (!animate)
+            {
+                Height = measuredHeight;
+                return;
+            }
 
-            if (!isSelfTarget && requiresTarget)
-                height += 40;
-
-            Height = height;
+            var heightAnimation = new DoubleAnimation(measuredHeight, new Duration(TimeSpan.FromSeconds(0.25)));
+            BeginAnimation(HeightProperty, heightAnimation);
         }
 
         private void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

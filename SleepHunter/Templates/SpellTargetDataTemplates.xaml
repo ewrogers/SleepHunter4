@@ -167,44 +167,10 @@
                             </TextBlock.Text>
                         </TextBlock>
                     </StackPanel>
-
-                    <Border Name="WarningBorder"
-                            Background="Transparent"
-                            Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Stretch"
-                            ToolTip="This spell is not defined in metadata, may not cast properly."
-                            Margin="0,0,2,0"
-                            Visibility="Collapsed">
-                        <Path Name="WarningIcon"
-                              StrokeThickness="2"
-                              Stroke="{DynamicResource ObsidianBackground}"
-                              Data="M 0,24 h 24 l -12,-22 z m 12,-15 v 8 m 0,2 v 2"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"/>
-                    </Border>
                 </Grid>
             </Border>
         </DockPanel>
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsUndefined}" Value="True">
-                <Setter TargetName="WarningBorder" Property="Visibility" Value="Visible"/>
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard Name="WarningIconFade">
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="WarningIcon"
-                                             Storyboard.TargetProperty="Opacity"
-                                             From="1.0" To="0.25" Duration="0:0:0.400"
-                                             AccelerationRatio="0.75"
-                                             AutoReverse="True"
-                                             RepeatBehavior="Forever"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <StopStoryboard BeginStoryboardName="WarningIconFade"/>
-                </DataTrigger.ExitActions>
-            </DataTrigger>
             <DataTrigger Binding="{Binding IsDone}" Value="True">
                 <Setter TargetName="Border" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
                 <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>

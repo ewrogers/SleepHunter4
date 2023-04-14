@@ -423,7 +423,7 @@
 
                     <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
                                 Orientation="Horizontal"
-                                HorizontalAlignment="Right"
+                                HorizontalAlignment="Center"
                                 Margin="8,2">
                         <!-- Client Version-->
                         <TextBlock Text="Client Version:"

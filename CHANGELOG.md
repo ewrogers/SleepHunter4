@@ -8,9 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Ambush` in the skills metadata file
-- `Hail of Feathers 7` in the spells metadata file
 - `Debug` tab in `Settings` window
+- More skill & spell metadata
 - MP cost display in spell target dialog
 - Height resize animations to spell and flower dialogs when selecting target types
 - [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application
@@ -52,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Numeric inputs now use regex and allow much better text input of values
 - Numeric input boxes now validate/update on lost focus
 - Spell queue "disabled" selected text is now white instead of gray on gray
+- Double-click actions only respond to left-click now
 
 ## [4.3.0] - 2023-04-11
 

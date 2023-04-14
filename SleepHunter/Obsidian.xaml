@@ -336,7 +336,7 @@
         <Setter Property="Height" Value="24"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="1,1"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -357,6 +357,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ContentSite" Property="Opacity" Value="1.0"/>
                         </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianInactive}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -371,6 +376,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="MinHeight" Value="30"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="Normal"/>
@@ -399,7 +405,7 @@
                                     Grid.Column="1"
                                     Style="{StaticResource ObsidianTextBoxClearButton}"
                                     Click="TextBoxClearButton_Click"
-                                    Margin="4,2">
+                                    Margin="2,1">
                                 <Path Name="ClearButtonPath" 
                                       Stroke="{Binding ElementName=ClearButton, Path=Foreground}"
                                       StrokeThickness="2"
@@ -413,7 +419,7 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
-                            <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="ClearButton" Property="IsEnabled" Value="False"/>
                         </Trigger>
                         <Trigger Property="AcceptsReturn" Value="True">
                             <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed"/>
