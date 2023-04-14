@@ -15,7 +15,6 @@ namespace SleepHunter.Views
 {
     public partial class SpellTargetWindow : Window
     {
-        private double baseHeight;
         private SpellQueueItem spellQueueItem = new SpellQueueItem();
 
         public SpellQueueItem SpellQueueItem
@@ -303,8 +302,6 @@ namespace SleepHunter.Views
 
         private void ToggleTargetMode(TargetCoordinateUnits units)
         {
-            var requiresTarget = units != TargetCoordinateUnits.None;
-            var isSelfTarget = units == TargetCoordinateUnits.Self;
             var isRadius = units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius;
 
             if (characterComboBox != null)
@@ -328,22 +325,32 @@ namespace SleepHunter.Views
             if (outerRadiusUpDown != null)
                 outerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
 
-            // Store this the first time before resizing
-            if (baseHeight <= 0)
-                baseHeight = Height;
+            // Do not show mouse offset for absolute x/y (screen position) as it is redundant
+            if (offsetXUpDown != null)
+                offsetXUpDown.Visibility = units != TargetCoordinateUnits.AbsoluteXY ? Visibility.Visible : Visibility.Collapsed;
 
-            var height = baseHeight;
+            SizeToFit(units, IsLoaded);
+        }
 
-            if (requiresTarget)
-                height += 40;
+        private void SizeToFit(TargetCoordinateUnits units, bool animate = true)
+        {
+            var measuredHeight = 380;
 
-            if (isRadius)
-                height += 90;
+            if (units == TargetCoordinateUnits.Character)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.RelativeTile)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
+                measuredHeight += 84;
 
-            if (!isSelfTarget && requiresTarget)
-                height += 40;
+            if (!animate)
+            {
+                Height = measuredHeight;
+                return;
+            }
 
-            Height = height;
+            var heightAnimation = new DoubleAnimation(measuredHeight, new Duration(TimeSpan.FromSeconds(0.25)));
+            BeginAnimation(HeightProperty, heightAnimation);
         }
 
         private void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

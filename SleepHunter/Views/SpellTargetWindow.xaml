@@ -7,7 +7,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Choose Target" 
-        Width="500" Height="500"
+        Width="500" Height="532"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
@@ -93,7 +93,7 @@
         <Separator Grid.Row="1" Style="{StaticResource ObsidianSeparator}"/>
 
         <!-- Target Parameters -->
-        <Grid Grid.Row="2" Margin="8">
+        <Grid Name="targetParametersGrid" Grid.Row="2" Margin="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -104,6 +104,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
@@ -161,7 +162,7 @@
                       ItemTemplate="{StaticResource StringComboBoxDataTemplate}"
                       SelectedValuePath="Name"
                       SelectedIndex="0"/>
-            
+
             <!-- Relative Tile Target -->
             <TextBlock Grid.Row="2"
                        Text="Relative Tile:"
@@ -253,7 +254,7 @@
                 <sys:Int32>14</sys:Int32>
                 <sys:Int32>15</sys:Int32>
             </ComboBox>
-            
+
             <!-- Absolute Tile Target -->
             <TextBlock Grid.Row="3"
                        Text="Absolute Tile:"
@@ -287,7 +288,7 @@
 
             <!-- Screen Coordinates -->
             <TextBlock Grid.Row="4"
-                       Text="Absolute Coords:"
+                       Text="Screen Position:"
                        Style="{StaticResource ObsidianText}"
                        FontSize="16"
                        TextAlignment="Right"
@@ -345,109 +346,77 @@
                                Margin="0,4"/>
 
             <!-- Mouse Offset -->
-            
-        </Grid>
-
-        <Grid Grid.Row="3" Grid.ColumnSpan="4">
-
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            <TextBlock Grid.Row="8"
-                       Text="Offset Coords:"
+            <TextBlock Grid.Row="6"
+                       Text="Mouse Offset:"
                        Style="{StaticResource ObsidianText}"
                        FontSize="16"
                        TextAlignment="Right"
                        Visibility="{Binding ElementName=offsetXUpDown, Path=Visibility}"
-                       ToolTip="This is the amount to offset the final pixel-coordinate, used for fine-tuning target locations."/>
+                       ToolTip="This is the amount to offset the mouse position, used for fine-tuning target locations."/>
 
             <ctl:NumericUpDown x:Name="offsetXUpDown"
                                Style="{StaticResource ObsidianNumericUpDown}"
-                               Grid.Row="8"
+                               Grid.Row="6"
                                Grid.Column="1"
                                DecoratorText="X"
                                Minimum="-2560"
                                Maximum="2560"
-                               Margin="8,4"
-                               Visibility="Collapsed"/>
+                               Margin="0,4"/>
 
             <ctl:NumericUpDown x:Name="offsetYUpDown"
                                Style="{StaticResource ObsidianNumericUpDown}"
-                               Grid.Row="8"
-                               Grid.Column="2"
+                               Grid.Row="6"
+                               Grid.Column="3"
                                DecoratorText="Y"
                                Minimum="-2560"
                                Maximum="2560"
-                               Margin="8,4"
+                               Margin="0,4"
                                Visibility="{Binding ElementName=offsetXUpDown, Path=Visibility}"/>
 
-            <Separator Grid.Row="9"
-                       Grid.ColumnSpan="3"
+            <Separator Grid.Row="7"
+                       Grid.ColumnSpan="4"
                        Style="{StaticResource ObsidianSeparator}"/>
 
-            <Grid Grid.Row="10"
-                  Grid.ColumnSpan="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <CheckBox Name="maxLevelCheckBox"
-                      Grid.Column="1"
-                      Content="Cast until Spell reaches Level:"
+            <!-- Level Limit -->
+            <CheckBox Name="maxLevelCheckBox"
+                      Grid.Row="8"
+                      Grid.ColumnSpan="2"
+                      Content="Cast Spell Until Reaches:"
                       Style="{StaticResource ObsidianCheckBox}"
                       IsChecked="True"
                       FontSize="16"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
-                      Margin="8,6,8,4"
+                      Margin="8,6,40,4"
                       Visibility="{Binding ElementName=maxLevelUpDown, Path=Visibility}"
                       ToolTip="This is the level that macroing for this spell will stop."/>
 
-                <ctl:NumericUpDown x:Name="maxLevelUpDown"
-                                   Style="{StaticResource ObsidianNumericUpDown}"
-                                   Grid.Column="2"
-                                   DecoratorText="Ass"
-                                   Width="140"
-                                   Margin="8,4"
-                                   Minimum="0"
-                                   Maximum="100"
-                                   IsEnabled="{Binding ElementName=maxLevelCheckBox, Path=IsChecked}"/>
-            </Grid>
+            <ctl:NumericUpDown x:Name="maxLevelUpDown"
+                               Grid.Row="8"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="3"
+                               Style="{StaticResource ObsidianNumericUpDown}"
+                               DecoratorText="Level"
+                               Width="204"
+                               HorizontalAlignment="Right"
+                               Minimum="0"
+                               Maximum="100"
+                               Margin="0,4"
+                               IsEnabled="{Binding ElementName=maxLevelCheckBox, Path=IsChecked}"/>
 
-            <Separator Grid.Row="11"
-                   Grid.ColumnSpan="3"
-                   Style="{StaticResource ObsidianSeparator}"/>
+            <!-- Add to Queue Button -->
+            <StackPanel Grid.Row="9" Grid.ColumnSpan="4" Orientation="Vertical">
+                <Separator Style="{StaticResource ObsidianSeparator}"/>
 
-            <Button Name="okButton"
-                    Grid.Row="12"
-                    Grid.ColumnSpan="4"
-                    Width="320"
-                    Height="36"
-                    Style="{StaticResource ObsidianButton}"
-                    Margin="8"
-                    IsDefault="True"
-                    VerticalAlignment="Bottom"
-                    Click="okButton_Click">_Add Spell to Queue</Button>
+                <Button Name="okButton"
+                        Width="320"
+                        Height="36"
+                        Style="{StaticResource ObsidianButton}"
+                        Margin="8"
+                        IsDefault="True"
+                        VerticalAlignment="Bottom"
+                        Click="okButton_Click">_Add Spell to Queue</Button>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Ambush` in the skills metadata file
 - `Hail of Feathers 7` in the spells metadata file
 - `Debug` tab in `Settings` window
+- Expand/collapse animations to spell and flower dialogs when selecting target types
 
 ### Changed
 
