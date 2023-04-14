@@ -35,7 +35,7 @@
                            FontWeight="Normal"
                            Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText}"
                            TextAlignment="Center"
-                           Margin="4,2"/>
+                           Margin="8,2"/>
             </Border>
             
             <!-- Text Input -->

@@ -24,7 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimum flower "less than mana" threshold is 1 mana (instead of zero)
 - Numeric inputs can now have prefix/unit decorators
 - Improved layout of spell/flower target windows, now include mana cost as well
+- Increased padding on flowering options under the main window tab
 - Spell queue now highlights icon in white instead of color to be consistent with skill macros
+- Renamed `Tile Radius` to `Tile Area` for more clairity
+- Renamed `Absolute X/Y` to `Screen Position` for more clarity
+- Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension
+- Slightly narrower dropdown button
 
 ### Removed
 

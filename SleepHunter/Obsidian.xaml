@@ -738,7 +738,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="0"
-                                Padding="8,2">
+                                Padding="6,2">
                             <Path Name="Arrow"
                                   Grid.Column="1"
                                   Fill="{DynamicResource ObsidianForeground}"
@@ -791,12 +791,13 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
         <Setter Property="MinWidth" Value="80"/>
-        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="MinHeight" Value="32"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1,1,1,1"/>
         <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="2"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
@@ -817,14 +818,15 @@
                                           IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                           ClickMode="Press"/>
 
-                            <Border Padding="3,3,36,3">
+                            <Border Padding="0,0,34,0">
                                 <ContentPresenter Name="ContentSite"
                                                   IsHitTestVisible="False"
                                                   Content="{TemplateBinding SelectionBoxItem}"
                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"/>
                             </Border>
 
 
@@ -833,7 +835,8 @@
                                      Foreground="{TemplateBinding Foreground}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center"
-                                     Margin="3,3,36,3"
+                                     Margin="0,0,34,0"
+                                     Padding="{TemplateBinding Padding}"
                                      Focusable="True"
                                      Background="Transparent"
                                      Visibility="Hidden"
@@ -844,17 +847,17 @@
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
                                    Style="{StaticResource ObsidianPopup}"
                                    Focusable="False"
-                                   HorizontalOffset="-1"
+                                   HorizontalOffset="1"
                                    StaysOpen="True"
-                                   VerticalOffset="-1">
+                                   VerticalOffset="1">
                                 <Grid Name="DropDown"
                                       MinWidth="{TemplateBinding ActualWidth}"
                                       MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <Border Name="DropDownBorder"
                                             Background="{TemplateBinding Background}"
                                             BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                            BorderThickness="1"
-                                            CornerRadius="1">
+                                            BorderThickness="1,0,1,1"
+                                            CornerRadius="0,0,2,2">
                                         <ScrollViewer Style="{StaticResource ObsidianScrollViewer}">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>

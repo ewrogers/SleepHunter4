@@ -93,7 +93,7 @@
                     <Separator Grid.Row="2" Grid.ColumnSpan="2" 
                                Style="{StaticResource ObsidianSeparator}"
                                Margin="4,8"/>
-                    
+
                     <StackPanel Grid.Row="3"
                                 Grid.ColumnSpan="2"
                                 HorizontalAlignment="Center"
@@ -633,7 +633,8 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -747,82 +748,82 @@
                                    Margin="4,6"
                                    Style="{StaticResource ObsidianSeparator}"/>
 
-                        <WrapPanel Grid.Row="6" Grid.ColumnSpan="2"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
-                            <!-- Fas Spiorad CheckBox -->
-                            <CheckBox Name="fasSpioradCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="14,8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
-                                      Content="Fas Spiorad If Mana &lt;"
-                                      ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
 
-                            <!-- Fas Spiorad Up Down -->
-                            <ctl:NumericUpDown x:Name="fasSpioradUpDown"
-                                               Style="{StaticResource ObsidianNumericUpDown}"
-                                               Width="160"
-                                               Minimum="1"
-                                               Maximum="1000000"
-                                               SmallIncrement="100"
-                                               LargeIncrement="1000"
-                                               FontSize="16"
-                                               Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
-                                               IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
-                                               Margin="4"/>
+                        <!-- Auto Fas Spiorad CheckBox -->
+                        <CheckBox Name="fasSpioradCheckBox"
+                                  Grid.Row="6"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  Margin="32,8"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
+                                  Content="Auto Fas Spiorad"
+                                  ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
 
-                            <!-- Fas Spiorad On Demand CheckBox -->
-                            <CheckBox Name="fasSpioradOnDemandCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="14,8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
-                                      Content="Fas Spiorad when Insufficient Mana"
-                                      ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
-                        </WrapPanel>
+                        <!-- Fas Spiorad Threshold -->
+                        <ctl:NumericUpDown x:Name="fasSpioradUpDown"
+                                           Grid.Row="6"
+                                           Grid.Column="1"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Width="200"
+                                           Minimum="1"
+                                           Maximum="1000000"
+                                           SmallIncrement="100"
+                                           LargeIncrement="1000"
+                                           FontSize="16"
+                                           DecoratorText="MP &lt;"
+                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
+                                           IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
 
-                        <Separator Grid.Row="7"
+                        <!-- Fas Spiorad On Demand CheckBox -->
+                        <CheckBox Name="fasSpioradOnDemandCheckBox"
+                                  Grid.Row="7"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  Margin="32,8"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
+                                  Content="Use Fas Spiorad when Insufficient Mana"
+                                  ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
+
+                        <Separator Grid.Row="8"
                                    Grid.ColumnSpan="2"
                                    Margin="4,6"
                                    Style="{StaticResource ObsidianSeparator}"/>
 
 
-                        <StackPanel Grid.Row="8"
-                                    Grid.ColumnSpan="2"
-                                    Orientation="Vertical"
-                                    Margin="54,0"
-                                    VerticalAlignment="Top">
-                            <!-- Mana Requirement CheckBox -->
-                            <CheckBox Name="manaCheckCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
-                                      Margin="8"
-                                      ToolTip="This will allow spells only to be cast when you have the required mana.">
-                                Require Mana for Casting Spells
-                            </CheckBox>
+                        <!-- Mana Requirement CheckBox -->
+                        <CheckBox Name="manaCheckCheckBox"
+                                  Grid.Row="9"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
+                                  Margin="32,8"
+                                  ToolTip="This will allow spells only to be cast when you have the required mana.">
+                            Require Mana for Casting Spells
+                        </CheckBox>
 
-                            <!-- Staff Switching CheckBox -->
-                            <CheckBox Name="staffSwitchingCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
-                                      Margin="8"
-                                      ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
-                                Allow Automatic _Staff Switching
-                            </CheckBox>
+                        <!-- Staff Switching CheckBox -->
+                        <CheckBox Name="staffSwitchingCheckBox"
+                                  Grid.Row="10"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
+                                  Margin="32,8"
+                                  ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
+                            Allow Automatic _Staff Switching
+                        </CheckBox>
 
-                            <!-- Warn on Duplicate Spell Queue CheckBox -->
-                            <CheckBox Name="warnOnDuplicateSpellsCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
-                                      Margin="8"
-                                      ToolTip="Show warnings when the same spell is added to the spell queue again.">
-                                _Warn on Duplicate Spells in Casting Queue
-                            </CheckBox>
-                        </StackPanel>
+                        <!-- Warn on Duplicate Spell Queue CheckBox -->
+                        <CheckBox Name="warnOnDuplicateSpellsCheckBox"
+                                  Grid.Row="11"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
+                                  Margin="32,8"
+                                  ToolTip="Show warnings when the same spell is added to the spell queue again.">
+                            _Warn on Duplicate Spells in Casting Queue
+                        </CheckBox>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
@@ -834,7 +835,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -842,16 +843,15 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Orientation="Vertical"
-                                Grid.ColumnSpan="2"
-                                Margin="46,0">
+                                Grid.ColumnSpan="2">
                         <!-- Flowering Priority CheckBox -->
                         <CheckBox Name="flowerPrioritizesAltsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerAltsFirst}"
                                   HorizontalAlignment="Left"
-                                  Margin="8"
+                                  Margin="32,8"
                                   ToolTip="This will prioritize flowering your own characters before other targets.">
-                            Prioritize Alternate Characters over Others
+                            Prioritize _Alternate Characters
                         </CheckBox>
 
                         <!-- Flowering Before Spells Macro CheckBox -->
@@ -859,9 +859,9 @@
                                   Style="{StaticResource ObsidianCheckBox}"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerBeforeSpellMacros}"
                                   HorizontalAlignment="Left"
-                                  Margin="8"
+                                  Margin="32,8"
                                   ToolTip="This will prioritize flowering over your spell casting queue.">
-                            Prioritize Flowering over Spell Casting
+                            Prioritize _Flowering over Spell Casting
                         </CheckBox>
                     </StackPanel>
 
@@ -870,31 +870,31 @@
                                Margin="4,6"
                                Style="{StaticResource ObsidianSeparator}"/>
 
-                    <WrapPanel Grid.Row="2" Grid.ColumnSpan="2"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
-                        <!-- Flower Minimum Mana CheckBox -->
-                        <CheckBox Name="flowerHasMinimumCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
-                                      Content="Minimum Flower Mana: "
-                                      ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
+                    <!-- Flower Minimum Mana CheckBox -->
+                    <CheckBox Name="flowerHasMinimumCheckBox"
+                              Grid.Row="3"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              Margin="32,8,8,8"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
+                              Content="_Minimum Flower Mana: "
+                              ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
 
-                        <!-- Flower Minimum Mana Down -->
-                        <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
-                                           Style="{StaticResource ObsidianNumericUpDown}"
-                                           Width="160"
-                                           Minimum="1"
-                                           Maximum="1000000"
-                                           SmallIncrement="100"
-                                           LargeIncrement="1000"
-                                           FontSize="16"
-                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
-                                           IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
-                                           Margin="4"/>
-                    </WrapPanel>
+                    <!-- Flower Minimum Mana Down -->
+                    <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
+                                       Grid.Row="3"
+                                       Grid.Column="1"
+                                       Style="{StaticResource ObsidianNumericUpDown}"
+                                       Width="220"
+                                       Minimum="1"
+                                       Maximum="1000000"
+                                       SmallIncrement="100"
+                                       LargeIncrement="1000"
+                                       FontSize="16"
+                                       DecoratorText="MP &gt;="
+                                       Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
+                                       IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
+                                       Margin="4"/>
                 </Grid>
             </TabItem>
 
@@ -1038,14 +1038,14 @@
                         <!-- Enable Logging -->
                         <CheckBox Name="loggingEnabledCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8,8,0,8"
+                                      Margin="8,0"
                                       IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
                                       ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
                             Enable Debug _Logging
                         </CheckBox>
                         <TextBlock Style="{StaticResource ObsidianText}"
                                    Foreground="{StaticResource ObsidianDisabled}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    Padding="0,2,0,0"
                                    Text="(requires restart)"/>
                     </StackPanel>
