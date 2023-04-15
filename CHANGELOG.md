@@ -8,13 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Show All Processes` debug option in `Settings`
+- `Show All Processes` debug option in `Settings->Debug`
 - Login timestamp to players
+- Client sort order option in `Settings->User Interface`, defaults to login time
+- Get client start time from Win32 kernel
 
 ### Changed
 
 - `UserSettings` are now version `1.3`
 - Non-logged in game clients are now hidden by default (use new debug option to show)
+- Clients now default sort by login time (oldest to newest)
 
 ### Fixed
 

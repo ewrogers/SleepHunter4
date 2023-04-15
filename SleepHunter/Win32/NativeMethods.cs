@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Text;
 
+using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+
 namespace SleepHunter.Win32
 {
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -76,6 +78,10 @@ namespace SleepHunter.Win32
 
         [DllImport("kernel32", EntryPoint = "GlobalDeleteAtom", CharSet = CharSet.Auto)]
         internal static extern ushort GlobalDeleteAtom(ushort atom);
+
+        [DllImport("kernel32", EntryPoint = "GetProcessTimes", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetProcessTimes(IntPtr processHandle, out FILETIME creationTime, out FILETIME exitTime, out FILETIME kernelTIme, out FILETIME userTime);
 
         [DllImport("kernel32", EntryPoint = "OpenProcess", CharSet = CharSet.Auto)]
         internal static extern IntPtr OpenProcess(ProcessAccessFlags desiredAccess, bool inheritHandle, int processId);

@@ -114,8 +114,7 @@ namespace SleepHunter.IO.Process
             NativeMethods.EnumWindows((windowHandle, lParam) =>
             {
                 // Get Process & Thread Id
-                var processId = 0;
-                var threadId = NativeMethods.GetWindowThreadProcessId(windowHandle, out processId);
+                var threadId = NativeMethods.GetWindowThreadProcessId(windowHandle, out var processId);
 
                 // Get Window Class Name
                 var classNameBuffer = new StringBuilder(256);
@@ -133,8 +132,7 @@ namespace SleepHunter.IO.Process
                 var windowText = windowTextBuffer.ToString();
 
                 // Get Window Rectangle
-                Rect windowRect;
-                NativeMethods.GetWindowRect(windowHandle, out windowRect);
+                NativeMethods.GetWindowRect(windowHandle, out var windowRect);
 
                 var process = new ClientProcess
                 {
@@ -143,7 +141,7 @@ namespace SleepHunter.IO.Process
                     WindowClassName = className,
                     WindowTitle = windowText,
                     WindowWidth = windowRect.Width,
-                    WindowHeight = windowRect.Height
+                    WindowHeight = windowRect.Height,
                 };
 
                 // Add to found clients

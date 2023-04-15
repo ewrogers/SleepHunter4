@@ -31,7 +31,7 @@ namespace SleepHunter.IO.Process
         public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)
         {
             this.processId = processId;
-            this.processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
+            processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
 
             if (processHandle == IntPtr.Zero)
             {

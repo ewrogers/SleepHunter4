@@ -29,6 +29,7 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SleepHunter.Views
 {
@@ -488,12 +489,8 @@ namespace SleepHunter.Views
         {
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
-            Dispatcher.InvokeIfRequired(() =>
-               {
-                   BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-               }, DispatcherPriority.DataBind);
-
             UpdateToolbarState();
+            UpdateClientList();
         }
 
         private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
@@ -502,12 +499,8 @@ namespace SleepHunter.Views
 
             OnPlayerLoggedOut(e.Player);
 
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-            }, DispatcherPriority.DataBind);
-
             UpdateToolbarState();
+            UpdateClientList();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
@@ -528,7 +521,6 @@ namespace SleepHunter.Views
                         OnPlayerLoggedIn(player);
                 }
 
-                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
                 clientListBox.Items.Refresh();
 
                 var selectedPlayer = clientListBox.SelectedItem as Player;
@@ -557,7 +549,12 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
+            UpdateClientList();
+
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
+
+            if (player.LoginTimestamp == null)
+                player.LoginTimestamp = DateTime.Now;
 
             if (!string.IsNullOrEmpty(player.Name))
                 NativeMethods.SetWindowText(player.Process.WindowHandle, $"Darkages - {player.Name}");
@@ -597,6 +594,8 @@ namespace SleepHunter.Views
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
+
+            UpdateClientList();
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
 
@@ -793,6 +792,7 @@ namespace SleepHunter.Views
             }
             finally
             {
+                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
                 UserSettingsManager.Instance.Settings.PropertyChanged += UserSettings_PropertyChanged;
             }
         }
@@ -1305,7 +1305,7 @@ namespace SleepHunter.Views
         }
 
         private void Window_Shown(object sender, EventArgs e)
-        { 
+        {
             InitializeHotkeyHook();
 
             if (isFirstRun)
@@ -1662,7 +1662,7 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != MouseButtonState.Pressed ||  !(sender is ListBoxItem draggedItem))
+            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
                 return;
 
             logger.LogInfo($"Drag spell queue item: {draggedItem}");
@@ -2175,9 +2175,7 @@ namespace SleepHunter.Views
 
         private void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedTarget = flowerListBox.SelectedItem as FlowerQueueItem;
-
-            if (selectedMacro == null || selectedTarget == null)
+            if (selectedMacro == null || !(flowerListBox.SelectedItem is FlowerQueueItem selectedTarget))
                 return;
 
             selectedMacro.RemoveFromFlowerQueue(selectedTarget);
@@ -2207,6 +2205,12 @@ namespace SleepHunter.Views
             if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
 
+            if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
+                UpdateClientList(PlayerManager.Instance.SortedPlayers);
+            }
+
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSkillGridWidth(settings.SkillGridWidth);
 
@@ -2225,12 +2229,7 @@ namespace SleepHunter.Views
             // Debug settings
 
             if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                clientListBox.ItemsSource = settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.LoggedInPlayers;
-
-                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-                clientListBox.Items.Refresh();
-            }
+                UpdateClientList(settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers);
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2305,6 +2304,21 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
+        }
+
+        private void UpdateClientList(IEnumerable<Player> itemsSource = null)
+        {
+            if (!CheckAccess())
+            {
+                Dispatcher.InvokeIfRequired(UpdateClientList, itemsSource, DispatcherPriority.DataBind);
+                return;
+            }
+
+            if (itemsSource != null)
+                clientListBox.ItemsSource = itemsSource;
+
+            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+            clientListBox.Items.Refresh();
         }
 
         private async void CheckForNewVersion()

@@ -4,6 +4,7 @@ using System.Xml.Serialization;
 
 using SleepHunter.Common;
 using SleepHunter.Macro;
+using SleepHunter.Models;
 
 namespace SleepHunter.Settings
 {
@@ -21,6 +22,7 @@ namespace SleepHunter.Settings
         private TimeSpan clientUpdateInterval;
         private bool saveMacroStates;
         private string selectedTheme;
+        private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
         private double skillIconSize;
         private int skillGridWidth;
         private int worldSkillGridWidth;
@@ -92,7 +94,7 @@ namespace SleepHunter.Settings
         public double ProcessUpdateIntervalSeconds
         {
             get { return processUpdateInterval.TotalSeconds; }
-            set { this.ProcessUpdateInterval = TimeSpan.FromSeconds(value); }
+            set { ProcessUpdateInterval = TimeSpan.FromSeconds(value); }
         }
 
         [XmlIgnore]
@@ -106,7 +108,7 @@ namespace SleepHunter.Settings
         public double ClientUpdateIntervalSeconds
         {
             get { return clientUpdateInterval.TotalSeconds; }
-            set { this.ClientUpdateInterval = TimeSpan.FromSeconds(value); }
+            set { ClientUpdateInterval = TimeSpan.FromSeconds(value); }
         }
 
         [XmlElement("SaveMacroStates")]
@@ -121,6 +123,13 @@ namespace SleepHunter.Settings
         {
             get { return selectedTheme; }
             set { SetProperty(ref selectedTheme, value); }
+        }
+
+        [XmlElement("ClientSortOrder")]
+        public PlayerSortOrder ClientSortOrder
+        {
+            get { return clientSortOrder; }
+            set { SetProperty(ref clientSortOrder, value); }
         }
 
         [XmlElement("SkillIconSize")]
@@ -493,6 +502,7 @@ namespace SleepHunter.Settings
             SaveMacroStates = true;
 
             SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
+            clientSortOrder = PlayerSortOrder.LoginTime;
             SkillIconSize = 46;
             SkillGridWidth = 12;
             WorldSkillGridWidth = 6;

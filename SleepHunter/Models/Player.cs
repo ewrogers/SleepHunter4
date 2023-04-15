@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -7,6 +6,7 @@ using SleepHunter.Common;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Settings;
+using SleepHunter.Win32;
 
 namespace SleepHunter.Models
 {
@@ -53,7 +53,7 @@ namespace SleepHunter.Models
         PlayerModifiers modifiers;
         MapLocation location;
         ClientState gameClient;
-        DateTime loginTimestamp;
+        DateTime? loginTimestamp;
         bool isLoggedIn;
         string status;
         Hotkey hotkey;
@@ -173,7 +173,7 @@ namespace SleepHunter.Models
             set { SetProperty(ref isLoggedIn, value); }
         }
 
-        public DateTime LoginTimestamp
+        public DateTime? LoginTimestamp
         {
             get { return loginTimestamp; }
             set { SetProperty(ref loginTimestamp, value); }
@@ -267,6 +267,10 @@ namespace SleepHunter.Models
         {
             this.process = process;
             accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.Read);
+
+            if (NativeMethods.GetProcessTimes(accessor.ProcessHandle, out var creationTime, out _, out _, out _))
+                process.CreationTime = creationTime.FiletimeToDateTime();
+
             inventory = new Inventory(this);
             equipment = new EquipmentSet(this);
             skillbook = new Skillbook(this);

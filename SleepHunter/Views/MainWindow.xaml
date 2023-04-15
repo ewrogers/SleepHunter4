@@ -189,22 +189,27 @@
             </Grid>
         </Border>
 
-        <!-- Client List Box -->
-        <ListBox Name="clientListBox"
-                 Grid.Row="1"
-                 ItemTemplate="{StaticResource PlayerDataTemplate}"
-                 ItemsSource="{Binding Source={x:Static models:PlayerManager.Instance}, Path=LoggedInPlayers}"
-                 Style="{StaticResource ObsidianListBox}"
-                 Margin="0"
-                 SelectionChanged="clientListBox_SelectionChanged"
-                 SelectionMode="Single">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
-                    <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
-                    <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <!-- Client List Box -->
+            <ListBox Name="clientListBox"
+                     Grid.Row="1"
+                     BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                     BorderThickness="0,1,0,0"
+                     ItemTemplate="{StaticResource PlayerDataTemplate}"
+                     ItemsSource="{Binding Source={x:Static models:PlayerManager.Instance}, Path=SortedPlayers}"
+                     Style="{StaticResource ObsidianListBox}"
+                     Margin="0"
+                     SelectionChanged="clientListBox_SelectionChanged"
+                     SelectionMode="Single">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                        <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
+                        <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+        </StackPanel>
+
 
         <!-- Grid Splitter -->
         <GridSplitter Grid.Row="1"
@@ -426,7 +431,7 @@
             </TabItem>
         </TabControl>
 
-        
+
         <!-- Spell Queue Placeholder -->
         <Border Grid.Row="1"
                 Grid.Column="3"
@@ -453,7 +458,7 @@
                                    FontSize="24"
                                    Margin="0,0"
                                    Text="&#xE127;"/>
-                        
+
                         <TextBlock Style="{StaticResource ObsidianText}"
                                    Foreground="{Binding Path=Foreground, ElementName=showSpellQueueButton}"
                                    FontSize="18"
@@ -467,7 +472,7 @@
                 </Button>
             </StackPanel>
         </Border>
-        
+
         <!-- Grid Splitter -->
         <GridSplitter Grid.Row="1"
                       Grid.Column="1"

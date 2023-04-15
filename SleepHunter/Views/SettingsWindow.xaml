@@ -156,6 +156,8 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
@@ -188,16 +190,44 @@
                                    Style="{StaticResource ObsidianSeparator}"
                                    Margin="4,8"/>
 
+                        <!-- Client Sort Order Text-->
+                        <TextBlock Text="Sort Characters By:"
+                                   Grid.Row="3"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the sort order for characters displayed in the list."/>
+
+                        <!-- Client Sort Order Row -->
+                        <ComboBox Name="clientSortOrderComboBox"
+                                  Grid.Row="3" Grid.Column="1"
+                                  Width="200" Height="32"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource StringDataTemplate}"
+                                  SelectedValuePath="Value"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientSortOrder}"
+                                  Margin="4">
+                            <settings:UserSetting Key="Alphabetical" DisplayText="Name" Value="Alphabetical"/>
+                            <settings:UserSetting Key="LoginTime" DisplayText="Login Time" Value="LoginTime"/>
+                            <settings:UserSetting Key="HighestHealth" DisplayText="Max Health" Value="HighestHealth"/>
+                            <settings:UserSetting Key="HighestMana" DisplayText="Max Mana" Value="HighestMana"/>
+                            <settings:UserSetting Key="HighestCombined" DisplayText="Max Health &amp; Mana" Value="HighestCombined"/>
+                        </ComboBox>
+
+                        <Separator Grid.Row="4"
+                                   Grid.ColumnSpan="2"
+                                   Style="{StaticResource ObsidianSeparator}"
+                                   Margin="4,8"/>
+
                         <!-- Icon Size Text -->
                         <TextBlock Text="Skill/Spell Icon Size:"
-                                   Grid.Row="3"
+                                   Grid.Row="5"
                                    Style="{StaticResource ObsidianText}"
                                    TextAlignment="Right"
                                    ToolTip="This is the size of icons in the skillbook, spellbook, and casting queue."/>
 
                         <!-- Icon Size -->
                         <ComboBox Name="skillIconSizeComboBox"
-                                  Grid.Row="3" Grid.Column="1"
+                                  Grid.Row="5" Grid.Column="1"
                                   Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
@@ -211,14 +241,14 @@
 
                         <!-- Tem/Med Skills per Row Text -->
                         <TextBlock Text="Tem/Med Skills per Row:"
-                                   Grid.Row="4"
+                                   Grid.Row="6"
                                    Style="{StaticResource ObsidianText}"
                                    TextAlignment="Right"
                                    ToolTip="This is the maximum number of Temuair/Medenia skills displayed on each row of the skillbook."/>
 
                         <!-- Tem/Med Skills per Row -->
                         <ComboBox Name="skillGridWidthComboBox"
-                                  Grid.Row="4" Grid.Column="1"
+                                  Grid.Row="6" Grid.Column="1"
                                   Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
@@ -243,14 +273,14 @@
 
                         <!-- World Skills per Row Text-->
                         <TextBlock Text="World Skills per Row:"
-                                   Grid.Row="5"
+                                   Grid.Row="7"
                                    Style="{StaticResource ObsidianText}"
                                    TextAlignment="Right"
                                    ToolTip="This is the maximum number of World skills displayed on each row of the skillbook."/>
 
                         <!-- World Skills per Row -->
                         <ComboBox Name="worldSkillGridWidthComboBox"
-                                  Grid.Row="5" Grid.Column="1"
+                                  Grid.Row="7" Grid.Column="1"
                                   Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
@@ -275,14 +305,14 @@
 
                         <!-- Tem/Med Spells per Row Text -->
                         <TextBlock Text="Tem/Med Spells per Row:"
-                                   Grid.Row="6"
+                                   Grid.Row="8"
                                    Style="{StaticResource ObsidianText}"
                                    TextAlignment="Right"
                                    ToolTip="This is the maximum number of Temuair/Medenia spells displayed on each row of the spellbook."/>
 
                         <!-- Tem/Med Spells per Row -->
                         <ComboBox Name="spellGridWidthComboBox"
-                                  Grid.Row="6" Grid.Column="1"
+                                  Grid.Row="8" Grid.Column="1"
                                   Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
@@ -307,14 +337,14 @@
 
                         <!-- World Spells per Row Text -->
                         <TextBlock Text="World Spells per Row:"
-                                   Grid.Row="7"
+                                   Grid.Row="9"
                                    Style="{StaticResource ObsidianText}"
                                    TextAlignment="Right"
                                    ToolTip="This is the maximum number of World spells displayed on each row of the spellbook."/>
 
                         <!-- World Spells per Row -->
                         <ComboBox Name="worldSpellGridWidthComboBox"
-                                  Grid.Row="7" Grid.Column="1"
+                                  Grid.Row="9" Grid.Column="1"
                                   Width="200" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
@@ -337,11 +367,11 @@
                             <settings:UserSetting Key="Unlimited" Value="0"/>
                         </ComboBox>
 
-                        <Separator Grid.Row="8" Grid.ColumnSpan="2"
+                        <Separator Grid.Row="10" Grid.ColumnSpan="2"
                                    Style="{StaticResource ObsidianSeparator}"
                                    Margin="4,8"/>
 
-                        <WrapPanel Grid.Row="9"
+                        <WrapPanel Grid.Row="11"
                                    VerticalAlignment="Top"
                                    Margin="48,4,4,4">
                             <!-- Show Skill Names  -->
@@ -353,8 +383,6 @@
                                 Show Skill Names
                             </CheckBox>
 
-
-
                             <!-- Show Spell Names  -->
                             <CheckBox Name="showSpellNamesCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -363,11 +391,9 @@
                                       ToolTip="This will show or hide spell names in the spellbook.">
                                 Show Spell Names
                             </CheckBox>
-
-
                         </WrapPanel>
 
-                        <WrapPanel Grid.Row="9" Grid.Column="1"
+                        <WrapPanel Grid.Row="11" Grid.Column="1"
                                    VerticalAlignment="Top"
                                    Margin="10,4,4,4">
                             <!-- Show Skill Levels  -->
