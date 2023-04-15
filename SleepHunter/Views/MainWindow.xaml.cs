@@ -664,7 +664,7 @@ namespace SleepHunter.Views
             removeSelectedSpellButton.IsEnabled = hasItemsInQueue;
             removeAllSpellsButton.IsEnabled = hasItemsInQueue;
 
-            spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
+            spellQueueListBox.ItemsSource = selectedMacro?.QueuedSpells ?? null;
             spellQueueListBox.Items.Refresh();
         }
 
@@ -676,7 +676,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
+            flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
             flowerListBox.Items.Refresh();
         }
 
@@ -1524,6 +1524,9 @@ namespace SleepHunter.Views
 
             if (File.Exists(filename))
                 File.Delete(filename);
+
+            RefreshSpellQueue();
+            RefreshFlowerQueue();
         }
 
         #region Toolbar Button Click Methods
@@ -1753,6 +1756,8 @@ namespace SleepHunter.Views
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            
+
             if (!(sender is ListBox listBox))
             {
                 if (selectedMacro != null)
@@ -1799,35 +1804,15 @@ namespace SleepHunter.Views
                 return;
             }
 
-            if (selectedMacro != null)
-            {
-                selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-                selectedMacro.SpellAdded -= selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellUpdated -= selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellRemoved -= selectedMacro_SpellQueueChanged;
-
-                selectedMacro.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetUpdated -= selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
-            }
-
+            UnsubscribeMacroHandlers(selectedMacro);
+            var prevSelectedMacro = selectedMacro;
             selectedMacro = macroState;
+            SubscribeMacroHandlers(selectedMacro);
 
-            if (selectedMacro != null)
-            {
-                selectedMacro.PropertyChanged += SelectedMacro_PropertyChanged;
+            tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
-                selectedMacro.SpellAdded += selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellUpdated += selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellRemoved += selectedMacro_SpellQueueChanged;
-
-                selectedMacro.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetUpdated += selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
-            }
-
-            tabControl.SelectedIndex = selectedMacro.Client.SelectedTabIndex;
+            if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
+                ToggleSpellQueue(true);
 
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
@@ -1849,6 +1834,38 @@ namespace SleepHunter.Views
                 foreach (var spell in selectedMacro.QueuedSpells)
                     spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
             }
+        }
+
+        private void SubscribeMacroHandlers(PlayerMacroState state)
+        {
+            if (state != null)
+                return;
+
+            state.PropertyChanged += SelectedMacro_PropertyChanged;
+
+            state.SpellAdded += selectedMacro_SpellQueueChanged;
+            state.SpellUpdated += selectedMacro_SpellQueueChanged;
+            state.SpellRemoved += selectedMacro_SpellQueueChanged;
+
+            state.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetUpdated += selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
+        }
+
+        private void UnsubscribeMacroHandlers(PlayerMacroState state)
+        {
+            if (state == null)
+                return;
+
+            state.PropertyChanged -= SelectedMacro_PropertyChanged;
+
+            state.SpellAdded -= selectedMacro_SpellQueueChanged;
+            state.SpellUpdated -= selectedMacro_SpellQueueChanged;
+            state.SpellRemoved -= selectedMacro_SpellQueueChanged;
+
+            state.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetUpdated -= selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
         }
 
         private void clientListBox_KeyDown(object sender, KeyEventArgs e)
@@ -2082,6 +2099,9 @@ namespace SleepHunter.Views
             }
 
             selectedMacro.AddToSpellQueue(queueItem);
+            ToggleSpellQueue(true);
+            RefreshSpellQueue();
+
             logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
         }
 

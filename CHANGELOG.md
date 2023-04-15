@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Slightly narrower dropdown button
 - Tooltips open faster
 - Spell queue now has a placeholder on the right side
+- Show 'No Target' in spell queue for no target spells
 
 ### Removed
 

@@ -100,17 +100,18 @@
                                    FontSize="16"
                                    Text="{Binding Name}"
                                    TextWrapping="WrapWithOverflow"
-                                   Margin="4,2"/>
+                                   Margin="4,0"/>
                         <TextBlock Name="TargetText"
                                    Grid.Row="1"
                                    Grid.Column="1"
                                    Grid.ColumnSpan="3"
                                    Style="{StaticResource ObsidianText}"
                                    Foreground="{StaticResource ObsidianForeground}"
-                                   FontSize="14"
+                                   FontSize="12"
+                                   FontWeight="Normal"
                                    Text="{Binding Target, StringFormat=Targeting {0}}"
                                    TextWrapping="WrapWithOverflow"
-                                   Margin="4,2"
+                                   Margin="4,0"
                                    Opacity="0.75"/>
 
                         <Grid>
@@ -127,7 +128,7 @@
                                        FontWeight="Normal"
                                        Text="{Binding CurrentLevel}"
                                        TextWrapping="WrapWithOverflow"
-                                       Margin="6,2,4,2"
+                                       Margin="6,4,4,2"
                                        Opacity="0.75"
                                        Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
 
@@ -137,7 +138,7 @@
                                          Value="{Binding PercentCompleted, Mode=OneWay}"
                                          Style="{StaticResource ObsidianProgressBar}"
                                          VerticalAlignment="Center"
-                                         Margin="2"/>
+                                         Margin="2,2"/>
 
                             <TextBlock Name="TargetLevelText"
                                        Grid.Column="2"
@@ -147,7 +148,7 @@
                                        FontWeight="Normal"
                                        Text="{Binding TargetLevel}"
                                        TextWrapping="WrapWithOverflow"
-                                       Margin="4,2,6,2"
+                                       Margin="4,4,6,2"
                                        Opacity="0.75"
                                        Visibility="{Binding ElementName=ProgressBar, Path=Visibility}"/>
                         </Grid>
@@ -158,6 +159,7 @@
                                    FontSize="12"
                                    FontWeight="Normal"
                                    Visibility="Collapsed"
+                                   Opacity="0.5"
                                    Margin="6,2">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="Reached Level {0} of {1}">
@@ -202,7 +204,9 @@
                 <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Target.Units}" Value="None">
-                <Setter TargetName="TargetText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="TargetText" Property="Opacity" Value="0.5"/>
+                <Setter TargetName="TargetText" Property="Text" Value="No Target"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
                 <Setter TargetName="Icon" Property="Opacity" Value="1"/>
