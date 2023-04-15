@@ -74,6 +74,7 @@ namespace SleepHunter.Views
             InitializeComponent();
             InitializeViews();
 
+            UpdateWindowTitle();
             UpdateToolbarState();
 
             LoadVersions();
@@ -584,6 +585,10 @@ namespace SleepHunter.Views
 
                 }, DispatcherPriority.Normal, null);
             }
+            finally
+            {
+                UpdateWindowTitle();
+            }
         }
 
         private void OnPlayerLoggedOut(Player player)
@@ -629,6 +634,8 @@ namespace SleepHunter.Views
 
                     player.Hotkey = null;
                 });
+
+                UpdateWindowTitle();
             }
 
             if (macro != null)
@@ -647,6 +654,7 @@ namespace SleepHunter.Views
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
+                UpdateWindowTitle();
                 return;
             }
         }
@@ -1804,8 +1812,8 @@ namespace SleepHunter.Views
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
 
-                Title = "SleepHunter";
                 selectedMacro = null;
+                UpdateWindowTitle();
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
@@ -1815,24 +1823,16 @@ namespace SleepHunter.Views
 
             var macroState = MacroManager.Instance.GetMacroState(player);
 
-            if (player.IsLoggedIn)
-            {
-                Title = string.Format("SleepHunter - {0}", player.Name);
-                logger.LogInfo($"Selected charcter: {player.Name}");
-            }
-            else Title = "SleepHunter";
-
-
             UnsubscribeMacroHandlers(selectedMacro);
             var prevSelectedMacro = selectedMacro;
             selectedMacro = macroState;
             SubscribeMacroHandlers(selectedMacro);
 
+            UpdateWindowTitle();
+            UpdateToolbarState();
+
             if (selectedMacro == null)
-            {
-                UpdateToolbarState();
                 return;
-            }
 
             tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
@@ -1842,7 +1842,6 @@ namespace SleepHunter.Views
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
-            UpdateToolbarState();
 
             if (selectedMacro != null)
             {
@@ -2247,6 +2246,17 @@ namespace SleepHunter.Views
 
             if (flowerAlternateCharactersCheckBox != null)
                 selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
+        }
+
+        private void UpdateWindowTitle()
+        {
+            if (selectedMacro == null || !selectedMacro.Client.IsLoggedIn)
+            {
+                Title = "SleepHunter";
+                return;
+            }
+
+            Title = $"SleepHunter - {selectedMacro.Client.Name}";
         }
 
         private void UpdateToolbarState()
