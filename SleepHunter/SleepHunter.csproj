@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
+    <Compile Include="Converters\VisibilityInverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
     <Compile Include="Extensions\VersionExtender.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
@@ -218,6 +219,10 @@
     <Compile Include="Macro\SavedSpellState.cs" />
     <Compile Include="Macro\SpellRotationMode.cs" />
     <Compile Include="Macro\WindowAutomator.cs" />
+    <Page Include="Templates\ToolTipTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FlowerTargetWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

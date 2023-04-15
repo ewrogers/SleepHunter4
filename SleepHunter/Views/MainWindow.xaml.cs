@@ -27,8 +27,8 @@ using SleepHunter.Win32;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.IO.Compression;
+using System.Linq;
 
 namespace SleepHunter.Views
 {
@@ -48,16 +48,13 @@ namespace SleepHunter.Views
 
         private static readonly int IconPadding = 14;
 
-        // private static readonly int SkillsTabIndex = 0;
-        private static readonly int SpellsTabIndex = 1;
-        // private static readonly int FlowerTabIndex = 2;
-
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
 
         private bool isDisposed;
         private HwndSource windowSource;
 
+        private bool isFirstRun;
         private int recentSettingsTabIndex;
         private MetadataEditorWindow metadataWindow;
         private SettingsWindow settingsWindow;
@@ -68,23 +65,20 @@ namespace SleepHunter.Views
 
         private PlayerMacroState selectedMacro;
 
-        private Exception loadSkillsException;
-        private Exception loadSpellsException;
-        private Exception loadStavesException;
-
         public MainWindow()
         {
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
 
-            LoadSettings();
             InitializeLogger();
-
             InitializeComponent();
             InitializeViews();
 
+            UpdateToolbarState();
+
             LoadVersions();
             LoadThemes();
+            LoadSettings();
 
             LoadSkills();
             LoadSpells();
@@ -95,6 +89,7 @@ namespace SleepHunter.Views
             UpdateSkillSpellGridWidths();
 
             StartUpdateTimers();
+            ToggleSpellQueue(false);
         }
 
         #region IDisposable Methods
@@ -507,6 +502,12 @@ namespace SleepHunter.Views
                 BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
+
+            if (PlayerManager.Instance.Count < 1)
+                UpdateToolbarState();
+
+            if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
+                SelectNextAvailablePlayer();
         }
 
         private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -533,14 +534,12 @@ namespace SleepHunter.Views
                 {
                     if (selectedPlayer == null)
                     {
-                        ToggleSpellQueue(false);
                         ToggleSkills(false);
                         ToggleSpells(false);
                         ToggleFlower(false);
                     }
                     else
                     {
-                        ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && selectedMacro.TotalSpellsCount > 0);
                         ToggleSkills(true);
                         ToggleSpells(true);
                         ToggleFlower(selectedPlayer.HasLyliacPlant, selectedPlayer.HasLyliacVineyard);
@@ -637,6 +636,19 @@ namespace SleepHunter.Views
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
             }
+
+            if (selectedMacro != null && selectedMacro.Name == player.Name)
+                SelectNextAvailablePlayer();
+        }
+
+        private void SelectNextAvailablePlayer()
+        {
+            if (PlayerManager.Instance.Count < 1 || PlayerManager.Instance.Players.All(p => !p.IsLoggedIn))
+            {
+                clientListBox.SelectedItem = null;
+                UpdateToolbarState();
+                return;
+            }
         }
 
         private void RefreshSpellQueue()
@@ -647,7 +659,12 @@ namespace SleepHunter.Views
                 return;
             }
 
-            spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
+            var hasItemsInQueue = selectedMacro != null && selectedMacro.QueuedSpells.Count > 0;
+
+            removeSelectedSpellButton.IsEnabled = hasItemsInQueue;
+            removeAllSpellsButton.IsEnabled = hasItemsInQueue;
+
+            spellQueueListBox.ItemsSource = selectedMacro?.QueuedSpells ?? null;
             spellQueueListBox.Items.Refresh();
         }
 
@@ -659,7 +676,12 @@ namespace SleepHunter.Views
                 return;
             }
 
-            flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
+            var hasItemsInQueue = selectedMacro != null && selectedMacro.FlowerQueueCount > 0;
+
+            removeSelectedFlowerTargetButton.IsEnabled = hasItemsInQueue;
+            removeAllFlowerTargetsButton.IsEnabled = hasItemsInQueue;
+
+            flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
             flowerListBox.Items.Refresh();
         }
 
@@ -704,7 +726,6 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-
                     ColorThemeManager.Instance.LoadDefaultThemes();
                     logger.LogInfo("No themes file was found, using defaults");
                 }
@@ -729,11 +750,28 @@ namespace SleepHunter.Views
                 {
                     UserSettingsManager.Instance.LoadFromFile(settingsFile);
                     logger.LogInfo("User settings loaded successfully");
+
+                    if (string.IsNullOrWhiteSpace(UserSettingsManager.Instance.Settings.SelectedTheme))
+                    {
+                        logger.LogWarn("User settings does not have a selected theme, using default theme");
+                        UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                    }
+                    else
+                    {
+                        var selectedTheme = UserSettingsManager.Instance.Settings.SelectedTheme;
+                        if (!ColorThemeManager.Instance.ContainsTheme(selectedTheme))
+                        {
+                            logger.LogWarn($"User settings has an invalid theme selected: {selectedTheme}");
+                            UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                        }
+                    }
                 }
                 else
                 {
                     UserSettingsManager.Instance.Settings.ResetDefaults();
                     logger.LogInfo("No user settings file was found, using defaults");
+
+                    isFirstRun = true;
                 }
             }
             catch (Exception ex)
@@ -770,8 +808,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load skills metadata");
                 logger.LogException(ex);
-
-                loadSkillsException = ex;
             }
         }
 
@@ -796,8 +832,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load spells metadata");
                 logger.LogException(ex);
-
-                loadSpellsException = ex;
             }
         }
 
@@ -822,8 +856,6 @@ namespace SleepHunter.Views
             {
                 logger.LogError("Failed to load staves metadata");
                 logger.LogException(ex);
-
-                loadStavesException = ex;
             }
         }
 
@@ -954,17 +986,21 @@ namespace SleepHunter.Views
 
         private void ApplyTheme()
         {
-            if (!UserSettingsManager.Instance.Settings.RainbowMode)
+            var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+            if (string.IsNullOrWhiteSpace(themeName))
             {
-                var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
-                logger.LogInfo($"Applying UI theme: {themeName}");
-                ColorThemeManager.Instance.ApplyTheme(themeName);
+                logger.LogWarn("Selected theme is not defined, using default theme");
+                themeName = ColorThemeManager.Instance.DefaultTheme?.Name;
             }
-            else
+
+            if (themeName == null)
             {
-                logger.LogInfo("Applying rainbow UI theme");
-                ColorThemeManager.Instance.ApplyRainbowMode();
+                logger.LogWarn("Theme name is null, unable to apply");
+                return;
             }
+
+            logger.LogInfo($"Applying UI theme: {themeName}");
+            ColorThemeManager.Instance.ApplyTheme(themeName);
         }
 
         private void ActivateHotkey(Key key, ModifierKeys modifiers)
@@ -1107,6 +1143,8 @@ namespace SleepHunter.Views
         {
             if (spellQueueListBox == null)
                 return;
+
+            logger.LogInfo($"Toggle spell queue panel: {showQueue}");
 
             if (showQueue)
             {
@@ -1257,34 +1295,13 @@ namespace SleepHunter.Views
         }
 
         private void Window_Shown(object sender, EventArgs e)
-        {
+        { 
             InitializeHotkeyHook();
 
-            if (loadSkillsException != null)
+            if (isFirstRun)
             {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading skill metadata from file:\n{0}", loadSkillsException.Message),
-                   "Information for skills is required for some features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
-            }
-
-            if (loadSpellsException != null)
-            {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading spell metadata from file:\n{0}", loadSpellsException.Message),
-                   "Information for spells is required for some casting features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
-            }
-
-            if (loadStavesException != null)
-            {
-                this.ShowMessageBox("Load Error",
-                   string.Format("There was an error loading staff metadata from file:\n{0}", loadStavesException.Message),
-                   "Information on staves is required for some casting features to work properly.",
-                   MessageBoxButton.OK,
-                   440, 280);
+                logger.LogInfo("Is first launch, prompting user to view the manual...");
+                PromptUserToOpenUserManual();
             }
 
             if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
@@ -1293,6 +1310,8 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            logger.LogInfo("Application is shutting down");
+
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
 
             try
@@ -1437,6 +1456,37 @@ namespace SleepHunter.Views
             }
         }
 
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            logger.LogInfo("Main window has been closed");
+        }
+
+        private void PromptUserToOpenUserManual()
+        {
+            var result = this.ShowMessageBox("Welcome to SleepHunter",
+                "It appears to be your first time running the application.\nDo you want to open the user manual?\n\n(This is recommended for new users)",
+                "This prompt will not be displayed again.",
+                MessageBoxButton.YesNo,
+                480, 280);
+
+            if (result.HasValue && result.Value)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInfo("Unable to open the user manual");
+                    logger.LogException(ex);
+                }
+            }
+            else
+            {
+                logger.LogInfo("User declined to view the user manual");
+            }
+        }
+
         private void SaveMacroState(PlayerMacroState macro)
         {
             if (macro == null)
@@ -1472,6 +1522,9 @@ namespace SleepHunter.Views
 
             if (File.Exists(filename))
                 File.Delete(filename);
+
+            RefreshSpellQueue();
+            RefreshFlowerQueue();
         }
 
         #region Toolbar Button Click Methods
@@ -1482,8 +1535,9 @@ namespace SleepHunter.Views
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
 
-            selectedMacro.Client.Update(PlayerFieldFlags.Location);
+            selectedMacro.Client.Update(PlayerFieldFlags.All);
             selectedMacro.Start();
+            UpdateToolbarState();
 
             logger.LogInfo($"Started macro state for character: {selectedMacro.Client.Name} (toolbar)");
         }
@@ -1494,6 +1548,8 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Pause();
+            UpdateToolbarState();
+
             logger.LogInfo($"Paused macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
@@ -1503,14 +1559,32 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Stop();
+            UpdateToolbarState();
+
             logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
+        private void stopAllMacrosButton_Click(object sender, RoutedEventArgs e)
+        {
+            MacroManager.Instance.StopAll();
+            UpdateToolbarState();
+
+            logger.LogInfo("Stopped all macro states (toolbar)");
+        }
+
+        private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
+        private void hideSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(false);
+
+        private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
 
         private void clientListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1523,6 +1597,10 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1574,21 +1652,27 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var draggedItem = sender as ListBoxItem;
-                DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
-                draggedItem.IsSelected = true;
-            }
+            if (e.LeftButton != MouseButtonState.Pressed ||  !(sender is ListBoxItem draggedItem))
+                return;
+
+            logger.LogInfo($"Drag spell queue item: {draggedItem}");
+
+            DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+            draggedItem.IsSelected = true;
         }
 
         private void spellQueueListBox_Drop(object sender, DragEventArgs e)
         {
+            if (e.Effects != DragDropEffects.Move)
+                return;
+
             var droppedItem = e.Data.GetData(typeof(SpellQueueItem)) as SpellQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as SpellQueueItem;
 
             var removedIndex = spellQueueListBox.Items.IndexOf(droppedItem);
             var targetIndex = spellQueueListBox.Items.IndexOf(target);
+
+            logger.LogInfo($"Drop spell queue item: {droppedItem} (target = {target})");
 
             if (removedIndex < targetIndex)
             {
@@ -1603,10 +1687,24 @@ namespace SleepHunter.Views
                     selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex + 1);
                 }
             }
+
+            RefreshSpellQueue();
+        }
+
+        private void spellQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+            e.UseDefaultCursors = false;
+
+            Mouse.SetCursor(Cursors.Hand);
+            e.Handled = true;
         }
 
         private void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem listBoxItem))
                 return;
 
@@ -1652,21 +1750,27 @@ namespace SleepHunter.Views
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var draggedItem = sender as ListBoxItem;
-                DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
-                draggedItem.IsSelected = true;
-            }
+            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
+                return;
+
+            logger.LogInfo($"Drag flower queue item: {draggedItem}");
+
+            DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+            draggedItem.IsSelected = true;
         }
 
         private void flowerQueueListBox_Drop(object sender, DragEventArgs e)
         {
+            if (e.Effects != DragDropEffects.Move)
+                return;
+
             var droppedItem = e.Data.GetData(typeof(FlowerQueueItem)) as FlowerQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as FlowerQueueItem;
 
             var removedIndex = flowerListBox.Items.IndexOf(droppedItem);
             var targetIndex = flowerListBox.Items.IndexOf(target);
+
+            logger.LogInfo($"Drop flower queue item: {droppedItem} (target = {target})");
 
             if (removedIndex < targetIndex)
             {
@@ -1681,35 +1785,31 @@ namespace SleepHunter.Views
                     selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex + 1);
                 }
             }
+
+            RefreshFlowerQueue();
+        }
+
+        private void flowerQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+            e.UseDefaultCursors = false;
+
+            Mouse.SetCursor(Cursors.Hand);
+            e.Handled = true;
         }
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(sender is ListBox listBox))
+            if (!(sender is ListBox listBox) || !(listBox.SelectedItem is Player player))
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
 
                 Title = "SleepHunter";
                 selectedMacro = null;
-                ToggleSpellQueue(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
-                return;
-            }
-
-            if (!(listBox.SelectedItem is Player player))
-            {
-                if (selectedMacro != null)
-                    selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-                Title = "SleepHunter";
-                selectedMacro = null;
-                ToggleSpellQueue(false);
-                ToggleSkills(false);
-                ToggleSpells(false);
-                ToggleFlower();
+                UpdateToolbarState();
                 return;
             }
 
@@ -1722,58 +1822,35 @@ namespace SleepHunter.Views
             }
             else Title = "SleepHunter";
 
-            if (macroState == null)
+
+            UnsubscribeMacroHandlers(selectedMacro);
+            var prevSelectedMacro = selectedMacro;
+            selectedMacro = macroState;
+            SubscribeMacroHandlers(selectedMacro);
+
+            if (selectedMacro == null)
             {
-                if (selectedMacro != null)
-                    selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-                selectedMacro = null;
-
-                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
+                UpdateToolbarState();
                 return;
             }
 
-            if (selectedMacro != null)
-            {
-                selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
+            tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
-                selectedMacro.SpellAdded -= selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellUpdated -= selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellRemoved -= selectedMacro_SpellQueueChanged;
-
-                selectedMacro.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetUpdated -= selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
-            }
-
-            selectedMacro = macroState;
-
-            if (selectedMacro != null)
-            {
-                selectedMacro.PropertyChanged += SelectedMacro_PropertyChanged;
-
-                selectedMacro.SpellAdded += selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellUpdated += selectedMacro_SpellQueueChanged;
-                selectedMacro.SpellRemoved += selectedMacro_SpellQueueChanged;
-
-                selectedMacro.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetUpdated += selectedMacro_FlowerQueueChanged;
-                selectedMacro.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
-            }
-
-            tabControl.SelectedIndex = selectedMacro.Client.SelectedTabIndex;
+            if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
+                ToggleSpellQueue(true);
 
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
-
-            UpdateUIForMacroStatus(selectedMacro.Status);
+            UpdateToolbarState();
 
             if (selectedMacro != null)
             {
-                ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && selectedMacro.TotalSpellsCount > 0);
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
+                RefreshSpellQueue();
+
                 flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
+                RefreshFlowerQueue();
 
                 flowerVineyardCheckBox.IsChecked = selectedMacro.UseLyliacVineyard && player.HasLyliacVineyard;
                 flowerAlternateCharactersCheckBox.IsChecked = selectedMacro.FlowerAlternateCharacters && player.HasLyliacPlant;
@@ -1783,15 +1860,44 @@ namespace SleepHunter.Views
             }
         }
 
+        private void SubscribeMacroHandlers(PlayerMacroState state)
+        {
+            if (state != null)
+                return;
+
+            state.PropertyChanged += SelectedMacro_PropertyChanged;
+
+            state.SpellAdded += selectedMacro_SpellQueueChanged;
+            state.SpellUpdated += selectedMacro_SpellQueueChanged;
+            state.SpellRemoved += selectedMacro_SpellQueueChanged;
+
+            state.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetUpdated += selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
+        }
+
+        private void UnsubscribeMacroHandlers(PlayerMacroState state)
+        {
+            if (state == null)
+                return;
+
+            state.PropertyChanged -= SelectedMacro_PropertyChanged;
+
+            state.SpellAdded -= selectedMacro_SpellQueueChanged;
+            state.SpellUpdated -= selectedMacro_SpellQueueChanged;
+            state.SpellRemoved -= selectedMacro_SpellQueueChanged;
+
+            state.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetUpdated -= selectedMacro_FlowerQueueChanged;
+            state.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
+        }
+
         private void clientListBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.None)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem))
-                return;
-
-            if (!(listBoxItem.Content is Player player))
+            if (!(sender is ListBoxItem listBoxItem) || !(listBoxItem.Content is Player player))
                 return;
 
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
@@ -1881,8 +1987,6 @@ namespace SleepHunter.Views
 
             spellQueueListBox.ItemsSource = macro.QueuedSpells;
             RefreshSpellQueue();
-
-            ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && macro.TotalSpellsCount > 0);
         }
 
         private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
@@ -1897,10 +2001,7 @@ namespace SleepHunter.Views
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is TabControl))
-            {
-                ToggleSpellQueue(false);
                 return;
-            }
 
             if (selectedMacro == null)
                 return;
@@ -1933,13 +2034,15 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-
-            ToggleSpellQueue(selectedMacro.TotalSpellsCount > 0);
             ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem item))
                 return;
 
@@ -1958,6 +2061,10 @@ namespace SleepHunter.Views
 
         private void spellListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
             if (!(sender is ListBoxItem item))
                 return;
 
@@ -2013,6 +2120,9 @@ namespace SleepHunter.Views
             }
 
             selectedMacro.AddToSpellQueue(queueItem);
+            ToggleSpellQueue(true);
+            RefreshSpellQueue();
+
             logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
         }
 
@@ -2055,7 +2165,9 @@ namespace SleepHunter.Views
 
             var queueItem = flowerTargetDialog.FlowerQueueItem;
             queueItem.LastUsedTimestamp = DateTime.Now;
+
             selectedMacro.AddToFlowerQueue(queueItem);
+            RefreshFlowerQueue();
 
             logger.LogInfo($"Added '{queueItem.Target}' to flower queue for character: {selectedMacro.Client.Name}");
         }
@@ -2072,7 +2184,6 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Removed '{selectedTarget.Target}' from flower queue for character: {selectedMacro.Client.Name}");
         }
-
 
         private void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -2093,9 +2204,6 @@ namespace SleepHunter.Views
             logger.LogInfo($"User setting property changed: {e.PropertyName}");
 
             if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                ApplyTheme();
-
-            if (string.Equals("RainbowMode", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
 
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
@@ -2139,6 +2247,16 @@ namespace SleepHunter.Views
 
             if (flowerAlternateCharactersCheckBox != null)
                 selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
+        }
+
+        private void UpdateToolbarState()
+        {
+            stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
+
+            if (selectedMacro == null)
+                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
+            else
+                UpdateUIForMacroStatus(selectedMacro.Status);
         }
 
         private void ToggleSkills(bool show = true)

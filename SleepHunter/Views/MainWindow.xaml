@@ -8,7 +8,8 @@
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterScreen"
         ContentRendered="Window_Shown"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Closed="Window_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,16 +20,17 @@
             <ColumnDefinition Width="280" MinWidth="180" MaxWidth="360"/>
             <ColumnDefinition Width="*" MinWidth="200"/>
             <ColumnDefinition Width="260" MinWidth="200" MaxWidth="360"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <!-- Overlay when showing Modal Dialogs -->
-        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="3" Panel.ZIndex="10" Visibility="Hidden">
+        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="4" Panel.ZIndex="10" Visibility="Hidden">
             <Border Background="Black" Opacity="0.3"/>
             <Border Background="{StaticResource ScanlineBrush}" Opacity="0.7"/>
         </Grid>
 
         <!-- Tool Bar -->
-        <Border Grid.ColumnSpan="3" 
+        <Border Grid.ColumnSpan="4" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
                 BorderThickness="0,0,0,1"
                 Panel.ZIndex="9">
@@ -47,11 +49,11 @@
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Start _New Client"
-                                   Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -68,12 +70,12 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="Sta_rt Macroing"
-                                   Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                   Content="Sta_rt Macro"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -88,12 +90,12 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="_Pause Macroing"
-                                   Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                   Content="_Pause Macro"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -108,12 +110,12 @@
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="S_top Macroing"
-                                   Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                   Content="S_top Macro"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -121,21 +123,61 @@
                                        Text="&#xE20D;"/>
                         </DockPanel>
                     </Button>
+                    <!-- Stop All Macros Button -->
+                    <Button Name="stopAllMacrosButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="stopAllMacrosButton_Click"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Stop _All"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE20E;"/>
+                        </DockPanel>
+                    </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Metadata Editor Button -->
+                    <Button Name="metadataEditorButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="metadataEditorButton_Click"
+                            Padding="4,8,4,2">
+                        <DockPanel VerticalAlignment="Stretch">
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Metadata Editor"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0"
+                                       Text="&#xE104;"/>
+                        </DockPanel>
+                    </Button>
                     <!-- Settings Button -->
                     <Button Name="settingsButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="settingsButton_Click"
-                            Padding="8,8,8,2">
+                            Padding="4,8,8,2">
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="App Settin_gs"
-                                   Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -286,14 +328,14 @@
                     <!-- Flower Settings -->
                     <Border BorderBrush="{StaticResource ObsidianSeparatorColor}" 
                             BorderThickness="0,0,0,1"
-                            Padding="4,8">
+                            Padding="0,8">
                         <UniformGrid HorizontalAlignment="Left"
                                      VerticalAlignment="Center"
                                      Rows="1">
                             <CheckBox Name="flowerAlternateCharactersCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
                                       FontSize="14"
-                                      Margin="8,0"
+                                      Margin="16,4"
                                       Checked="flowerAlternateCharactersCheckBox_Checked"
                                       Unchecked="flowerAlternateCharactersCheckBox_Checked"
                                       ToolTip="This enables automatic flowering for your alternate characters (if they require mana).">
@@ -302,7 +344,7 @@
                             <CheckBox Name="flowerVineyardCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
                                       FontSize="14"
-                                      Margin="8,0"
+                                      Margin="16,4"
                                       Checked="flowerVineyardCheckBox_Checked"
                                       Unchecked="flowerVineyardCheckBox_Checked"
                                       ToolTip="This will enable automatic casting of Lyliac Vineyard (on cooldown).">
@@ -317,7 +359,8 @@
                              Style="{StaticResource ObsidianListBox}"
                              ItemTemplate="{StaticResource FlowerQueueItemDataTemplate}"
                              SelectionMode="Single"
-                             Margin="0">
+                             Margin="0"
+                             GiveFeedback="flowerQueueListBox_GiveFeedback">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                                 <Setter Property="AllowDrop" Value="True"/>
@@ -383,6 +426,48 @@
             </TabItem>
         </TabControl>
 
+        
+        <!-- Spell Queue Placeholder -->
+        <Border Grid.Row="1"
+                Grid.Column="3"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{StaticResource ObsidianDisabled}"
+                BorderThickness="1,0,0,0"
+                HorizontalAlignment="Right"
+                Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility, Converter={StaticResource VisibilityInverter}, Mode=OneWay}">
+
+            <StackPanel Orientation="Vertical">
+
+                <!-- Show Spell Queue Button -->
+                <Button x:Name="showSpellQueueButton"
+                        Style="{StaticResource ObsidianIconButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Margin="0"
+                        Padding="4,4"
+                        ToolTip="Shows the spell queue."
+                        Click="showSpellQueueButton_Click">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   FontSize="24"
+                                   Margin="0,0"
+                                   Text="&#xE127;"/>
+                        
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Foreground="{Binding Path=Foreground, ElementName=showSpellQueueButton}"
+                                   FontSize="18"
+                                   Margin="0,8,0,8"
+                                   Text="Spell Queue">
+                            <TextBlock.LayoutTransform>
+                                <RotateTransform Angle="90"/>
+                            </TextBlock.LayoutTransform>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+        
         <!-- Grid Splitter -->
         <GridSplitter Grid.Row="1"
                       Grid.Column="1"
@@ -405,12 +490,24 @@
             <Border VerticalAlignment="Top"
                     Background="{DynamicResource ObsidianBackground}"
                     Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
-                <TextBlock Text="Spell Queue"
-                           Style="{StaticResource ObsidianText}"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap"
-                           FontSize="18"
-                           Padding="4,2"/>
+                <Grid>
+                    <TextBlock Text="Spell Queue"
+                               Style="{StaticResource ObsidianText}"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               FontSize="18"
+                               Padding="4,2"/>
+
+                    <!-- Hide Spell Queue Button -->
+                    <Button
+                            Style="{StaticResource ObsidianIconButton}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Content="&#xE126;"
+                            Padding="2,1"
+                            ToolTip="Hides the spell queue."
+                            Click="hideSpellQueueButton_Click"/>
+                </Grid>
             </Border>
 
             <!-- Spell Queue -->
@@ -419,7 +516,8 @@
                      Style="{StaticResource ObsidianListBox}"
                      ItemTemplate="{StaticResource SpellQueueItemDataTemplate}"
                      SelectionMode="Single"
-                     Visibility="Collapsed">
+                     Visibility="Collapsed"
+                     GiveFeedback="spellQueueListBox_GiveFeedback">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                         <Setter Property="AllowDrop" Value="True"/>
@@ -471,7 +569,7 @@
 
         <!-- Status Bar -->
         <Border Grid.Row="2"
-                Grid.ColumnSpan="3"
+                Grid.ColumnSpan="4"
                 Background="{DynamicResource ObsidianBackground}"
                 Panel.ZIndex="11">
             <DockPanel>
@@ -486,7 +584,6 @@
 
                 <TextBlock Name="statusTextBlock" 
                            DockPanel.Dock="Left"
-                           Text="Ready"
                            VerticalAlignment="Center"
                            Margin="6,3,4,3"/>
             </DockPanel>

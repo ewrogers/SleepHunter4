@@ -12,27 +12,27 @@ namespace SleepHunter.Macro
 {
     public sealed class PlayerMacroState : MacroState
     {
-        static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
-        static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
 
-        object spellQueueLock = new object();
-        object flowerQueueLock = new object();
+        private readonly ReaderWriterLockSlim spellQueueLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim flowerQueueLock = new ReaderWriterLockSlim();
 
-        List<SpellQueueItem> spellQueue = new List<SpellQueueItem>();
-        List<FlowerQueueItem> flowerQueue = new List<FlowerQueueItem>();
-        PlayerMacroStatus playerStatus;
+        private List<SpellQueueItem> spellQueue = new List<SpellQueueItem>();
+        private List<FlowerQueueItem> flowerQueue = new List<FlowerQueueItem>();
+        private PlayerMacroStatus playerStatus;
 
-        int spellQueueIndex;
-        int flowerQueueIndex;
-        bool isWaitingOnMana;
-        bool useLyliacVineyard;
-        bool flowerAlternateCharacters;
-        DateTime spellCastTimestamp;
-        TimeSpan spellCastDuration;
-        SpellQueueItem lastUsedSpellItem;
-        SpellQueueItem fasSpioradQueueItem;
-        SpellQueueItem lyliacPlantQueueItem;
-        SpellQueueItem lyliacVineyardQueueItem;
+        private int spellQueueIndex;
+        private int flowerQueueIndex;
+        private bool isWaitingOnMana;
+        private bool useLyliacVineyard;
+        private bool flowerAlternateCharacters;
+        private DateTime spellCastTimestamp;
+        private TimeSpan spellCastDuration;
+        private SpellQueueItem lastUsedSpellItem;
+        private SpellQueueItem fasSpioradQueueItem;
+        private SpellQueueItem lyliacPlantQueueItem;
+        private SpellQueueItem lyliacVineyardQueueItem;
 
         public event SpellQueueItemEventHandler SpellAdded;
         public event SpellQueueItemEventHandler SpellUpdated;
@@ -127,22 +127,30 @@ namespace SleepHunter.Macro
         {
             spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
+            {
                 if (index < 0)
                     spellQueue.Add(spell);
                 else
                     spellQueue.Insert(index, spell);
+            }
+            finally { spellQueueLock.ExitWriteLock(); }
 
             OnSpellAdded(spell);
         }
 
         public void AddToFlowerQueue(FlowerQueueItem flower, int index = -1)
         {
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
+            {
                 if (index < 0)
                     flowerQueue.Add(flower);
                 else
                     flowerQueue.Insert(index, flower);
+            }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             OnFlowerTargetAdded(flower);
         }
@@ -151,28 +159,34 @@ namespace SleepHunter.Macro
         {
             spellName = spellName.Trim();
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterReadLock();
+            try
             {
                 foreach (var spell in spellQueue)
                 {
                     if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
                         return true;
                 }
+                return false;
             }
-
-            return false;
+            finally
+            {
+                spellQueueLock.ExitReadLock();
+            }
         }
 
         public bool RemoveFromSpellQueue(SpellQueueItem spell)
         {
             var wasRemoved = false;
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
+            {
                 wasRemoved = spellQueue.Remove(spell);
+            }
+            finally { spellQueueLock.ExitWriteLock(); }
 
-            if (wasRemoved)
-                OnSpellRemoved(spell);
-
+            OnSpellRemoved(spell);
             return wasRemoved;
         }
 
@@ -180,11 +194,13 @@ namespace SleepHunter.Macro
         {
             SpellQueueItem spell = null;
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
             {
                 spell = spellQueue?[index];
                 spellQueue.RemoveAt(index);
             }
+            finally { spellQueueLock.ExitWriteLock(); }
 
             if (spell != null)
                 OnSpellRemoved(spell);
@@ -194,8 +210,12 @@ namespace SleepHunter.Macro
         {
             var wasRemoved = false;
 
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
+            {
                 wasRemoved = flowerQueue.Remove(flower);
+            }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             if (wasRemoved)
                 OnFlowerTargetRemoved(flower);
@@ -207,11 +227,13 @@ namespace SleepHunter.Macro
         {
             FlowerQueueItem flower = null;
 
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
             {
                 flower = flowerQueue?[index];
                 flowerQueue.RemoveAt(index);
             }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             if (flower != null)
                 OnFlowerTargetRemoved(flower);
@@ -221,11 +243,13 @@ namespace SleepHunter.Macro
         {
             var oldSpells = Enumerable.Empty<SpellQueueItem>();
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
             {
                 oldSpells = spellQueue;
                 spellQueue = new List<SpellQueueItem>();
             }
+            finally { spellQueueLock.ExitWriteLock(); }
 
             foreach (var spell in oldSpells)
                 OnSpellRemoved(spell);
@@ -235,11 +259,13 @@ namespace SleepHunter.Macro
         {
             var oldFlowers = Enumerable.Empty<FlowerQueueItem>();
 
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
             {
                 oldFlowers = flowerQueue;
                 flowerQueue = new List<FlowerQueueItem>();
             }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             foreach (var flower in oldFlowers)
                 OnFlowerTargetRemoved(flower);
@@ -249,8 +275,12 @@ namespace SleepHunter.Macro
         {
             var hasChanges = false;
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
+            {
                 hasChanges = MoveListItemUp(spellQueue, item);
+            }
+            finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
                 RaisePropertyChanged("QueuedSpells");
@@ -262,8 +292,12 @@ namespace SleepHunter.Macro
         {
             var hasChanges = false;
 
-            lock (spellQueueLock)
+            spellQueueLock.EnterWriteLock();
+            try
+            {
                 hasChanges = MoveListItemDown(spellQueue, item);
+            }
+            finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
                 RaisePropertyChanged("QueuedSpells");
@@ -275,8 +309,12 @@ namespace SleepHunter.Macro
         {
             var hasChanges = false;
 
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
+            {
                 hasChanges = MoveListItemUp(flowerQueue, item);
+            }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
                 RaisePropertyChanged("FlowerTargets");
@@ -288,8 +326,12 @@ namespace SleepHunter.Macro
         {
             var hasChanges = false;
 
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterWriteLock();
+            try
+            {
                 hasChanges = MoveListItemDown(flowerQueue, item);
+            }
+            finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
                 RaisePropertyChanged("FlowerTargets");
@@ -297,7 +339,7 @@ namespace SleepHunter.Macro
             return hasChanges;
         }
 
-        bool MoveListItemUp<T>(IList<T> list, T item)
+        private bool MoveListItemUp<T>(IList<T> list, T item)
         {
             var currentIndex = list.IndexOf(item);
             var newIndex = currentIndex - 1;
@@ -313,7 +355,7 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        bool MoveListItemDown<T>(IList<T> list, T item)
+        private bool MoveListItemDown<T>(IList<T> list, T item)
         {
             var currentIndex = list.IndexOf(item);
             var newIndex = currentIndex + 1;
@@ -331,11 +373,13 @@ namespace SleepHunter.Macro
 
         public void TickFlowerTimers(TimeSpan deltaTime)
         {
-            lock (flowerQueueLock)
+            flowerQueueLock.EnterUpgradeableReadLock();
+            try
             {
                 foreach (var flower in flowerQueue)
                     flower.Tick(deltaTime);
             }
+            finally { flowerQueueLock.ExitUpgradeableReadLock(); }
         }
 
         public void CancelCasting()
@@ -353,10 +397,6 @@ namespace SleepHunter.Macro
                 return;
             }
 
-            var didUseSkill = false;
-            var didCastSpell = false;
-            var didFlower = false;
-
             var preserveUserPanel = UserSettingsManager.Instance.Settings.PreserveUserPanel;
             InterfacePanel currentPanel = InterfacePanel.Stats;
 
@@ -368,28 +408,25 @@ namespace SleepHunter.Macro
 
             if (UserSettingsManager.Instance.Settings.FlowerBeforeSpellMacros)
             {
-                didFlower = DoFlowerMacro();
-                didCastSpell = DoSpellMacro();
+                DoFlowerMacro();
+                DoSpellMacro();
             }
             else
             {
-                didFlower = DoSpellMacro();
-                didFlower = DoFlowerMacro();
+                DoSpellMacro();
+                DoFlowerMacro();
             }
 
-            bool didAssail = false;
-            didUseSkill = DoSkillMacro(out didAssail);
-
-            if (!this.IsSpellCasting)
+            var didUseSkill = DoSkillMacro(out var didAssail);
+            if (!IsSpellCasting)
                 client.Spellbook.ActiveSpell = null;
 
-            bool didRequireSwitch;
             if (preserveUserPanel)
-                client.SwitchToPanel(currentPanel, out didRequireSwitch);
+                client.SwitchToPanel(currentPanel, out _);
 
-            if (this.Status == MacroStatus.Running)
+            if (Status == MacroStatus.Running)
             {
-                if (this.IsSpellCasting)
+                if (IsSpellCasting)
                 {
                     var spellName = client.Spellbook.ActiveSpell;
 
@@ -402,11 +439,11 @@ namespace SleepHunter.Macro
                     else
                         SetPlayerStatus(PlayerMacroStatus.Casting);
                 }
-                else if (this.IsWaitingOnMana)
+                else if (IsWaitingOnMana)
                     SetPlayerStatus(PlayerMacroStatus.WaitingForMana);
-                else if (this.FlowerAlternateCharacters)
+                else if (FlowerAlternateCharacters)
                     SetPlayerStatus(PlayerMacroStatus.ReadyToFlower);
-                else if (this.UseLyliacVineyard)
+                else if (UseLyliacVineyard)
                     SetPlayerStatus(PlayerMacroStatus.WaitingOnVineyard);
                 else if (didUseSkill)
                     SetPlayerStatus(PlayerMacroStatus.UsingSkills);
@@ -414,7 +451,7 @@ namespace SleepHunter.Macro
                     SetPlayerStatus(PlayerMacroStatus.Assailing);
                 else
                 {
-                    if (this.flowerQueue.Count > 0)
+                    if (flowerQueue.Count > 0)
                         SetPlayerStatus(PlayerMacroStatus.ReadyToFlower);
                     else if (client.Skillbook.ActiveSkills.Count() > 0)
                         SetPlayerStatus(PlayerMacroStatus.Waiting);
@@ -424,14 +461,14 @@ namespace SleepHunter.Macro
             }
         }
 
-        bool DoSkillMacro(out bool didAssail)
+        private bool DoSkillMacro(out bool didAssail)
         {
             didAssail = false;
 
             var isAssailQueued = false;
             var useSpaceForAssail = UserSettingsManager.Instance.Settings.UseSpaceForAssail;
 
-            if (this.IsSpellCasting)
+            if (IsSpellCasting)
                 useSpaceForAssail = false;
 
             var didUseSkill = false;
@@ -453,7 +490,7 @@ namespace SleepHunter.Macro
                 skillList.Add(skill);
             }
 
-            foreach (var skill in skillList.OrderBy<Skill, bool>((s) => { return s.OpensDialog; }))
+            foreach (var skill in skillList.OrderBy((s) => { return s.OpensDialog; }))
             {
                 client.Update(PlayerFieldFlags.GameClient);
 
@@ -478,8 +515,7 @@ namespace SleepHunter.Macro
                         continue;
                 }
 
-                bool didRequireSwitch;
-                if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out didRequireSwitch, useShiftKey))
+                if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out var didRequireSwitch, useShiftKey))
                 {
                     if (didRequireSwitch)
                         Thread.Sleep(SwitchDelay);
@@ -506,12 +542,12 @@ namespace SleepHunter.Macro
             return didUseSkill;
         }
 
-        bool DoSpellMacro()
+        private bool DoSpellMacro()
         {
-            if (this.IsSpellCasting)
+            if (IsSpellCasting)
                 return false;
 
-            SpellQueueItem nextSpell = null;
+            SpellQueueItem nextSpell;
 
             if (ShouldFasSpiorad())
                 nextSpell = GetFasSpiorad();
@@ -523,7 +559,7 @@ namespace SleepHunter.Macro
 
             if (nextSpell == null)
             {
-                this.IsWaitingOnMana = false;
+                IsWaitingOnMana = false;
                 return false;
             }
 
@@ -535,9 +571,9 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        bool DoFlowerMacro()
+        private bool DoFlowerMacro()
         {
-            if (this.IsSpellCasting)
+            if (IsSpellCasting)
                 return false;
 
             client.Update(PlayerFieldFlags.Spellbook);
@@ -550,14 +586,14 @@ namespace SleepHunter.Macro
 
             if (prioritizeAlts)
             {
-                if (this.FlowerAlternateCharacters)
+                if (FlowerAlternateCharacters)
                     if (FlowerNextAltWaitingForMana())
                         return false;
 
                 checkedAlts = true;
             }
 
-            if (this.UseLyliacVineyard)
+            if (UseLyliacVineyard)
             {
                 var vineyardSpell = client.Spellbook.GetSpell(Spell.LyliacVineyardKey);
                 if (vineyardSpell != null && !vineyardSpell.IsOnCooldown)
@@ -602,19 +638,17 @@ namespace SleepHunter.Macro
 
             if (!checkedAlts)
             {
-                if (this.FlowerAlternateCharacters)
+                if (FlowerAlternateCharacters)
                     if (FlowerNextAltWaitingForMana())
                         return true;
-
-                checkedAlts = true;
             }
 
             return false;
         }
 
-        void SetPlayerStatus(PlayerMacroStatus status)
+        private void SetPlayerStatus(PlayerMacroStatus status)
         {
-            this.PlayerStatus = status;
+            PlayerStatus = status;
 
             switch (status)
             {
@@ -692,7 +726,7 @@ namespace SleepHunter.Macro
             }
         }
 
-        bool FlowerNextAltWaitingForMana()
+        private bool FlowerNextAltWaitingForMana()
         {
             var waitingAlt = FindAltWaitingOnMana();
 
@@ -724,7 +758,7 @@ namespace SleepHunter.Macro
             return CastSpell(spell);
         }
 
-        bool ShouldFasSpiorad(int? manaRequirement = null)
+        private bool ShouldFasSpiorad(int? manaRequirement = null)
         {
             client.Update(PlayerFieldFlags.Spellbook);
             var useFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
@@ -752,7 +786,7 @@ namespace SleepHunter.Macro
             return false;
         }
 
-        Player FindAltWaitingOnMana()
+        private Player FindAltWaitingOnMana()
         {
             Player waitingAlt = null;
 
@@ -768,7 +802,7 @@ namespace SleepHunter.Macro
             return waitingAlt;
         }
 
-        SpellQueueItem GetFasSpiorad()
+        private SpellQueueItem GetFasSpiorad()
         {
             if (fasSpioradQueueItem == null)
             {
@@ -780,7 +814,7 @@ namespace SleepHunter.Macro
             return fasSpioradQueueItem;
         }
 
-        SpellQueueItem GetLyliacPlant(SpellTarget target)
+        private SpellQueueItem GetLyliacPlant(SpellTarget target)
         {
             if (lyliacPlantQueueItem == null)
             {
@@ -792,7 +826,7 @@ namespace SleepHunter.Macro
             return lyliacPlantQueueItem;
         }
 
-        SpellQueueItem GetLyliacVineyard()
+        private SpellQueueItem GetLyliacVineyard()
         {
             if (lyliacVineyardQueueItem == null)
             {
@@ -804,7 +838,7 @@ namespace SleepHunter.Macro
             return lyliacVineyardQueueItem;
         }
 
-        SpellQueueItem GetNextSpell()
+        private SpellQueueItem GetNextSpell()
         {
             client.Update(PlayerFieldFlags.Spellbook);
 
@@ -829,7 +863,7 @@ namespace SleepHunter.Macro
 
                 if (currentSpell.Id == currentId)
                 {
-                    this.IsWaitingOnMana = false;
+                    IsWaitingOnMana = false;
                     return null;
                 }
             }
@@ -848,7 +882,7 @@ namespace SleepHunter.Macro
             return !currentSpell.IsDone ? currentSpell : null;
         }
 
-        FlowerQueueItem GetNextFlowerTarget()
+        private FlowerQueueItem GetNextFlowerTarget()
         {
             var prioritizeAlts = UserSettingsManager.Instance.Settings.FlowerAltsFirst;
 
@@ -865,11 +899,12 @@ namespace SleepHunter.Macro
 
             var currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
             var currentId = currentTarget.Id;
-            bool isWithinManaThreshold = false;
+            bool isWithinManaThreshold;
 
             if (prioritizeAlts)
             {
-                lock (flowerQueueLock)
+                flowerQueueLock.EnterReadLock();
+                try
                 {
                     foreach (var altTarget in flowerQueue)
                     {
@@ -894,6 +929,7 @@ namespace SleepHunter.Macro
                             return altTarget;
                     }
                 }
+                finally { flowerQueueLock.ExitReadLock(); }
             }
 
             isWithinManaThreshold = false;
@@ -925,7 +961,7 @@ namespace SleepHunter.Macro
             return currentTarget;
         }
 
-        bool CastSpell(SpellQueueItem item)
+        private bool CastSpell(SpellQueueItem item)
         {
             int? modifiedNumberOfLines = null;
 
@@ -951,16 +987,16 @@ namespace SleepHunter.Macro
                 client.Update(PlayerFieldFlags.Stats);
                 if (spell.ManaCost > client.Stats.CurrentMana)
                 {
-                    this.IsWaitingOnMana = true;
+                    IsWaitingOnMana = true;
                     return false;
                 }
                 else
-                    this.IsWaitingOnMana = false;
+                    IsWaitingOnMana = false;
             }
             else
-                this.IsWaitingOnMana = false;
+                IsWaitingOnMana = false;
 
-            bool didRequireSwitch = false;
+            bool didRequireSwitch;
             if (UserSettingsManager.Instance.Settings.AllowStaffSwitching)
             {
                 if (!SwitchToBestStaff(item, out modifiedNumberOfLines, out didRequireSwitch))
@@ -999,7 +1035,6 @@ namespace SleepHunter.Macro
             var numberOfLines = modifiedNumberOfLines.Value;
             client.Spellbook.ActiveSpell = spell.Name;
 
-            didRequireSwitch = false;
             if (client.SwitchToPanelAndWait(spell.Panel, PanelTimeout, out didRequireSwitch, useShiftKey))
             {
                 if (didRequireSwitch)
@@ -1011,8 +1046,8 @@ namespace SleepHunter.Macro
                 var spellCastDuration = CalculateLineDuration(numberOfLines) + TimeSpan.FromMilliseconds(100);
                 var now = DateTime.Now;
 
-                this.SpellCastDuration = spellCastDuration;
-                this.SpellCastTimestamp = now;
+                SpellCastDuration = spellCastDuration;
+                SpellCastTimestamp = now;
                 item.LastUsedTimestamp = now;
 
                 client.Spellbook.SetCooldownTimestamp(spell.Name, now.Add(spellCastDuration));
@@ -1022,7 +1057,7 @@ namespace SleepHunter.Macro
             return false;
         }
 
-        bool SwitchToBestStaff(SpellQueueItem item, out int? numberOfLines, out bool didRequireSwitch)
+        private bool SwitchToBestStaff(SpellQueueItem item, out int? numberOfLines, out bool didRequireSwitch)
         {
             didRequireSwitch = false;
 
@@ -1070,7 +1105,7 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        void ClickTarget(SpellTarget target)
+        private void ClickTarget(SpellTarget target)
         {
             if (target == null)
                 throw new ArgumentNullException("target");
@@ -1079,7 +1114,6 @@ namespace SleepHunter.Macro
                 return;
 
             var pt = new Point();
-            var radiusPoint = new Point();
 
             switch (target.Units)
             {
@@ -1099,22 +1133,18 @@ namespace SleepHunter.Macro
                     pt = GetRelativeTilePoint((int)target.Location.X, (int)target.Location.Y);
                     break;
 
-                case TargetCoordinateUnits.RelativeXY:
-                    pt = new Point(315 + target.Location.X, 160 + target.Location.Y);
-                    break;
-
                 case TargetCoordinateUnits.Self:
                     pt = new Point(315, 160);
                     break;
 
                 case TargetCoordinateUnits.AbsoluteRadius:
-                    radiusPoint = target.GetNextRadiusPoint();
-                    pt = GetAbsoluteTilePoint((int)radiusPoint.X, (int)radiusPoint.Y);
+                    var absRadiusPoint = target.GetNextRadiusPoint();
+                    pt = GetAbsoluteTilePoint((int)absRadiusPoint.X, (int)absRadiusPoint.Y);
                     break;
 
                 case TargetCoordinateUnits.RelativeRadius:
-                    radiusPoint = target.GetNextRadiusPoint();
-                    pt = GetRelativeTilePoint((int)radiusPoint.X, (int)radiusPoint.Y);
+                    var relRadiusPoint = target.GetNextRadiusPoint();
+                    pt = GetRelativeTilePoint((int)relRadiusPoint.X, (int)relRadiusPoint.Y);
                     break;
             }
 
@@ -1131,7 +1161,7 @@ namespace SleepHunter.Macro
             client.ClickAt(pt.X, pt.Y);
         }
 
-        Point GetCharacterPoint(string characterName)
+        private Point GetCharacterPoint(string characterName)
         {
             var pt = new Point();
 
@@ -1156,7 +1186,7 @@ namespace SleepHunter.Macro
             return pt;
         }
 
-        Point GetRelativeTilePoint(int deltaX, int deltaY)
+        private Point GetRelativeTilePoint(int deltaX, int deltaY)
         {
             Point pt = new Point(315, 160);
 
@@ -1167,7 +1197,7 @@ namespace SleepHunter.Macro
             return pt;
         }
 
-        Point GetAbsoluteTilePoint(int tileX, int tileY)
+        private Point GetAbsoluteTilePoint(int tileX, int tileY)
         {
             var deltaX = tileX - client.Location.X;
             var deltaY = tileY - client.Location.Y;
@@ -1178,7 +1208,7 @@ namespace SleepHunter.Macro
                 return GetRelativeTilePoint(deltaX, deltaY);
         }
 
-        TimeSpan CalculateLineDuration(int numberOfLines)
+        private TimeSpan CalculateLineDuration(int numberOfLines)
         {
             if (numberOfLines == 0)
                 return UserSettingsManager.Instance.Settings.ZeroLineDelay;
@@ -1191,7 +1221,6 @@ namespace SleepHunter.Macro
             }
         }
 
-        #region Macro State Overrides
         protected override void StartMacro(object state = null)
         {
             InitializeMacro();
@@ -1217,7 +1246,7 @@ namespace SleepHunter.Macro
             }
         }
 
-        void InitializeMacro()
+        private void InitializeMacro()
         {
             spellQueueIndex = 0;
             spellCastTimestamp = DateTime.Now;
@@ -1233,67 +1262,23 @@ namespace SleepHunter.Macro
             }
         }
 
-        void ResetMacro()
+        private void ResetMacro()
         {
             client.Spellbook.ActiveSpell = null;
 
             if (lastUsedSpellItem != null)
                 lastUsedSpellItem.IsActive = false;
 
-            this.IsWaitingOnMana = false;
+            IsWaitingOnMana = false;
 
             SetPlayerStatus(PlayerMacroStatus.Nothing);
         }
-        #endregion
 
-        #region Event Handlers
-        void OnSpellAdded(SpellQueueItem spell)
-        {
-            var handler = this.SpellAdded;
-
-            if (handler != null)
-                handler(this, new SpellQueueItemEventArgs(spell));
-        }
-
-        void OnSpellUpdated(SpellQueueItem spell)
-        {
-            var handler = this.SpellUpdated;
-
-            if (handler != null)
-                handler(this, new SpellQueueItemEventArgs(spell));
-        }
-
-        void OnSpellRemoved(SpellQueueItem spell)
-        {
-            var handler = this.SpellRemoved;
-
-            if (handler != null)
-                handler(this, new SpellQueueItemEventArgs(spell));
-        }
-
-        void OnFlowerTargetAdded(FlowerQueueItem flower)
-        {
-            var handler = this.FlowerTargetAdded;
-
-            if (handler != null)
-                handler(this, new FlowerQueueItemEventArgs(flower));
-        }
-
-        void OnFlowerTargetUpdated(FlowerQueueItem flower)
-        {
-            var handler = this.FlowerTargetUpdated;
-
-            if (handler != null)
-                handler(this, new FlowerQueueItemEventArgs(flower));
-        }
-
-        void OnFlowerTargetRemoved(FlowerQueueItem flower)
-        {
-            var handler = this.FlowerTargetRemoved;
-
-            if (handler != null)
-                handler(this, new FlowerQueueItemEventArgs(flower));
-        }
-        #endregion
+        private void OnSpellAdded(SpellQueueItem spell) => SpellAdded?.Invoke(this, new SpellQueueItemEventArgs(spell));
+        private void OnSpellUpdated(SpellQueueItem spell) => SpellUpdated?.Invoke(this, new SpellQueueItemEventArgs(spell));
+        private void OnSpellRemoved(SpellQueueItem spell) => SpellRemoved?.Invoke(this, new SpellQueueItemEventArgs(spell));
+        private void OnFlowerTargetAdded(FlowerQueueItem flower) => FlowerTargetAdded?.Invoke(this, new FlowerQueueItemEventArgs(flower));
+        private void OnFlowerTargetUpdated(FlowerQueueItem flower) => FlowerTargetUpdated?.Invoke(this, new FlowerQueueItemEventArgs(flower));
+        private void OnFlowerTargetRemoved(FlowerQueueItem flower) => FlowerTargetRemoved?.Invoke(this, new FlowerQueueItemEventArgs(flower));
     }
 }

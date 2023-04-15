@@ -9,6 +9,8 @@ namespace SleepHunter
 {
     public partial class App : Application
     {
+        public const string USER_MANUAL_URL = @"https://ewrogers.github.io/SleepHunter4/";
+
         private ILogger logger;
 
         public static new App Current => (App)Application.Current;

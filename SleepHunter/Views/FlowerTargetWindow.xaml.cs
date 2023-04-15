@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 using SleepHunter.Extensions;
@@ -13,7 +14,7 @@ namespace SleepHunter.Views
 {
     public partial class FlowerTargetWindow : Window
     {
-        FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
+        private FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
 
         public FlowerQueueItem FlowerQueueItem
         {
@@ -35,11 +36,11 @@ namespace SleepHunter.Views
         {
             if (isEditMode)
             {
-                this.Title = "Edit Target";
+                Title = "Edit Target";
                 okButton.Content = "_Save Changes";
             }
 
-            this.FlowerQueueItem.Id = item.Id;
+            FlowerQueueItem.Id = item.Id;
             SetTargetForMode(item.Target);
 
             if (item.Interval.HasValue)
@@ -57,7 +58,7 @@ namespace SleepHunter.Views
 
             manaThresholdCheckBox.IsChecked = item.ManaThreshold.HasValue;
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
         }
 
         public FlowerTargetWindow()
@@ -68,7 +69,7 @@ namespace SleepHunter.Views
             ToggleTargetMode(TargetCoordinateUnits.Character);
         }
 
-        void InitializeViews()
+        private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
@@ -77,25 +78,24 @@ namespace SleepHunter.Views
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
         }
 
-        void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
+        private void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            this.Dispatcher.InvokeIfRequired(() =>
+            Dispatcher.InvokeIfRequired(() =>
             {
                 BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var player = sender as Player;
-            if (player == null)
+            if (!(sender is Player player))
                 return;
 
             if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
                string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
-                this.Dispatcher.InvokeIfRequired(() =>
+                Dispatcher.InvokeIfRequired(() =>
                 {
                     BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
                     characterComboBox.Items.Refresh();
@@ -104,10 +104,10 @@ namespace SleepHunter.Views
             }
         }
 
-        bool ValidateFlowerTarget()
+        private bool ValidateFlowerTarget()
         {
             var selectedMode = GetSelectedMode();
-            TimeSpan interval = TimeSpan.Zero;
+            var interval = TimeSpan.Zero;
 
             #region Check Target Mode
             if (selectedMode == TargetCoordinateUnits.None)
@@ -150,10 +150,9 @@ namespace SleepHunter.Views
 
             if (intervalCheckBox.IsChecked.Value)
             {
-                double intervalSeconds;
                 if (string.IsNullOrWhiteSpace(intervalTextBox.Text.Trim()))
                     interval = TimeSpan.Zero;
-                else if (double.TryParse(intervalTextBox.Text.Trim(), out intervalSeconds) && intervalSeconds >= 0)
+                else if (double.TryParse(intervalTextBox.Text.Trim(), out var intervalSeconds) && intervalSeconds >= 0)
                     interval = TimeSpan.FromSeconds(intervalSeconds);
                 else if (!TimeSpanExtender.TryParse(intervalTextBox.Text.Trim(), out interval) || interval < TimeSpan.Zero)
                 {
@@ -214,22 +213,21 @@ namespace SleepHunter.Views
             return true;
         }
 
-        TargetCoordinateUnits GetSelectedMode()
+        private TargetCoordinateUnits GetSelectedMode()
         {
-            TargetCoordinateUnits mode = TargetCoordinateUnits.None;
+            var mode = TargetCoordinateUnits.None;
 
             if (targetModeComboBox == null)
                 return mode;
 
-            var setting = targetModeComboBox.SelectedValue as string;
-            if (setting == null)
+            if (!(targetModeComboBox.SelectedValue is string setting))
                 return mode;
 
             Enum.TryParse(setting, out mode);
             return mode;
         }
 
-        Point GetLocationForMode(TargetCoordinateUnits units)
+        private Point GetLocationForMode(TargetCoordinateUnits units)
         {
             switch (units)
             {
@@ -242,9 +240,6 @@ namespace SleepHunter.Views
                 case TargetCoordinateUnits.RelativeTile:
                     return new Point((int)relativeTileXComboBox.SelectedValue, (int)relativeTileYComboBox.SelectedValue);
 
-                case TargetCoordinateUnits.RelativeXY:
-                    return new Point(relativeXUpDown.Value, relativeYUpDown.Value);
-
                 case TargetCoordinateUnits.RelativeRadius:
                     goto case TargetCoordinateUnits.RelativeTile;
 
@@ -256,7 +251,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SetTargetForMode(SpellTarget target)
+        private void SetTargetForMode(SpellTarget target)
         {
             if (target == null)
                 return;
@@ -284,11 +279,6 @@ namespace SleepHunter.Views
                     relativeTileYComboBox.SelectedItem = (int)target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.RelativeXY:
-                    relativeXUpDown.Value = target.Location.X;
-                    relativeYUpDown.Value = target.Location.Y;
-                    break;
-
                 case TargetCoordinateUnits.RelativeRadius:
                     innerRadiusUpDown.Value = target.InnerRadius;
                     outerRadiusUpDown.Value = target.OuterRadius;
@@ -304,10 +294,8 @@ namespace SleepHunter.Views
             offsetYUpDown.Value = target.Offset.Y;
         }
 
-        void ToggleTargetMode(TargetCoordinateUnits units)
+        private void ToggleTargetMode(TargetCoordinateUnits units)
         {
-            var requiresTarget = units != TargetCoordinateUnits.None;
-            var isSelfTarget = units == TargetCoordinateUnits.Self;
             var isRadius = units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius;
 
             if (characterComboBox != null)
@@ -315,9 +303,6 @@ namespace SleepHunter.Views
 
             if (relativeTileXComboBox != null)
                 relativeTileXComboBox.Visibility = (units == TargetCoordinateUnits.RelativeTile || units == TargetCoordinateUnits.RelativeRadius) ? Visibility.Visible : Visibility.Collapsed;
-
-            if (relativeXUpDown != null)
-                relativeXUpDown.Visibility = (units == TargetCoordinateUnits.RelativeXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (absoluteTileXUpDown != null)
                 absoluteTileXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.AbsoluteRadius) ? Visibility.Visible : Visibility.Collapsed;
@@ -342,21 +327,31 @@ namespace SleepHunter.Views
                     manaThresholdCheckBox.IsChecked = false;
             }
 
-            var height = 300;
-
-            if (requiresTarget)
-                height += 40;
-
-            if (isRadius)
-                height += 90;
-
-            if (!isSelfTarget && requiresTarget)
-                height += 40;
-
-            this.Height = height;
+            SizeToFit(units, IsLoaded);
         }
 
-        void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SizeToFit(TargetCoordinateUnits units, bool animate = true)
+        {
+            var measuredHeight = 346;
+
+            if (units == TargetCoordinateUnits.Character)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.RelativeTile)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
+                measuredHeight += 84;
+
+            if (!animate)
+            {
+                Height = measuredHeight;
+                return;
+            }
+
+            var heightAnimation = new DoubleAnimation(measuredHeight, new Duration(TimeSpan.FromSeconds(0.25)));
+            BeginAnimation(HeightProperty, heightAnimation);
+        }
+
+        private void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count < 1)
             {
@@ -364,28 +359,25 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var item = e.AddedItems[0] as UserSetting;
-            if (item == null)
+            if (!(e.AddedItems[0] is UserSetting item))
             {
                 ToggleTargetMode(TargetCoordinateUnits.None);
                 return;
             }
 
-            TargetCoordinateUnits mode;
-
-            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out mode))
+            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out var mode))
                 mode = TargetCoordinateUnits.None;
 
             ToggleTargetMode(mode);
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateFlowerTarget())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
     }
 }

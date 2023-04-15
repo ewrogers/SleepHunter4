@@ -5,29 +5,6 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:ctl="clr-namespace:SleepHunter.Controls">
 
-    <!-- Rainbow Brush -->
-    <LinearGradientBrush x:Key="RainbowBackground" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Offset="0.000" Color="#AF0000"/>
-        <GradientStop Offset="0.166" Color="#AF0000"/>
-
-        <GradientStop Offset="0.166" Color="#AF6F00"/>
-        <GradientStop Offset="0.332" Color="#AF6F00"/>
-
-        <GradientStop Offset="0.332" Color="#AFAF00"/>
-        <GradientStop Offset="0.498" Color="#AFAF00"/>
-
-        <GradientStop Offset="0.498" Color="#00AF00"/>
-        <GradientStop Offset="0.664" Color="#00AF00"/>
-
-        <GradientStop Offset="0.664" Color="#0000AF"/>
-        <GradientStop Offset="0.830" Color="#0000AF"/>
-
-        <GradientStop Offset="0.830" Color="#6F00AF"/>
-        <GradientStop Offset="1.000" Color="#6F00AF"/>
-    </LinearGradientBrush>
-
-    <SolidColorBrush x:Key="RainbowForeground" Color="White"/>
-
     <!-- Backgrounds & Foregrounds -->
     <!-- Blue 900 -->
     <SolidColorBrush x:Key="ObsidianBackground" Color="#1e3a8a"/>
@@ -336,7 +313,7 @@
         <Setter Property="Height" Value="24"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="1,1"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -357,6 +334,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ContentSite" Property="Opacity" Value="1.0"/>
                         </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianInactive}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -371,6 +353,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="MinHeight" Value="30"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="Normal"/>
@@ -399,7 +382,7 @@
                                     Grid.Column="1"
                                     Style="{StaticResource ObsidianTextBoxClearButton}"
                                     Click="TextBoxClearButton_Click"
-                                    Margin="4,2">
+                                    Margin="2,1">
                                 <Path Name="ClearButtonPath" 
                                       Stroke="{Binding ElementName=ClearButton, Path=Foreground}"
                                       StrokeThickness="2"
@@ -413,7 +396,7 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
-                            <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="ClearButton" Property="IsEnabled" Value="False"/>
                         </Trigger>
                         <Trigger Property="AcceptsReturn" Value="True">
                             <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed"/>
@@ -668,6 +651,52 @@
         </Setter>
     </Style>
 
+    <!-- Icon Button Style -->
+    <Style x:Key="ObsidianIconButton" TargetType="Button">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="{StaticResource ObsidianSymbolFontFamily}"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="MinWidth" Value="30"/>
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Hyperlink Button -->
     <Style x:Key="ObsidianLinkButton" TargetType="Button">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -738,7 +767,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="0"
-                                Padding="8,2">
+                                Padding="6,2">
                             <Path Name="Arrow"
                                   Grid.Column="1"
                                   Fill="{DynamicResource ObsidianForeground}"
@@ -791,12 +820,13 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
         <Setter Property="MinWidth" Value="80"/>
-        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="MinHeight" Value="32"/>
         <Setter Property="Background" Value="{DynamicResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1,1,1,1"/>
         <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="2"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
@@ -817,14 +847,15 @@
                                           IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                           ClickMode="Press"/>
 
-                            <Border Padding="3,3,36,3">
+                            <Border Padding="0,0,34,0">
                                 <ContentPresenter Name="ContentSite"
                                                   IsHitTestVisible="False"
                                                   Content="{TemplateBinding SelectionBoxItem}"
                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"/>
                             </Border>
 
 
@@ -833,7 +864,8 @@
                                      Foreground="{TemplateBinding Foreground}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center"
-                                     Margin="3,3,36,3"
+                                     Margin="0,0,34,0"
+                                     Padding="{TemplateBinding Padding}"
                                      Focusable="True"
                                      Background="Transparent"
                                      Visibility="Hidden"
@@ -844,17 +876,17 @@
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
                                    Style="{StaticResource ObsidianPopup}"
                                    Focusable="False"
-                                   HorizontalOffset="-1"
+                                   HorizontalOffset="1"
                                    StaysOpen="True"
-                                   VerticalOffset="-1">
+                                   VerticalOffset="1">
                                 <Grid Name="DropDown"
                                       MinWidth="{TemplateBinding ActualWidth}"
                                       MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <Border Name="DropDownBorder"
                                             Background="{TemplateBinding Background}"
                                             BorderBrush="{StaticResource ObsidianSeparatorColor}"
-                                            BorderThickness="1"
-                                            CornerRadius="1">
+                                            BorderThickness="1,0,1,1"
+                                            CornerRadius="0,0,2,2">
                                         <ScrollViewer Style="{StaticResource ObsidianScrollViewer}">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>

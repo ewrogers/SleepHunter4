@@ -11,6 +11,21 @@
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner">
     <Grid>
+
+        <!-- Show Release Notes Link Button -->
+        <Button Panel.ZIndex="10"
+                Style="{StaticResource ObsidianLinkButton}"
+                Width="130"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="0,8"
+                Click="userManualLink_Click"
+                ToolTip="Opens the user manual in the browser.">
+            <TextBlock Style="{StaticResource ObsidianHyperlinkText}">
+                User Manual
+            </TextBlock>
+        </Button>
+
         <!-- Tabs -->
         <TabControl Name="tabControl"
                     Style="{StaticResource ObsidianVerticalTabControl}"
@@ -18,9 +33,8 @@
                     SelectionChanged="tabControl_SelectionChanged">
             <!-- General Tab-->
             <TabItem Header="_General" TabIndex="0">
-                <Grid Height="442" Width="436">
+                <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -91,7 +105,11 @@
                         <sys:TimeSpan>0:1:00</sys:TimeSpan>
                     </ComboBox>
 
-                    <StackPanel Grid.Row="2"
+                    <Separator Grid.Row="2" Grid.ColumnSpan="2" 
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="4,8"/>
+
+                    <StackPanel Grid.Row="3"
                                 Grid.ColumnSpan="2"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
@@ -101,56 +119,26 @@
                                   Width="280"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SaveMacroStates}"
                                   Margin="8"
-                                  ToolTip="This will save character macro states on logout and reload them on login.">
-                            _Remember Last Known Macro State
+                                  ToolTip="This will automatically save character macro states on logout and reload them on login.">
+                            Auto-_Save Macro States
                         </CheckBox>
                     </StackPanel>
-
-                    <Separator Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource ObsidianSeparator}"/>
-
-                    <StackPanel Grid.Row="4"
-                                Grid.ColumnSpan="2"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <!-- Save Macro State -->
-                        <CheckBox Name="loggingEnabledCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  Width="280"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
-                                  Margin="8"
-                                  ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
-                            Enable Debug _Logging
-                        </CheckBox>
-                    </StackPanel>
-                    
-                    <!-- Metadata Editor Button -->
-                    <Button Name="metadataEditorButton"
-                            Grid.Row="6"
-                            Grid.ColumnSpan="2"
-                            Style="{StaticResource ObsidianButton}"
-                            Width="320"
-                            Margin="4,54"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom"
-                            Click="metadataEditorButton_Click">
-                        Show _Metadata Editor
-                    </Button>
 
                     <!-- Reset Defaults Button -->
                     <Button x:Name="resetDefaultsButton"
-            		        Grid.Row="6"
+            		        Grid.Row="5"
             		        Grid.ColumnSpan="2"
             		        Style="{StaticResource ObsidianButton}"
             		        Width="320"
             		        Margin="4,8"
             		        HorizontalAlignment="Center"
             		        VerticalAlignment="Bottom"
-            		        Click="resetDefaultsButton_Click" Content="Reset Default _Settings"/>
+            		        Click="resetDefaultsButton_Click" Content="_Reset All Settings"/>
                 </Grid>
             </TabItem>
 
             <!-- UI Tab-->
-            <TabItem Header="_User Interface" TabIndex="1">
+            <TabItem Header="User _Interface" TabIndex="1">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
@@ -186,7 +174,7 @@
 
                             <!-- Color Themes -->
                             <ComboBox Name="themeColorComboBox"
-                                      Width="300" Height="36"
+                                      Width="340" Height="40"
                                       Style="{StaticResource ObsidianComboBox}"
                                       ItemTemplate="{StaticResource ColorThemeDataTemplate}"
                                       ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
@@ -194,30 +182,6 @@
                                       SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
                                       Margin="4,6"/>
                         </StackPanel>
-
-                        <!-- Rainbow Mode -->
-                        <CheckBox Name="rainbowModeCheckBox"
-                                  Grid.Row="1"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RainbowMode}"
-                                  ToolTip="Aren't you curious?">
-                            _Rainbow Mode
-                        </CheckBox>
-
-                        <!-- Reset Themes Button -->
-                        <Button Name="resetThemesButton"
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Style="{StaticResource ObsidianButton}"
-                                Width="190"
-                                Margin="4,1"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Click="resetThemesButton_Click">
-                            Reset _Color Themes
-                        </Button>
 
                         <Separator Grid.Row="2"
                                    Grid.ColumnSpan="2"
@@ -378,9 +342,8 @@
                                    Margin="4,8"/>
 
                         <WrapPanel Grid.Row="9"
-                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Top"
-                                   Margin="4">
+                                   Margin="48,4,4,4">
                             <!-- Show Skill Names  -->
                             <CheckBox Name="showSkillNamesCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -405,9 +368,8 @@
                         </WrapPanel>
 
                         <WrapPanel Grid.Row="9" Grid.Column="1"
-                                   HorizontalAlignment="Center"
                                    VerticalAlignment="Top"
-                                   Margin="4">
+                                   Margin="10,4,4,4">
                             <!-- Show Skill Levels  -->
                             <CheckBox Name="showSkillLevelsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -439,100 +401,85 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <!-- Client Path -->
-                    <TextBlock Text="Client Path:"
-                               Grid.Row="0" Grid.ColumnSpan="2"
-                               TextAlignment="Left"
-                               Margin="20,2"
-                               Style="{StaticResource ObsidianText}"
-                               ToolTip="This is the folder path to the game client executable."/>
+                    <!-- Client Executable Path -->
+                    <StackPanel Orientation="Vertical"
+                                Margin="8,4">
+                        <TextBlock Text="Client Path:"
+                                   Margin="2,2"
+                                   TextAlignment="Left"
+                                   Style="{StaticResource ObsidianText}"
+                                   ToolTip="This is the folder path to the game client executable."/>
 
-                    <!-- Client Path TextBox -->
-                    <TextBox Name="clientPathTextBox"
-                             Grid.Row="1"
-                             Grid.ColumnSpan="2"
-                             Width="440"
-                             Style="{StaticResource ObsidianTextBox}"
-                             Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
-                             Margin="0,2,0,6"/>
+                        <!-- Client Path TextBox -->
+                        <TextBox Name="clientPathTextBox"
+                                 Height="40"
+                                 Style="{StaticResource ObsidianTextBox}"
+                                 Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
+                                 Margin="0,4"/>
+                    </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
-                                HorizontalAlignment="Center">
+                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="8,2">
                         <!-- Client Version-->
                         <TextBlock Text="Client Version:"
-                                   Margin="8,1"
-                                   TextAlignment="Right"
+                                   Width="100"
+                                   Margin="10,2"
                                    Style="{StaticResource ObsidianText}"
                                    ToolTip="This is the client version to expect for patching and memory reading."/>
 
                         <!-- Client Version ComboBox -->
                         <ComboBox Name="clientVersionComboBox"
-                                  Width="240" Height="36"
+                                  Width="180" Height="32"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ClientVersionDataTemplate}"
                                   ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
                                   SelectedValuePath="Key"
                                   SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedVersion}"
-                                  Margin="4,6"/>
+                                  Margin="0,2"/>
                     </StackPanel>
 
-                    <Separator Grid.Row="3" 
-            		           Grid.ColumnSpan="2"
+                    <Separator Grid.Row="2" 
             		           Style="{StaticResource ObsidianSeparator}"
             		           Margin="4,6"/>
 
-                    <StackPanel Grid.Row="4" Grid.ColumnSpan="2" 
+                    <StackPanel Grid.Row="3"
                                 Orientation="Vertical"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top">
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="116,8,0,0">
+
                         <!-- Patch Multiple Instance CheckBox -->
                         <CheckBox Name="patchMultipleInstanceCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to allow multiple instances to be launched.">
+                                    Style="{StaticResource ObsidianCheckBox}"
+                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
+                                    Margin="8"
+                                    ToolTip="This will patch the client to allow multiple instances to be launched.">
                             Allow _Multiple Instances
                         </CheckBox>
 
                         <!-- Patch Intro Video CheckBox -->
                         <CheckBox Name="patchIntroVideoCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to skip the introduction video.">
+                                    Style="{StaticResource ObsidianCheckBox}"
+                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
+                                    Margin="8"
+                                    ToolTip="This will patch the client to skip the introduction video.">
                             Skip Intro _Video
                         </CheckBox>
 
                         <!-- Patch Walls CheckBox -->
                         <CheckBox Name="patchNoWallsCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
-                                  Margin="8"
-                                  ToolTip="This will patch the client to not render foreground (wall) tiles.">
+                                   Style="{StaticResource ObsidianCheckBox}"
+                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
+                                   Margin="8"
+                                   ToolTip="This will patch the client to not render foreground (wall) tiles.">
                             No Foreground _Walls
                         </CheckBox>
                     </StackPanel>
-
-                    <!-- Reset Versions Button -->
-                    <Button Name="resetVersionsButton"
-                            Grid.Row="4"
-                            Grid.ColumnSpan="2"
-                            Style="{StaticResource ObsidianButton}"
-                            Width="240"
-                            Margin="4,8"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom"
-                            Click="resetVersionsButton_Click">
-                        Reset Client _Versions
-                    </Button>
                 </Grid>
             </TabItem>
 
@@ -701,7 +648,8 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -711,7 +659,7 @@
                         <TextBlock Text="Spell Rotation Mode:"
                                    TextAlignment="Right"
                                    Style="{StaticResource ObsidianText}"
-                                   ToolTip="This is the way"/>
+                                   ToolTip="This is the way the spell queue will rotate while casting."/>
 
                         <ComboBox Name="spellRotationComboBox"
                                   Grid.Column="1"
@@ -815,82 +763,82 @@
                                    Margin="4,6"
                                    Style="{StaticResource ObsidianSeparator}"/>
 
-                        <WrapPanel Grid.Row="6" Grid.ColumnSpan="2"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
-                            <!-- Fas Spiorad CheckBox -->
-                            <CheckBox Name="fasSpioradCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="14,8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
-                                      Content="Fas Spiorad If Mana &lt;"
-                                      ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
 
-                            <!-- Fas Spiorad Up Down -->
-                            <ctl:NumericUpDown x:Name="fasSpioradUpDown"
-                                               Style="{StaticResource ObsidianNumericUpDown}"
-                                               Width="160"
-                                               Minimum="1"
-                                               Maximum="1000000"
-                                               SmallIncrement="100"
-                                               LargeIncrement="1000"
-                                               FontSize="16"
-                                               Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
-                                               IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
-                                               Margin="4"/>
+                        <!-- Auto Fas Spiorad CheckBox -->
+                        <CheckBox Name="fasSpioradCheckBox"
+                                  Grid.Row="6"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  Margin="32,8"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
+                                  Content="Auto Fas Spiorad"
+                                  ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
 
-                            <!-- Fas Spiorad On Demand CheckBox -->
-                            <CheckBox Name="fasSpioradOnDemandCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="14,8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
-                                      Content="Fas Spiorad when Insufficient Mana"
-                                      ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
-                        </WrapPanel>
+                        <!-- Fas Spiorad Threshold -->
+                        <ctl:NumericUpDown x:Name="fasSpioradUpDown"
+                                           Grid.Row="6"
+                                           Grid.Column="1"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Width="200"
+                                           Minimum="1"
+                                           Maximum="1000000"
+                                           SmallIncrement="100"
+                                           LargeIncrement="1000"
+                                           FontSize="16"
+                                           DecoratorText="MP &lt;"
+                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
+                                           IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
 
-                        <Separator Grid.Row="7"
+                        <!-- Fas Spiorad On Demand CheckBox -->
+                        <CheckBox Name="fasSpioradOnDemandCheckBox"
+                                  Grid.Row="7"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  Margin="32,8"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
+                                  Content="Use Fas Spiorad when Insufficient Mana"
+                                  ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
+
+                        <Separator Grid.Row="8"
                                    Grid.ColumnSpan="2"
                                    Margin="4,6"
                                    Style="{StaticResource ObsidianSeparator}"/>
 
 
-                        <StackPanel Grid.Row="8"
-                                    Grid.ColumnSpan="2"
-                                    Orientation="Vertical"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Top">
-                            <!-- Mana Requirement CheckBox -->
-                            <CheckBox Name="manaCheckCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
-                                      Margin="8"
-                                      ToolTip="This will allow spells only to be cast when you have the required mana.">
-                                Require Mana for Casting Spells
-                            </CheckBox>
+                        <!-- Mana Requirement CheckBox -->
+                        <CheckBox Name="manaCheckCheckBox"
+                                  Grid.Row="9"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
+                                  Margin="32,8"
+                                  ToolTip="This will allow spells only to be cast when you have the required mana.">
+                            Require Mana for Casting Spells
+                        </CheckBox>
 
-                            <!-- Staff Switching CheckBox -->
-                            <CheckBox Name="staffSwitchingCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
-                                      Margin="8"
-                                      ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
-                                Allow Automatic _Staff Switching
-                            </CheckBox>
+                        <!-- Staff Switching CheckBox -->
+                        <CheckBox Name="staffSwitchingCheckBox"
+                                  Grid.Row="10"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
+                                  Margin="32,8"
+                                  ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
+                            Allow Automatic _Staff Switching
+                        </CheckBox>
 
-                            <!-- Warn on Duplicate Spell Queue CheckBox -->
-                            <CheckBox Name="warnOnDuplicateSpellsCheckBox"
-                                      Grid.ColumnSpan="2"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
-                                      Margin="8"
-                                      ToolTip="Show warnings when the same spell is added to the spell queue again.">
-                                _Warn on Duplicate Spells in Casting Queue
-                            </CheckBox>
-                        </StackPanel>
+                        <!-- Warn on Duplicate Spell Queue CheckBox -->
+                        <CheckBox Name="warnOnDuplicateSpellsCheckBox"
+                                  Grid.Row="11"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
+                                  Margin="32,8"
+                                  ToolTip="Show warnings when the same spell is added to the spell queue again.">
+                            _Warn on Duplicate Spells in Casting Queue
+                        </CheckBox>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
@@ -902,7 +850,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -910,16 +858,15 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Orientation="Vertical"
-                                Grid.ColumnSpan="2"
-                                HorizontalAlignment="Center">
+                                Grid.ColumnSpan="2">
                         <!-- Flowering Priority CheckBox -->
                         <CheckBox Name="flowerPrioritizesAltsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerAltsFirst}"
                                   HorizontalAlignment="Left"
-                                  Margin="8"
+                                  Margin="32,8"
                                   ToolTip="This will prioritize flowering your own characters before other targets.">
-                            Prioritize Alternate Characters over Others
+                            Prioritize _Alternate Characters
                         </CheckBox>
 
                         <!-- Flowering Before Spells Macro CheckBox -->
@@ -927,9 +874,9 @@
                                   Style="{StaticResource ObsidianCheckBox}"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerBeforeSpellMacros}"
                                   HorizontalAlignment="Left"
-                                  Margin="8"
+                                  Margin="32,8"
                                   ToolTip="This will prioritize flowering over your spell casting queue.">
-                            Prioritize Flowering over Spell Casting
+                            Prioritize _Flowering over Spell Casting
                         </CheckBox>
                     </StackPanel>
 
@@ -938,36 +885,36 @@
                                Margin="4,6"
                                Style="{StaticResource ObsidianSeparator}"/>
 
-                    <WrapPanel Grid.Row="2" Grid.ColumnSpan="2"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
-                        <!-- Flower Minimum Mana CheckBox -->
-                        <CheckBox Name="flowerHasMinimumCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
-                                      Content="Minimum Flower Mana: "
-                                      ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
+                    <!-- Flower Minimum Mana CheckBox -->
+                    <CheckBox Name="flowerHasMinimumCheckBox"
+                              Grid.Row="3"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              Margin="32,8,8,8"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
+                              Content="_Minimum Flower Mana: "
+                              ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
 
-                        <!-- Flower Minimum Mana Down -->
-                        <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
-                                           Style="{StaticResource ObsidianNumericUpDown}"
-                                           Width="160"
-                                           Minimum="1"
-                                           Maximum="1000000"
-                                           SmallIncrement="100"
-                                           LargeIncrement="1000"
-                                           FontSize="16"
-                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
-                                           IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
-                                           Margin="4"/>
-                    </WrapPanel>
+                    <!-- Flower Minimum Mana Down -->
+                    <ctl:NumericUpDown x:Name="flowerMinimumManaUpDown"
+                                       Grid.Row="3"
+                                       Grid.Column="1"
+                                       Style="{StaticResource ObsidianNumericUpDown}"
+                                       Width="220"
+                                       Minimum="1"
+                                       Maximum="1000000"
+                                       SmallIncrement="100"
+                                       LargeIncrement="1000"
+                                       FontSize="16"
+                                       DecoratorText="MP &gt;="
+                                       Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
+                                       IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
+                                       Margin="4"/>
                 </Grid>
             </TabItem>
 
             <!-- Updates Tab -->
-            <TabItem Header="Up_dates" TabIndex="7">
+            <TabItem Header="_Updates" TabIndex="7">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1099,8 +1046,29 @@
                 </Grid>
             </TabItem>
 
+            <!-- Debug Tab -->
+            <TabItem Header="_Debug" TabIndex="8">
+                <StackPanel Orientation="Vertical" Margin="16">
+                    <StackPanel Orientation="Horizontal" Margin="16" HorizontalAlignment="Center">
+                        <!-- Enable Logging -->
+                        <CheckBox Name="loggingEnabledCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      Margin="8,0"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
+                                      ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
+                            Enable Debug _Logging
+                        </CheckBox>
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Foreground="{StaticResource ObsidianDisabled}"
+                                   FontSize="16"
+                                   Padding="0,2,0,0"
+                                   Text="(requires restart)"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+
             <!-- About Tab -->
-            <TabItem Header="A_bout" TabIndex="8">
+            <TabItem Header="A_bout" TabIndex="9">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

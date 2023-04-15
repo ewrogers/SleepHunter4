@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="Templates\MetadataDataTemplates.xaml"/>
                 <ResourceDictionary Source="Templates\PlayerDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\SpellTargetDataTemplates.xaml"/>
+                <ResourceDictionary Source="Templates\ToolTipTemplate.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

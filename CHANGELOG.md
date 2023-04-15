@@ -4,6 +4,66 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.0] - 2023-04-15
+
+### Added
+
+- `Debug` tab in `Settings` window
+- More skill & spell metadata
+- MP cost display in spell target dialog
+- Height resize animations to spell and flower dialogs when selecting target types
+- [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application (still WIP)
+- On first run the application will ask the user if they wish to open the user manual docs in the browser
+- User manual link in settings window (below all tabs)
+- Spell queue toggle button
+- `Stop All` toolbar button
+
+### Changed
+
+- All new color themes
+- `UserSettings` are now version `1.2`
+- Moved debug logging option to new `Debug` section in `Settings` window
+- Accessibility shortcuts for tabs in the `Settings` window
+- Better control alignment and layout in the `Settings` window sections
+- Shortened toolbar button text as `Start Macro`, `Pause Macro`, `Stop Macro` instead
+- Metadata editor is now launched from toolbar directly (instead of `Settings->General`)
+- Improved wording on auto-save macro state setting
+- Minimum flower "less than mana" threshold is 1 mana (instead of zero)
+- Numeric inputs can now have prefix/unit contextual decorators
+- Redesigned layout of spell and flower target dialogs
+- Flower queue now shows a timer instead
+- Increased padding on flowering options under the main window tab
+- Spell queue now highlights icon in white instead of color to be consistent with skill macros
+- Renamed `Tile Radius` to `Tile Area` target type for more clairity
+- Renamed `Absolute X/Y` to `Screen Position` target type for more clarity
+- Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension
+- Slightly narrower dropdown button
+- Tooltips open faster
+- Spell queue now has a placeholder on the right side
+- Show 'No Target' in spell queue for no target spells
+
+### Removed
+
+- Data file error dialogs on launch
+- `Relative Coordinates` target type, as it is redundant with `Self` and x/y offsets
+- `Rainbow Mode` as it is not very useful, visually
+- `Reset Themes` button in `Settings->User Interface` section
+- `Reset Version` button in `Settings->Game Client` section
+- Missing spell indicator warning (now shows as zero MP)
+- Progress bar in flower queue
+- Status bar 'Ready' text
+
+### Fixed
+
+- Disable start/pause/stop buttons on app load, until client login
+- Disable start/pause/stop buttons on client logout
+- Numeric inputs now use regex and allow much better text input of values
+- Numeric input boxes now validate/update on lost focus
+- Spell queue "disabled" selected text is now white instead of gray on gray
+- Double-click actions only respond to left-click now
+- Select default them when invalid settings
+- Spell queue will only open when adding a spell (not when switching tabs)
+
 ## [4.3.0] - 2023-04-11
 
 ### Added

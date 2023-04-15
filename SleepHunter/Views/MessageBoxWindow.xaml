@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="okButtonColumn" Width="{Binding ElementName=Window, Path=OkButtonColumnWidth}"/>
@@ -40,8 +41,10 @@
                        Text="{Binding ElementName=Window, Path=SubText}"/>
         </StackPanel>
 
+        <Separator Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource ObsidianSeparator}"/>
+
         <Button Name="okButton"
-                Grid.Row="1"
+                Grid.Row="2"
                 Grid.Column="0"
                 Style="{StaticResource ObsidianButton}"
                 Margin="8,12"
@@ -53,7 +56,7 @@
                 Click="okButton_Click"/>
 
         <Button Name="cancelButton"
-                Grid.Row="1"
+                Grid.Row="2"
                 Grid.Column="1"
                 Style="{StaticResource ObsidianButton}"
                 Margin="8,12"

@@ -15,7 +15,7 @@ namespace SleepHunter.Views
 {
     public partial class SpellTargetWindow : Window
     {
-        SpellQueueItem spellQueueItem = new SpellQueueItem();
+        private SpellQueueItem spellQueueItem = new SpellQueueItem();
 
         public SpellQueueItem SpellQueueItem
         {
@@ -46,11 +46,11 @@ namespace SleepHunter.Views
         {
             if (isEditMode)
             {
-                this.Title = "Edit Target";
+                Title = "Edit Target";
                 okButton.Content = "_Save Changes";
             }
 
-            this.SpellQueueItem.Id = item.Id;
+            SpellQueueItem.Id = item.Id;
             SetTargetForMode(item.Target);
 
             maxLevelCheckBox.IsChecked = item.HasTargetLevel;
@@ -58,13 +58,13 @@ namespace SleepHunter.Views
             if (item.HasTargetLevel)
                 maxLevelUpDown.Value = item.TargetLevel.Value;
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
         }
 
         public SpellTargetWindow(Spell spell)
            : this()
         {
-            this.Spell = spell;
+            Spell = spell;
 
             maxLevelUpDown.Value = spell.MaximumLevel;
             maxLevelCheckBox.IsChecked = spell.CurrentLevel < spell.MaximumLevel;
@@ -79,14 +79,7 @@ namespace SleepHunter.Views
 
             if (!SpellMetadataManager.Instance.ContainsSpell(spell.Name))
             {
-                WarningBorder.Visibility = Visibility.Visible;
-
-                var opacityAnimation = new DoubleAnimation(1.0, 0.25, new Duration(TimeSpan.FromSeconds(0.4)));
-                opacityAnimation.AccelerationRatio = 0.75;
-                opacityAnimation.AutoReverse = true;
-                opacityAnimation.RepeatBehavior = RepeatBehavior.Forever;
-
-                WarningIcon.BeginAnimation(FrameworkElement.OpacityProperty, opacityAnimation);
+                // Warn on missing spell?
             }
         }
 
@@ -96,10 +89,9 @@ namespace SleepHunter.Views
             InitializeViews();
 
             ToggleTargetMode(TargetCoordinateUnits.None);
-            WarningBorder.Visibility = Visibility.Collapsed;
         }
 
-        void InitializeViews()
+        private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
@@ -108,25 +100,24 @@ namespace SleepHunter.Views
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
         }
 
-        void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
+        private void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            this.Dispatcher.InvokeIfRequired(() =>
+            Dispatcher.InvokeIfRequired(() =>
             {
                 BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
 
             }, DispatcherPriority.DataBind);
         }
 
-        void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var player = sender as Player;
-            if (player == null)
+            if (!(sender is Player player))
                 return;
 
             if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
                string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
-                this.Dispatcher.InvokeIfRequired(() =>
+                Dispatcher.InvokeIfRequired(() =>
                 {
                     BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
                     characterComboBox.Items.Refresh();
@@ -135,17 +126,17 @@ namespace SleepHunter.Views
             }
         }
 
-        bool ValidateSpellTarget()
+        private bool ValidateSpellTarget()
         {
             #region Spell Check
-            if (this.Spell == null)
+            if (Spell == null)
             {
                 this.ShowMessageBox("Invalid Spell",
                    "This spell is no longer valid.",
                    "This spell window will now close, please try again.",
                    MessageBoxButton.OK);
 
-                this.Close();
+                Close();
                 return false;
             }
             #endregion
@@ -153,7 +144,7 @@ namespace SleepHunter.Views
             var selectedMode = GetSelectedMode();
 
             #region Check Target Mode
-            if (this.Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
+            if (Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
             {
                 this.ShowMessageBox("Target Required",
                    "This spell requires a target.",
@@ -191,13 +182,13 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            spellQueueItem.Icon = this.Spell.Icon;
-            spellQueueItem.Name = this.Spell.Name;
-            spellQueueItem.CurrentLevel = this.Spell.CurrentLevel;
-            spellQueueItem.MaximumLevel = this.Spell.MaximumLevel;
+            spellQueueItem.Icon = Spell.Icon;
+            spellQueueItem.Name = Spell.Name;
+            spellQueueItem.CurrentLevel = Spell.CurrentLevel;
+            spellQueueItem.MaximumLevel = Spell.MaximumLevel;
 
-            if (!this.IsEditMode)
-                spellQueueItem.StartingLevel = this.Spell.CurrentLevel;
+            if (!IsEditMode)
+                spellQueueItem.StartingLevel = Spell.CurrentLevel;
 
             spellQueueItem.Target.Units = selectedMode;
 
@@ -228,22 +219,21 @@ namespace SleepHunter.Views
             return true;
         }
 
-        TargetCoordinateUnits GetSelectedMode()
+        private TargetCoordinateUnits GetSelectedMode()
         {
             TargetCoordinateUnits mode = TargetCoordinateUnits.None;
 
             if (targetModeComboBox == null)
                 return mode;
 
-            var setting = targetModeComboBox.SelectedValue as string;
-            if (setting == null)
+            if (!(targetModeComboBox.SelectedValue is string setting))
                 return mode;
 
             Enum.TryParse(setting, out mode);
             return mode;
         }
 
-        Point GetLocationForMode(TargetCoordinateUnits units)
+        private Point GetLocationForMode(TargetCoordinateUnits units)
         {
             switch (units)
             {
@@ -256,9 +246,6 @@ namespace SleepHunter.Views
                 case TargetCoordinateUnits.RelativeTile:
                     return new Point((int)relativeTileXComboBox.SelectedValue, (int)relativeTileYComboBox.SelectedValue);
 
-                case TargetCoordinateUnits.RelativeXY:
-                    return new Point(relativeXUpDown.Value, relativeYUpDown.Value);
-
                 case TargetCoordinateUnits.RelativeRadius:
                     goto case TargetCoordinateUnits.RelativeTile;
 
@@ -270,7 +257,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SetTargetForMode(SpellTarget target)
+        private void SetTargetForMode(SpellTarget target)
         {
             if (target == null)
                 return;
@@ -298,11 +285,6 @@ namespace SleepHunter.Views
                     relativeTileYComboBox.SelectedItem = (int)target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.RelativeXY:
-                    relativeXUpDown.Value = target.Location.X;
-                    relativeYUpDown.Value = target.Location.Y;
-                    break;
-
                 case TargetCoordinateUnits.RelativeRadius:
                     innerRadiusUpDown.Value = target.InnerRadius;
                     outerRadiusUpDown.Value = target.OuterRadius;
@@ -318,10 +300,8 @@ namespace SleepHunter.Views
             offsetYUpDown.Value = target.Offset.Y;
         }
 
-        void ToggleTargetMode(TargetCoordinateUnits units)
+        private void ToggleTargetMode(TargetCoordinateUnits units)
         {
-            var requiresTarget = units != TargetCoordinateUnits.None;
-            var isSelfTarget = units == TargetCoordinateUnits.Self;
             var isRadius = units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius;
 
             if (characterComboBox != null)
@@ -329,9 +309,6 @@ namespace SleepHunter.Views
 
             if (relativeTileXComboBox != null)
                 relativeTileXComboBox.Visibility = (units == TargetCoordinateUnits.RelativeTile || units == TargetCoordinateUnits.RelativeRadius) ? Visibility.Visible : Visibility.Collapsed;
-
-            if (relativeXUpDown != null)
-                relativeXUpDown.Visibility = (units == TargetCoordinateUnits.RelativeXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (absoluteTileXUpDown != null)
                 absoluteTileXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.AbsoluteRadius) ? Visibility.Visible : Visibility.Collapsed;
@@ -348,21 +325,35 @@ namespace SleepHunter.Views
             if (outerRadiusUpDown != null)
                 outerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
 
-            var height = 330;
+            // Do not show mouse offset for absolute x/y (screen position) as it is redundant
+            if (offsetXUpDown != null)
+                offsetXUpDown.Visibility = units != TargetCoordinateUnits.AbsoluteXY ? Visibility.Visible : Visibility.Collapsed;
 
-            if (requiresTarget)
-                height += 40;
-
-            if (isRadius)
-                height += 90;
-
-            if (!isSelfTarget && requiresTarget)
-                height += 40;
-
-            this.Height = height;
+            SizeToFit(units, IsLoaded);
         }
 
-        void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SizeToFit(TargetCoordinateUnits units, bool animate = true)
+        {
+            var measuredHeight = 380;
+
+            if (units == TargetCoordinateUnits.Character)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.RelativeTile)
+                measuredHeight += 42;
+            else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
+                measuredHeight += 84;
+
+            if (!animate)
+            {
+                Height = measuredHeight;
+                return;
+            }
+
+            var heightAnimation = new DoubleAnimation(measuredHeight, new Duration(TimeSpan.FromSeconds(0.25)));
+            BeginAnimation(HeightProperty, heightAnimation);
+        }
+
+        private void targetModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count < 1)
             {
@@ -370,28 +361,25 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var item = e.AddedItems[0] as UserSetting;
-            if (item == null)
+            if (!(e.AddedItems[0] is UserSetting item))
             {
                 ToggleTargetMode(TargetCoordinateUnits.None);
                 return;
             }
 
-            TargetCoordinateUnits mode;
-
-            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out mode))
+            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out var mode))
                 mode = TargetCoordinateUnits.None;
 
             ToggleTargetMode(mode);
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateSpellTarget())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
     }
 }

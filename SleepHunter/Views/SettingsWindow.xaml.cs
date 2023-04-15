@@ -22,7 +22,8 @@ namespace SleepHunter.Views
         public static readonly int SpellMacrosTabIndex = 5;
         public static readonly int FloweringTabIndex = 6;
         public static readonly int UpdatesTabIndex = 7;
-        public static readonly int AboutTabIndex = 8;
+        public static readonly int DebugTabIndex = 8;
+        public static readonly int AboutTabIndex = 9;
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
@@ -162,63 +163,21 @@ namespace SleepHunter.Views
                 UserSettingsManager.Instance.Settings.ResetDefaults();
         }
 
-        void resetVersionsButton_Click(object sender, RoutedEventArgs e)
-        {
-            bool? isOkToReset = this.ShowMessageBox("Reset Client Versions",
-               "This will reset client version data to the defaults.\nDo you wish to continue?",
-               "This action cannot be undone.",
-               MessageBoxButton.YesNo,
-               460, 240);
-
-            if (isOkToReset.Value)
-            {
-                ClientVersionManager.Instance.ClearVersions();
-                ClientVersionManager.Instance.LoadDefaultVersions();
-
-                clientVersionComboBox.ItemsSource = ClientVersionManager.Instance.Versions;
-            }
-        }
-
-        void resetThemesButton_Click(object sender, RoutedEventArgs e)
-        {
-            bool? isOkToReset = this.ShowMessageBox("Reset Color Themes",
-               "This will restore all the default color themes.\nDo you wish to continue?",
-               "This action cannot be undone.",
-               MessageBoxButton.YesNo,
-               460, 240);
-
-            if (isOkToReset.Value)
-            {
-                ColorThemeManager.Instance.ClearThemes();
-                ColorThemeManager.Instance.LoadDefaultThemes();
-
-                themeColorComboBox.ItemsSource = ColorThemeManager.Instance.Themes;
-            }
-        }
-
-        void metadataEditorButton_Click(object sender, RoutedEventArgs e)
-        {
-            var mainWindow = Owner as MainWindow;
-            if (mainWindow == null)
-                return;
-
-            mainWindow.ShowMetadataWindow();
-        }
-
         async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var tabControl = sender as TabControl;
-            if (tabControl == null)
+            if (!(sender is TabControl tabControl))
                 return;
 
-            var tabItem = tabControl.SelectedItem as TabItem;
-            if (tabItem == null)
+            if (!(tabControl.SelectedItem is TabItem tabItem))
             {
                 Title = "Settings";
                 return;
             }
 
-            Title = string.Format("Settings - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+            var headerName = (tabItem.Header as string).Replace("_", string.Empty);
+            logger.LogInfo($"User has selected '{headerName}' tab in Settings window");
+
+            Title = $"Settings - {headerName}";
 
             if (tabItem.TabIndex == UpdatesTabIndex)
             {
@@ -227,10 +186,14 @@ namespace SleepHunter.Views
             }
         }
 
+        void userManualLink_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
+        }
+
         async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Owner as MainWindow;
-            if (mainWindow == null)
+            if (!(Owner is MainWindow mainWindow))
                 return;
 
             await CheckForLatestVersion();
@@ -244,8 +207,7 @@ namespace SleepHunter.Views
 
         void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Owner as MainWindow;
-            if (mainWindow == null)
+            if (!(Owner is MainWindow mainWindow))
                 return;
 
             downloadUpdateButton.IsEnabled = false;
