@@ -220,11 +220,11 @@
     <DataTemplate x:Key="FlowerQueueItemDataTemplate">
         <DockPanel>
             <Border Name="SelectionBorder" DockPanel.Dock="Left"
-                    Width="6"
+                    Width="4"
                     Background="{DynamicResource ObsidianBackground}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch"
-                    Visibility="Collapsed"/>
+                    Visibility="Hidden"/>
             <Border Name="Border" Padding="10,4">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Name="TargetText"
@@ -269,7 +269,6 @@
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ManaThreshold}" Value="{x:Null}">
                 <Setter TargetName="ThresholdText" Property="Visibility" Value="Collapsed"/>

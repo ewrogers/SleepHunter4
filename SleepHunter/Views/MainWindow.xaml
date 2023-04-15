@@ -49,11 +49,11 @@
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Start _New Client"
-                                   Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=startNewClientButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -71,11 +71,11 @@
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="Sta_rt Macro"
-                                   Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=startMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -91,11 +91,11 @@
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="_Pause Macro"
-                                   Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=pauseMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -111,16 +111,36 @@
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
                                    Content="S_top Macro"
-                                   Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=stopMacroButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
                                        Margin="0,2,0,0"
                                        Text="&#xE20D;"/>
+                        </DockPanel>
+                    </Button>
+                    <!-- Stop All Macros Button -->
+                    <Button Name="stopAllMacrosButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="stopAllMacrosButton_Click"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Stop _All"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE20E;"/>
                         </DockPanel>
                     </Button>
                 </StackPanel>
@@ -133,11 +153,11 @@
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="_Metadata Editor"
-                                   Foreground="{Binding ElementName=metadataEditorButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=metadataEditorButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
@@ -153,11 +173,11 @@
                         <DockPanel VerticalAlignment="Stretch">
                             <Label DockPanel.Dock="Bottom"
                                    Content="App Settin_gs"
-                                   Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
                             <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding ElementName=settingsButton, Path=Foreground}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"

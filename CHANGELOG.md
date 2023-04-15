@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On first run the application will ask the user if they wish to open the user manual docs in the browser
 - User manual link in settings window (below all tabs)
 - Spell queue toggle button
+- `Stop All` toolbar button
 
 ### Changed
 

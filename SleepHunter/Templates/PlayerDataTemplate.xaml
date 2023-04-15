@@ -72,10 +72,10 @@
                         BorderThickness="1"
                         CornerRadius="4"
                         Margin="8"
-                        Padding="4,1"
+                        Padding="4,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Visibility="Collapsed">
+                        Visibility="Hidden">
                         <TextBlock Name="HotkeyText"
                                 Foreground="{StaticResource ObsidianInactive}"
                                 Style="{StaticResource ObsidianText}"

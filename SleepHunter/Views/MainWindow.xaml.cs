@@ -74,7 +74,7 @@ namespace SleepHunter.Views
             InitializeComponent();
             InitializeViews();
 
-            DisableToolbarButtons();
+            UpdateToolbarState();
 
             LoadVersions();
             LoadThemes();
@@ -504,7 +504,7 @@ namespace SleepHunter.Views
             }, DispatcherPriority.DataBind);
 
             if (PlayerManager.Instance.Count < 1)
-                DisableToolbarButtons();
+                UpdateToolbarState();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
@@ -646,7 +646,7 @@ namespace SleepHunter.Views
             if (PlayerManager.Instance.Count < 1 || PlayerManager.Instance.Players.All(p => !p.IsLoggedIn))
             {
                 clientListBox.SelectedItem = null;
-                DisableToolbarButtons();
+                UpdateToolbarState();
                 return;
             }
         }
@@ -1487,13 +1487,6 @@ namespace SleepHunter.Views
             }
         }
 
-        private void DisableToolbarButtons()
-        {
-            startMacroButton.IsEnabled = false;
-            pauseMacroButton.IsEnabled = false;
-            stopMacroButton.IsEnabled = false;
-        }
-
         private void SaveMacroState(PlayerMacroState macro)
         {
             if (macro == null)
@@ -1542,8 +1535,9 @@ namespace SleepHunter.Views
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
 
-            selectedMacro.Client.Update(PlayerFieldFlags.Location);
+            selectedMacro.Client.Update(PlayerFieldFlags.All);
             selectedMacro.Start();
+            UpdateToolbarState();
 
             logger.LogInfo($"Started macro state for character: {selectedMacro.Client.Name} (toolbar)");
         }
@@ -1554,6 +1548,8 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Pause();
+            UpdateToolbarState();
+
             logger.LogInfo($"Paused macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
@@ -1563,7 +1559,17 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Stop();
+            UpdateToolbarState();
+
             logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
+        }
+
+        private void stopAllMacrosButton_Click(object sender, RoutedEventArgs e)
+        {
+            MacroManager.Instance.StopAll();
+            UpdateToolbarState();
+
+            logger.LogInfo("Stopped all macro states (toolbar)");
         }
 
         private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
@@ -1803,7 +1809,7 @@ namespace SleepHunter.Views
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
-                DisableToolbarButtons();
+                UpdateToolbarState();
                 return;
             }
 
@@ -1824,7 +1830,7 @@ namespace SleepHunter.Views
 
             if (selectedMacro == null)
             {
-                DisableToolbarButtons();
+                UpdateToolbarState();
                 return;
             }
 
@@ -1836,11 +1842,7 @@ namespace SleepHunter.Views
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
-
-            if (selectedMacro.Client.IsLoggedIn)
-                UpdateUIForMacroStatus(selectedMacro.Status);
-            else
-                DisableToolbarButtons();
+            UpdateToolbarState();
 
             if (selectedMacro != null)
             {
@@ -2245,6 +2247,16 @@ namespace SleepHunter.Views
 
             if (flowerAlternateCharactersCheckBox != null)
                 selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
+        }
+
+        private void UpdateToolbarState()
+        {
+            stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
+
+            if (selectedMacro == null)
+                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
+            else
+                UpdateUIForMacroStatus(selectedMacro.Status);
         }
 
         private void ToggleSkills(bool show = true)

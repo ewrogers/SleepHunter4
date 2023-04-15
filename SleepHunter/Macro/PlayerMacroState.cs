@@ -142,7 +142,7 @@ namespace SleepHunter.Macro
 
         public void AddToFlowerQueue(FlowerQueueItem flower, int index = -1)
         {
-            spellQueueLock.EnterWriteLock();
+            flowerQueueLock.EnterWriteLock();
             try
             {
                 if (index < 0)
