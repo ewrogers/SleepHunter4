@@ -14,7 +14,6 @@ namespace SleepHunter.Views
 {
     public partial class FlowerTargetWindow : Window
     {
-        private double baseHeight;
         private FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
 
         public FlowerQueueItem FlowerQueueItem

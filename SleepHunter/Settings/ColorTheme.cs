@@ -11,7 +11,8 @@ namespace SleepHunter.Settings
     [Serializable]
     public sealed class ColorTheme : ObservableObject
     {
-        string name;
+        private string name;
+        private int sortIndex;
 
         [NonSerialized]
         SolidColorBrush background;
@@ -29,6 +30,13 @@ namespace SleepHunter.Settings
         {
             get { return name; }
             set { SetProperty(ref name, value); }
+        }
+
+        [XmlAttribute("Category")]
+        public int SortIndex
+        {
+            get { return sortIndex; }
+            set { SetProperty(ref sortIndex, value); }
         }
 
         [XmlIgnore]
@@ -122,10 +130,10 @@ namespace SleepHunter.Settings
                 if (value == null)
                     throw new ArgumentNullException("value");
 
-                var color = ColorConverter.ConvertFromString(value);
+                var colorValue = ColorConverter.ConvertFromString(value);
 
-                if (color is Color)
-                    Foreground = new SolidColorBrush((Color)color);
+                if (colorValue is Color color)
+                    Foreground = new SolidColorBrush(color);
                 else
                     throw new FormatException("Invalid hex color format.");
             }
@@ -140,33 +148,26 @@ namespace SleepHunter.Settings
         }
 
         private ColorTheme()
-           : this(string.Empty, Brushes.Black, Brushes.White, false) { }
+           : this(string.Empty, Brushes.Black, Brushes.White, 100, false) { }
 
         public ColorTheme(string key)
-           : this(key, Brushes.Black, Brushes.White, false) { }
+           : this(key, Brushes.Black, Brushes.White, 100, false) { }
 
-        public ColorTheme(string name, string backgroundHexColor, string foregroundHexColor, bool isDefault = false)
+        public ColorTheme(string name, string backgroundHexColor, string foregroundHexColor, int sortIndex, bool isDefault = false)
         {
             this.name = name;
+            this.sortIndex = sortIndex;
             BackgroundHexColor = backgroundHexColor;
             ForegroundHexColor = foregroundHexColor;
             this.isDefault = isDefault;
         }
 
-        public ColorTheme(string name, SolidColorBrush background, SolidColorBrush foreground, bool isDefault = false)
+        public ColorTheme(string name, SolidColorBrush background, SolidColorBrush foreground, int sortIndex = 100, bool isDefault = false)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-
-            if (background == null)
-                throw new ArgumentNullException("background");
-
-            if (foreground == null)
-                throw new ArgumentNullException("foreground");
-
-            this.name = name;
-            this.background = background;
-            this.foreground = foreground;
+            this.name = name ?? throw new ArgumentNullException("name");
+            this.sortIndex = sortIndex;
+            this.background = background ?? throw new ArgumentNullException("background");
+            this.foreground = foreground ?? throw new ArgumentNullException("foreground");
             this.isDefault = isDefault;
         }
 

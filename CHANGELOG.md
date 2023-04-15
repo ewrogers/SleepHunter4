@@ -28,12 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimum flower "less than mana" threshold is 1 mana (instead of zero)
 - Numeric inputs can now have prefix/unit contextual decorators
 - Redesigned layout of spell and flower target dialogs
+- Flower queue now shows a timer instead
 - Increased padding on flowering options under the main window tab
 - Spell queue now highlights icon in white instead of color to be consistent with skill macros
 - Renamed `Tile Radius` to `Tile Area` target type for more clairity
 - Renamed `Absolute X/Y` to `Screen Position` target type for more clarity
 - Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension
 - Slightly narrower dropdown button
+- Tooltips open faster
 
 ### Removed
 
@@ -43,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Reset Themes` button in `Settings->User Interface` section
 - `Reset Version` button in `Settings->Game Client` section
 - Missing spell indicator warning (now shows as zero MP)
+- Progress bar in flower queue
 
 ### Fixed
 
@@ -52,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Numeric input boxes now validate/update on lost focus
 - Spell queue "disabled" selected text is now white instead of gray on gray
 - Double-click actions only respond to left-click now
+- Select default them when invalid settings
 
 ## [4.3.0] - 2023-04-11
 

@@ -63,7 +63,12 @@ namespace SleepHunter.Converters
 
             if (string.Equals(format, "cooldown", StringComparison.OrdinalIgnoreCase))
             {
-                return timeSpan.ToFractionalEnglish(true, "0.0");
+                if (timeSpan.Hours > 0)
+                    return $"{timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+                else if (timeSpan.Minutes > 0)
+                    return $"{timeSpan.Minutes}:{timeSpan.Seconds:00}";
+                else
+                    return $"{timeSpan.TotalSeconds:0.0}";
             }
 
             if (string.Equals(format, "seconds", StringComparison.OrdinalIgnoreCase))

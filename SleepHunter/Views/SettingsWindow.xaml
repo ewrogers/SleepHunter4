@@ -174,7 +174,7 @@
 
                             <!-- Color Themes -->
                             <ComboBox Name="themeColorComboBox"
-                                      Width="340" Height="36"
+                                      Width="340" Height="40"
                                       Style="{StaticResource ObsidianComboBox}"
                                       ItemTemplate="{StaticResource ColorThemeDataTemplate}"
                                       ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
@@ -659,7 +659,7 @@
                         <TextBlock Text="Spell Rotation Mode:"
                                    TextAlignment="Right"
                                    Style="{StaticResource ObsidianText}"
-                                   ToolTip="This is the way"/>
+                                   ToolTip="This is the way the spell queue will rotate while casting."/>
 
                         <ComboBox Name="spellRotationComboBox"
                                   Grid.Column="1"

@@ -1,6 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
 
@@ -8,33 +7,7 @@
     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
     <converters:BooleanInverter x:Key="BooleanInverter"/>
 
-    <Style TargetType="ToolTip">
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-        <Setter Property="Margin" Value="8"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ToolTip">
-                    <Border Background="{TemplateBinding Background}"
-                            Opacity="0.90"
-                            Padding="8"
-                            CornerRadius="2">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          TextBlock.FontSize="16"
-                                          TextBlock.FontFamily="{StaticResource ObsidianFontFamily}"
-                                          TextBlock.FontWeight="{StaticResource ObsidianFontWeight}"
-                                          Margin="0,2,0,0">
-                            <ContentPresenter.Effect>
-                                <DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="Black"/>
-                            </ContentPresenter.Effect>
-                        </ContentPresenter>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    
 
     <DataTemplate x:Key="AbilityDataTemplate">
         <Border Name="Border" Margin="2">

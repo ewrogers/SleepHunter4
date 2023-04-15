@@ -309,43 +309,63 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
             <!-- Flower Interval -->
             <CheckBox Name="intervalCheckBox"
+                      Grid.ColumnSpan="2"
                       Content="Flower Interval:"
                       Style="{StaticResource ObsidianCheckBox}"
                       IsChecked="True"
-                      Margin="32,4"
+                      Margin="40,4"
                       Visibility="{Binding ElementName=intervalTextBox, Path=Visibility}"
                       ToolTip="This is how often the target will be flowered. Use zero for continuous flower."/>
 
             <TextBox Name="intervalTextBox"
-                     Grid.Column="1"
+                     Grid.Column="12"
                      Style="{StaticResource ObsidianTextBox}"
                      Text="5 seconds"
                      TextAlignment="Center"
                      IsEnabled="{Binding ElementName=intervalCheckBox, Path=IsChecked}"
                      Margin="8,4"/>
 
+            <!-- OR text -->
+            <TextBlock Grid.RowSpan="2"
+                       Panel.ZIndex="-1"
+                       Style="{StaticResource ObsidianSymbolText}"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="14"
+                       FontWeight="Normal"
+                       TextAlignment="Center"
+                       Text="&#xE112; OR &#xE111; "
+                       Margin="8,0"
+                       ToolTip="Why would this have a tooltip?">
+                <TextBlock.LayoutTransform>
+                    <RotateTransform Angle="-90"/>
+                </TextBlock.LayoutTransform>
+            </TextBlock>
+
             <!-- Mana Threshold -->
             <CheckBox Name="manaThresholdCheckBox" 
                       Grid.Row="1"
+                      Grid.ColumnSpan="2"
                       Content="Flower Threshold:"
                       Style="{StaticResource ObsidianCheckBox}"
                       IsChecked="True"
-                      Margin="32,4"
+                      Margin="40,4"
                       Visibility="{Binding ElementName=manaThresholdUpDown, Path=Visibility}"
                       ToolTip="When the target character's mana is less than this value, they will be flowered."/>
 
             <ctl:NumericUpDown x:Name="manaThresholdUpDown" 
                                Style="{StaticResource ObsidianNumericUpDown}"
-                               Grid.Row="9"
+                               Grid.Row="1"
                                Grid.Column="2"
                                Grid.ColumnSpan="2"
                                IsEnabled="{Binding ElementName=manaThresholdCheckBox, Path=IsChecked}"

@@ -484,7 +484,7 @@ namespace SleepHunter.Settings
             ClientUpdateInterval = TimeSpan.FromSeconds(0.2);
             SaveMacroStates = true;
 
-            SelectedTheme = "Default";
+            SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
             SkillIconSize = 46;
             SkillGridWidth = 12;
             WorldSkillGridWidth = 6;

@@ -74,9 +74,7 @@ namespace SleepHunter.Views
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
 
-            LoadSettings();
             InitializeLogger();
-
             InitializeComponent();
             InitializeViews();
 
@@ -84,6 +82,7 @@ namespace SleepHunter.Views
 
             LoadVersions();
             LoadThemes();
+            LoadSettings();
 
             LoadSkills();
             LoadSpells();
@@ -722,7 +721,6 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-
                     ColorThemeManager.Instance.LoadDefaultThemes();
                     logger.LogInfo("No themes file was found, using defaults");
                 }
@@ -747,6 +745,21 @@ namespace SleepHunter.Views
                 {
                     UserSettingsManager.Instance.LoadFromFile(settingsFile);
                     logger.LogInfo("User settings loaded successfully");
+
+                    if (string.IsNullOrWhiteSpace(UserSettingsManager.Instance.Settings.SelectedTheme))
+                    {
+                        logger.LogWarn("User settings does not have a selected theme, using default theme");
+                        UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                    }
+                    else
+                    {
+                        var selectedTheme = UserSettingsManager.Instance.Settings.SelectedTheme;
+                        if (!ColorThemeManager.Instance.ContainsTheme(selectedTheme))
+                        {
+                            logger.LogWarn($"User settings has an invalid theme selected: {selectedTheme}");
+                            UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                        }
+                    }
                 }
                 else
                 {
@@ -969,6 +982,18 @@ namespace SleepHunter.Views
         private void ApplyTheme()
         {
             var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+            if (string.IsNullOrWhiteSpace(themeName))
+            {
+                logger.LogWarn("Selected theme is not defined, using default theme");
+                themeName = ColorThemeManager.Instance.DefaultTheme?.Name;
+            }
+
+            if (themeName == null)
+            {
+                logger.LogWarn("Theme name is null, unable to apply");
+                return;
+            }
+
             logger.LogInfo($"Applying UI theme: {themeName}");
             ColorThemeManager.Instance.ApplyTheme(themeName);
         }
@@ -2142,9 +2167,6 @@ namespace SleepHunter.Views
             logger.LogInfo($"User setting property changed: {e.PropertyName}");
 
             if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                ApplyTheme();
-
-            if (string.Equals("RainbowMode", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
 
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
