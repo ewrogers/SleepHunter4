@@ -676,6 +676,11 @@ namespace SleepHunter.Views
                 return;
             }
 
+            var hasItemsInQueue = selectedMacro != null && selectedMacro.FlowerQueueCount > 0;
+
+            removeSelectedFlowerTargetButton.IsEnabled = hasItemsInQueue;
+            removeAllFlowerTargetsButton.IsEnabled = hasItemsInQueue;
+
             flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
             flowerListBox.Items.Refresh();
         }
@@ -1641,21 +1646,27 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var draggedItem = sender as ListBoxItem;
-                DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
-                draggedItem.IsSelected = true;
-            }
+            if (e.LeftButton != MouseButtonState.Pressed ||  !(sender is ListBoxItem draggedItem))
+                return;
+
+            logger.LogInfo($"Drag spell queue item: {draggedItem}");
+
+            DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+            draggedItem.IsSelected = true;
         }
 
         private void spellQueueListBox_Drop(object sender, DragEventArgs e)
         {
+            if (e.Effects != DragDropEffects.Move)
+                return;
+
             var droppedItem = e.Data.GetData(typeof(SpellQueueItem)) as SpellQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as SpellQueueItem;
 
             var removedIndex = spellQueueListBox.Items.IndexOf(droppedItem);
             var targetIndex = spellQueueListBox.Items.IndexOf(target);
+
+            logger.LogInfo($"Drop spell queue item: {droppedItem} (target = {target})");
 
             if (removedIndex < targetIndex)
             {
@@ -1670,6 +1681,16 @@ namespace SleepHunter.Views
                     selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex + 1);
                 }
             }
+
+            RefreshSpellQueue();
+        }
+
+        private void spellQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+            e.UseDefaultCursors = false;
+
+            Mouse.SetCursor(Cursors.Hand);
+            e.Handled = true;
         }
 
         private void flowerQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1723,21 +1744,27 @@ namespace SleepHunter.Views
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var draggedItem = sender as ListBoxItem;
-                DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
-                draggedItem.IsSelected = true;
-            }
+            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
+                return;
+
+            logger.LogInfo($"Drag flower queue item: {draggedItem}");
+
+            DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+            draggedItem.IsSelected = true;
         }
 
         private void flowerQueueListBox_Drop(object sender, DragEventArgs e)
         {
+            if (e.Effects != DragDropEffects.Move)
+                return;
+
             var droppedItem = e.Data.GetData(typeof(FlowerQueueItem)) as FlowerQueueItem;
             var target = (sender as ListBoxItem)?.DataContext as FlowerQueueItem;
 
             var removedIndex = flowerListBox.Items.IndexOf(droppedItem);
             var targetIndex = flowerListBox.Items.IndexOf(target);
+
+            logger.LogInfo($"Drop flower queue item: {droppedItem} (target = {target})");
 
             if (removedIndex < targetIndex)
             {
@@ -1752,13 +1779,21 @@ namespace SleepHunter.Views
                     selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex + 1);
                 }
             }
+
+            RefreshFlowerQueue();
+        }
+
+        private void flowerQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+            e.UseDefaultCursors = false;
+
+            Mouse.SetCursor(Cursors.Hand);
+            e.Handled = true;
         }
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            
-
-            if (!(sender is ListBox listBox))
+            if (!(sender is ListBox listBox) || !(listBox.SelectedItem is Player player))
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
@@ -1768,19 +1803,7 @@ namespace SleepHunter.Views
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
-                return;
-            }
-
-            if (!(listBox.SelectedItem is Player player))
-            {
-                if (selectedMacro != null)
-                    selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-                Title = "SleepHunter";
-                selectedMacro = null;
-                ToggleSkills(false);
-                ToggleSpells(false);
-                ToggleFlower();
+                DisableToolbarButtons();
                 return;
             }
 
@@ -1793,21 +1816,17 @@ namespace SleepHunter.Views
             }
             else Title = "SleepHunter";
 
-            if (macroState == null)
-            {
-                if (selectedMacro != null)
-                    selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-                selectedMacro = null;
-
-                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
-                return;
-            }
 
             UnsubscribeMacroHandlers(selectedMacro);
             var prevSelectedMacro = selectedMacro;
             selectedMacro = macroState;
             SubscribeMacroHandlers(selectedMacro);
+
+            if (selectedMacro == null)
+            {
+                DisableToolbarButtons();
+                return;
+            }
 
             tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
@@ -1826,7 +1845,10 @@ namespace SleepHunter.Views
             if (selectedMacro != null)
             {
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
+                RefreshSpellQueue();
+
                 flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
+                RefreshFlowerQueue();
 
                 flowerVineyardCheckBox.IsChecked = selectedMacro.UseLyliacVineyard && player.HasLyliacVineyard;
                 flowerAlternateCharactersCheckBox.IsChecked = selectedMacro.FlowerAlternateCharacters && player.HasLyliacPlant;
@@ -1873,10 +1895,7 @@ namespace SleepHunter.Views
             if (e.Key == Key.None)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem))
-                return;
-
-            if (!(listBoxItem.Content is Player player))
+            if (!(sender is ListBoxItem listBoxItem) || !(listBoxItem.Content is Player player))
                 return;
 
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
@@ -2144,7 +2163,9 @@ namespace SleepHunter.Views
 
             var queueItem = flowerTargetDialog.FlowerQueueItem;
             queueItem.LastUsedTimestamp = DateTime.Now;
+
             selectedMacro.AddToFlowerQueue(queueItem);
+            RefreshFlowerQueue();
 
             logger.LogInfo($"Added '{queueItem.Target}' to flower queue for character: {selectedMacro.Client.Name}");
         }
@@ -2161,7 +2182,6 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Removed '{selectedTarget.Target}' from flower queue for character: {selectedMacro.Client.Name}");
         }
-
 
         private void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
         {

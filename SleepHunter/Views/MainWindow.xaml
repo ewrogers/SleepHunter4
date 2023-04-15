@@ -339,7 +339,8 @@
                              Style="{StaticResource ObsidianListBox}"
                              ItemTemplate="{StaticResource FlowerQueueItemDataTemplate}"
                              SelectionMode="Single"
-                             Margin="0">
+                             Margin="0"
+                             GiveFeedback="flowerQueueListBox_GiveFeedback">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                                 <Setter Property="AllowDrop" Value="True"/>
@@ -495,7 +496,8 @@
                      Style="{StaticResource ObsidianListBox}"
                      ItemTemplate="{StaticResource SpellQueueItemDataTemplate}"
                      SelectionMode="Single"
-                     Visibility="Collapsed">
+                     Visibility="Collapsed"
+                     GiveFeedback="spellQueueListBox_GiveFeedback">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                         <Setter Property="AllowDrop" Value="True"/>
