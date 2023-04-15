@@ -1048,23 +1048,40 @@
 
             <!-- Debug Tab -->
             <TabItem Header="_Debug" TabIndex="8">
-                <StackPanel Orientation="Vertical" Margin="16">
-                    <StackPanel Orientation="Horizontal" Margin="16" HorizontalAlignment="Center">
-                        <!-- Enable Logging -->
-                        <CheckBox Name="loggingEnabledCheckBox"
-                                      Style="{StaticResource ObsidianCheckBox}"
-                                      Margin="8,0"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
-                                      ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
-                            Enable Debug _Logging
-                        </CheckBox>
-                        <TextBlock Style="{StaticResource ObsidianText}"
-                                   Foreground="{StaticResource ObsidianDisabled}"
-                                   FontSize="16"
-                                   Padding="0,2,0,0"
-                                   Text="(requires restart)"/>
-                    </StackPanel>
-                </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Show All Processes -->
+                    <CheckBox Name="showAllProcessesCheckBox"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              HorizontalAlignment="Center"
+                              Margin="8"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowAllProcesses}"
+                              ToolTip="This will show non-logged in Dark Ages game clients.">
+                        Show _All Game Client Processes
+                    </CheckBox>
+              
+                    <Separator Grid.Row="2"
+                               Grid.ColumnSpan="2"
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="4,8"/>
+
+                    <!-- Enable Logging -->
+                    <CheckBox Name="loggingEnabledCheckBox"
+                              Grid.Row="3"
+                              Style="{StaticResource ObsidianCheckBox}"
+                              HorizontalAlignment="Center"
+                              Margin="8"
+                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
+                              ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
+                        Enable Debug _Logging
+                    </CheckBox>
+                </Grid>
             </TabItem>
 
             <!-- About Tab -->

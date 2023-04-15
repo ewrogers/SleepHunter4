@@ -53,6 +53,7 @@ namespace SleepHunter.Models
         PlayerModifiers modifiers;
         MapLocation location;
         ClientState gameClient;
+        DateTime loginTimestamp;
         bool isLoggedIn;
         string status;
         Hotkey hotkey;
@@ -170,6 +171,12 @@ namespace SleepHunter.Models
         {
             get { return isLoggedIn; }
             set { SetProperty(ref isLoggedIn, value); }
+        }
+
+        public DateTime LoginTimestamp
+        {
+            get { return loginTimestamp; }
+            set { SetProperty(ref loginTimestamp, value); }
         }
 
         public string Status

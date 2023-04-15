@@ -90,7 +90,10 @@ namespace SleepHunter.Views
             UpdateSkillSpellGridWidths();
 
             StartUpdateTimers();
+
             ToggleSpellQueue(false);
+            RefreshSpellQueue();
+            RefreshFlowerQueue();
         }
 
         #region IDisposable Methods
@@ -488,8 +491,9 @@ namespace SleepHunter.Views
             Dispatcher.InvokeIfRequired(() =>
                {
                    BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-
                }, DispatcherPriority.DataBind);
+
+            UpdateToolbarState();
         }
 
         private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
@@ -501,11 +505,9 @@ namespace SleepHunter.Views
             Dispatcher.InvokeIfRequired(() =>
             {
                 BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-
             }, DispatcherPriority.DataBind);
 
-            if (PlayerManager.Instance.Count < 1)
-                UpdateToolbarState();
+            UpdateToolbarState();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
@@ -650,7 +652,7 @@ namespace SleepHunter.Views
 
         private void SelectNextAvailablePlayer()
         {
-            if (PlayerManager.Instance.Count < 1 || PlayerManager.Instance.Players.All(p => !p.IsLoggedIn))
+            if (PlayerManager.Instance.LoggedInPlayers.Count() < 0)
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
@@ -1946,7 +1948,7 @@ namespace SleepHunter.Views
 
             if (oldHotkey != null)
             {
-                foreach (var p in PlayerManager.Instance.Players)
+                foreach (var p in PlayerManager.Instance.AllClients)
                 {
                     if (!p.HasHotkey)
                         continue;
@@ -2219,6 +2221,16 @@ namespace SleepHunter.Views
 
             if (string.Equals("SkillIconSize", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 UpdateSkillSpellGridWidths();
+
+            // Debug settings
+
+            if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                clientListBox.ItemsSource = settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.LoggedInPlayers;
+
+                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+                clientListBox.Items.Refresh();
+            }
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)

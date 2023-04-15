@@ -193,7 +193,7 @@
         <ListBox Name="clientListBox"
                  Grid.Row="1"
                  ItemTemplate="{StaticResource PlayerDataTemplate}"
-                 ItemsSource="{Binding Source={x:Static models:PlayerManager.Instance}, Path=Players}"
+                 ItemsSource="{Binding Source={x:Static models:PlayerManager.Instance}, Path=LoggedInPlayers}"
                  Style="{StaticResource ObsidianListBox}"
                  Margin="0"
                  SelectionChanged="clientListBox_SelectionChanged"

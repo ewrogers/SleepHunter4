@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.4.1] - Unreleased
 
+### Added
+
+- `Show All Processes` debug option in `Settings`
+- Login timestamp to players
+
+### Changed
+
+- `UserSettings` are now version `1.3`
+- Non-logged in game clients are now hidden by default (use new debug option to show)
+
 ### Fixed
 
 - Disable spell queue remove buttons on startup (when empty)

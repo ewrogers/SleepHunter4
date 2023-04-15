@@ -31,7 +31,7 @@ namespace SleepHunter.Models
 
         public int Count { get { return players.Count; } }
 
-        public IEnumerable<Player> Players
+        public IEnumerable<Player> AllClients
         {
             get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
         }
