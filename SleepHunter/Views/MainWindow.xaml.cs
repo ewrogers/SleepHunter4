@@ -549,12 +549,12 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
+            if (!player.LoginTimestamp.HasValue)
+                player.LoginTimestamp = DateTime.Now;
+
             UpdateClientList();
 
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
-
-            if (player.LoginTimestamp == null)
-                player.LoginTimestamp = DateTime.Now;
 
             if (!string.IsNullOrEmpty(player.Name))
                 NativeMethods.SetWindowText(player.Process.WindowHandle, $"Darkages - {player.Name}");
@@ -595,6 +595,7 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
+            player.LoginTimestamp = null;
             UpdateClientList();
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
