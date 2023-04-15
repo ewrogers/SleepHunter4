@@ -9,13 +9,23 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            var parameterString = parameter as string;
+            var isReversed = string.Equals("Reverse", parameterString, StringComparison.OrdinalIgnoreCase);
+
             if (value is string stringValue)
                 return string.IsNullOrWhiteSpace(stringValue) ? Visibility.Collapsed : Visibility.Visible;
 
-            var boolean = (bool)value;
-            var parameterString = parameter as string;
+            if (value is Visibility visibility)
+            {
+                if (isReversed)
+                    return visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                else
+                    return visibility;
+            }
 
-            if (string.Equals("Reverse", parameterString, StringComparison.OrdinalIgnoreCase))
+            var boolean = (bool)value;
+
+            if (isReversed)
                 boolean = !boolean;
 
             if (boolean)

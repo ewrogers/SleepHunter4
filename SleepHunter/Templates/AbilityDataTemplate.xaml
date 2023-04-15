@@ -3,11 +3,10 @@
                     xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
 
+    <converters:VisibilityInverter x:Key="VisibilityInverter"/>
     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
     <converters:BooleanInverter x:Key="BooleanInverter"/>
-
-    
 
     <DataTemplate x:Key="AbilityDataTemplate">
         <Border Name="Border" Margin="2">

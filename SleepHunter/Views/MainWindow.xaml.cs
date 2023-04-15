@@ -48,10 +48,6 @@ namespace SleepHunter.Views
 
         private static readonly int IconPadding = 14;
 
-        // private static readonly int SkillsTabIndex = 0;
-        private static readonly int SpellsTabIndex = 1;
-        // private static readonly int FlowerTabIndex = 2;
-
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
 
@@ -93,6 +89,7 @@ namespace SleepHunter.Views
             UpdateSkillSpellGridWidths();
 
             StartUpdateTimers();
+            ToggleSpellQueue(false);
         }
 
         #region IDisposable Methods
@@ -537,14 +534,12 @@ namespace SleepHunter.Views
                 {
                     if (selectedPlayer == null)
                     {
-                        ToggleSpellQueue(false);
                         ToggleSkills(false);
                         ToggleSpells(false);
                         ToggleFlower(false);
                     }
                     else
                     {
-                        ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && selectedMacro.TotalSpellsCount > 0);
                         ToggleSkills(true);
                         ToggleSpells(true);
                         ToggleFlower(selectedPlayer.HasLyliacPlant, selectedPlayer.HasLyliacVineyard);
@@ -663,6 +658,11 @@ namespace SleepHunter.Views
                 Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
                 return;
             }
+
+            var hasItemsInQueue = selectedMacro != null && selectedMacro.QueuedSpells.Count > 0;
+
+            removeSelectedSpellButton.IsEnabled = hasItemsInQueue;
+            removeAllSpellsButton.IsEnabled = hasItemsInQueue;
 
             spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
             spellQueueListBox.Items.Refresh();
@@ -1139,6 +1139,8 @@ namespace SleepHunter.Views
             if (spellQueueListBox == null)
                 return;
 
+            logger.LogInfo($"Toggle spell queue panel: {showQueue}");
+
             if (showQueue)
             {
                 Grid.SetColumnSpan(tabControl, 1);
@@ -1556,6 +1558,9 @@ namespace SleepHunter.Views
             logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
         }
 
+        private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
+        private void hideSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(false);
+
         private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
@@ -1755,7 +1760,6 @@ namespace SleepHunter.Views
 
                 Title = "SleepHunter";
                 selectedMacro = null;
-                ToggleSpellQueue(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
@@ -1769,7 +1773,6 @@ namespace SleepHunter.Views
 
                 Title = "SleepHunter";
                 selectedMacro = null;
-                ToggleSpellQueue(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
@@ -1837,7 +1840,6 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
             {
-                ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && selectedMacro.TotalSpellsCount > 0);
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
                 flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
 
@@ -1947,8 +1949,6 @@ namespace SleepHunter.Views
 
             spellQueueListBox.ItemsSource = macro.QueuedSpells;
             RefreshSpellQueue();
-
-            ToggleSpellQueue(tabControl.SelectedIndex == SpellsTabIndex && macro.TotalSpellsCount > 0);
         }
 
         private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
@@ -1963,10 +1963,7 @@ namespace SleepHunter.Views
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is TabControl))
-            {
-                ToggleSpellQueue(false);
                 return;
-            }
 
             if (selectedMacro == null)
                 return;
@@ -1999,8 +1996,6 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-
-            ToggleSpellQueue(selectedMacro.TotalSpellsCount > 0);
             ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 

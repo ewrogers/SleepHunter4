@@ -20,16 +20,17 @@
             <ColumnDefinition Width="280" MinWidth="180" MaxWidth="360"/>
             <ColumnDefinition Width="*" MinWidth="200"/>
             <ColumnDefinition Width="260" MinWidth="200" MaxWidth="360"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <!-- Overlay when showing Modal Dialogs -->
-        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="3" Panel.ZIndex="10" Visibility="Hidden">
+        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="4" Panel.ZIndex="10" Visibility="Hidden">
             <Border Background="Black" Opacity="0.3"/>
             <Border Background="{StaticResource ScanlineBrush}" Opacity="0.7"/>
         </Grid>
 
         <!-- Tool Bar -->
-        <Border Grid.ColumnSpan="3" 
+        <Border Grid.ColumnSpan="4" 
                 BorderBrush="{StaticResource ObsidianSeparatorColor}"
                 BorderThickness="0,0,0,1"
                 Panel.ZIndex="9">
@@ -404,6 +405,48 @@
             </TabItem>
         </TabControl>
 
+        
+        <!-- Spell Queue Placeholder -->
+        <Border Grid.Row="1"
+                Grid.Column="3"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{StaticResource ObsidianDisabled}"
+                BorderThickness="1,0,0,0"
+                HorizontalAlignment="Right"
+                Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility, Converter={StaticResource VisibilityInverter}, Mode=OneWay}">
+
+            <StackPanel Orientation="Vertical">
+
+                <!-- Show Spell Queue Button -->
+                <Button x:Name="showSpellQueueButton"
+                        Style="{StaticResource ObsidianIconButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Margin="0"
+                        Padding="4,4"
+                        ToolTip="Shows the spell queue."
+                        Click="showSpellQueueButton_Click">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   FontSize="24"
+                                   Margin="0,0"
+                                   Text="&#xE127;"/>
+                        
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Foreground="{Binding Path=Foreground, ElementName=showSpellQueueButton}"
+                                   FontSize="18"
+                                   Margin="0,8,0,8"
+                                   Text="Spell Queue">
+                            <TextBlock.LayoutTransform>
+                                <RotateTransform Angle="90"/>
+                            </TextBlock.LayoutTransform>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+        
         <!-- Grid Splitter -->
         <GridSplitter Grid.Row="1"
                       Grid.Column="1"
@@ -426,12 +469,24 @@
             <Border VerticalAlignment="Top"
                     Background="{DynamicResource ObsidianBackground}"
                     Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
-                <TextBlock Text="Spell Queue"
-                           Style="{StaticResource ObsidianText}"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap"
-                           FontSize="18"
-                           Padding="4,2"/>
+                <Grid>
+                    <TextBlock Text="Spell Queue"
+                               Style="{StaticResource ObsidianText}"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               FontSize="18"
+                               Padding="4,2"/>
+
+                    <!-- Hide Spell Queue Button -->
+                    <Button
+                            Style="{StaticResource ObsidianIconButton}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Content="&#xE126;"
+                            Padding="2,1"
+                            ToolTip="Hides the spell queue."
+                            Click="hideSpellQueueButton_Click"/>
+                </Grid>
             </Border>
 
             <!-- Spell Queue -->
@@ -492,7 +547,7 @@
 
         <!-- Status Bar -->
         <Border Grid.Row="2"
-                Grid.ColumnSpan="3"
+                Grid.ColumnSpan="4"
                 Background="{DynamicResource ObsidianBackground}"
                 Panel.ZIndex="11">
             <DockPanel>
@@ -507,7 +562,6 @@
 
                 <TextBlock Name="statusTextBlock" 
                            DockPanel.Dock="Left"
-                           Text="Ready"
                            VerticalAlignment="Center"
                            Margin="6,3,4,3"/>
             </DockPanel>

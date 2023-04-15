@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.4.0] - Unreleased
+## [4.4.0] - 2023-04-15
 
 ### Added
 
@@ -12,12 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More skill & spell metadata
 - MP cost display in spell target dialog
 - Height resize animations to spell and flower dialogs when selecting target types
-- [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application
+- [User Manual](https://ewrogers.github.io/SleepHunter4/) hyperlink within application (still WIP)
 - On first run the application will ask the user if they wish to open the user manual docs in the browser
 - User manual link in settings window (below all tabs)
+- Spell queue toggle button
 
 ### Changed
 
+- All new color themes
 - `UserSettings` are now version `1.2`
 - Moved debug logging option to new `Debug` section in `Settings` window
 - Accessibility shortcuts for tabs in the `Settings` window
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension
 - Slightly narrower dropdown button
 - Tooltips open faster
+- Spell queue now has a placeholder on the right side
 
 ### Removed
 
@@ -46,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Reset Version` button in `Settings->Game Client` section
 - Missing spell indicator warning (now shows as zero MP)
 - Progress bar in flower queue
+- Status bar 'Ready' text
 
 ### Fixed
 
@@ -56,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Spell queue "disabled" selected text is now white instead of gray on gray
 - Double-click actions only respond to left-click now
 - Select default them when invalid settings
+- Spell queue will only open when adding a spell (not when switching tabs)
 
 ## [4.3.0] - 2023-04-11
 
