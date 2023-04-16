@@ -1,6 +1,6 @@
 
 # SleepHunter
-<img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
+<img src="SleepHunter4/SleepHunter.png" width=32 height=32/> <img src="SleepHunter4.Updater/SleepHunter-Updater.png" width=32 height=32/>
 Dark Ages Automation Tool + Updater
 
 ---
