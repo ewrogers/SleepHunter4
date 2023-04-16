@@ -5,6 +5,52 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <StartupObject>SleepHunter.Updater.App</StartupObject>
+    <AssemblyName>Updater</AssemblyName>
+    <RootNamespace>SleepHunter.Updater</RootNamespace>
+    <ApplicationIcon>SleepHunter-Updater.ico</ApplicationIcon>
+    <Title>SleepHunter Updater</Title>
+    <Authors>Erik 'SiLo' Rogers 2023</Authors>
+    <Company>Erik 'SiLo' Rogers</Company>
+    <Product>SleepHunter Updater</Product>
+    <Description>SleepHunter Update Utility</Description>
+    <Copyright>Copyright © Erik 'SiLo' Rogers 2023</Copyright>
+    <PackageProjectUrl>https://github.com/ewrogers/SleepHunter4</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ewrogers/SleepHunter4</RepositoryUrl>
+    <PackageIcon>SleepHunter-Updater.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="SleepHunter-Updater.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SleepHunter-Updater.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
