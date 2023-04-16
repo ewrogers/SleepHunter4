@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Color Theme Data Template -->
     <DataTemplate x:Key="ColorThemeDataTemplate">
         <Border Margin="8,2,8,1">
             <Grid>

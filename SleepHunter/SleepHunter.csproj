@@ -222,6 +222,14 @@
     <Compile Include="Macro\SavedSpellState.cs" />
     <Compile Include="Macro\SpellRotationMode.cs" />
     <Compile Include="Macro\WindowAutomator.cs" />
+    <Page Include="Templates\FlowerQueueDataTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Templates\SpellQueueDataTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Templates\ToolTipTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

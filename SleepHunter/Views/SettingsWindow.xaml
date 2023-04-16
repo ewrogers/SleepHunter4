@@ -21,7 +21,8 @@
                 Margin="0,8"
                 Click="userManualLink_Click"
                 ToolTip="Opens the user manual in the browser.">
-            <TextBlock Style="{StaticResource ObsidianHyperlinkText}">
+            <TextBlock Style="{StaticResource ObsidianHyperlinkText}"
+                       FontSize="18">
                 User Manual
             </TextBlock>
         </Button>

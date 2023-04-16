@@ -1,13 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="clr-namespace:SleepHunter.Converters"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
-
-    <converters:VisibilityInverter x:Key="VisibilityInverter"/>
-    <converters:VisibilityConverter x:Key="VisibilityConverter"/>
-    <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
-    <converters:BooleanInverter x:Key="BooleanInverter"/>
-
+    <!-- Ability Data Template-->
     <DataTemplate x:Key="AbilityDataTemplate">
         <Border Name="Border" Margin="2">
             <Grid>

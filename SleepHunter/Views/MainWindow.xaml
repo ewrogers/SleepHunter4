@@ -232,7 +232,7 @@
             <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">
                 <TabControl Style="{StaticResource ObsidianPanelTabControl}">
-                    <TabItem Header="_Temuair">
+                    <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
                         <!-- Temuair Skills -->
                         <ListBox Name="temuairSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
@@ -247,7 +247,7 @@
                         </ListBox>
                     </TabItem>
                     <!-- Medenia Skills -->
-                    <TabItem Header="_Medenia">
+                    <TabItem Header="_Medenia" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
                         <ListBox Name="medeniaSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
@@ -260,7 +260,7 @@
                         </ListBox>
                     </TabItem>
                     <!-- World Skills -->
-                    <TabItem Header="_World">
+                    <TabItem Header="_World" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
                         <ListBox Name="worldSkillListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
@@ -279,7 +279,7 @@
             <TabItem Name="spellsTab" Header="S_pells" IsEnabled="False">
                 <!-- Temuair Spells -->
                 <TabControl Style="{StaticResource ObsidianPanelTabControl}">
-                    <TabItem Header="_Temuair">
+                    <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
                         <ListBox Name="temuairSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
@@ -293,7 +293,7 @@
                         </ListBox>
                     </TabItem>
                     <!-- Medenia Spells -->
-                    <TabItem Header="_Medenia">
+                    <TabItem Header="_Medenia" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
                         <ListBox Name="medeniaSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
@@ -306,7 +306,7 @@
                         </ListBox>
                     </TabItem>
                     <!-- World Spells -->
-                    <TabItem Header="_World">
+                    <TabItem Header="_World" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
                         <ListBox Name="worldSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
                                  ItemTemplate="{StaticResource AbilityDataTemplate}"
@@ -446,6 +446,7 @@
                 <!-- Show Spell Queue Button -->
                 <Button x:Name="showSpellQueueButton"
                         Style="{StaticResource ObsidianIconButton}"
+                        IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"
                         Margin="0"

@@ -59,7 +59,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-
+    
     <!-- Scroll Bar Thumb Style -->
     <Style x:Key="ObsidianScrollBarThumb" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -702,7 +702,7 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
