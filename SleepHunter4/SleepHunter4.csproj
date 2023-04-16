@@ -5,6 +5,54 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <StartupObject>SleepHunter.App</StartupObject>
+    <AssemblyName>SleepHunter</AssemblyName>
+    <RootNamespace>SleepHunter</RootNamespace>
+    <ApplicationIcon>SleepHunter.ico</ApplicationIcon>
+    <NoWin32Manifest>true</NoWin32Manifest>
+    <Title>SleepHunter</Title>
+    <Authors>Erik 'SiLo' Rogers 2023</Authors>
+    <AssemblyVersion>4.4.1.0</AssemblyVersion>
+    <FileVersion>4.4.1.0</FileVersion>
+    <RepositoryUrl>https://github.com/ewrogers/SleepHunter4</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>SleepHunter.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/ewrogers/SleepHunter4</PackageProjectUrl>
+    <Copyright>Copyright © Erik 'SiLo' Rogers 2023</Copyright>
+    <Description>Dark Ages Automation Tool</Description>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="SleepHunter.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SleepHunter.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
