@@ -231,10 +231,10 @@
         <DockPanel>
             <Border Name="SelectionBorder"
                     DockPanel.Dock="Left"
-                    Width="6"
+                    Width="4"
                     Background="{DynamicResource ObsidianBackground}"
                     VerticalAlignment="Stretch"
-                    Visibility="Collapsed"/>
+                    Visibility="Hidden"/>
             <Border Name="Border" Padding="10,0">
                 <Grid Margin="0,2,0,4">
                     <Grid.RowDefinitions>
@@ -302,7 +302,6 @@
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="Border" Property="Padding" Value="4,0,10,0"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Level}" Value="0">
                 <Setter TargetName="LevelText" Property="Text" Value="Any Level"/>
