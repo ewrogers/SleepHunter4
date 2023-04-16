@@ -325,9 +325,9 @@
             </Grid.ColumnDefinitions>
             <Border Name="SelectionBorder"
                     Background="{DynamicResource ObsidianBackground}"
-                    Width="6"
+                    Width="4"
                     VerticalAlignment="Stretch"
-                    Visibility="Collapsed"/>
+                    Visibility="Hidden"/>
             <Border Grid.Column="1" Name="Border"
                     BorderBrush="Transparent"
                     BorderThickness="2"
@@ -421,7 +421,6 @@
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="Border" Property="Padding" Value="4,4,10,4"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Action}" Value="Set">
                 <Setter TargetName="ConjunctionText" Property="Text" Value="to"/>

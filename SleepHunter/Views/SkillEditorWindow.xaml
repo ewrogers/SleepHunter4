@@ -139,7 +139,7 @@
                    Orientation="Horizontal"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
-                   Margin="4,12,4,2">
+                   Margin="4">
             <CheckBox Name="warriorCheckBox" 
                   Style="{StaticResource ObsidianCheckBox}"
                   IsThreeState="False"

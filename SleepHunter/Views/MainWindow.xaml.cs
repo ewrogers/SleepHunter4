@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -90,11 +89,14 @@ namespace SleepHunter.Views
             ApplyTheme();
             UpdateSkillSpellGridWidths();
 
-            StartUpdateTimers();
-
+            ToggleSkills(false);
+            ToggleSpells(false);
             ToggleSpellQueue(false);
+
             RefreshSpellQueue();
             RefreshFlowerQueue();
+
+            StartUpdateTimers();
         }
 
         #region IDisposable Methods
@@ -2285,12 +2287,18 @@ namespace SleepHunter.Views
         {
             temuairSkillListBox.Visibility = medeniaSkillListBox.Visibility = worldSkillListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             skillsTab.IsEnabled = show;
+
+            if (!show)
+                skillsTab.TabIndex = -1;
         }
 
         private void ToggleSpells(bool show = true)
         {
             temuairSpellListBox.Visibility = medeniaSpellListBox.Visibility = worldSpellListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             spellsTab.IsEnabled = show;
+
+            if (!show)
+                spellsTab.TabIndex = -1;
         }
 
         private void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)

@@ -1,10 +1,9 @@
 ﻿<Window x:Class="SleepHunter.Views.SpellEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
         Title="Spell Editor" 
-        Width="500" Height="430"
+        Width="500" Height="440"
         Style="{StaticResource ObsidianWindow}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
@@ -18,9 +17,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -64,6 +64,7 @@
 
         <ctl:NumericUpDown x:Name="manaUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
+                           DecoratorText="MP"
                            Grid.Row="3"
                            Grid.Column="1" 
                            Width="250"
@@ -71,7 +72,7 @@
                            Maximum="100000"
                            Margin="4"/>
 
-        <TextBlock Text="Spell Lines:"
+        <TextBlock Text="Cast Time:"
                    Grid.Row="4"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
@@ -80,6 +81,7 @@
 
         <ctl:NumericUpDown x:Name="linesUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
+                           DecoratorText="Lines"
                            Grid.Row="4"
                            Grid.Column="1" 
                            Width="250"
@@ -111,12 +113,17 @@
                   VerticalAlignment="Center"
                   Margin="32,4,4,4"/>
 
-        <WrapPanel Grid.Row="7" 
+        <Separator Grid.Row="7"
+                   Grid.ColumnSpan="2"
+                   Style="{StaticResource ObsidianSeparator}"
+                   Margin="2,6"/>
+
+        <WrapPanel Grid.Row="8" 
                    Grid.ColumnSpan="2"
                    Orientation="Horizontal"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
-                   Margin="4,12,4,2">
+                   Margin="4">
             <CheckBox Name="warriorCheckBox" 
                   Style="{StaticResource ObsidianCheckBox}"
                   IsThreeState="False"
@@ -154,13 +161,13 @@
 
         </WrapPanel>
 
-        <Separator Grid.Row="8"
+        <Separator Grid.Row="9"
                    Grid.ColumnSpan="2"
                    Style="{StaticResource ObsidianSeparator}"
                    Margin="2,6"/>
 
         <Button Name="okButton" 
-                Grid.Row="9"
+                Grid.Row="10"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"
@@ -172,7 +179,7 @@
                 Click="okButton_Click"/>
 
         <Button Name="cancelButton" 
-                Grid.Row="9"
+                Grid.Row="10"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"

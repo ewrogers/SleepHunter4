@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UserSettings` are now version `1.3`
 - Non-logged in game clients are now hidden by default (use new debug option to show)
 - Clients now default sort by login time (oldest to newest)
+- Tweak layout of metadata editor windows
 
 ### Fixed
 
