@@ -15,6 +15,7 @@ namespace SleepHunter.IO.Process
         string windowTitle = string.Empty;
         int windowWidth = 640;
         int windowHeight = 480;
+        DateTime creationTime;
 
         public int ProcessId
         {
@@ -60,6 +61,12 @@ namespace SleepHunter.IO.Process
         public double WindowScaleY
         {
             get { return Math.Floor(WindowHeight / 480.0); }
+        }
+
+        public DateTime CreationTime
+        {
+            get { return creationTime; }
+            set { SetProperty(ref creationTime, value); }
         }
 
         public ClientProcess() { }

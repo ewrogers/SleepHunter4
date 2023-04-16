@@ -4,6 +4,7 @@ using System.Xml.Serialization;
 
 using SleepHunter.Common;
 using SleepHunter.Macro;
+using SleepHunter.Models;
 
 namespace SleepHunter.Settings
 {
@@ -11,60 +12,62 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.2";
+        public static readonly string CurrentVersion = "1.3";
 
-        bool isDebugMode;
-        string version;
+        private bool isDebugMode;
+        private string version;
 
         // Regular Settings
-        TimeSpan processUpdateInterval;
-        TimeSpan clientUpdateInterval;
-        bool saveMacroStates;
-        string selectedTheme;
-        double skillIconSize;
-        int skillGridWidth;
-        int worldSkillGridWidth;
-        int spellGridWidth;
-        int worldSpellGridWidth;
-        bool showSkillNames;
-        bool showSkillLevels;
-        bool showSpellNames;
-        bool showSpellLevels;
-        string clientPath;
-        string iconDataFile;
-        string paletteDataFile;
-        string skillIconFile;
-        string skillPaletteFile;
-        string spellIconFile;
-        string spellPaletteFile;
-        string selectedVersion;
-        bool allowMultipleInstances;
-        bool skipintroVideo;
-        bool noWalls;
-        MacroAction mapChangeAction;
-        MacroAction coordsChangeAction;
-        bool useShiftForMedeniaPane;
-        bool preserveUserPanel;
-        bool useSpaceForAssail;
-        bool disarmForAssails;
-        SpellRotationMode spellRotationMode;
-        TimeSpan zeroLineDelay;
-        TimeSpan singleLineDelay;
-        TimeSpan multipleLineDelay;
-        bool useFasSpiorad;
-        bool useFasSpioradOnDemand;
-        double fasSpioradThreshold;
-        bool requireManaForSpells;
-        bool allowStaffSwitching;
-        bool warnOnDuplicateSpells;
-        bool flowerAltsFirst;
-        bool flowerBeforeSpellMacros;
-        bool flowerHasMinimum;
-        int flowerMinimumMana;
-        bool autoUpdateEnabled;
+        private TimeSpan processUpdateInterval;
+        private TimeSpan clientUpdateInterval;
+        private bool saveMacroStates;
+        private string selectedTheme;
+        private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
+        private double skillIconSize;
+        private int skillGridWidth;
+        private int worldSkillGridWidth;
+        private int spellGridWidth;
+        private int worldSpellGridWidth;
+        private bool showSkillNames;
+        private bool showSkillLevels;
+        private bool showSpellNames;
+        private bool showSpellLevels;
+        private string clientPath;
+        private string iconDataFile;
+        private string paletteDataFile;
+        private string skillIconFile;
+        private string skillPaletteFile;
+        private string spellIconFile;
+        private string spellPaletteFile;
+        private string selectedVersion;
+        private bool allowMultipleInstances;
+        private bool skipintroVideo;
+        private bool noWalls;
+        private MacroAction mapChangeAction;
+        private MacroAction coordsChangeAction;
+        private bool useShiftForMedeniaPane;
+        private bool preserveUserPanel;
+        private bool useSpaceForAssail;
+        private bool disarmForAssails;
+        private SpellRotationMode spellRotationMode;
+        private TimeSpan zeroLineDelay;
+        private TimeSpan singleLineDelay;
+        private TimeSpan multipleLineDelay;
+        private bool useFasSpiorad;
+        private bool useFasSpioradOnDemand;
+        private double fasSpioradThreshold;
+        private bool requireManaForSpells;
+        private bool allowStaffSwitching;
+        private bool warnOnDuplicateSpells;
+        private bool flowerAltsFirst;
+        private bool flowerBeforeSpellMacros;
+        private bool flowerHasMinimum;
+        private int flowerMinimumMana;
+        private bool autoUpdateEnabled;
 
         // debug settings
-        bool loggingEnabled;
+        private bool loggingEnabled;
+        private bool showAllProcesses;
 
         [XmlIgnore]
         public bool IsDebugMode
@@ -91,7 +94,7 @@ namespace SleepHunter.Settings
         public double ProcessUpdateIntervalSeconds
         {
             get { return processUpdateInterval.TotalSeconds; }
-            set { this.ProcessUpdateInterval = TimeSpan.FromSeconds(value); }
+            set { ProcessUpdateInterval = TimeSpan.FromSeconds(value); }
         }
 
         [XmlIgnore]
@@ -105,7 +108,7 @@ namespace SleepHunter.Settings
         public double ClientUpdateIntervalSeconds
         {
             get { return clientUpdateInterval.TotalSeconds; }
-            set { this.ClientUpdateInterval = TimeSpan.FromSeconds(value); }
+            set { ClientUpdateInterval = TimeSpan.FromSeconds(value); }
         }
 
         [XmlElement("SaveMacroStates")]
@@ -120,6 +123,13 @@ namespace SleepHunter.Settings
         {
             get { return selectedTheme; }
             set { SetProperty(ref selectedTheme, value); }
+        }
+
+        [XmlElement("ClientSortOrder")]
+        public PlayerSortOrder ClientSortOrder
+        {
+            get { return clientSortOrder; }
+            set { SetProperty(ref clientSortOrder, value); }
         }
 
         [XmlElement("SkillIconSize")]
@@ -467,6 +477,13 @@ namespace SleepHunter.Settings
             set { SetProperty(ref loggingEnabled, value); }
         }
 
+        [XmlElement("ShowAllProcesses")]
+        public bool ShowAllProcesses
+        {
+            get { return showAllProcesses; }
+            set { SetProperty(ref showAllProcesses, value); }
+        }
+
         public UserSettings() { }
 
         public static UserSettings CreateDefaults()
@@ -485,6 +502,7 @@ namespace SleepHunter.Settings
             SaveMacroStates = true;
 
             SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
+            clientSortOrder = PlayerSortOrder.LoginTime;
             SkillIconSize = 46;
             SkillGridWidth = 12;
             WorldSkillGridWidth = 6;
@@ -535,10 +553,7 @@ namespace SleepHunter.Settings
 
             // debug settings
             LoggingEnabled = false;
-
-            foreach (var theme in ColorThemeManager.Instance.Themes)
-                if (theme.IsDefault)
-                    SelectedTheme = theme.Name;
+            ShowAllProcesses = false;
         }
     }
 }

@@ -9,7 +9,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerManager
+    public sealed class PlayerManager : INotifyPropertyChanged
     {
         #region Singleton
         static readonly PlayerManager instance = new PlayerManager();
@@ -22,16 +22,25 @@ namespace SleepHunter.Models
         private PlayerManager() { }
         #endregion
 
-        ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
+        private readonly ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
+        private PlayerSortOrder sortOrder = PlayerSortOrder.LoginTime;
 
         public event PlayerEventHandler PlayerAdded;
         public event PropertyChangedEventHandler PlayerPropertyChanged;
         public event PlayerEventHandler PlayerUpdated;
         public event PlayerEventHandler PlayerRemoved;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public int Count { get { return players.Count; } }
 
-        public IEnumerable<Player> Players
+        public PlayerSortOrder SortOrder
+        {
+            get => sortOrder;
+            set => sortOrder = value;
+        }
+
+        public IEnumerable<Player> AllClients
         {
             get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
         }
@@ -39,6 +48,25 @@ namespace SleepHunter.Models
         public IEnumerable<Player> LoggedInPlayers
         {
             get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
+        }
+
+        public IEnumerable<Player> SortedPlayers
+        {
+            get
+            {
+                if (sortOrder == PlayerSortOrder.LoginTime)
+                    return from p in players.Values orderby p.LoginTimestamp?.Ticks ?? p.Process.ProcessId where p.IsLoggedIn select p;
+                else if (sortOrder == PlayerSortOrder.Alphabetical)
+                    return from p in players.Values orderby p.Name where p.IsLoggedIn select p;
+                else if (sortOrder == PlayerSortOrder.HighestHealth)
+                    return from p in players.Values orderby p.Stats.MaximumHealth descending where p.IsLoggedIn select p;
+                else if (sortOrder == PlayerSortOrder.HighestMana)
+                    return from p in players.Values orderby p.Stats.MaximumMana descending where p.IsLoggedIn select p;
+                else if (sortOrder == PlayerSortOrder.HighestCombined)
+                    return from p in players.Values orderby (p.Stats.MaximumHealth + p.Stats.MaximumMana * 2) descending where p.IsLoggedIn select p;
+                else
+                    return from p in players.Values orderby p.Name where p.IsLoggedIn select p;
+            }
         }
 
         public void AddNewClient(ClientProcess process, ClientVersion version = null)
@@ -58,7 +86,7 @@ namespace SleepHunter.Models
         public void AddPlayer(Player player)
         {
             if (player == null)
-                throw new ArgumentNullException("player");
+                throw new ArgumentNullException(nameof(player));
 
             var alreadyExists = players.ContainsKey(player.Process.ProcessId);
 
@@ -77,9 +105,7 @@ namespace SleepHunter.Models
 
         public Player GetPlayer(int processId)
         {
-            Player player = null;
-
-            players.TryGetValue(processId, out player);
+            players.TryGetValue(processId, out var player);
 
             return player;
         }
@@ -95,9 +121,7 @@ namespace SleepHunter.Models
 
         public bool RemovePlayer(int processId)
         {
-            Player removedPlayer;
-
-            var wasRemoved = players.TryRemove(processId, out removedPlayer);
+            var wasRemoved = players.TryRemove(processId, out var removedPlayer);
 
             if (wasRemoved)
             {
@@ -131,48 +155,33 @@ namespace SleepHunter.Models
             }
         }
 
-        void OnPlayerAdded(Player player)
+        public void RaisePropertyChanged(string propertyName) => OnPropertyChanged(propertyName);
+
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void OnPlayerAdded(Player player)
         {
             player.PropertyChanged += Player_PropertyChanged;
-
-            var handler = this.PlayerAdded;
-
-            if (handler != null)
-                handler(this, new PlayerEventArgs(player));
+            PlayerAdded?.Invoke(this, new PlayerEventArgs(player));
         }
 
-        void OnPlayerPropertyChanged(Player player, string propertyName)
-        {
-            var handler = this.PlayerPropertyChanged;
+        private void OnPlayerPropertyChanged(Player player, string propertyName) => PlayerPropertyChanged?.Invoke(player, new PropertyChangedEventArgs(propertyName));
 
-            if (handler != null)
-                handler(player, new PropertyChangedEventArgs(propertyName));
-        }
-
-        void OnPlayerUpdated(Player player)
+        private void OnPlayerUpdated(Player player)
         {
             player.PropertyChanged += Player_PropertyChanged;
-
-            var handler = this.PlayerUpdated;
-
-            if (handler != null)
-                handler(this, new PlayerEventArgs(player));
+            PlayerUpdated?.Invoke(this, new PlayerEventArgs(player));
         }
 
-        void OnPlayerRemoved(Player player)
+        private void OnPlayerRemoved(Player player)
         {
             player.PropertyChanged -= Player_PropertyChanged;
-
-            var handler = this.PlayerRemoved;
-
-            if (handler != null)
-                handler(this, new PlayerEventArgs(player));
+            PlayerRemoved?.Invoke(this, new PlayerEventArgs(player));
         }
 
-        void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var player = sender as Player;
-            if (player == null)
+            if (!(sender is Player player))
                 return;
 
             OnPlayerPropertyChanged(player, e.PropertyName);

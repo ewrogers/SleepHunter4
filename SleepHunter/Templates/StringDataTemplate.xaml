@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- String ComboBox Data Template -->
     <DataTemplate x:Key="StringComboBoxDataTemplate">
         <Border>
             <Grid>
@@ -15,6 +16,8 @@
             </Grid>
         </Border>
     </DataTemplate>
+    
+    <!-- String Data Template -->
     <DataTemplate x:Key="StringDataTemplate">
         <Border>
             <Grid>

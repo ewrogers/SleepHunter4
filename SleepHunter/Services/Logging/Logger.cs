@@ -52,7 +52,12 @@ namespace SleepHunter.Services.Logging
             var exceptionName = ex.GetType().Name;
             var fileName = Path.GetFileName(filePath);
 
-            var messageWithTrace = $"{exceptionName} thrown in {fileName}:{lineNumber} ({memberName}): {ex.Message}\nStack Trace:\n{ex.StackTrace}";
+            var innerException = ex.InnerException;
+
+            var messageWithTrace = innerException != null
+                ? $"{exceptionName} thrown in {fileName}:{lineNumber} ({memberName}): {ex.Message}\nInner Exception: {innerException.Message}\nStack Trace:\n{innerException.StackTrace}"
+                : $"{exceptionName} thrown in {fileName}:{lineNumber} ({memberName}): {ex.Message}\nStack Trace:\n{ex.StackTrace}";
+
             Log(messageWithTrace, "exception", category);
         }
 

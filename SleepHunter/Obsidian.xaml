@@ -59,7 +59,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-
+    
     <!-- Scroll Bar Thumb Style -->
     <Style x:Key="ObsidianScrollBarThumb" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -702,7 +702,7 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
@@ -1027,7 +1027,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}">
                         <DockPanel>
                             <Border Name="SelectionBorder" DockPanel.Dock="Bottom"
-                                    Height="4"
+                                    Height="2"
                                     Background="{DynamicResource ObsidianBackground}"
                                     Margin="0,4,0,0"
                                     Visibility="Hidden"/>
@@ -1054,6 +1054,7 @@
                             </MultiTrigger.Conditions>
                             <MultiTrigger.Setters>
                                 <Setter Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
+                                <Setter TargetName="SelectionBorder" Property="Visibility" Value="Hidden"/>
                             </MultiTrigger.Setters>
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -1404,11 +1405,11 @@
                                 Opacity="0.0"/>
                         <DockPanel Background="Transparent">
                             <Border Name="SelectionBorder"
-                                    Width="6"
+                                    Width="4"
                                     Background="{DynamicResource ObsidianBackground}"
                                     VerticalAlignment="Stretch"
                                     Panel.ZIndex="1"
-                                    Visibility="Collapsed"/>
+                                    Visibility="Hidden"/>
                             <Border Name="Border"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -1427,7 +1428,6 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                            <Setter Property="Padding" Value="4,2,10,2"/>
                             <Setter TargetName="HighlightBorder" Property="Opacity" Value="0.4"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

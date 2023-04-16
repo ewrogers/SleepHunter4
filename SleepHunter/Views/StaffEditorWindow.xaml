@@ -13,9 +13,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -36,7 +37,7 @@
                  Margin="4"/>
 
         <TextBlock Name="levelText"
-                   Text="Level:"
+                   Text="Level Requirement:"
                    Grid.Row="1"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
@@ -45,6 +46,7 @@
 
         <ctl:NumericUpDown x:Name="levelUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
+                           DecoratorText="Level"
                            Grid.Row="1"
                            Grid.Column="1" 
                            Width="250"
@@ -63,12 +65,17 @@
             Is Medenian Path
         </CheckBox>
 
-        <WrapPanel Grid.Row="3" 
+        <Separator Grid.Row="3"
+                   Grid.ColumnSpan="2"
+                   Style="{StaticResource ObsidianSeparator}"
+                   Margin="2,6"/>
+        
+        <WrapPanel Grid.Row="4" 
                    Grid.ColumnSpan="2"
                    Orientation="Horizontal"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
-                   Margin="4,12,4,2">
+                   Margin="4">
             <CheckBox Name="warriorCheckBox" 
                   Style="{StaticResource ObsidianCheckBox}"
                   IsThreeState="False"
@@ -106,13 +113,13 @@
 
         </WrapPanel>
 
-        <Separator Grid.Row="4"
+        <Separator Grid.Row="5"
                    Grid.ColumnSpan="2"
                    Style="{StaticResource ObsidianSeparator}"
                    Margin="2,6"/>
 
         <Button Name="okButton" 
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"
@@ -124,7 +131,7 @@
                 Click="okButton_Click"/>
 
         <Button Name="cancelButton" 
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"

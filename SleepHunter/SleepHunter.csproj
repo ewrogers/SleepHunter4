@@ -69,11 +69,13 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\DisplayValue.cs" />
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />
     <Compile Include="Converters\VisibilityInverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
     <Compile Include="Extensions\VersionExtender.cs" />
+    <Compile Include="Models\PlayerSortOrder.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
     <Compile Include="Services\Logging\ILogger.cs" />
@@ -135,6 +137,7 @@
       <DependentUpon>UpdateProgressWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Win32\MemoryBasicInformation.cs" />
+    <Compile Include="Win32\NativeExtensions.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
     <Compile Include="Win32\ProcessAccessFlags.cs" />
     <Compile Include="Win32\ProcessCreationFlags.cs" />
@@ -219,6 +222,14 @@
     <Compile Include="Macro\SavedSpellState.cs" />
     <Compile Include="Macro\SpellRotationMode.cs" />
     <Compile Include="Macro\WindowAutomator.cs" />
+    <Page Include="Templates\FlowerQueueDataTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Templates\SpellQueueDataTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Templates\ToolTipTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

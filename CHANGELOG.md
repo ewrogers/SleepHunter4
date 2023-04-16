@@ -4,6 +4,29 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.1] - 2023-04-16
+
+### Added
+
+- `Show All Processes` debug option in `Settings->Debug`
+- Login timestamp to players
+- Client sort order option in `Settings->User Interface`, defaults to login time
+- Get client start time from Win32 kernel
+
+### Changed
+
+- `UserSettings` are now version `1.3`
+- Non-logged in game clients are now hidden by default (use new debug option to show)
+- Clients now default sort by login time (oldest to newest)
+- Tweak layout of metadata editor windows
+
+### Fixed
+
+- Disable spell queue remove buttons on startup (when empty)
+- SleepHunter window title not changing sometimes
+- Disable skill/spell tabs when no client
+- Disable spell queue when no client
+
 ## [4.4.0] - 2023-04-15
 
 ### Added

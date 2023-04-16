@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -29,6 +28,7 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SleepHunter.Views
 {
@@ -74,6 +74,7 @@ namespace SleepHunter.Views
             InitializeComponent();
             InitializeViews();
 
+            UpdateWindowTitle();
             UpdateToolbarState();
 
             LoadVersions();
@@ -88,8 +89,14 @@ namespace SleepHunter.Views
             ApplyTheme();
             UpdateSkillSpellGridWidths();
 
-            StartUpdateTimers();
+            ToggleSkills(false);
+            ToggleSpells(false);
             ToggleSpellQueue(false);
+
+            RefreshSpellQueue();
+            RefreshFlowerQueue();
+
+            StartUpdateTimers();
         }
 
         #region IDisposable Methods
@@ -484,11 +491,8 @@ namespace SleepHunter.Views
         {
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
-            Dispatcher.InvokeIfRequired(() =>
-               {
-                   BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-
-               }, DispatcherPriority.DataBind);
+            UpdateToolbarState();
+            UpdateClientList();
         }
 
         private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
@@ -497,14 +501,8 @@ namespace SleepHunter.Views
 
             OnPlayerLoggedOut(e.Player);
 
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-
-            }, DispatcherPriority.DataBind);
-
-            if (PlayerManager.Instance.Count < 1)
-                UpdateToolbarState();
+            UpdateToolbarState();
+            UpdateClientList();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
@@ -525,7 +523,6 @@ namespace SleepHunter.Views
                         OnPlayerLoggedIn(player);
                 }
 
-                BindingOperations.GetBindingExpression(clientListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
                 clientListBox.Items.Refresh();
 
                 var selectedPlayer = clientListBox.SelectedItem as Player;
@@ -553,6 +550,11 @@ namespace SleepHunter.Views
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
+
+            if (!player.LoginTimestamp.HasValue)
+                player.LoginTimestamp = DateTime.Now;
+
+            UpdateClientList();
 
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
 
@@ -584,12 +586,19 @@ namespace SleepHunter.Views
 
                 }, DispatcherPriority.Normal, null);
             }
+            finally
+            {
+                UpdateWindowTitle();
+            }
         }
 
         private void OnPlayerLoggedOut(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
+
+            player.LoginTimestamp = null;
+            UpdateClientList();
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
 
@@ -629,6 +638,8 @@ namespace SleepHunter.Views
 
                     player.Hotkey = null;
                 });
+
+                UpdateWindowTitle();
             }
 
             if (macro != null)
@@ -643,10 +654,11 @@ namespace SleepHunter.Views
 
         private void SelectNextAvailablePlayer()
         {
-            if (PlayerManager.Instance.Count < 1 || PlayerManager.Instance.Players.All(p => !p.IsLoggedIn))
+            if (PlayerManager.Instance.LoggedInPlayers.Count() < 0)
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
+                UpdateWindowTitle();
                 return;
             }
         }
@@ -783,6 +795,7 @@ namespace SleepHunter.Views
             }
             finally
             {
+                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
                 UserSettingsManager.Instance.Settings.PropertyChanged += UserSettings_PropertyChanged;
             }
         }
@@ -1295,7 +1308,7 @@ namespace SleepHunter.Views
         }
 
         private void Window_Shown(object sender, EventArgs e)
-        { 
+        {
             InitializeHotkeyHook();
 
             if (isFirstRun)
@@ -1652,7 +1665,7 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != MouseButtonState.Pressed ||  !(sender is ListBoxItem draggedItem))
+            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
                 return;
 
             logger.LogInfo($"Drag spell queue item: {draggedItem}");
@@ -1804,8 +1817,8 @@ namespace SleepHunter.Views
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
 
-                Title = "SleepHunter";
                 selectedMacro = null;
+                UpdateWindowTitle();
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
@@ -1815,24 +1828,16 @@ namespace SleepHunter.Views
 
             var macroState = MacroManager.Instance.GetMacroState(player);
 
-            if (player.IsLoggedIn)
-            {
-                Title = string.Format("SleepHunter - {0}", player.Name);
-                logger.LogInfo($"Selected charcter: {player.Name}");
-            }
-            else Title = "SleepHunter";
-
-
             UnsubscribeMacroHandlers(selectedMacro);
             var prevSelectedMacro = selectedMacro;
             selectedMacro = macroState;
             SubscribeMacroHandlers(selectedMacro);
 
+            UpdateWindowTitle();
+            UpdateToolbarState();
+
             if (selectedMacro == null)
-            {
-                UpdateToolbarState();
                 return;
-            }
 
             tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
@@ -1842,7 +1847,6 @@ namespace SleepHunter.Views
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
-            UpdateToolbarState();
 
             if (selectedMacro != null)
             {
@@ -1947,7 +1951,7 @@ namespace SleepHunter.Views
 
             if (oldHotkey != null)
             {
-                foreach (var p in PlayerManager.Instance.Players)
+                foreach (var p in PlayerManager.Instance.AllClients)
                 {
                     if (!p.HasHotkey)
                         continue;
@@ -2174,9 +2178,7 @@ namespace SleepHunter.Views
 
         private void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedTarget = flowerListBox.SelectedItem as FlowerQueueItem;
-
-            if (selectedMacro == null || selectedTarget == null)
+            if (selectedMacro == null || !(flowerListBox.SelectedItem is FlowerQueueItem selectedTarget))
                 return;
 
             selectedMacro.RemoveFromFlowerQueue(selectedTarget);
@@ -2206,6 +2208,12 @@ namespace SleepHunter.Views
             if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
 
+            if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
+                UpdateClientList(PlayerManager.Instance.SortedPlayers);
+            }
+
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSkillGridWidth(settings.SkillGridWidth);
 
@@ -2220,6 +2228,11 @@ namespace SleepHunter.Views
 
             if (string.Equals("SkillIconSize", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 UpdateSkillSpellGridWidths();
+
+            // Debug settings
+
+            if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                UpdateClientList(settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers);
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2249,6 +2262,17 @@ namespace SleepHunter.Views
                 selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
         }
 
+        private void UpdateWindowTitle()
+        {
+            if (selectedMacro == null || !selectedMacro.Client.IsLoggedIn)
+            {
+                Title = "SleepHunter";
+                return;
+            }
+
+            Title = $"SleepHunter - {selectedMacro.Client.Name}";
+        }
+
         private void UpdateToolbarState()
         {
             stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
@@ -2263,12 +2287,18 @@ namespace SleepHunter.Views
         {
             temuairSkillListBox.Visibility = medeniaSkillListBox.Visibility = worldSkillListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             skillsTab.IsEnabled = show;
+
+            if (!show)
+                skillsTab.TabIndex = -1;
         }
 
         private void ToggleSpells(bool show = true)
         {
             temuairSpellListBox.Visibility = medeniaSpellListBox.Visibility = worldSpellListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
             spellsTab.IsEnabled = show;
+
+            if (!show)
+                spellsTab.TabIndex = -1;
         }
 
         private void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
@@ -2283,6 +2313,21 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
+        }
+
+        private void UpdateClientList(IEnumerable<Player> itemsSource = null)
+        {
+            if (!CheckAccess())
+            {
+                Dispatcher.InvokeIfRequired(UpdateClientList, itemsSource, DispatcherPriority.DataBind);
+                return;
+            }
+
+            if (itemsSource != null)
+                clientListBox.ItemsSource = itemsSource;
+
+            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+            clientListBox.Items.Refresh();
         }
 
         private async void CheckForNewVersion()
