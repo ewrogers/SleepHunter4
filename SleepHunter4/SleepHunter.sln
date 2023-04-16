@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter", "SleepHunter.csproj", "{9B964768-970E-4190-8574-EBEF7BE09E7E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter.Updater", "..\SleepHunter.Updater\SleepHunter.Updater.csproj", "{344FCCBB-ECF5-4C77-BB34-079B98928752}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter4", "..\SleepHunter4\SleepHunter4.csproj", "{FB0CD306-1008-419C-9851-6F60F83363A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter4", "SleepHunter4.csproj", "{FB0CD306-1008-419C-9851-6F60F83363A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter4.Updater", "..\SleepHunter4.Updater\SleepHunter4.Updater.csproj", "{551BAF2D-54AD-4470-9CFC-5A11DF4CF3F0}"
 EndProject
@@ -17,14 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B964768-970E-4190-8574-EBEF7BE09E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B964768-970E-4190-8574-EBEF7BE09E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B964768-970E-4190-8574-EBEF7BE09E7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B964768-970E-4190-8574-EBEF7BE09E7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB0CD306-1008-419C-9851-6F60F83363A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB0CD306-1008-419C-9851-6F60F83363A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB0CD306-1008-419C-9851-6F60F83363A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
