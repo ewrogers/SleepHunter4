@@ -24,6 +24,7 @@ namespace SleepHunter.Models
 
         private readonly ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
         private PlayerSortOrder sortOrder = PlayerSortOrder.LoginTime;
+        private bool showAllClients;
 
         public event PlayerEventHandler PlayerAdded;
         public event PropertyChangedEventHandler PlayerPropertyChanged;
@@ -40,6 +41,12 @@ namespace SleepHunter.Models
             set => sortOrder = value;
         }
 
+        public bool ShowAllClients
+        {
+            get => showAllClients;
+            set => showAllClients = value;
+        }
+
         public IEnumerable<Player> AllClients
         {
             get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
@@ -50,22 +57,31 @@ namespace SleepHunter.Models
             get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
         }
 
-        public IEnumerable<Player> SortedPlayers
+        public IEnumerable<Player> VisiblePlayers
         {
             get
             {
-                if (sortOrder == PlayerSortOrder.LoginTime)
-                    return from p in players.Values orderby p.LoginTimestamp?.Ticks ?? p.Process.ProcessId where p.IsLoggedIn select p;
-                else if (sortOrder == PlayerSortOrder.Alphabetical)
-                    return from p in players.Values orderby p.Name where p.IsLoggedIn select p;
-                else if (sortOrder == PlayerSortOrder.HighestHealth)
-                    return from p in players.Values orderby p.Stats.MaximumHealth descending where p.IsLoggedIn select p;
-                else if (sortOrder == PlayerSortOrder.HighestMana)
-                    return from p in players.Values orderby p.Stats.MaximumMana descending where p.IsLoggedIn select p;
-                else if (sortOrder == PlayerSortOrder.HighestCombined)
-                    return from p in players.Values orderby (p.Stats.MaximumHealth + p.Stats.MaximumMana * 2) descending where p.IsLoggedIn select p;
+                var sortedClients = Enumerable.Empty<Player>();
+
+                if (SortOrder == PlayerSortOrder.LoginTime)
+                    sortedClients = from p in LoggedInPlayers orderby p.LoginTimestamp?.Ticks ?? p.Process.ProcessId select p;
+                else if (SortOrder == PlayerSortOrder.Alphabetical)
+                    sortedClients = from p in LoggedInPlayers orderby p.Name select p;
+                else if (SortOrder == PlayerSortOrder.HighestHealth)
+                    sortedClients = from p in LoggedInPlayers orderby p.Stats.MaximumHealth descending select p;
+                else if (SortOrder == PlayerSortOrder.HighestMana)
+                    sortedClients = from p in LoggedInPlayers orderby p.Stats.MaximumMana descending select p;
+                else if (SortOrder == PlayerSortOrder.HighestCombined)
+                    sortedClients = from p in LoggedInPlayers orderby (p.Stats.MaximumHealth + p.Stats.MaximumMana * 2) descending select p;
                 else
-                    return from p in players.Values orderby p.Name where p.IsLoggedIn select p;
+                    sortedClients = from p in LoggedInPlayers orderby p.Name where p.IsLoggedIn select p;
+
+                var visiblePlayers = sortedClients.ToList();
+
+                if (ShowAllClients)
+                    visiblePlayers.AddRange(AllClients.Where(c => !c.IsLoggedIn).OrderBy(c => c.Process.CreationTime.Ticks));
+
+                return visiblePlayers;
             }
         }
 

@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Client versions do not reset to defaults, file is required
-- Client versions do not save to file on close
+- Client versions no longer reset to defaults, file is required
+- Client versions no longer auto-save to file on close
 - Client versions will warn on startup when not found, disable start client button
+- Themes no longer auto-save to file on close
+- Themes will fallback to default style on error
+- Metadata files no longer auto-save to files on close
 
 ### Fixed
 

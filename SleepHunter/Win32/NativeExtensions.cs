@@ -8,20 +8,22 @@ namespace SleepHunter.Win32
     {
         public static DateTime FiletimeToDateTime(this FILETIME filetime)
         {
-            var hi = (uint)filetime.dwHighDateTime << 32;
-            var lo = (uint)filetime.dwLowDateTime;
+            ulong nanoSeconds = ((ulong)filetime.dwHighDateTime) << 32;
+            nanoSeconds = unchecked(nanoSeconds | (uint)filetime.dwLowDateTime);
 
-            var fileTimeLong = unchecked((ulong)hi | lo);
-            return DateTime.FromFileTime((long)fileTimeLong);
+            var ticks = (long)nanoSeconds;
+
+            return DateTime.FromFileTime(ticks);
         }
 
         public static TimeSpan FiletimeToTimeSpan(this FILETIME filetime)
         {
-            var hi = (uint)filetime.dwHighDateTime << 32;
-            var lo = (uint)filetime.dwLowDateTime;
+            ulong nanoSeconds = ((ulong)filetime.dwHighDateTime) << 32;
+            nanoSeconds = unchecked(nanoSeconds | (uint)filetime.dwLowDateTime);
 
-            var fileTimeLong = unchecked((ulong)hi |lo);
-            return TimeSpan.FromTicks((long)fileTimeLong);
+            var ticks = (long)nanoSeconds;
+
+            return TimeSpan.FromTicks(ticks);
         }
     }
 }

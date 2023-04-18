@@ -796,8 +796,11 @@ namespace SleepHunter.Views
             }
             finally
             {
-                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
                 UserSettingsManager.Instance.Settings.PropertyChanged += UserSettings_PropertyChanged;
+
+                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
+                PlayerManager.Instance.ShowAllClients = UserSettingsManager.Instance.Settings.ShowAllProcesses;
+                UpdateClientList();
             }
         }
 
@@ -2143,7 +2146,7 @@ namespace SleepHunter.Views
             if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
                 PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
-                UpdateClientList(PlayerManager.Instance.SortedPlayers);
+                UpdateClientList();
             }
 
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
@@ -2164,7 +2167,10 @@ namespace SleepHunter.Views
             // Debug settings
 
             if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                UpdateClientList(settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers);
+            {
+                PlayerManager.Instance.ShowAllClients = settings.ShowAllProcesses;
+                UpdateClientList();
+            }
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2249,19 +2255,18 @@ namespace SleepHunter.Views
                 flowerVineyardCheckBox.IsChecked = false;
         }
 
-        private void UpdateClientList(IEnumerable<Player> itemsSource = null)
+        private void UpdateClientList()
         {
-            if (!CheckAccess())
+            var showAll = PlayerManager.Instance.ShowAllClients;
+            var sortOrder = PlayerManager.Instance.SortOrder;
+
+            logger.LogInfo($"Updating the client list (showAll = {showAll}, sortOrder = {sortOrder})");
+
+            Dispatcher.InvokeIfRequired(() =>
             {
-                Dispatcher.InvokeIfRequired(UpdateClientList, itemsSource, DispatcherPriority.DataBind);
-                return;
-            }
-
-            if (itemsSource != null)
-                clientListBox.ItemsSource = itemsSource;
-
-            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-            clientListBox.Items.Refresh();
+                clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+                clientListBox.Items.Refresh();
+            }, DispatcherPriority.DataBind);
         }
 
         private async void CheckForNewVersion()
