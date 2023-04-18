@@ -4,6 +4,25 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.2] - 2023-04-18
+
+### Changed
+
+- Client versions no longer reset to defaults, file is required
+- Client versions no longer auto-save to file on close
+- Client versions will warn on startup when not found, disable start client button
+- Themes no longer auto-save to file on close
+- Themes will fallback to default style on error
+- Metadata files no longer auto-save to files on close
+- Status bar has been removed and made into thinner border + resize grip
+
+### Fixed
+
+- Character sorting by login time
+- Character sorting not updating
+- Not showing all clients when debug option was checked on startup
+
+
 ## [4.4.1] - 2023-04-16
 
 ### Added

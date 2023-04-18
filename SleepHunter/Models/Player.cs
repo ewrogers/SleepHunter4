@@ -270,6 +270,8 @@ namespace SleepHunter.Models
 
             if (NativeMethods.GetProcessTimes(accessor.ProcessHandle, out var creationTime, out _, out _, out _))
                 process.CreationTime = creationTime.FiletimeToDateTime();
+            else
+                throw new Exception("What");
 
             inventory = new Inventory(this);
             equipment = new EquipmentSet(this);

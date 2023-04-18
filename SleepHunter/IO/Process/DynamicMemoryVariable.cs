@@ -11,7 +11,7 @@ namespace SleepHunter.IO.Process
 
         [XmlArray("Offsets")]
         [XmlArrayItem("Offset", typeof(MemoryOffset))]
-        public List<MemoryOffset> Offets
+        public List<MemoryOffset> Offsets
         {
             get { return offsets; }
             set { offsets = value; }

@@ -31,7 +31,7 @@ namespace SleepHunter.IO.Process
             {
                 var dynamicVar = variable as DynamicMemoryVariable;
 
-                foreach (var offset in dynamicVar.Offets)
+                foreach (var offset in dynamicVar.Offsets)
                 {
                     if (address < MinimumAddress || address > MaximumAddress)
                         return 0;

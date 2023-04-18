@@ -73,21 +73,21 @@ namespace SleepHunter.Views
             InitializeLogger();
             InitializeComponent();
             InitializeViews();
+            
+            LoadThemes();
+            LoadSettings();
+            ApplyTheme();
+            UpdateSkillSpellGridWidths();
+
+            LoadVersions();
 
             UpdateWindowTitle();
             UpdateToolbarState();
-
-            LoadVersions();
-            LoadThemes();
-            LoadSettings();
 
             LoadSkills();
             LoadSpells();
             LoadStaves();
             CalculateLines();
-
-            ApplyTheme();
-            UpdateSkillSpellGridWidths();
 
             ToggleSkills(false);
             ToggleSpells(false);
@@ -711,16 +711,20 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-                    ClientVersionManager.Instance.LoadDefaultVersions();
-                    logger.LogInfo("No client version file was found, using defaults");
+                    UpdateToolbarState();
+                    logger.LogInfo("No client version file was found");
+
+                    this.ShowMessageBox("Missing Client Versions File", "The client versions file was not found.\nUnable to start new clients.", "You should re-install the application.");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load client versions, resetting to defaults");
+                logger.LogError("Failed to load client versions");
                 logger.LogException(ex);
 
-                ClientVersionManager.Instance.LoadDefaultVersions();
+                UpdateToolbarState();
+
+                this.ShowMessageBox("Unable to Load Client Versions", "The client versions file could not be loaded.\nUnable to start new clients.", "You should re-install the application.");
             }
         }
 
@@ -734,20 +738,17 @@ namespace SleepHunter.Views
                 if (File.Exists(themesFile))
                 {
                     ColorThemeManager.Instance.LoadFromFile(themesFile);
-                    logger.LogInfo("Themes successfully lodaded");
+                    logger.LogInfo("Themes loaded successfully");
                 }
                 else
                 {
-                    ColorThemeManager.Instance.LoadDefaultThemes();
-                    logger.LogInfo("No themes file was found, using defaults");
+                    logger.LogInfo("No themes file was found, using default theme");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load themes, resetting to defaults");
+                logger.LogError("Failed to load themes, resetting to default theme");
                 logger.LogException(ex);
-
-                ColorThemeManager.Instance.LoadDefaultThemes();
             }
         }
 
@@ -795,8 +796,11 @@ namespace SleepHunter.Views
             }
             finally
             {
-                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
                 UserSettingsManager.Instance.Settings.PropertyChanged += UserSettings_PropertyChanged;
+
+                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
+                PlayerManager.Instance.ShowAllClients = UserSettingsManager.Instance.Settings.ShowAllProcesses;
+                UpdateClientList();
             }
         }
 
@@ -810,7 +814,7 @@ namespace SleepHunter.Views
                 if (File.Exists(skillsFile))
                 {
                     SkillMetadataManager.Instance.LoadFromFile(skillsFile);
-                    logger.LogInfo("Skill metadata successfully loaded");
+                    logger.LogInfo("Skill metadata loaded successfully");
                 }
                 else
                 {
@@ -834,7 +838,7 @@ namespace SleepHunter.Views
                 if (File.Exists(spellsFile))
                 {
                     SpellMetadataManager.Instance.LoadFromFile(spellsFile);
-                    logger.LogInfo("Spell metadata successfully loaded");
+                    logger.LogInfo("Spell metadata loaded successfully");
                 }
                 else
                 {
@@ -858,7 +862,7 @@ namespace SleepHunter.Views
                 if (File.Exists(stavesFile))
                 {
                     StaffMetadataManager.Instance.LoadFromFile(stavesFile);
-                    logger.LogInfo("Staves metadata successfully loaded");
+                    logger.LogInfo("Staves metadata loaded successfully");
                 }
                 else
                 {
@@ -1006,9 +1010,10 @@ namespace SleepHunter.Views
                 themeName = ColorThemeManager.Instance.DefaultTheme?.Name;
             }
 
-            if (themeName == null)
+            if (themeName == null || !ColorThemeManager.Instance.ContainsTheme(themeName))
             {
-                logger.LogWarn("Theme name is null, unable to apply");
+                logger.LogWarn("Theme name is null or invalid, using default theme instead");
+                ColorThemeManager.Instance.ApplyDefaultTheme();
                 return;
             }
 
@@ -1329,44 +1334,13 @@ namespace SleepHunter.Views
 
             try
             {
-                logger.LogInfo("Unregistering all hotkeys");
+                logger.LogInfo("Unregistering all hotkeys...");
                 HotkeyManager.Instance.UnregisterAllHotkeys(windowSource.Handle);
+                logger.LogInfo("Unregistered all hotkeys successfully");
             }
             catch (Exception ex)
             {
                 logger.LogError("Failed to unregister all hotkeys");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var versionsFile = ClientVersionManager.VersionsFile;
-
-                if (!File.Exists(versionsFile))
-                {
-                    logger.LogInfo($"Client versions file does not exist, saving to file: {versionsFile}");
-                    ClientVersionManager.Instance.SaveToFile(versionsFile);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save client versions file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var themesFile = ColorThemeManager.ThemesFile;
-
-                if (!File.Exists(themesFile))
-                {
-                    logger.LogInfo($"Themes file does not exist, saving to file: {themesFile}");
-                    ColorThemeManager.Instance.SaveToFile(ColorThemeManager.ThemesFile);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save themes file");
                 logger.LogException(ex);
             }
 
@@ -1380,45 +1354,6 @@ namespace SleepHunter.Views
             catch (Exception ex)
             {
                 logger.LogError("Unable to save user settings file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var skillsFile = SkillMetadataManager.SkillMetadataFile;
-
-                logger.LogInfo($"Saving skills metadata to file: {skillsFile}");
-                SkillMetadataManager.Instance.SaveToFile(skillsFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save skills metadata file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var spellsFile = SpellMetadataManager.SpellMetadataFile;
-
-                logger.LogInfo($"Saving spells metadata to file: {spellsFile}");
-                SpellMetadataManager.Instance.SaveToFile(spellsFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save spells metadata file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var stavesFile = StaffMetadataManager.StaffMetadataFile;
-
-                logger.LogInfo($"Saving staves metadata to file: {stavesFile}");
-                StaffMetadataManager.Instance.SaveToFile(stavesFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save staves metadata file");
                 logger.LogException(ex);
             }
 
@@ -2211,7 +2146,7 @@ namespace SleepHunter.Views
             if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
                 PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
-                UpdateClientList(PlayerManager.Instance.SortedPlayers);
+                UpdateClientList();
             }
 
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
@@ -2232,7 +2167,10 @@ namespace SleepHunter.Views
             // Debug settings
 
             if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                UpdateClientList(settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers);
+            {
+                PlayerManager.Instance.ShowAllClients = settings.ShowAllProcesses;
+                UpdateClientList();
+            }
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2275,6 +2213,8 @@ namespace SleepHunter.Views
 
         private void UpdateToolbarState()
         {
+            startNewClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
+
             stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
 
             if (selectedMacro == null)
@@ -2315,19 +2255,18 @@ namespace SleepHunter.Views
                 flowerVineyardCheckBox.IsChecked = false;
         }
 
-        private void UpdateClientList(IEnumerable<Player> itemsSource = null)
+        private void UpdateClientList()
         {
-            if (!CheckAccess())
+            var showAll = PlayerManager.Instance.ShowAllClients;
+            var sortOrder = PlayerManager.Instance.SortOrder;
+
+            logger.LogInfo($"Updating the client list (showAll = {showAll}, sortOrder = {sortOrder})");
+
+            Dispatcher.InvokeIfRequired(() =>
             {
-                Dispatcher.InvokeIfRequired(UpdateClientList, itemsSource, DispatcherPriority.DataBind);
-                return;
-            }
-
-            if (itemsSource != null)
-                clientListBox.ItemsSource = itemsSource;
-
-            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-            clientListBox.Items.Refresh();
+                clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+                clientListBox.Items.Refresh();
+            }, DispatcherPriority.DataBind);
         }
 
         private async void CheckForNewVersion()

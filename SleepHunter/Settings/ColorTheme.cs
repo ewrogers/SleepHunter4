@@ -11,6 +11,11 @@ namespace SleepHunter.Settings
     [Serializable]
     public sealed class ColorTheme : ObservableObject
     {
+        private const string DefaultBackgroundHex = "#1e3a8a";
+        private const string DefaultForegroundHex = "#eff6ff";
+
+        public static readonly ColorTheme DefaultTheme = new ColorTheme("Default", DefaultBackgroundHex, DefaultForegroundHex, 0, true);
+
         private string name;
         private int sortIndex;
 
@@ -32,7 +37,7 @@ namespace SleepHunter.Settings
             set { SetProperty(ref name, value); }
         }
 
-        [XmlAttribute("Category")]
+        [XmlAttribute("SortIndex")]
         public int SortIndex
         {
             get { return sortIndex; }

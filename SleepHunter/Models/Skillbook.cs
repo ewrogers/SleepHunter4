@@ -298,7 +298,7 @@ namespace SleepHunter.Models
                 if (cooldownVariable == null)
                     return false;
 
-                var offset = cooldownVariable.Offets.FirstOrDefault();
+                var offset = cooldownVariable.Offsets.FirstOrDefault();
 
                 if (offset == null)
                     return false;
