@@ -59,7 +59,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref locationY, value); }
         }
 
-        [XmlAttribute("OffsetX")]
+        [XmlAttribute(nameof(OffsetX))]
         [DefaultValue(0)]
         public double OffsetX
         {
@@ -67,7 +67,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref offsetX, value); }
         }
 
-        [XmlAttribute("OffsetY")]
+        [XmlAttribute(nameof(OffsetY))]
         [DefaultValue(0)]
         public double OffsetY
         {
@@ -75,7 +75,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref offsetY, value); }
         }
 
-        [XmlAttribute("InnerRadius")]
+        [XmlAttribute(nameof(InnerRadius))]
         [DefaultValue(0)]
         public int InnerRadius
         {
@@ -83,7 +83,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref innerRadius, value); }
         }
 
-        [XmlAttribute("OuterRadius")]
+        [XmlAttribute(nameof(OuterRadius))]
         [DefaultValue(0)]
         public int OuterRadius
         {
@@ -91,7 +91,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref outerRadius, value); }
         }
 
-        [XmlAttribute("TargetLevel")]
+        [XmlAttribute(nameof(TargetLevel))]
         [DefaultValue(0)]
         public int TargetLevel
         {
@@ -99,12 +99,10 @@ namespace SleepHunter.Macro
             set { SetProperty(ref targetLevel, value); }
         }
 
-        public SavedSpellState() { }
-
         public SavedSpellState(string spellName, SpellTarget target, int? targetLevel = null)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             SpellName = spellName;
             TargetMode = target.Units;

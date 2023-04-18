@@ -62,8 +62,6 @@ namespace SleepHunter.IO.Process
             set => SetProperty(ref creationTime, value);
         }
 
-        public ClientProcess() { }
-
         public void Update()
         {
             var windowTextLength = NativeMethods.GetWindowTextLength(windowHandle);

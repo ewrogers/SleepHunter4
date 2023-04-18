@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SleepHunter.Metadata
 {
-    internal sealed class ComputedSpellLines
+    public sealed class ComputedSpellLines
     {
         private readonly ConcurrentDictionary<string, int> spellLines = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        public int SpellCount
-        {
-            get { return spellLines.Count; }
-        }
+        public int SpellCount => spellLines.Count;
 
-        public IEnumerable<KeyValuePair<string, int>> SpellLines
-        {
-            get { return from s in spellLines select s; }
-        }
+        public IEnumerable<KeyValuePair<string, int>> SpellLines => spellLines;
 
         public void SetLines(string spellName, int lines)
         {
@@ -44,13 +37,9 @@ namespace SleepHunter.Metadata
         public bool RemoveLines(string spellName)
         {
             spellName = spellName.Trim();
-
-            return spellLines.TryRemove(spellName, out var lines);
+            return spellLines.TryRemove(spellName, out var _);
         }
 
-        public void ClearLines()
-        {
-            spellLines.Clear();
-        }
+        public void ClearLines() => spellLines.Clear();
     }
 }

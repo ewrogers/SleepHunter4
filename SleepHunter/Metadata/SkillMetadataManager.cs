@@ -7,13 +7,13 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    internal sealed class SkillMetadataManager
+    public sealed class SkillMetadataManager
     {
         public static readonly string SkillMetadataFile = @"Skills.xml";
 
         private static readonly SkillMetadataManager instance = new SkillMetadataManager();
 
-        public static SkillMetadataManager Instance { get { return instance; } }
+        public static SkillMetadataManager Instance => instance;
 
         private SkillMetadataManager() { }
 
@@ -23,17 +23,14 @@ namespace SleepHunter.Metadata
         public event SkillMetadataEventHandler SkillChanged;
         public event SkillMetadataEventHandler SkillRemoved;
 
-        public int Count { get { return skills.Count; } }
+        public int Count => skills.Count;
 
-        public IEnumerable<SkillMetadata> Skills
-        {
-            get { return from s in skills.Values orderby s.Name ascending select s; }
-        }
+        public IEnumerable<SkillMetadata> Skills => from skill in skills.Values orderby skill.Name ascending select skill;
 
         public void AddSkill(SkillMetadata skill)
         {
             if (skill == null)
-                throw new ArgumentNullException("skill");
+                throw new ArgumentNullException(nameof(skill));
 
             var skillName = skill.Name.Trim();
             var wasUpdated = false;
@@ -52,7 +49,6 @@ namespace SleepHunter.Metadata
         public bool ContainsSkill(string skillName)
         {
             skillName = skillName.Trim();
-
             return skills.ContainsKey(skillName);
         }
 
@@ -61,7 +57,6 @@ namespace SleepHunter.Metadata
             skillName = skillName.Trim();
 
             skills.TryGetValue(skillName, out var skill);
-
             return skill;
         }
 
@@ -102,9 +97,7 @@ namespace SleepHunter.Metadata
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
                 LoadFromStream(inputStream);
-            }
         }
 
         public void LoadFromStream(Stream stream)
@@ -136,9 +129,7 @@ namespace SleepHunter.Metadata
         }
         
         private void OnSkillAdded(SkillMetadata skill) => SkillAdded?.Invoke(this, new SkillMetadataEventArgs(skill));
-
         private void OnSkillChanged(SkillMetadata skill) => SkillChanged?.Invoke(this, new SkillMetadataEventArgs(skill));
-
         private void OnSkillRemoved(SkillMetadata skill) => SkillRemoved?.Invoke(this, new SkillMetadataEventArgs(skill));   
     }
 }

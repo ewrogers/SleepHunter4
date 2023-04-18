@@ -8,7 +8,7 @@ namespace SleepHunter.Macro
     [Serializable]
     internal sealed class SavedSkillState : ObservableObject
     {
-        string skillName;
+        private string skillName;
 
         [XmlAttribute("Name")]
         public string SkillName
@@ -17,11 +17,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref skillName, value); }
         }
 
-        public SavedSkillState() { }
 
-        public SavedSkillState(string skillName)
-        {
-            this.skillName = skillName;
-        }
+        public SavedSkillState(string skillName) => this.skillName = skillName;
     }
 }

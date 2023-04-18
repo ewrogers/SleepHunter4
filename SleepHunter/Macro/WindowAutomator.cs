@@ -19,7 +19,7 @@ namespace SleepHunter.Macro
         public static readonly uint MK_XBUTTON1 = 0x20;
         public static readonly uint MK_XUBTTON2 = 0x40;
 
-        enum KeyboardCommand : uint
+        private enum KeyboardCommand : uint
         {
             HotKey = 0x312,
             KeyDown = 0x100,
@@ -31,7 +31,7 @@ namespace SleepHunter.Macro
             SysDeadChar = 0x107
         }
 
-        enum MouseCommand : uint
+        private enum MouseCommand : uint
         {
             MouseMove = 0x200,
             LeftButtonDown = 0x201,
@@ -45,7 +45,7 @@ namespace SleepHunter.Macro
             MiddleButtonDoubleClick = 0x209
         }
 
-        enum ControlCommand : uint
+        private enum ControlCommand : uint
         {
             WM_CLOSE = 0x10
         }
@@ -101,7 +101,6 @@ namespace SleepHunter.Macro
             }
         }
 
-        #region Keyboard Actions
         public static void SendKeyDown(IntPtr windowHandle, char key)
         {
             var virtualKey = GetVirtualKey(key, out var _);
@@ -128,10 +127,7 @@ namespace SleepHunter.Macro
             NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, new UIntPtr(virtualKey), keyParameter.ToLParam());
         }
 
-        public static void SendKeyChar(IntPtr windowHandle, byte virtualKey)
-        {
-
-        }
+        public static void SendKeyChar(IntPtr windowHandle, byte virtualKey) { }
 
         public static void SendKeyUp(IntPtr windowHandle, byte virtualKey)
         {
@@ -178,9 +174,7 @@ namespace SleepHunter.Macro
 
             SendKeyUp(windowHandle, virtualKey);
         }
-        #endregion
 
-        #region Mouse Actions
         public static void SendMouseMove(IntPtr windowHandle, int x, int y)
         {
             NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, UIntPtr.Zero, new UIntPtr(MakeXYParameter(new Point(x, y))));
@@ -222,17 +216,11 @@ namespace SleepHunter.Macro
             SendMouseDown(windowHandle, mouseButton, x, y);
             SendMouseUp(windowHandle, mouseButton, x, y);
         }
-        #endregion
 
-        #region Control Actions
         public static void SendCloseWindow(IntPtr windowHandle)
-        {
-            NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, UIntPtr.Zero, UIntPtr.Zero);
-        }
-        #endregion
+            => NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, UIntPtr.Zero, UIntPtr.Zero);
 
-        #region Helper Methods
-        static uint MakeXYParameter(Point pt)
+        private static uint MakeXYParameter(Point pt)
         {
             var parameter = (uint)pt.X;
             parameter |= ((uint)pt.Y << 16);
@@ -240,27 +228,23 @@ namespace SleepHunter.Macro
             return parameter;
         }
 
-        static byte GetScanCode(char c)
+        private static byte GetScanCode(char c)
         {
             var vkey = GetVirtualKey(c);
             var scanCode = NativeMethods.MapVirtualKey(vkey, VirtualKeyMapMode.VirtualToScanCode);
-
+            
             return (byte)scanCode;
         }
 
-        static byte GetScanCode(byte virtualKey)
+        private static byte GetScanCode(byte virtualKey)
         {
             var scanCode = NativeMethods.MapVirtualKey(virtualKey, VirtualKeyMapMode.VirtualToScanCode);
-
             return (byte)scanCode;
         }
 
-        static byte GetVirtualKey(char c)
-        {
-            return GetVirtualKey(c, out var _);
-        }
+        private static byte GetVirtualKey(char c) => GetVirtualKey(c, out var _);
 
-        static byte GetVirtualKey(char c, out ModifierKeys modifiers)
+        private static byte GetVirtualKey(char c, out ModifierKeys modifiers)
         {
             var keyScan = NativeMethods.VkKeyScan(c);
 
@@ -270,6 +254,5 @@ namespace SleepHunter.Macro
             modifiers = (ModifierKeys)modifierScan;
             return vkey;
         }
-        #endregion
     }
 }

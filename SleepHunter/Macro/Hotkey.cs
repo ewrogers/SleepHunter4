@@ -5,51 +5,27 @@ namespace SleepHunter.Macro
 {
     internal sealed class Hotkey
     {
-        private string atomName;
-        private ModifierKeys modifiers;
-        private Key key;
-        private int id = -1;
+        public string AtomName { get; set; }
 
-        public string AtomName
-        {
-            get { return atomName; }
-            set { atomName = value; }
-        }
+        public ModifierKeys Modifiers { get; set; }
 
-        public ModifierKeys Modifiers
-        {
-            get { return modifiers; }
-            private set { modifiers = value; }
-        }
+        public Key Key { get; set; }
 
-        public Key Key
-        {
-            get { return key; }
-            private set { key = value; }
-        }
+        public int Id { get; set; } = -1;
 
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
-
-        public bool IsActive
-        {
-            get { return id >= 0; }
-        }
+        public bool IsActive => Id >= 0;
 
         public Hotkey(ModifierKeys modifiers, Key key)
         {
-            this.modifiers = modifiers;
-            this.key = key;
+            Modifiers = modifiers;
+            Key = key;
         }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
 
-            if (modifiers.HasFlag(ModifierKeys.Control))
+            if (Modifiers.HasFlag(ModifierKeys.Control))
             {
                 if (sb.Length > 0)
                     sb.Append("+");
@@ -57,7 +33,7 @@ namespace SleepHunter.Macro
                 sb.Append("Control");
             }
 
-            if (modifiers.HasFlag(ModifierKeys.Alt))
+            if (Modifiers.HasFlag(ModifierKeys.Alt))
             {
                 if (sb.Length > 0)
                     sb.Append("+");
@@ -65,7 +41,7 @@ namespace SleepHunter.Macro
                 sb.Append("Alt");
             }
 
-            if (modifiers.HasFlag(ModifierKeys.Shift))
+            if (Modifiers.HasFlag(ModifierKeys.Shift))
             {
                 if (sb.Length > 0)
                     sb.Append("+");
@@ -76,7 +52,7 @@ namespace SleepHunter.Macro
             if (sb.Length > 0)
                 sb.Append("+");
 
-            sb.Append(GetKeyFriendlyName(key));
+            sb.Append(GetKeyFriendlyName(Key));
 
             return sb.ToString();
         }

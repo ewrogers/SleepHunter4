@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using System.Windows.Input;
 
@@ -13,23 +12,20 @@ namespace SleepHunter.Macro
     {
         private static readonly HotkeyManager instance = new HotkeyManager();
 
-        public static HotkeyManager Instance { get { return instance; } }
+        public static HotkeyManager Instance => instance;
 
         private HotkeyManager() { }
 
         private readonly ConcurrentDictionary<int, Hotkey> hotkeys = new ConcurrentDictionary<int, Hotkey>();
 
-        public int Count { get { return hotkeys.Count; } }
+        public int Count => hotkeys.Count;
 
-        public IEnumerable<Hotkey> Hotkeys
-        {
-            get { return from h in hotkeys.Values select h; }
-        }
+        public IEnumerable<Hotkey> Hotkeys => hotkeys.Values;
 
         public bool RegisterHotkey(IntPtr windowHandle, Hotkey hotkey)
         {
             if (hotkey == null)
-                throw new ArgumentNullException("hotkey");
+                throw new ArgumentNullException(nameof(hotkey));
 
             hotkey.AtomName = GetHotkeyUniqueName(hotkey);
             hotkey.Id = NativeMethods.GlobalAddAtom(hotkey.AtomName);
@@ -46,10 +42,7 @@ namespace SleepHunter.Macro
             return success;
         }
 
-        public bool ContainsHotkey(Key key, ModifierKeys modifiers)
-        {
-            return GetHotkey(key, modifiers) != null;
-        }
+        public bool ContainsHotkey(Key key, ModifierKeys modifiers) => GetHotkey(key, modifiers) != null;
 
         public Hotkey GetHotkey(Key key, ModifierKeys modifiers)
         {
@@ -63,7 +56,7 @@ namespace SleepHunter.Macro
         public bool UnregisterHotkey(IntPtr windowHandle, Hotkey hotkey)
         {
             if (hotkey == null)
-                throw new ArgumentNullException("hotkey");
+                throw new ArgumentNullException(nameof(hotkey));
             
             NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
 

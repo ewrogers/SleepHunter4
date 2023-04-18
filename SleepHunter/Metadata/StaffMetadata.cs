@@ -9,7 +9,7 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    internal sealed class StaffMetadata : ObservableObject
+    public sealed class StaffMetadata : ObservableObject, ICloneable
     {
         public static readonly StaffMetadata NoStaff = new StaffMetadata { Name = "No Staff", Class = PlayerClass.All };
 
@@ -17,69 +17,67 @@ namespace SleepHunter.Metadata
         private int level;
         private int abilityLevel;
         private PlayerClass playerClass;
-        private List<SpellLineModifiers> lineModifiers = new List<SpellLineModifiers>();
+        private readonly List<SpellLineModifiers> lineModifiers = new List<SpellLineModifiers>();
 
         public event SpellLineModifiersEventHandler ModifiersAdded;
-        public event SpellLineModifiersEventHandler ModifiersChanged;
         public event SpellLineModifiersEventHandler ModifiersRemoved;
 
-        [XmlAttribute("Name")]
+        [XmlAttribute(nameof(Name))]
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
-        [XmlAttribute("Level")]
+        [XmlAttribute(nameof(Level))]
         [DefaultValue(0)]
         public int Level
         {
-            get { return level; }
-            set { SetProperty(ref level, value); }
+            get => level;
+            set => SetProperty(ref level, value);
         }
 
-        [XmlAttribute("AbilityLevel")]
+        [XmlAttribute(nameof(AbilityLevel))]
         [DefaultValue(0)]
         public int AbilityLevel
         {
-            get { return abilityLevel; }
-            set { SetProperty(ref abilityLevel, value); }
+            get => abilityLevel;
+            set => SetProperty(ref abilityLevel, value);
         }
 
-        [XmlAttribute("Class")]
+        [XmlAttribute(nameof(Class))]
         public PlayerClass Class
         {
-            get { return playerClass; }
-            set { SetProperty(ref playerClass, value); }
+            get => playerClass;
+            set => SetProperty(ref playerClass, value);
         }
 
         [XmlArray("LineModifiers")]
         [XmlArrayItem("Lines")]
-        public List<SpellLineModifiers> Modifiers
-        {
-            get { return lineModifiers; }
-            private set { SetProperty(ref lineModifiers, value); }
-        }
+        public List<SpellLineModifiers> Modifiers => lineModifiers;
 
         public void AddModifiers(SpellLineModifiers modifiers)
         {
             if (modifiers == null)
-                throw new ArgumentNullException("modifiers");
+                throw new ArgumentNullException(nameof(modifiers));
 
             lineModifiers.Add(modifiers);
             OnModifiersAdded(modifiers);
         }
 
-        public void ChangeModifiers(SpellLineModifiers target, SpellLineModifiers source)
+        public void AddAllModifiers(IEnumerable<SpellLineModifiers> collection)
         {
-            source.CopyTo(target);
-            OnModifiersChanged(target);
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
+
+            foreach (var modifiers in collection)
+                AddModifiers(modifiers);
         }
 
         public bool RemoveModifiers(SpellLineModifiers modifiers)
         {
             if (modifiers == null)
-                throw new ArgumentNullException("modifiers");
+                throw new ArgumentNullException(nameof(modifiers));
 
             SpellLineModifiers removedModifiers = null;
 
@@ -100,29 +98,32 @@ namespace SleepHunter.Metadata
 
         public void ClearModifiers()
         {
-            foreach (var modifier in lineModifiers)
-                OnModifiersRemoved(modifier);
+            for (var i = Modifiers.Count - 1; i >= 0; i--)
+            {
+                var modifier = Modifiers[i];
+                Modifiers.RemoveAt(i);
 
-            lineModifiers.Clear();
+                OnModifiersRemoved(modifier);
+            }
         }
 
         private void OnModifiersAdded(SpellLineModifiers modifiers) => ModifiersAdded?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
-
-        private void OnModifiersChanged(SpellLineModifiers modifiers) => ModifiersChanged?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
-
         private void OnModifiersRemoved(SpellLineModifiers modifiers) => ModifiersRemoved?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
 
         public override string ToString() => Name ?? "Unknown Staff";
 
-        public void CopyTo(StaffMetadata other, bool copyModifiers = true)
+        public object Clone()
         {
-            other.Name = Name;
-            other.Level = Level;
-            other.AbilityLevel = AbilityLevel;
-            other.Class = Class;
+            var copy = new StaffMetadata()
+            {
+                Name = Name,
+                Level = Level,
+                AbilityLevel = AbilityLevel,
+                Class = Class
+            };
 
-            if (copyModifiers)
-                other.Modifiers = new List<SpellLineModifiers>(Modifiers);
+            copy.AddAllModifiers(Modifiers);
+            return copy;
         }
     }
 }

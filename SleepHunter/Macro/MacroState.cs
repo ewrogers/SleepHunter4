@@ -20,6 +20,7 @@ namespace SleepHunter.Macro
     internal abstract class MacroState : ObservableObject, IDisposable
     {
         bool isDisposed;
+
         protected string name;
         protected Player client;
         protected MacroStatus status;
@@ -51,9 +52,9 @@ namespace SleepHunter.Macro
         }
 
         public MacroState(Player client)
-        {
-            this.client = client ?? throw new ArgumentNullException("client");
-        }
+            => this.client = client ?? throw new ArgumentNullException(nameof(client));
+
+        ~MacroState() => Dispose(false);
 
         public void Dispose()
         {
@@ -75,8 +76,16 @@ namespace SleepHunter.Macro
             isDisposed = true;
         }
 
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
+
         public void Start()
         {
+            CheckIfDisposed();
+
             if (Status == MacroStatus.Running)
                 return;
 
@@ -93,6 +102,8 @@ namespace SleepHunter.Macro
 
         public void Stop()
         {
+            CheckIfDisposed();
+
             if (Status == MacroStatus.Stopped)
                 return;
 
@@ -104,6 +115,8 @@ namespace SleepHunter.Macro
 
         public void Pause()
         {
+            CheckIfDisposed();
+
             if (Status == MacroStatus.Paused)
                 return;
 
@@ -152,20 +165,11 @@ namespace SleepHunter.Macro
             }, state, cancelSource.Token);
         }
 
-        protected virtual void ResumeMacro()
-        {
+        protected virtual void ResumeMacro() { }
 
-        }
+        protected virtual void StopMacro() => CancelTask();
 
-        protected virtual void StopMacro()
-        {
-            CancelTask();
-        }
-
-        protected virtual void PauseMacro()
-        {
-
-        }
+        protected virtual void PauseMacro() { }
 
         protected abstract void MacroLoop(object argument);
 

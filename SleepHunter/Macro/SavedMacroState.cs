@@ -29,7 +29,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref characterName, value); }
         }
 
-        [XmlAttribute("HotkeyModifiers")]
+        [XmlAttribute(nameof(HotkeyModifiers))]
         [DefaultValue(ModifierKeys.None)]
         public ModifierKeys HotkeyModifiers
         {
@@ -45,7 +45,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref hotkeyKey, value); }
         }
 
-        [XmlAttribute("UseLyliacVineyard")]
+        [XmlAttribute(nameof(UseLyliacVineyard))]
         [DefaultValue(false)]
         public bool UseLyliacVineyard
         {
@@ -53,7 +53,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref useLyliacVineyard, value); }
         }
 
-        [XmlAttribute("FlowerAlternateCharacters")]
+        [XmlAttribute(nameof(FlowerAlternateCharacters))]
         [DefaultValue(false)]
         public bool FlowerAlternateCharacters
         {
@@ -61,7 +61,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref flowerAlternateCharacters, value); }
         }
 
-        [XmlArray("Skills")]
+        [XmlArray(nameof(Skills))]
         [XmlArrayItem("Skill")]
         public List<SavedSkillState> Skills
         {
@@ -69,7 +69,7 @@ namespace SleepHunter.Macro
             private set { SetProperty(ref skills, value); }
         }
 
-        [XmlArray("Spells")]
+        [XmlArray(nameof(Spells))]
         [XmlArrayItem("Spell")]
         public List<SavedSpellState> Spells
         {
@@ -77,7 +77,7 @@ namespace SleepHunter.Macro
             private set { SetProperty(ref spells, value); }
         }
 
-        [XmlArray("Flowers")]
+        [XmlArray(nameof(Flowers))]
         [XmlArrayItem("Flower")]
         public List<SavedFlowerState> Flowers
         {
@@ -85,12 +85,10 @@ namespace SleepHunter.Macro
             private set { SetProperty(ref flowers, value); }
         }
 
-        public SavedMacroState() { }
-
         public SavedMacroState(PlayerMacroState macroState)
         {
             if (macroState == null)
-                throw new ArgumentNullException("macroState");
+                throw new ArgumentNullException(nameof(macroState));
 
             CharacterName = macroState.Client.Name;
 
@@ -116,9 +114,7 @@ namespace SleepHunter.Macro
         public static SavedMacroState LoadFromFile(string file)
         {
             using (var inputStream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
                 return LoadFromStream(inputStream);
-            }
         }
 
         public static SavedMacroState LoadFromStream(Stream stream)
@@ -132,9 +128,7 @@ namespace SleepHunter.Macro
         public void SaveToFile(string file)
         {
             using (var outputStream = File.Create(file))
-            {
                 SaveToStream(outputStream);
-            }
         }
 
         public void SaveToStream(Stream stream)

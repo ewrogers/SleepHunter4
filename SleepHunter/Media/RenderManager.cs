@@ -9,17 +9,17 @@ namespace SleepHunter.Media
     {
         private static readonly RenderManager instance = new RenderManager();
 
-        public static RenderManager Instance { get { return instance; } }
+        public static RenderManager Instance => instance;
 
         private RenderManager() { }
 
         public IEnumerable<RenderedBitmap> Render(EpfImage image, ColorPalette palette)
         {
             if (image == null)
-                throw new ArgumentNullException("image");
+                throw new ArgumentNullException(nameof(image));
 
             if (palette == null)
-                throw new ArgumentNullException("palette");
+                throw new ArgumentNullException(nameof(palette));
 
             foreach (var frame in image.Frames)
                 yield return Render(frame, palette);
@@ -28,10 +28,10 @@ namespace SleepHunter.Media
         public RenderedBitmap Render(EpfFrame frame, ColorPalette palette)
         {
             if (frame == null)
-                throw new ArgumentNullException("frame");
+                throw new ArgumentNullException(nameof(frame));
 
             if (palette == null)
-                throw new ArgumentNullException("palette");
+                throw new ArgumentNullException(nameof(palette));
 
             palette = palette.MakeGrayscale();
             var format = PixelFormats.Bgra32;

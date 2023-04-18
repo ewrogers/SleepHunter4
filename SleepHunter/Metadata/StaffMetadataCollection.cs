@@ -7,40 +7,26 @@ namespace SleepHunter.Metadata
 {
     [Serializable]
     [XmlRoot("StaffMetadata")]
-    internal sealed class StaffMetadataCollection
+    public sealed class StaffMetadataCollection
     {
-        private string version;
-        private List<StaffMetadata> staves;
+        private readonly List<StaffMetadata> staves = new List<StaffMetadata>();
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
-        public string Version
-        {
-            get { return version; }
-            set { version = value; }
-        }
+        public string Version { get; set; }
 
-        [XmlArray("Staves")]
+
+        [XmlArray(nameof(Staves))]
         [XmlArrayItem("Staff")]
-        public List<StaffMetadata> Staves
-        {
-            get { return staves; }
-            private set { staves = value; }
-        }
+        public List<StaffMetadata> Staves => staves;
 
-        public StaffMetadataCollection()
-        {
-            staves = new List<StaffMetadata>();
-        }
+        public StaffMetadataCollection() { }
 
-        public StaffMetadataCollection(int capacity)
-        {
-            staves = new List<StaffMetadata>(capacity);
-        }
 
         public StaffMetadataCollection(IEnumerable<StaffMetadata> collection)
         {
-            staves = new List<StaffMetadata>(collection);
+            if (collection != null)
+                staves.AddRange(collection);
         }
     }
 }

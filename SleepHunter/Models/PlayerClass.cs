@@ -3,7 +3,7 @@
 namespace SleepHunter.Models
 {
     [Flags]
-    internal enum PlayerClass
+    public enum PlayerClass
     {
         Peasant = 0,
         Warrior = 0x1,

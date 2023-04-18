@@ -7,13 +7,13 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    internal sealed class SpellMetadataManager
+    public sealed class SpellMetadataManager
     {
         public static readonly string SpellMetadataFile = @"Spells.xml";
 
         private static readonly SpellMetadataManager instance = new SpellMetadataManager();
 
-        public static SpellMetadataManager Instance { get { return instance; } }
+        public static SpellMetadataManager Instance => instance;
 
         private SpellMetadataManager() { }
 
@@ -23,17 +23,14 @@ namespace SleepHunter.Metadata
         public event SpellMetadataEventHandler SpellChanged;
         public event SpellMetadataEventHandler SpellRemoved;
 
-        public int Count { get { return spells.Count; } }
+        public int Count => spells.Count;
 
-        public IEnumerable<SpellMetadata> Spells
-        {
-            get { return from s in spells.Values orderby s.Name select s; }
-        }
+        public IEnumerable<SpellMetadata> Spells => from s in spells.Values orderby s.Name select s;
 
         public void AddSpell(SpellMetadata spell)
         {
             if (spell == null)
-                throw new ArgumentNullException("spell");
+                throw new ArgumentNullException(nameof(spell));
 
             var spellName = spell.Name.Trim();
             var wasUpdated = false;
@@ -52,7 +49,6 @@ namespace SleepHunter.Metadata
         public bool ContainsSpell(string spellName)
         {
             spellName = spellName.Trim();
-
             return spells.ContainsKey(spellName);
         }
 
@@ -101,9 +97,7 @@ namespace SleepHunter.Metadata
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
                 LoadFromStream(inputStream);
-            }
         }
 
         public void LoadFromStream(Stream stream)
@@ -135,9 +129,7 @@ namespace SleepHunter.Metadata
         }
 
         private void OnSpellAdded(SpellMetadata spell) => SpellAdded?.Invoke(this, new SpellMetadataEventArgs(spell));
-
         private void OnSpellChanged(SpellMetadata spell) => SpellChanged?.Invoke(this, new SpellMetadataEventArgs(spell));
-
         private void OnSpellRemoved(SpellMetadata spell) => SpellRemoved?.Invoke(this, new SpellMetadataEventArgs(spell));
     }
 }

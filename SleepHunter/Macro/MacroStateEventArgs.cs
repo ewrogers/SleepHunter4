@@ -8,25 +8,17 @@ namespace SleepHunter.Macro
 
     internal sealed class MacroStateEventArgs : EventArgs
     {
-        private readonly MacroState state;
-
-        public MacroState State => state;
+        public MacroState State { get; }
 
         public MacroStateEventArgs(MacroState state)
-        {
-            this.state = state;
-        }
+            => State = state ?? throw new ArgumentNullException(nameof(state));
     }
 
     internal sealed class MacroStatusEventArgs : EventArgs
     {
-        private readonly MacroStatus status;
-
-        public MacroStatus Status => status;
+        public MacroStatus Status { get; }
 
         public MacroStatusEventArgs(MacroStatus status)
-        {
-            this.status = status;
-        }
+            => Status = status;
     }
 }

@@ -2,20 +2,13 @@
 
 namespace SleepHunter.Metadata
 {
-    internal delegate void SpellMetadataEventHandler(object sender, SpellMetadataEventArgs e);
+    public delegate void SpellMetadataEventHandler(object sender, SpellMetadataEventArgs e);
 
-    internal sealed class SpellMetadataEventArgs : EventArgs
+    public sealed class SpellMetadataEventArgs : EventArgs
     {
-        readonly SpellMetadata spell;
-
-        public SpellMetadata Spell
-        {
-            get { return spell; }
-        }
+        public SpellMetadata Spell { get; }
 
         public SpellMetadataEventArgs(SpellMetadata spell)
-        {
-            this.spell = spell ?? throw new ArgumentNullException(nameof(spell));
-        }
+            => Spell = spell ?? throw new ArgumentNullException(nameof(spell));
     }
 }

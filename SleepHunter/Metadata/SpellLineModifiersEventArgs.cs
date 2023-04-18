@@ -2,17 +2,13 @@
 
 namespace SleepHunter.Metadata
 {
-    internal delegate void SpellLineModifiersEventHandler(object sender, SpellLineModifiersEventArgs e);
+    public delegate void SpellLineModifiersEventHandler(object sender, SpellLineModifiersEventArgs e);
 
-    internal sealed class SpellLineModifiersEventArgs : EventArgs
+    public sealed class SpellLineModifiersEventArgs : EventArgs
     {
-        private readonly SpellLineModifiers modifiers;
-
-        public SpellLineModifiers Modifiers => modifiers;
+        public SpellLineModifiers Modifiers { get; }
 
         public SpellLineModifiersEventArgs(SpellLineModifiers modifiers)
-        {
-            this.modifiers = modifiers;
-        }
+            => Modifiers = modifiers ?? throw new ArgumentNullException(nameof(modifiers));
     }
 }

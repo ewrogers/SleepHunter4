@@ -53,7 +53,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref locationY, value); }
         }
 
-        [XmlAttribute("OffsetX")]
+        [XmlAttribute(nameof(OffsetX))]
         [DefaultValue(0)]
         public double OffsetX
         {
@@ -61,7 +61,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref offsetX, value); }
         }
 
-        [XmlAttribute("OffsetY")]
+        [XmlAttribute(nameof(OffsetY))]
         [DefaultValue(0)]
         public double OffsetY
         {
@@ -69,7 +69,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref offsetY, value); }
         }
 
-        [XmlAttribute("InnerRadius")]
+        [XmlAttribute(nameof(InnerRadius))]
         [DefaultValue(0)]
         public int InnerRadius
         {
@@ -77,7 +77,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref innerRadius, value); }
         }
 
-        [XmlAttribute("OuterRadius")]
+        [XmlAttribute(nameof(OuterRadius))]
         [DefaultValue(0)]
         public int OuterRadius
         {
@@ -92,7 +92,7 @@ namespace SleepHunter.Macro
             set { SetProperty(ref interval, value, onChanged: (p) => { RaisePropertyChanged("IntervalSeconds"); RaisePropertyChanged("HasInterval"); }); }
         }
 
-        [XmlAttribute("HasInterval")]
+        [XmlAttribute(nameof(HasInterval))]
         [DefaultValue(true)]
         public bool HasInterval
         {
@@ -116,12 +116,10 @@ namespace SleepHunter.Macro
             set { SetProperty(ref manaThreshold, value); }
         }
 
-        public SavedFlowerState() { }
-
         public SavedFlowerState(SpellTarget target, TimeSpan? interval, int? manaThreshold = null)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             TargetMode = target.Units;
             CharacterName = target.CharacterName;

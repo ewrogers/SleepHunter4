@@ -8,24 +8,8 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.Metadata
 {
-    public enum ModifierAction
-    {
-        None = 0,
-        Increase,
-        Decrease,
-        Set
-    }
-
-    public enum ModifierScope
-    {
-        None = 0,
-        Single,
-        Group,
-        All
-    }
-
     [Serializable]
-    internal sealed class SpellLineModifiers : ObservableObject
+    public sealed class SpellLineModifiers : ObservableObject, ICloneable
     {
         private ModifierAction action;
         private ModifierScope scope;
@@ -34,52 +18,50 @@ namespace SleepHunter.Metadata
         private int minThreshold;
         private int maxThreshold;
 
-        [XmlAttribute("Action")]
+        [XmlAttribute(nameof(Action))]
         public ModifierAction Action
         {
-            get { return action; }
-            set { SetProperty(ref action, value); }
+            get => action;
+            set => SetProperty(ref action, value);
         }
 
-        [XmlAttribute("Scope")]
+        [XmlAttribute(nameof(Scope))]
         public ModifierScope Scope
         {
-            get { return scope; }
-            set { SetProperty(ref scope, value); }
+            get => scope;
+            set => SetProperty(ref scope, value);
         }
 
         [XmlAttribute("Name")]
         [DefaultValue(null)]
         public string ScopeName
         {
-            get { return scopeName; }
-            set { SetProperty(ref scopeName, value); }
+            get => scopeName;
+            set => SetProperty(ref scopeName, value);
         }
 
-        [XmlAttribute("Value")]
+        [XmlAttribute(nameof(Value))]
         public int Value
         {
-            get { return value; }
-            set { SetProperty(ref this.value, value); }
+            get => value;
+            set => SetProperty(ref this.value, value);
         }
 
-        [XmlAttribute("MinThreshold")]
+        [XmlAttribute(nameof(MinThreshold))]
         [DefaultValue(0)]
         public int MinThreshold
         {
-            get { return minThreshold; }
-            set { SetProperty(ref minThreshold, value); }
+            get => minThreshold;
+            set => SetProperty(ref minThreshold, value);
         }
 
-        [XmlAttribute("MaxThreshold")]
+        [XmlAttribute(nameof(MaxThreshold))]
         [DefaultValue(0)]
         public int MaxThreshold
         {
-            get { return maxThreshold; }
-            set { SetProperty(ref maxThreshold, value); }
+            get => maxThreshold;
+            set => SetProperty(ref maxThreshold, value);
         }
-
-        public SpellLineModifiers() { }
 
         public override string ToString()
         {
@@ -137,14 +119,17 @@ namespace SleepHunter.Metadata
             return sb.ToString();
         }
 
-        public void CopyTo(SpellLineModifiers other)
+        public object Clone()
         {
-            other.Action = Action;
-            other.Scope = Scope;
-            other.ScopeName = ScopeName;
-            other.Value = Value;
-            other.MinThreshold = MinThreshold;
-            other.MaxThreshold = MaxThreshold;
+            return new SpellLineModifiers()
+            {
+                Action = Action,
+                Scope = Scope,
+                ScopeName = ScopeName,
+                Value = Value,
+                MinThreshold = MinThreshold,
+                MaxThreshold = MaxThreshold
+            };
         }
     }
 }

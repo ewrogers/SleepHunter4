@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Windows.Media.Imaging;
 using System.Threading.Tasks;
 
@@ -14,14 +13,10 @@ namespace SleepHunter.Media
     {
         private static readonly IconManager instance = new IconManager();
 
-        public static IconManager Instance { get { return instance; } }
+        public static IconManager Instance => instance;
 
-        private IconManager()
-        {
+        private IconManager() { }
 
-        }
-
-        private TaskScheduler context;
         private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new ConcurrentDictionary<int, BitmapSource>();
         private readonly ConcurrentDictionary<int, BitmapSource> spellIcons = new ConcurrentDictionary<int, BitmapSource>();
         private ColorPalette skillIconPalette;
@@ -29,37 +24,21 @@ namespace SleepHunter.Media
         private EpfImage skillIconImage;
         private EpfImage spellIconImage;
 
-        public TaskScheduler Context
-        {
-            get { return context; }
-            set { context = value; }
-        }
+        public TaskScheduler Context { get; set; }
 
-        public int SkillIconCount { get { return skillIcons.Count; } }
-        public int SpellIconCount { get { return spellIcons.Count; } }
+        public int SkillIconCount => skillIcons.Count;
+        public int SpellIconCount => spellIcons.Count;
 
-        public IEnumerable<BitmapSource> SkillIcons { get { return from s in skillIcons.Values select s; } }
-        public IEnumerable<BitmapSource> SpellIcons { get { return from s in spellIcons.Values select s; } }
+        public IEnumerable<BitmapSource> SkillIcons => skillIcons.Values;
+        public IEnumerable<BitmapSource> SpellIcons => spellIcons.Values;
 
-        public void AddSkillIcon(int index, BitmapSource source)
-        {
-            skillIcons[index] = source;
-        }
+        public void AddSkillIcon(int index, BitmapSource source) => skillIcons[index] = source;
 
-        public void AddSpellIcon(int index, BitmapSource source)
-        {
-            spellIcons[index] = source;
-        }
+        public void AddSpellIcon(int index, BitmapSource source) => spellIcons[index] = source;
 
-        public bool ContainsSkillIcon(int index)
-        {
-            return skillIcons.ContainsKey(index);
-        }
+        public bool ContainsSkillIcon(int index) => skillIcons.ContainsKey(index);
 
-        public bool ContainsSpellIcon(int index)
-        {
-            return spellIcons.ContainsKey(index);
-        }
+        public bool ContainsSpellIcon(int index) => spellIcons.ContainsKey(index);
 
         public BitmapSource GetSkillIcon(int index)
         {
@@ -102,27 +81,13 @@ namespace SleepHunter.Media
                 return null;
         }
 
-        public bool RemoveSkillIcon(int index)
-        {
-            BitmapSource removedIcon;
-            return skillIcons.TryRemove(index, out removedIcon);
-        }
+        public bool RemoveSkillIcon(int index) => skillIcons.TryRemove(index, out var _);
 
-        public bool RemoveSpellIcon(int index)
-        {
-            BitmapSource removedIcon;
-            return spellIcons.TryRemove(index, out removedIcon);
-        }
+        public bool RemoveSpellIcon(int index) => spellIcons.TryRemove(index, out var _);
 
-        public void ClearSkillIcons()
-        {
-            skillIcons.Clear();
-        }
+        public void ClearSkillIcons() => skillIcons.Clear();
 
-        public void ClearSpellIcons()
-        {
-            spellIcons.Clear();
-        }
+        public void ClearSpellIcons() => spellIcons.Clear();
 
         private RenderedBitmap RenderSkillIcon(int index)
         {
@@ -201,9 +166,7 @@ namespace SleepHunter.Media
             try
             {
                 using (var inputStream = archive.GetStream(paletteFile))
-                {
                     return new ColorPalette(inputStream);
-                }
             }
             catch { return null; }
         }
@@ -219,9 +182,7 @@ namespace SleepHunter.Media
             try
             {
                 using (var inputStream = archive.GetStream(epfFile))
-                {
                     return new EpfImage(inputStream);
-                }
             }
             catch { return null; }
         }

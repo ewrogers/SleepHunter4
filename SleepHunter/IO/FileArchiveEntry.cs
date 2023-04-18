@@ -8,8 +8,6 @@ namespace SleepHunter.IO
         public long Offset { get; set; }
         public long Size { get; set; }
 
-        public FileArchiveEntry() { }
-
         public override string ToString() => Name;
     }
 }

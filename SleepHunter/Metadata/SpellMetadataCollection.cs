@@ -7,39 +7,22 @@ namespace SleepHunter.Metadata
 {
     [Serializable]
     [XmlRoot("SpellMetadata")]
-    internal sealed class SpellMetadataCollection
+    public sealed class SpellMetadataCollection
     {
-        private string version;
-        private List<SpellMetadata> spells;
+        private readonly List<SpellMetadata> spells = new List<SpellMetadata>();
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
-        public string Version
-        {
-            get { return version; }
-            set { version = value; }
-        }
+        public string Version { get; set; }
 
         [XmlIgnore]
-        public int Count { get { return spells.Count; } }
+        public int Count => spells.Count;
 
-        [XmlArray("Spells")]
+        [XmlArray(nameof(Spells))]
         [XmlArrayItem("Spell")]
-        public List<SpellMetadata> Spells
-        {
-            get { return spells; }
-            private set { spells = value; }
-        }
+        public List<SpellMetadata> Spells => spells;
 
-        public SpellMetadataCollection()
-        {
-            spells = new List<SpellMetadata>();
-        }
-
-        public SpellMetadataCollection(int capacity)
-        {
-            spells = new List<SpellMetadata>(capacity);
-        }
+        public SpellMetadataCollection() { } 
 
         public SpellMetadataCollection(IEnumerable<SpellMetadata> collection)
            : this()

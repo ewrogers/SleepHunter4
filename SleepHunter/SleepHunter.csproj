@@ -75,6 +75,8 @@
     <Compile Include="Converters\VisibilityInverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
     <Compile Include="Extensions\VersionExtender.cs" />
+    <Compile Include="Metadata\ModifierAction.cs" />
+    <Compile Include="Metadata\ModifierScope.cs" />
     <Compile Include="Models\PlayerSortOrder.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
@@ -172,7 +174,6 @@
     <Compile Include="Models\EquipmentSet.cs" />
     <Compile Include="Models\FlowerQueueItem.cs" />
     <Compile Include="Models\FlowerQueueItemEventArgs.cs" />
-    <Compile Include="Common\ICopyable.cs" />
     <Compile Include="Models\InterfacePanel.cs" />
     <Compile Include="Models\Inventory.cs" />
     <Compile Include="Models\InventoryItem.cs" />

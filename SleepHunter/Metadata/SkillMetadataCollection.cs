@@ -7,42 +7,24 @@ namespace SleepHunter.Metadata
 {
     [Serializable]
     [XmlRoot("SkillMetadata")]
-    internal sealed class SkillMetadataCollection
+    public sealed class SkillMetadataCollection
     {
-        private string version;
-        private List<SkillMetadata> skills;
+        private readonly List<SkillMetadata> skills = new List<SkillMetadata>();
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
-        public string Version
-        {
-            get { return version; }
-            set { version = value; }
-        }
+        public string Version { get; set; }
 
         [XmlIgnore]
-        public int Count { get { return skills.Count; } }
+        public int Count => skills.Count;
 
-        [XmlArray("Skills")]
+        [XmlArray(nameof(Skills))]
         [XmlArrayItem("Skill")]
-        public List<SkillMetadata> Skills
-        {
-            get { return skills; }
-            private set { skills = value; }
-        }
+        public List<SkillMetadata> Skills => skills;
 
-        public SkillMetadataCollection()
-        {
-            skills = new List<SkillMetadata>();
-        }
-
-        public SkillMetadataCollection(int capacity)
-        {
-            skills = new List<SkillMetadata>(capacity);
-        }
+        public SkillMetadataCollection() { }
 
         public SkillMetadataCollection(IEnumerable<SkillMetadata> collection)
-           : this()
         {
             if (collection != null)
                 skills.AddRange(collection);

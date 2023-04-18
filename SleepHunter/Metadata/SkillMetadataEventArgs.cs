@@ -2,20 +2,13 @@
 
 namespace SleepHunter.Metadata
 {
-    internal delegate void SkillMetadataEventHandler(object sender, SkillMetadataEventArgs e);
+    public delegate void SkillMetadataEventHandler(object sender, SkillMetadataEventArgs e);
 
-    internal sealed class SkillMetadataEventArgs : EventArgs
+    public sealed class SkillMetadataEventArgs : EventArgs
     {
-        readonly SkillMetadata skill;
-
-        public SkillMetadata Skill
-        {
-            get { return skill; }
-        }
+        public SkillMetadata Skill { get; }
 
         public SkillMetadataEventArgs(SkillMetadata skill)
-        {
-            this.skill = skill ?? throw new ArgumentNullException(nameof(skill));
-        }
+            => Skill = skill ?? throw new ArgumentNullException(nameof(skill));
     }
 }

@@ -7,16 +7,13 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    internal sealed class StaffMetadataManager
+    public sealed class StaffMetadataManager
     {
         public static readonly string StaffMetadataFile = "Staves.xml";
 
         private static readonly StaffMetadataManager instance = new StaffMetadataManager();
 
-        public static StaffMetadataManager Instance
-        {
-            get { return instance; }
-        }
+        public static StaffMetadataManager Instance => instance;
 
         private StaffMetadataManager()
         {
@@ -24,7 +21,7 @@ namespace SleepHunter.Metadata
             SpellMetadataManager.Instance.SpellChanged += SpellManager_SpellAdded;
         }
 
-        void SpellManager_SpellAdded(object sender, SpellMetadataEventArgs e)
+        private void SpellManager_SpellAdded(object sender, SpellMetadataEventArgs e)
         {
             if (e.Spell != null)
                 RecalculateSpellForAllStaves(e.Spell);
@@ -40,15 +37,12 @@ namespace SleepHunter.Metadata
 
         public int Count { get { return staves.Count; } }
 
-        public IEnumerable<StaffMetadata> Staves
-        {
-            get { return from s in staves.Values orderby s.AbilityLevel, s.Level, s.Name select s; }
-        }
+        public IEnumerable<StaffMetadata> Staves => from staff in staves.Values orderby staff.AbilityLevel, staff.Level, staff.Name select staff;
 
         public void AddStaff(StaffMetadata staff)
         {
             if (staff == null)
-                throw new ArgumentNullException("staff");
+                throw new ArgumentNullException(nameof(staff));
 
             var alreadyExists = staves.ContainsKey(staff.Name);
 
@@ -90,7 +84,6 @@ namespace SleepHunter.Metadata
 
         public bool RenameStaff(string originalName, string newName)
         {
-
             var wasStaffFound = staves.TryRemove(originalName, out var staff);
             var wasLinesFound = computedLines.TryRemove(originalName, out var lines);
 
@@ -139,10 +132,8 @@ namespace SleepHunter.Metadata
         }
 
         public StaffMetadata GetBestStaffForSpell(string spellName, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
-        {
-            return GetBestStaffForSpell(spellName, out var numberOfLines, possibleStaves, maximumLevel, maximumAbilityLevel);
-        }
-
+            => GetBestStaffForSpell(spellName, out var numberOfLines, possibleStaves, maximumLevel, maximumAbilityLevel);
+        
         public StaffMetadata GetBestStaffForSpell(string spellName, out int? numberOfLines, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
         {
             numberOfLines = null;
@@ -206,7 +197,7 @@ namespace SleepHunter.Metadata
         public void RecalculateAllSpells(StaffMetadata staff)
         {
             if (staff == null)
-                throw new ArgumentNullException("staff");
+                throw new ArgumentNullException(nameof(staff));
 
             var allLines = CalculateLines(staff);
             computedLines[staff.Name] = allLines;
@@ -234,9 +225,7 @@ namespace SleepHunter.Metadata
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
                 LoadFromStream(inputStream);
-            }
         }
 
         public void LoadFromStream(Stream stream)
@@ -331,7 +320,6 @@ namespace SleepHunter.Metadata
         private void OnStaffAdded(StaffMetadata staff)
         {
             staff.ModifiersAdded += staff_ModifiersChanged;
-            staff.ModifiersChanged += staff_ModifiersChanged;
             staff.ModifiersRemoved += staff_ModifiersChanged;
 
             StaffAdded?.Invoke(this, new StaffMetadataEventArgs(staff));
@@ -340,7 +328,6 @@ namespace SleepHunter.Metadata
         private void OnStaffUpdated(StaffMetadata staff)
         {
             staff.ModifiersAdded += staff_ModifiersChanged;
-            staff.ModifiersChanged += staff_ModifiersChanged;
             staff.ModifiersRemoved += staff_ModifiersChanged;
 
             StaffUpdated?.Invoke(this, new StaffMetadataEventArgs(staff));
@@ -349,7 +336,6 @@ namespace SleepHunter.Metadata
         private void OnStaffRemoved(StaffMetadata staff)
         {
             staff.ModifiersAdded -= staff_ModifiersChanged;
-            staff.ModifiersChanged -= staff_ModifiersChanged;
             staff.ModifiersRemoved -= staff_ModifiersChanged;
 
             StaffRemoved?.Invoke(this, new StaffMetadataEventArgs(staff));

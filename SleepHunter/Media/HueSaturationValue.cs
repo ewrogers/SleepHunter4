@@ -1,33 +1,33 @@
 ﻿using System;
 using System.Windows.Media;
+using System.Xml.Serialization;
 
 namespace SleepHunter.Media
 {
     [Serializable]
-    internal struct HueSaturationValue
+    internal readonly struct HueSaturationValue
     {
-        [NonSerialized]
-        private Color color;
-
-        private double hue;
-        private double saturation;
-        private double value;
-
-        public Color Color { get { return color; } }
-        public double Hue { get { return hue; } }
-        public double Saturation { get { return saturation; } }
-        public double Value { get { return value; } }
+        [XmlIgnore]
+        public Color Color { get; }
+        public double Hue { get; }
+        public double Saturation { get; }
+        public double Value { get; }
 
         public HueSaturationValue(Color color)
            : this()
         {
-            this.color = color;
-            CalculateHSV();
+            Color = color;
+            CalculateHSV(color.R, color.G, color.B, out var hue, out var sat, out var value);
+
+            Hue = hue;
+            Saturation = sat;
+            Value = value;
         }
 
-        void CalculateHSV()
+        private static void CalculateHSV(byte red, byte green, byte blue, out double hue, out double saturation, out double value)
         {
-            var rgbMax = (double)Math.Max(Math.Max(color.R, color.G), color.B);
+            hue = 0;
+            var rgbMax = (double)Math.Max(Math.Max(red, green), blue);
 
             value = rgbMax;
 
@@ -38,9 +38,9 @@ namespace SleepHunter.Media
                 return;
             }
 
-            var r = color.R / rgbMax;
-            var g = color.G / rgbMax;
-            var b = color.B / rgbMax;
+            var r = red / rgbMax;
+            var g = green / rgbMax;
+            var b = blue / rgbMax;
 
             rgbMax = Max3(r, g, b);
             var rgbMin = Min3(r, g, b);
@@ -70,14 +70,14 @@ namespace SleepHunter.Media
             }
         }
 
-        double Max3(double a, double b, double c)
+        private static double Max3(double a, double b, double c)
         {
             return (b >= c) ?
                (a >= b) ? a : b :
                (a >= c) ? a : c;
         }
 
-        double Min3(double a, double b, double c)
+        private static double Min3(double a, double b, double c)
         {
             return (b <= c) ?
                (a <= b) ? a : b :

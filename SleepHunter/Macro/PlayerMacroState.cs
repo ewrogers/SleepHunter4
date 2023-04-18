@@ -48,35 +48,17 @@ namespace SleepHunter.Macro
             set { SetProperty(ref playerStatus, value, "PlayerStatus"); }
         }
 
-        public IReadOnlyList<SpellQueueItem> QueuedSpells
-        {
-            get { return spellQueue; }
-        }
+        public IReadOnlyList<SpellQueueItem> QueuedSpells => spellQueue;
 
-        public IReadOnlyList<FlowerQueueItem> FlowerTargets
-        {
-            get { return flowerQueue; }
-        }
+        public IReadOnlyList<FlowerQueueItem> FlowerTargets => flowerQueue;
 
-        public int ActiveSpellsCount
-        {
-            get { return spellQueue.Count((spell) => { return !spell.IsDone; }); }
-        }
+        public int ActiveSpellsCount => spellQueue.Count((spell) => { return !spell.IsDone; });
 
-        public int CompletedSpellsCount
-        {
-            get { return spellQueue.Count((spell) => { return spell.IsDone; }); }
-        }
+        public int CompletedSpellsCount => spellQueue.Count((spell) => { return spell.IsDone; });
 
-        public int TotalSpellsCount
-        {
-            get { return spellQueue.Count; }
-        }
+        public int TotalSpellsCount => spellQueue.Count;
 
-        public int FlowerQueueCount
-        {
-            get { return flowerQueue.Count; }
-        }
+        public int FlowerQueueCount => flowerQueue.Count;
 
         public bool IsWaitingOnMana
         {
@@ -283,7 +265,7 @@ namespace SleepHunter.Macro
             finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("QueuedSpells");
+                RaisePropertyChanged(nameof(QueuedSpells));
 
             return hasChanges;
         }
@@ -300,7 +282,7 @@ namespace SleepHunter.Macro
             finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("QueuedSpells");
+                RaisePropertyChanged(nameof(QueuedSpells));
 
             return hasChanges;
         }
@@ -317,7 +299,7 @@ namespace SleepHunter.Macro
             finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("FlowerTargets");
+                RaisePropertyChanged(nameof(FlowerTargets));
 
             return hasChanges;
         }
@@ -334,7 +316,7 @@ namespace SleepHunter.Macro
             finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("FlowerTargets");
+                RaisePropertyChanged(nameof(FlowerTargets));
 
             return hasChanges;
         }
@@ -966,7 +948,7 @@ namespace SleepHunter.Macro
             int? modifiedNumberOfLines = null;
 
             if (item == null)
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
 
             var useShiftKey = UserSettingsManager.Instance.Settings.UseShiftForMedeniaPane;
 
@@ -1064,7 +1046,7 @@ namespace SleepHunter.Macro
             numberOfLines = null;
 
             if (item == null)
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
 
             client.Update(PlayerFieldFlags.Inventory | PlayerFieldFlags.Equipment | PlayerFieldFlags.Stats);
 
@@ -1108,7 +1090,7 @@ namespace SleepHunter.Macro
         private void ClickTarget(SpellTarget target)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             if (target.Units == TargetCoordinateUnits.None)
                 return;
