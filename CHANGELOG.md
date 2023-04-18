@@ -4,6 +4,17 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.2] - 2023-04-18
+
+### Changed
+
+- Client versions do not reset to defaults, file is required
+- Client versions do not save to file on close
+- Client versions will warn on startup when not found, disable start client button
+
+### Fixed
+
+
 ## [4.4.1] - 2023-04-16
 
 ### Added

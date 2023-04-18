@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<ClientVersions>
+  <Clients>
+    <Client Key="7.41" Hash="3244DC0E68CD26F4FB1626DA3673FDA8" Value="741">
+      <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
+      <IntroVideoAddress>42E61F</IntroVideoAddress>
+      <NoWallAddress>5FD874</NoWallAddress>
+      <Variables>
+        <Static Key="CharacterName" Address="73D910" MaxLength="13" />
+        <Dynamic Key="CurrentHealth" Address="755AA4" MaxLength="10">
+          <Offsets>
+            <Offset Value="4C6" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MaximumHealth" Address="755AA4" MaxLength="10">
+          <Offsets>
+            <Offset Value="546" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="CurrentMana" Address="755AA4" MaxLength="10">
+          <Offsets>
+            <Offset Value="5C6" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MaximumMana" Address="755AA4" MaxLength="10">
+          <Offsets>
+            <Offset Value="646" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="Level" Address="755AA4" MaxLength="3">
+          <Offsets>
+            <Offset Value="8C6" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="AbilityLevel" Address="755AA4" MaxLength="3">
+          <Offsets>
+            <Offset Value="9C6" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MapName" Address="82B76C" MaxLength="32">
+          <Offsets>
+            <Offset Value="4E3C" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MapNumber" Address="882E68">
+          <Offsets>
+            <Offset Value="26C" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MapX" Address="882E68">
+          <Offsets>
+            <Offset Value="23C" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MapY" Address="882E68">
+          <Offsets>
+            <Offset Value="238" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="Inventory" Address="882E68" MaxLength="256" Size="261" Count="60">
+          <Offsets>
+            <Offset Value="2CC" />
+            <Offset Value="1092" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="261" Count="18">
+          <Offsets>
+            <Offset Value="1152" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="Skillbook" Address="882E68" MaxLength="256" Size="260" Count="90">
+          <Offsets>
+            <Offset Value="2CC" />
+            <Offset Value="10210" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="Spellbook" Address="882E68" MaxLength="256" Size="518" Count="90">
+          <Offsets>
+            <Offset Value="2CC" />
+            <Offset Value="4DFA" />
+          </Offsets>
+        </Dynamic>
+        <Search Key="SkillCooldowns" Address="67639C" Size="4" Offset="194">
+          <Offsets>
+            <Offset Value="322" />
+          </Offsets>
+        </Search>
+        <Dynamic Key="ActivePanel" Address="82B76C">
+          <Offsets>
+            <Offset Value="4FA8" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="InventoryExpanded" Address="82B76C">
+          <Offsets>
+            <Offset Value="4FB0" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="MinimizedMode" Address="82B76C">
+          <Offsets>
+            <Offset Value="4DF0" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="DialogOpen" Address="85118C">
+          <Offsets>
+            <Offset Value="59C" />
+            <Offset Value="594" />
+            <Offset Value="18" />
+            <Offset Value="24" />
+            <Offset Value="A20" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="SenseOpen" Address="6FB194">
+          <Offsets>
+            <Offset Value="4C" />
+            <Offset Value="44" />
+            <Offset Value="18" />
+            <Offset Value="E" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="UserChatting" Address="6EB118">
+          <Offsets>
+            <Offset Value="438" />
+          </Offsets>
+        </Dynamic>
+      </Variables>
+    </Client>
+    <Client Key="Auto-Detect" Value="0">
+      <Variables />
+    </Client>
+  </Clients>
+</ClientVersions>

@@ -76,7 +76,7 @@ namespace SleepHunter.Models
 
             if (player.Version == null)
             {
-                player.Version = ClientVersionManager.Instance.Versions.First(v => v.Key != "Auto-Detect");
+                player.Version = ClientVersionManager.Instance.Versions.FirstOrDefault(v => v.Key != "Auto-Detect");
             }
 
             AddPlayer(player);
