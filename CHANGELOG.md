@@ -14,8 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Themes no longer auto-save to file on close
 - Themes will fallback to default style on error
 - Metadata files no longer auto-save to files on close
+- Status bar has been removed and made into thinner border + resize grip
 
 ### Fixed
+
+- Character sorting by login time
+- Character sorting not updating
+- Not showing all clients when debug option was checked on startup
 
 
 ## [4.4.1] - 2023-04-16

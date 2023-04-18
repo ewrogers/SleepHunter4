@@ -572,27 +572,20 @@
                 </UniformGrid>
             </Grid>
         </Grid>
-
-        <!-- Status Bar -->
+        
+        <!-- Bottom Decorator -->
         <Border Grid.Row="2"
                 Grid.ColumnSpan="4"
-                Background="{DynamicResource ObsidianBackground}"
-                Panel.ZIndex="11">
-            <DockPanel>
-                <Path Name="WindowResizeGrip" 
-                      DockPanel.Dock="Right"
-                      Width="16" Height="16"
-                      Fill="{DynamicResource ObsidianControlBackground}"
-                      Data="M 0,16 l 16,-16 v 16 h -16 z"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Bottom"
-                      Opacity="0.5"/>
+                Height="4"
+                Background="{DynamicResource ObsidianBackground}"/>
 
-                <TextBlock Name="statusTextBlock" 
-                           DockPanel.Dock="Left"
-                           VerticalAlignment="Center"
-                           Margin="6,3,4,3"/>
-            </DockPanel>
-        </Border>
+        <Path Name="WindowResizeGrip" 
+              Grid.RowSpan="3"
+              Grid.ColumnSpan="4"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Bottom"
+              Width="16" Height="16"
+              Fill="{DynamicResource ObsidianBackground}"
+              Data="M 0,16 l 16,-16 v 16 h -16 z"/>
     </Grid>
 </Window>
