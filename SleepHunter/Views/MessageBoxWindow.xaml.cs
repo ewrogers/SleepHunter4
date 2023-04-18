@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Views
 {
-    public partial class MessageBoxWindow : Window
+    internal partial class MessageBoxWindow : Window
     {
         public string MessageText
         {
@@ -84,14 +84,14 @@ namespace SleepHunter.Views
 
         void okButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
         void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }

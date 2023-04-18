@@ -6,13 +6,13 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct MemoryBasicInformation
     {
-        IntPtr baseAddress;
-        IntPtr allocationBase;
-        VirtualMemoryProtection allocationProtect;
-        uint regionSize;
-        VirtualMemoryStatus state;
-        VirtualMemoryProtection protect;
-        VirtualMemoryType type;
+        private IntPtr baseAddress;
+        private IntPtr allocationBase;
+        private VirtualMemoryProtection allocationProtect;
+        private uint regionSize;
+        private VirtualMemoryStatus state;
+        private VirtualMemoryProtection protect;
+        private VirtualMemoryType type;
 
         public IntPtr BaseAddress
         {

@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Services
 {
-    public interface IServiceProvider : IDisposable
+    internal interface IServiceProvider : IDisposable
     {
         bool IsRegistered<T>();
 

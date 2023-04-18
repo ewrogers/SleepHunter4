@@ -10,17 +10,17 @@ using SleepHunter.IO.Process;
 namespace SleepHunter.Settings
 {
     [Serializable]
-    public sealed class ClientVersion : ObservableObject
+    internal sealed class ClientVersion : ObservableObject
     {
         public static readonly ClientVersion AutoDetect = new ClientVersion("Auto-Detect");
 
-        string key;
-        string hash;
-        int versionNumber;
-        long multipleInstanceAddress;
-        long introVideoAddress;
-        long noWallAddress;
-        List<MemoryVariable> variables = new List<MemoryVariable>();
+        private string key;
+        private string hash;
+        private int versionNumber;
+        private long multipleInstanceAddress;
+        private long introVideoAddress;
+        private long noWallAddress;
+        private List<MemoryVariable> variables = new List<MemoryVariable>();
 
         [XmlAttribute("Key")]
         public string Key
@@ -122,10 +122,7 @@ namespace SleepHunter.Settings
 
         public ClientVersion(string key)
         {
-            if (key == null)
-                throw new ArgumentNullException("key");
-
-            this.key = key;
+            this.key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
         public MemoryVariable GetVariable(string key)

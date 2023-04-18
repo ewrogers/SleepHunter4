@@ -12,7 +12,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
-    public partial class SettingsWindow : Window
+    internal partial class SettingsWindow : Window
     {
         public static readonly int GeneralTabIndex = 0;
         public static readonly int UserInterfaceTabIndex = 1;
@@ -51,7 +51,7 @@ namespace SleepHunter.Views
             ToggleDownloadUpdateButton(false);
         }
 
-        void GetVersion()
+        private void GetVersion()
         {
             currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
@@ -73,7 +73,7 @@ namespace SleepHunter.Views
                 buildText.Text += "  (Debug)";
         }
 
-        async Task CheckForLatestVersion()
+        private async Task CheckForLatestVersion()
         {
             if (isCheckingForVersion)
                 return;
@@ -119,7 +119,7 @@ namespace SleepHunter.Views
             }
         }
 
-        static string GetDayOrdinal(int dayOfMonth)
+        private static string GetDayOrdinal(int dayOfMonth)
         {
             if (dayOfMonth <= 0)
                 return string.Empty;
@@ -145,13 +145,13 @@ namespace SleepHunter.Views
             }
         }
 
-        void ToggleDownloadUpdateButton(bool showHide)
+        private void ToggleDownloadUpdateButton(bool showHide)
         {
             downloadUpdateButton.IsEnabled = showHide;
             downloadUpdateButton.Visibility = showHide ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
+        private void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
         {
             bool? isOkToReset = this.ShowMessageBox("Reset Default Settings",
                "This will reset all settings to their default values.\nDo you wish to continue?",
@@ -163,7 +163,7 @@ namespace SleepHunter.Views
                 UserSettingsManager.Instance.Settings.ResetDefaults();
         }
 
-        async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is TabControl tabControl))
                 return;
@@ -186,12 +186,12 @@ namespace SleepHunter.Views
             }
         }
 
-        void userManualLink_Click(object sender, RoutedEventArgs e)
+        private void userManualLink_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
         }
 
-        async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
+        private async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
             if (!(Owner is MainWindow mainWindow))
                 return;
@@ -199,13 +199,13 @@ namespace SleepHunter.Views
             await CheckForLatestVersion();
         }
 
-        void releaseNotesLink_Click(object sender, RoutedEventArgs e)
+        private void releaseNotesLink_Click(object sender, RoutedEventArgs e)
         {
             var uri = releaseService.GetLatestReleaseNotesUri();
             Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
         }
 
-        void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
+        private void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
         {
             if (!(Owner is MainWindow mainWindow))
                 return;

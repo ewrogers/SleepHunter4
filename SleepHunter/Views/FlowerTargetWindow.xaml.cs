@@ -12,7 +12,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
-    public partial class FlowerTargetWindow : Window
+    internal partial class FlowerTargetWindow : Window
     {
         private FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
 

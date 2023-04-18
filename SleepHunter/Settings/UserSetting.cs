@@ -7,11 +7,11 @@ using SleepHunter.Common;
 namespace SleepHunter.Settings
 {
     [Serializable]
-    public sealed class UserSetting : ObservableObject
+    internal sealed class UserSetting : ObservableObject
     {
-        string key;
-        string displayText;
-        object value;
+        private string key;
+        private string displayText;
+        private object value;
 
         [XmlAttribute("Key")]
         public string Key
@@ -47,7 +47,7 @@ namespace SleepHunter.Settings
 
         public override string ToString()
         {
-            return DisplayText ?? this.Key;
+            return DisplayText ?? Key;
         }
     }
 }

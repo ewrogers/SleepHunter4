@@ -10,9 +10,9 @@ namespace SleepHunter.Settings
 {
     [Serializable]
     [XmlRoot("UserSettings")]
-    public class UserSettings : ObservableObject
+    internal class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.3";
+        public const string CurrentVersion = "1.3";
 
         private bool isDebugMode;
         private string version;

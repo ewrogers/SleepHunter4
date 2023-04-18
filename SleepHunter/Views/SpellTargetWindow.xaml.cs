@@ -13,7 +13,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
-    public partial class SpellTargetWindow : Window
+    internal partial class SpellTargetWindow : Window
     {
         private SpellQueueItem spellQueueItem = new SpellQueueItem();
 
@@ -128,7 +128,6 @@ namespace SleepHunter.Views
 
         private bool ValidateSpellTarget()
         {
-            #region Spell Check
             if (Spell == null)
             {
                 this.ShowMessageBox("Invalid Spell",
@@ -139,11 +138,9 @@ namespace SleepHunter.Views
                 Close();
                 return false;
             }
-            #endregion
 
             var selectedMode = GetSelectedMode();
 
-            #region Check Target Mode
             if (Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
             {
                 this.ShowMessageBox("Target Required",
@@ -155,7 +152,6 @@ namespace SleepHunter.Views
                 targetModeComboBox.IsDropDownOpen = true;
                 return false;
             }
-            #endregion
 
             var characterName = characterComboBox.SelectedValue as string;
 

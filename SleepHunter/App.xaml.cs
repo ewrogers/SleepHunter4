@@ -7,7 +7,7 @@ using SleepHunter.Views;
 
 namespace SleepHunter
 {
-    public partial class App : Application
+    internal partial class App : Application
     {
         public const string USER_MANUAL_URL = @"https://ewrogers.github.io/SleepHunter4/";
 

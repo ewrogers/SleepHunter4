@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SleepHunter.Services
 {
-    public class ServiceProvider : IServiceProvider
+    internal class ServiceProvider : IServiceProvider
     {
         private bool isDisposed;
 

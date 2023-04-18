@@ -3,7 +3,7 @@ using System.Windows;
 
 namespace SleepHunter.Updater
 {
-    public partial class MainWindow : Window
+    internal partial class MainWindow : Window
     {
         public MainWindow()
         {

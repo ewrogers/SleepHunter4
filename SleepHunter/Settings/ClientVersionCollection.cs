@@ -7,10 +7,10 @@ namespace SleepHunter.Settings
 {
     [Serializable]
     [XmlRoot("ClientVersions")]
-    public sealed class ClientVersionCollection
+    internal sealed class ClientVersionCollection
     {
-        string version;
-        List<ClientVersion> versions;
+        private string version;
+        private List<ClientVersion> versions;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]

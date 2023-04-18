@@ -7,10 +7,10 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
-    public partial class StaffEditorWindow : Window
+    internal partial class StaffEditorWindow : Window
     {
-        string originalName;
-        StaffMetadata staff = new StaffMetadata();
+        private string originalName;
+        private StaffMetadata staff = new StaffMetadata();
 
         public StaffMetadata Staff
         {
@@ -45,26 +45,26 @@ namespace SleepHunter.Views
 
             SetPlayerClass(staff.Class);
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
 
             if (isEditMode)
-                this.Title = "Edit Staff";
+                Title = "Edit Staff";
         }
 
         public StaffEditorWindow()
         {
             InitializeComponent();
 
-            this.Title = "Add Staff";
+            Title = "Add Staff";
         }
 
-        void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             nameTextBox.Focus();
             nameTextBox.SelectAll();
         }
 
-        bool ValidateStaff()
+        private bool ValidateStaff()
         {
             string staffName = nameTextBox.Text.Trim();
             int level = (int)levelUpDown.Value;
@@ -104,7 +104,7 @@ namespace SleepHunter.Views
             return true;
         }
 
-        PlayerClass GetPlayerClass()
+        private PlayerClass GetPlayerClass()
         {
             var playerClass = PlayerClass.Peasant;
 
@@ -126,7 +126,7 @@ namespace SleepHunter.Views
             return playerClass;
         }
 
-        void SetPlayerClass(PlayerClass playerClass)
+        private void SetPlayerClass(PlayerClass playerClass)
         {
             warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
             wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
@@ -135,22 +135,22 @@ namespace SleepHunter.Views
             monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateStaff())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
-        void cancelButton_Click(object sender, RoutedEventArgs e)
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
-        void isAbilityLevelCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void isAbilityLevelCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var isMedenia = isAbilityLevelCheckBox.IsChecked.Value;
 

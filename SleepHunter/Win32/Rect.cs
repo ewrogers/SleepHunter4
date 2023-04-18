@@ -6,10 +6,10 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect
     {
-        int left;
-        int top;
-        int right;
-        int bottom;
+        private int left;
+        private int top;
+        private int right;
+        private int bottom;
 
         public int Left
         {

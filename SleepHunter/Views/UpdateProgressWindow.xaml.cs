@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Windows;
 using SleepHunter.Models;
 using SleepHunter.Services.Releases;
 
 namespace SleepHunter.Views
 {
-    public partial class UpdateProgressWindow : Window
+    internal partial class UpdateProgressWindow : Window
     {
         private readonly IReleaseService releaseService;
 
@@ -20,7 +21,7 @@ namespace SleepHunter.Views
             InitializeComponent();
         }
 
-        async void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             installButton.IsEnabled = false;
 
@@ -59,9 +60,9 @@ namespace SleepHunter.Views
             installButton.Focus();
         }
 
-        void SetStatusText(string text) => statusText.Text = text;
+        private void SetStatusText(string text) => statusText.Text = text;
 
-        void UpdateProgress(long downloadedSize)
+        private void UpdateProgress(long downloadedSize)
         {
             var contentSize = ReleaseInfo?.ContentSize ?? 0;
             var percentage = contentSize > 0 ? downloadedSize * 100 / contentSize : 0;
@@ -80,13 +81,13 @@ namespace SleepHunter.Views
                 progressSizeText.Text = string.Empty;
         }
 
-        void installButton_Click(object sender, RoutedEventArgs e)
+        private void installButton_Click(object sender, RoutedEventArgs e)
         {
             ShouldInstall = true;
             Close();
         }
 
-        void cancelButton_Click(object sender, RoutedEventArgs e)
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
             ShouldInstall = false;
             Close();

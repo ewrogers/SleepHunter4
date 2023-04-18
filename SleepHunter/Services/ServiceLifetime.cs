@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Services
 {
-    public enum ServiceLifetime
+    internal enum ServiceLifetime
     {
         Transient,
         Singleton

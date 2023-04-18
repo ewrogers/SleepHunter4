@@ -1,5 +1,6 @@
 ﻿<Window Name="Window"
         x:Class="SleepHunter.Views.SettingsWindow"
+        x:ClassModifier="internal"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"

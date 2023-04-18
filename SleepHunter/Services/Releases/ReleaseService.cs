@@ -8,7 +8,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Services.Releases
 {
-    public class ReleaseService : IReleaseService
+    internal class ReleaseService : IReleaseService
     {
         private const string RELEASES_URL = @"https://github.com/ewrogers/SleepHunter4/releases";
         private const string RELEASE_ASSETS_URL = @"https://api.github.com/repos/ewrogers/SleepHunter4/releases";

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace SleepHunter.Services.Logging
 {
-    public interface ILogger : IDisposable
+    internal interface ILogger : IDisposable
     {
         bool AutoFlush { get; set; }
 

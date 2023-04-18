@@ -9,12 +9,11 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings
 {
-    public sealed class ClientVersionManager
+    internal sealed class ClientVersionManager
     {
         public static readonly string VersionsFile = @"Versions.xml";
 
-        #region Singleton
-        static readonly ClientVersionManager instance = new ClientVersionManager();
+        private static readonly ClientVersionManager instance = new ClientVersionManager();
 
         public static ClientVersionManager Instance { get { return instance; } }
 
@@ -23,15 +22,13 @@ namespace SleepHunter.Settings
             if (!clientVersions.ContainsKey("Auto-Detect"))
                 AddVersion(ClientVersion.AutoDetect);
         }
-        #endregion
 
-        readonly ConcurrentDictionary<string, ClientVersion> clientVersions = new ConcurrentDictionary<string, ClientVersion>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ClientVersion> clientVersions = new ConcurrentDictionary<string, ClientVersion>(StringComparer.OrdinalIgnoreCase);
 
         public event ClientVersionEventHandler VersionAdded;
         public event ClientVersionEventHandler VersionChanged;
         public event ClientVersionEventHandler VersionRemoved;
 
-        #region Collection Properties
         public ClientVersion this[string key]
         {
             get { return GetVersion(key); }
@@ -44,18 +41,16 @@ namespace SleepHunter.Settings
         {
             get { return from v in clientVersions.Values orderby v.Key select v; }
         }
-        #endregion
 
-        #region Collection Methods
         public void AddVersion(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
             if (string.IsNullOrWhiteSpace(version.Key))
-                throw new ArgumentException("Key cannot be null or whitespace.", "version");
+                throw new ArgumentException("Key cannot be null or whitespace.", nameof(version));
 
-            bool alreadyExists = clientVersions.ContainsKey(version.Key);
+            var alreadyExists = clientVersions.ContainsKey(version.Key);
 
             clientVersions[version.Key] = version;
 
@@ -68,7 +63,7 @@ namespace SleepHunter.Settings
         public ClientVersion GetVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return clientVersions[key];
         }
@@ -76,7 +71,7 @@ namespace SleepHunter.Settings
         public bool ContainsVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return clientVersions.ContainsKey(key);
         }
@@ -84,13 +79,12 @@ namespace SleepHunter.Settings
         public bool RemoveVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             if (!clientVersions.ContainsKey(key))
                 return false;
 
-            ClientVersion removedVersion;
-            bool wasRemoved = clientVersions.TryRemove(key, out removedVersion);
+            var wasRemoved = clientVersions.TryRemove(key, out var removedVersion);
 
             if (wasRemoved)
                 OnVersionRemoved(removedVersion);
@@ -105,9 +99,7 @@ namespace SleepHunter.Settings
 
             clientVersions.Clear();
         }
-        #endregion
 
-        #region Load/Save Methods
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -119,9 +111,8 @@ namespace SleepHunter.Settings
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(ClientVersionCollection));
-            var collection = serializer.Deserialize(stream) as ClientVersionCollection;
 
-            if (collection != null)
+            if (serializer.Deserialize(stream) is ClientVersionCollection collection)
                 foreach (var version in collection.Versions)
                     AddVersion(version);
         }
@@ -150,12 +141,15 @@ namespace SleepHunter.Settings
             if (!clientVersions.ContainsKey("Auto-Detect"))
                 AddVersion(ClientVersion.AutoDetect);
 
-            var version = new ClientVersion("7.41");
-            version.Hash = @"3244DC0E68CD26F4FB1626DA3673FDA8";
-            version.VersionNumber = 741;
-            version.MultipleInstanceAddress = 0x57A7CE;
-            version.IntroVideoAddress = 0x42E61F;
-            version.NoWallAddress = 0x5FD874;
+            var version = new ClientVersion("7.41")
+            {
+                Hash = @"3244DC0E68CD26F4FB1626DA3673FDA8",
+                VersionNumber = 741,
+                MultipleInstanceAddress = 0x57A7CE,
+                IntroVideoAddress = 0x42E61F,
+                NoWallAddress = 0x5FD874
+            };
+
             version.Variables.Add(new MemoryVariable("CharacterName", 0x73D910, maxLength: 13));
             version.Variables.Add(new DynamicMemoryVariable("CurrentHealth", 0x755AA4, maxLength: 10, offsets: 0x4C6));
             version.Variables.Add(new DynamicMemoryVariable("MaximumHealth", 0x755AA4, maxLength: 10, offsets: 0x546));
@@ -186,7 +180,6 @@ namespace SleepHunter.Settings
 
             AddVersion(version);
         }
-        #endregion
 
         public string DetectVersion(string hash)
         {
@@ -197,39 +190,28 @@ namespace SleepHunter.Settings
             return null;
         }
 
-        #region Event Handler Methods
-        void OnVersionAdded(ClientVersion version)
+        private void OnVersionAdded(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionAdded;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionAdded?.Invoke(this, new ClientVersionEventArgs(version));
         }
 
-        void OnVersionChanged(ClientVersion version)
+        private void OnVersionChanged(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionChanged;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionChanged?.Invoke(this, new ClientVersionEventArgs(version));
         }
 
-        void OnVersionRemoved(ClientVersion version)
+        private void OnVersionRemoved(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionRemoved;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionRemoved?.Invoke(this, new ClientVersionEventArgs(version));
         }
-        #endregion
     }
 }

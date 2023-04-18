@@ -6,24 +6,24 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct StartupInfo
     {
-        int size;
-        string reserved;
-        string desktop;
-        string title;
-        int x;
-        int y;
-        int width;
-        int height;
-        int consoleWidth;
-        int consoleHeight;
-        int fillAttribute;
-        int flags;
-        short showWindow;
-        short reserved2;
-        IntPtr reserved3;
-        IntPtr standardInput;
-        IntPtr standardOutput;
-        IntPtr standardError;
+        private int size;
+        private string reserved;
+        private string desktop;
+        private string title;
+        private int x;
+        private int y;
+        private int width;
+        private int height;
+        private int consoleWidth;
+        private int consoleHeight;
+        private int fillAttribute;
+        private int flags;
+        private short showWindow;
+        private short reserved2;
+        private IntPtr reserved3;
+        private IntPtr standardInput;
+        private IntPtr standardOutput;
+        private IntPtr standardError;
 
         public int Size
         {

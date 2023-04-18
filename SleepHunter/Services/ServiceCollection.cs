@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SleepHunter.Services
 {
-    public class ServiceCollection
+    internal class ServiceCollection
     {
         private readonly Dictionary<Type, ServiceMapping> typeMappings = new Dictionary<Type, ServiceMapping>();
 

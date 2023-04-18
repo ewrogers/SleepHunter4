@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Services
 {
-    public class ServiceMapping
+    internal class ServiceMapping
     {
         public Type Type { get; }
         public ServiceLifetime Lifetime { get; }

@@ -6,9 +6,9 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct SecurityAttributes
     {
-        int size;
-        IntPtr securityDescriptor;
-        bool inheritHandle;
+        private int size;
+        private IntPtr securityDescriptor;
+        private bool inheritHandle;
 
         public int Size
         {

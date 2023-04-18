@@ -7,10 +7,10 @@ namespace SleepHunter.Settings
 {
     [Serializable]
     [XmlRoot("ColorThemes")]
-    public sealed class ColorThemeCollection
+    internal sealed class ColorThemeCollection
     {
-        string version;
-        List<ColorTheme> themes;
+        private string version;
+        private List<ColorTheme> themes;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]

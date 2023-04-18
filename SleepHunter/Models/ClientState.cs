@@ -109,7 +109,6 @@ namespace SleepHunter.Models
             var senseOpenVariable = version.GetVariable(SenseOpenKey);
             var userChattingVariable = version.GetVariable(UserChattingKey);
 
-
             Stream stream = null;
             try
             {

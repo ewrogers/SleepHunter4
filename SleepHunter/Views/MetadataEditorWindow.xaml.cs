@@ -11,7 +11,7 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Views
 {
-    public partial class MetadataEditorWindow : Window
+    internal partial class MetadataEditorWindow : Window
     {
         public static readonly int SkillsTabIndex = 0;
         public static readonly int SpellsTabIndex = 1;
@@ -35,15 +35,13 @@ namespace SleepHunter.Views
 
         void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var tabControl = sender as TabControl;
-            if (tabControl == null)
+            if (!(sender is TabControl tabControl))
                 return;
 
-            var tabItem = tabControl.SelectedItem as TabItem;
-            if (tabItem == null)
-                this.Title = "Metadata Editor";
+            if (!(tabControl.SelectedItem is TabItem tabItem))
+                Title = "Metadata Editor";
             else
-                this.Title = string.Format("Metadata Editor - {0}", (tabItem.Header as string).Replace("_", string.Empty));
+                Title = string.Format("Metadata Editor - {0}", (tabItem.Header as string).Replace("_", string.Empty));
         }
 
         void Window_Loaded(object sender, RoutedEventArgs e)
@@ -61,22 +59,13 @@ namespace SleepHunter.Views
             StaffMetadataManager.Instance.StaffRemoved += OnStaffManagerUpdated;
         }
 
-        void OnSkillManagerUpdated(object sender, SkillMetadataEventArgs e)
-        {
-            BindingOperations.GetBindingExpression(skillListView, ListView.ItemsSourceProperty).UpdateTarget();
-        }
+        private void OnSkillManagerUpdated(object sender, SkillMetadataEventArgs e) => BindingOperations.GetBindingExpression(skillListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+    
+        private void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e) => BindingOperations.GetBindingExpression(spellListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
 
-        void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
-        {
-            BindingOperations.GetBindingExpression(spellListView, ListView.ItemsSourceProperty).UpdateTarget();
-        }
+        private void OnStaffManagerUpdated(object sender, StaffMetadataEventArgs e) => BindingOperations.GetBindingExpression(stavesListBox, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
 
-        void OnStaffManagerUpdated(object sender, StaffMetadataEventArgs e)
-        {
-            BindingOperations.GetBindingExpression(stavesListBox, ListBox.ItemsSourceProperty).UpdateTarget();
-        }
-
-        void Window_Closing(object sender, CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             SkillMetadataManager.Instance.SkillAdded -= OnSkillManagerUpdated;
             SkillMetadataManager.Instance.SkillChanged -= OnSkillManagerUpdated;
@@ -90,9 +79,7 @@ namespace SleepHunter.Views
             StaffMetadataManager.Instance.StaffUpdated -= OnStaffManagerUpdated;
             StaffMetadataManager.Instance.StaffRemoved -= OnStaffManagerUpdated;
         }
-
-        #region Button Clicks
-        void addButton_Click(object sender, RoutedEventArgs e)
+        private void addButton_Click(object sender, RoutedEventArgs e)
         {
             if (tabControl.SelectedIndex == SkillsTabIndex)
                 AddSkill();
@@ -102,35 +89,32 @@ namespace SleepHunter.Views
                 AddStaff();
         }
 
-        void editButton_Click(object sender, RoutedEventArgs e)
+        private void editButton_Click(object sender, RoutedEventArgs e)
         {
             if (tabControl.SelectedIndex == SkillsTabIndex)
             {
-                var skill = skillListView.SelectedItem as SkillMetadata;
-                if (skill == null)
+                if (!(skillListView.SelectedItem is SkillMetadata skill))
                     return;
 
                 EditSkill(skill);
             }
             else if (tabControl.SelectedIndex == SpellsTabIndex)
             {
-                var spell = spellListView.SelectedItem as SpellMetadata;
-                if (spell == null)
+                if (!(spellListView.SelectedItem is SpellMetadata spell))
                     return;
 
                 EditSpell(spell);
             }
             else if (tabControl.SelectedIndex == StavesTabIndex)
             {
-                var staff = stavesListBox.SelectedItem as StaffMetadata;
-                if (staff == null)
+                if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                     return;
 
                 EditStaff(staff);
             }
         }
 
-        void removeButton_Click(object sender, RoutedEventArgs e)
+        private void removeButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedNames = new List<string>();
 
@@ -160,7 +144,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void clearButton_Click(object sender, RoutedEventArgs e)
+        private void clearButton_Click(object sender, RoutedEventArgs e)
         {
             if (tabControl.SelectedIndex == SkillsTabIndex)
                 ClearAllSkills();
@@ -170,7 +154,7 @@ namespace SleepHunter.Views
                 ClearAllStaves();
         }
 
-        void saveButton_Click(object sender, RoutedEventArgs e)
+        private void saveButton_Click(object sender, RoutedEventArgs e)
         {
             if (tabControl.SelectedIndex == SkillsTabIndex)
                 SaveSkills();
@@ -180,7 +164,7 @@ namespace SleepHunter.Views
                 SaveStaves();
         }
 
-        void revertButton_Click(object sender, RoutedEventArgs e)
+        private void revertButton_Click(object sender, RoutedEventArgs e)
         {
             if (tabControl.SelectedIndex == SkillsTabIndex)
                 ReloadSkills();
@@ -189,13 +173,13 @@ namespace SleepHunter.Views
             else if (tabControl.SelectedIndex == StavesTabIndex)
                 ReloadStaves();
         }
-        #endregion
 
-        #region Add Methods
-        void AddSkill()
+        private void AddSkill()
         {
-            var skillWindow = new SkillEditorWindow();
-            skillWindow.Owner = this;
+            var skillWindow = new SkillEditorWindow
+            {
+                Owner = this
+            };
 
             var result = skillWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
@@ -206,10 +190,12 @@ namespace SleepHunter.Views
             skillListView.ScrollIntoView(skillWindow.Skill);
         }
 
-        void AddSpell()
+        private void AddSpell()
         {
-            var spellWindow = new SpellEditorWindow();
-            spellWindow.Owner = this;
+            var spellWindow = new SpellEditorWindow
+            {
+                Owner = this
+            };
 
             var result = spellWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
@@ -220,10 +206,12 @@ namespace SleepHunter.Views
             spellListView.ScrollIntoView(spellWindow.Spell);
         }
 
-        void AddStaff()
+        private void AddStaff()
         {
-            var staffWindow = new StaffEditorWindow();
-            staffWindow.Owner = this;
+            var staffWindow = new StaffEditorWindow
+            {
+                Owner = this
+            };
 
             var result = staffWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
@@ -234,14 +222,15 @@ namespace SleepHunter.Views
             stavesListBox.ScrollIntoView(staffWindow.Staff);
         }
 
-        void AddModifiers()
+        private void AddModifiers()
         {
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return;
 
-            var modifiersWindow = new LineModifiersEditorWindow();
-            modifiersWindow.Owner = this;
+            var modifiersWindow = new LineModifiersEditorWindow
+            {
+                Owner = this
+            };
 
             var result = modifiersWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
@@ -253,22 +242,22 @@ namespace SleepHunter.Views
 
             lineModifiersListBox.Items.Refresh();
         }
-        #endregion
 
-        #region Edit Methods
-        void EditSkill(SkillMetadata skill)
+        private void EditSkill(SkillMetadata skill)
         {
             var originalName = skill.Name;
 
-            var skillWindow = new SkillEditorWindow(skill);
-            skillWindow.Owner = this;
+            var skillWindow = new SkillEditorWindow(skill)
+            {
+                Owner = this
+            };
 
             var result = skillWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
                 return;
 
             skillWindow.Skill.CopyTo(skill);
-            BindingOperations.GetBindingExpression(skillListView, ListView.ItemsSourceProperty).UpdateTarget();
+            BindingOperations.GetBindingExpression(skillListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
 
             if (!string.Equals(skill.Name, originalName, StringComparison.Ordinal))
                 SkillMetadataManager.Instance.RenameSkill(originalName, skill.Name);
@@ -277,19 +266,21 @@ namespace SleepHunter.Views
             skillListView.ScrollIntoView(skill);
         }
 
-        void EditSpell(SpellMetadata spell)
+        private void EditSpell(SpellMetadata spell)
         {
             var originalName = spell.Name;
 
-            var spellWindow = new SpellEditorWindow(spell);
-            spellWindow.Owner = this;
+            var spellWindow = new SpellEditorWindow(spell)
+            {
+                Owner = this
+            };
 
             var result = spellWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
                 return;
 
             spellWindow.Spell.CopyTo(spell);
-            BindingOperations.GetBindingExpression(spellListView, ListView.ItemsSourceProperty).UpdateTarget();
+            BindingOperations.GetBindingExpression(spellListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
 
             if (!string.Equals(spell.Name, originalName, StringComparison.Ordinal))
                 SpellMetadataManager.Instance.RenameSpell(originalName, spell.Name);
@@ -298,19 +289,21 @@ namespace SleepHunter.Views
             skillListView.ScrollIntoView(spell);
         }
 
-        void EditStaff(StaffMetadata staff)
+        private void EditStaff(StaffMetadata staff)
         {
             var originalName = staff.Name;
 
-            var staffWindow = new StaffEditorWindow(staff);
-            staffWindow.Owner = this;
+            var staffWindow = new StaffEditorWindow(staff)
+            {
+                Owner = this
+            };
 
             var result = staffWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
                 return;
 
             staffWindow.Staff.CopyTo(staff, copyModifiers: false);
-            BindingOperations.GetBindingExpression(stavesListBox, ListBox.ItemsSourceProperty).UpdateTarget();
+            BindingOperations.GetBindingExpression(stavesListBox, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
 
             if (!string.Equals(staff.Name, originalName, StringComparison.Ordinal))
                 StaffMetadataManager.Instance.RenameStaff(originalName, staff.Name);
@@ -319,10 +312,12 @@ namespace SleepHunter.Views
             stavesListBox.ScrollIntoView(staff);
         }
 
-        void EditModifiers(StaffMetadata staff, SpellLineModifiers modifiers)
+        private void EditModifiers(StaffMetadata staff, SpellLineModifiers modifiers)
         {
-            var modifiersWindow = new LineModifiersEditorWindow(modifiers);
-            modifiersWindow.Owner = this;
+            var modifiersWindow = new LineModifiersEditorWindow(modifiers)
+            {
+                Owner = this
+            };
 
             var result = modifiersWindow.ShowDialog();
             if (!result.HasValue || !result.Value)
@@ -334,28 +329,25 @@ namespace SleepHunter.Views
             lineModifiersListBox.SelectedItem = modifiers;
             lineModifiersListBox.ScrollIntoView(modifiers);
         }
-        #endregion
 
-        #region Remove Methods
-        bool RemoveSkill(string skillName)
+        private bool RemoveSkill(string skillName)
         {
             return SkillMetadataManager.Instance.RemoveSkill(skillName);
         }
 
-        bool RemoveSpell(string spellName)
+        private bool RemoveSpell(string spellName)
         {
             return SpellMetadataManager.Instance.RemoveSpell(spellName);
         }
 
-        bool RemoveStaff(string staffName)
+        private bool RemoveStaff(string staffName)
         {
             return StaffMetadataManager.Instance.RemoveStaff(staffName);
         }
 
-        bool RemoveModifiers(SpellLineModifiers modifiers)
+        private bool RemoveModifiers(SpellLineModifiers modifiers)
         {
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return false;
 
             var wasRemoved = staff.RemoveModifiers(modifiers);
@@ -365,10 +357,8 @@ namespace SleepHunter.Views
 
             return wasRemoved;
         }
-        #endregion
 
-        #region Clear Methods
-        void ClearAllSkills()
+        private void ClearAllSkills()
         {
             var isOkayToClear = this.ShowMessageBox("Clear All Skills",
                "This will remove every skill from the list.\nAre you sure?",
@@ -378,11 +368,11 @@ namespace SleepHunter.Views
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
                 SkillMetadataManager.Instance.ClearSkills();
-                BindingOperations.GetBindingExpression(skillListView, ListView.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(skillListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
             }
         }
 
-        void ClearAllSpells()
+        private void ClearAllSpells()
         {
             var isOkayToClear = this.ShowMessageBox("Clear All Spells",
                "This will remove every spell from the list.\nAre you sure?",
@@ -392,11 +382,11 @@ namespace SleepHunter.Views
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
                 SpellMetadataManager.Instance.ClearSpells();
-                BindingOperations.GetBindingExpression(spellListView, ListView.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(spellListView, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
             }
         }
 
-        void ClearAllStaves()
+        private void ClearAllStaves()
         {
             var isOkayToClear = this.ShowMessageBox("Clear All Staves",
                "This will remove every staff from the list.\nAre you sure?",
@@ -406,13 +396,11 @@ namespace SleepHunter.Views
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
                 StaffMetadataManager.Instance.ClearStaves();
-                BindingOperations.GetBindingExpression(stavesListBox, ListBox.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(stavesListBox, ItemsControl.ItemsSourceProperty)?.UpdateTarget();
             }
         }
-        #endregion
 
-        #region Save Methods
-        void SaveSkills()
+        private void SaveSkills()
         {
             try
             {
@@ -428,7 +416,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SaveSpells()
+        private void SaveSpells()
         {
             try
             {
@@ -444,7 +432,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void SaveStaves()
+        private void SaveStaves()
         {
             try
             {
@@ -459,10 +447,8 @@ namespace SleepHunter.Views
                    440, 260);
             }
         }
-        #endregion
 
-        #region Reload Methods
-        void ReloadSkills()
+        private void ReloadSkills()
         {
             try
             {
@@ -488,7 +474,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void ReloadSpells()
+        private void ReloadSpells()
         {
             try
             {
@@ -514,7 +500,7 @@ namespace SleepHunter.Views
             }
         }
 
-        void ReloadStaves()
+        private void ReloadStaves()
         {
             try
             {
@@ -539,12 +525,10 @@ namespace SleepHunter.Views
                    440, 260);
             }
         }
-        #endregion
 
-        void skillSpellListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void skillSpellListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var listView = sender as ListView;
-            if (listView == null)
+            if (!(sender is ListView listView))
                 return;
 
             int selectedCount = listView.SelectedItems.Count;
@@ -554,10 +538,9 @@ namespace SleepHunter.Views
             clearButton.IsEnabled = selectedCount > 0;
         }
 
-        void stavesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void stavesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var listBox = sender as ListBox;
-            if (listBox == null)
+            if (!(sender is ListBox listBox))
             {
                 addModifierButton.Visibility = editModifierButton.Visibility = removeModifierButton.Visibility = Visibility.Collapsed;
                 return;
@@ -570,8 +553,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var staff = e.AddedItems[0] as StaffMetadata;
-            if (staff == null)
+            if (!(e.AddedItems[0] is StaffMetadata staff))
             {
                 addModifierButton.Visibility = editModifierButton.Visibility = removeModifierButton.Visibility = Visibility.Collapsed;
                 return;
@@ -584,92 +566,78 @@ namespace SleepHunter.Views
                 lineModifiersListBox.SelectedIndex = 0;
         }
 
-        void skillListViewItem_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void skillListViewItem_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListViewItem;
-            if (item == null)
+            if (!(sender is ListViewItem item))
                 return;
 
-            var skill = item.Content as SkillMetadata;
-            if (skill == null)
+            if (!(item.Content is SkillMetadata skill))
                 return;
 
             EditSkill(skill);
         }
 
-        void spellListViewItem_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void spellListViewItem_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListViewItem;
-            if (item == null)
+            if (!(sender is ListViewItem item))
                 return;
 
-            var spell = item.Content as SpellMetadata;
-            if (spell == null)
+            if (!(item.Content is SpellMetadata spell))
                 return;
 
             EditSpell(spell);
         }
 
-        void stavesListBoxItem_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void stavesListBoxItem_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListBoxItem;
-            if (item == null)
+            if (!(sender is ListBoxItem item))
                 return;
 
-            var staff = item.Content as StaffMetadata;
-            if (staff == null)
+            if (!(item.Content is StaffMetadata staff))
                 return;
 
             EditStaff(staff);
         }
 
-        void lineModifiersListBoxItem_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void lineModifiersListBoxItem_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ListBoxItem;
-            if (item == null)
+            if (!(sender is ListBoxItem item))
                 return;
 
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return;
 
-            var modifiers = item.Content as SpellLineModifiers;
-            if (modifiers == null)
+            if (!(item.Content is SpellLineModifiers modifiers))
                 return;
 
             EditModifiers(staff, modifiers);
         }
 
-        void addModifierButton_Click(object sender, RoutedEventArgs e)
+        private void addModifierButton_Click(object sender, RoutedEventArgs e)
         {
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return;
 
             AddModifiers();
         }
 
-        void editModifierButton_Click(object sender, RoutedEventArgs e)
+        private void editModifierButton_Click(object sender, RoutedEventArgs e)
         {
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return;
 
-            var modifiers = lineModifiersListBox.SelectedItem as SpellLineModifiers;
-            if (modifiers == null)
+            if (!(lineModifiersListBox.SelectedItem is SpellLineModifiers modifiers))
                 return;
 
             EditModifiers(staff, modifiers);
         }
 
-        void removeModifierButton_Click(object sender, RoutedEventArgs e)
+        private void removeModifierButton_Click(object sender, RoutedEventArgs e)
         {
-            var staff = stavesListBox.SelectedItem as StaffMetadata;
-            if (staff == null)
+            if (!(stavesListBox.SelectedItem is StaffMetadata staff))
                 return;
 
-            var modifiers = lineModifiersListBox.SelectedItem as SpellLineModifiers;
-            if (modifiers == null)
+            if (!(lineModifiersListBox.SelectedItem is SpellLineModifiers modifiers))
                 return;
 
             RemoveModifiers(modifiers);

@@ -28,11 +28,10 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace SleepHunter.Views
 {
-    public partial class MainWindow : Window, IDisposable
+    internal partial class MainWindow : Window, IDisposable
     {
         private static readonly int WM_HOTKEY = 0x312;
         private enum ClientLoadResult
@@ -99,7 +98,6 @@ namespace SleepHunter.Views
             StartUpdateTimers();
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
@@ -122,9 +120,7 @@ namespace SleepHunter.Views
 
             isDisposed = true;
         }
-        #endregion
 
-        #region Client Launch Methods
         private void LaunchClient()
         {
             startNewClientButton.IsEnabled = false;
@@ -438,9 +434,6 @@ namespace SleepHunter.Views
                    460, 260);
             }
         }
-        #endregion
-
-        #region Initialize Methods
 
         private void InitializeLogger()
         {
@@ -1050,9 +1043,7 @@ namespace SleepHunter.Views
                 logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
             }
         }
-        #endregion
 
-        #region Client Add/Remove/Update Methods
         private void UpdateSkillSpellGridWidths()
         {
             var settings = UserSettingsManager.Instance.Settings;
@@ -1143,7 +1134,6 @@ namespace SleepHunter.Views
                     break;
             }
         }
-        #endregion
 
         private void ToggleModalOverlay(bool showHide) => modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
 
@@ -1535,7 +1525,6 @@ namespace SleepHunter.Views
             RefreshFlowerQueue();
         }
 
-        #region Toolbar Button Click Methods
         private void startNewClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
 
         private void startMacroButton_Click(object sender, RoutedEventArgs e)
@@ -1585,7 +1574,6 @@ namespace SleepHunter.Views
 
         private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
-        #endregion
 
         private void clientListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {

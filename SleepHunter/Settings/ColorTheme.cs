@@ -9,21 +9,21 @@ using SleepHunter.Media;
 namespace SleepHunter.Settings
 {
     [Serializable]
-    public sealed class ColorTheme : ObservableObject
+    internal sealed class ColorTheme : ObservableObject
     {
         private string name;
         private int sortIndex;
 
         [NonSerialized]
-        SolidColorBrush background;
+        private SolidColorBrush background;
 
-        HueSaturationValue backgroundHsv;
+        private HueSaturationValue backgroundHsv;
 
         [NonSerialized]
-        SolidColorBrush foreground;
+        private SolidColorBrush foreground;
 
-        HueSaturationValue foregroundHsv;
-        bool isDefault;
+        private HueSaturationValue foregroundHsv;
+        private bool isDefault;
 
         [XmlAttribute("Name")]
         public string Name
