@@ -6,14 +6,12 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal sealed class ProcessMemoryAccessor : IDisposable
+    public sealed class ProcessMemoryAccessor : IDisposable
     {
         private bool isDisposed;
 
         public int ProcessId { get; }
-
         public IntPtr ProcessHandle { get; private set; }
-
         public ProcessAccess Access { get; }
 
         public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)

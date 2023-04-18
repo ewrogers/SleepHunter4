@@ -6,7 +6,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal sealed class ProcessMemoryStream : Stream
+    public sealed class ProcessMemoryStream : Stream
     {
         private bool isDisposed;
         private readonly bool leaveOpen;
@@ -15,7 +15,7 @@ namespace SleepHunter.IO.Process
         public override bool CanRead => ProcessHandle != IntPtr.Zero && Access.HasFlag(ProcessAccess.Read);
         public override bool CanSeek => ProcessHandle != IntPtr.Zero;
         public override bool CanWrite => ProcessHandle != IntPtr.Zero && Access.HasFlag(ProcessAccess.Write);
-        public override bool CanTimeout { get { return false; } }
+        public override bool CanTimeout => false;
 
         public IntPtr ProcessHandle { get; set; }
 

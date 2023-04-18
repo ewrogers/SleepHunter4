@@ -10,51 +10,24 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal enum EquipmentSlot : byte
-    {
-        Weapon,
-        Armor,
-        Shield,
-        Helmet,
-        Earring,
-        Necklace,
-        LeftRing,
-        RightRing,
-        LeftGauntlet,
-        RightGauntlet,
-        Belt,
-        Greaves,
-        Boots,
-        Accessory1,
-        Overcoat,
-        Hat,
-        Accessory2,
-        Accessory3
-    }
-
-    internal sealed class EquipmentSet : IEnumerable<InventoryItem>
+    public sealed class EquipmentSet : IEnumerable<InventoryItem>
     {
         private static readonly string EquipmentKey = @"Equipment";
 
         public static readonly int EquipmentCount = 18;
 
-        private Player owner;
         private readonly List<InventoryItem> equipment = new List<InventoryItem>(EquipmentCount);
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { owner = value; }
-        }
+        public Player Owner { get; set; }
 
-        public int Count { get { return equipment.Count((item) => { return !item.IsEmpty; }); } }
+        public int Count => equipment.Count((item) => { return !item.IsEmpty; });
 
         public EquipmentSet()
            : this(null) { }
 
         public EquipmentSet(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InitializeEquipment();
         }
 
@@ -190,7 +163,7 @@ namespace SleepHunter.Models
             return isEmpty;
         }
 
-        bool IsSlotEmpty(EquipmentSlot slot)
+        private bool IsSlotEmpty(EquipmentSlot slot)
         {
             var item = GetSlot(slot);
 
@@ -200,18 +173,18 @@ namespace SleepHunter.Models
 
         public void Update()
         {
-            if (owner == null)
+            if (Owner == null)
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
-            var version = this.Owner.Version;
+            var version = Owner.Version;
 
             if (version == null)
             {
@@ -271,12 +244,8 @@ namespace SleepHunter.Models
             }
         }
 
-        public InventoryItem GetSlot(EquipmentSlot slot)
-        {
-            return equipment[(int)slot];
-        }
+        public InventoryItem GetSlot(EquipmentSlot slot) => equipment[(int)slot];
 
-        #region IEnumerable Methods
         public IEnumerator<InventoryItem> GetEnumerator()
         {
             foreach (var gear in equipment)
@@ -284,10 +253,6 @@ namespace SleepHunter.Models
                     yield return gear;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

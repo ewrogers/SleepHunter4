@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    internal sealed class ColorPalette : IEnumerable<Color>
+    public sealed class ColorPalette : IEnumerable<Color>
     {
         public static readonly int ColorCount = 256;
 

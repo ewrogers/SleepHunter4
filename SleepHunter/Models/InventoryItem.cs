@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Models
 {
-    internal sealed class InventoryItem : ObservableObject
+    public sealed class InventoryItem : ObservableObject
     {
         private bool isEmpty;
         private int slot;

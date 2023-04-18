@@ -1,7 +1,7 @@
 ﻿
-namespace SleepHunter.Settings
+namespace SleepHunter.Macro
 {
-    internal enum MacroAction
+    public enum MacroAction
     {
         None = 0,
         Start,

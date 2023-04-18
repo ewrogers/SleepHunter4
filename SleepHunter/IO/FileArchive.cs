@@ -8,7 +8,7 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.IO
 {
-    internal sealed class FileArchive : IDisposable
+    public sealed class FileArchive : IDisposable
     {
         private static readonly int NameLength = 13;
 

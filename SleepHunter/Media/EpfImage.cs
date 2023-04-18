@@ -4,16 +4,13 @@ using System.IO;
 
 namespace SleepHunter.Media
 {
-    internal sealed class EpfImage
+    public sealed class EpfImage
     {
-        private readonly List<EpfFrame> frames;
+        private readonly List<EpfFrame> frames = new List<EpfFrame>();
 
         public string Name { get; }
-
         public int Width { get; }
-
         public int Height { get; }
-
         public int FrameCount => frames.Count;
 
         public IReadOnlyCollection<EpfFrame> Frames => frames;
@@ -25,9 +22,7 @@ namespace SleepHunter.Media
             Height = height;
 
             if (frames != null)
-                this.frames = new List<EpfFrame>(frames);
-            else
-                this.frames = new List<EpfFrame>();
+                this.frames.AddRange(frames);
         }
 
         public EpfImage(string filename)

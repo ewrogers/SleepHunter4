@@ -6,7 +6,7 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    internal sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
+    public sealed class FlowerQueueItem : ObservableObject, ICloneable
     {
         private int id;
         private SpellTarget target = new SpellTarget();

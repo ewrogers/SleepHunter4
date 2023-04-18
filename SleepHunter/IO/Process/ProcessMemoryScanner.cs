@@ -7,7 +7,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal sealed class ProcessMemoryScanner : IDisposable
+    public sealed class ProcessMemoryScanner : IDisposable
     {
         private static readonly int PageSize = 64 * 1024;
         private static readonly uint MinimumVmAddress = 0x00400000;
@@ -126,7 +126,7 @@ namespace SleepHunter.IO.Process
             CheckIfDisposed();
 
             if (value.Length >= internalStringBuffer.Length)
-                throw new InvalidOperationException("Length exceeded the buffer size");
+                throw new InvalidOperationException("Length exceeded the buffer size.");
 
             Encoding.ASCII.GetBytes(value, 0, value.Length, internalStringBuffer, 0);
             return Find(internalStringBuffer, value.Length, startingAddress, endingAddress);

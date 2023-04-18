@@ -8,7 +8,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal sealed class ProcessManager
+    public sealed class ProcessManager
     {
         private const string DarkAgesClassName = "DarkAges";
         private static readonly ProcessManager instance = new ProcessManager();

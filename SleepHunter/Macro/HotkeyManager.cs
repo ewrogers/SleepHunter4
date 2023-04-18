@@ -8,7 +8,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-    internal sealed class HotkeyManager
+    public sealed class HotkeyManager
     {
         private static readonly HotkeyManager instance = new HotkeyManager();
 

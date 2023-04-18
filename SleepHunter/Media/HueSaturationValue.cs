@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace SleepHunter.Media
 {
     [Serializable]
-    internal readonly struct HueSaturationValue
+    public readonly struct HueSaturationValue
     {
         [XmlIgnore]
         public Color Color { get; }

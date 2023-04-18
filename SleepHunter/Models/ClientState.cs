@@ -7,7 +7,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal sealed class ClientState : ObservableObject
+    public sealed class ClientState : ObservableObject
     {
         private static readonly string ActivePanelKey = @"ActivePanel";
         private static readonly string InventoryExpandedKey = @"InventoryExpanded";
@@ -27,59 +27,57 @@ namespace SleepHunter.Models
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
 
         public string VersionKey
         {
-            get { return versionKey; }
-            set { SetProperty(ref versionKey, value); }
+            get => versionKey;
+            set => SetProperty(ref versionKey, value);
         }
 
         public InterfacePanel ActivePanel
         {
-            get { return activePanel; }
-            set { SetProperty(ref activePanel, value); }
+            get => activePanel;
+            set => SetProperty(ref activePanel, value);
         }
 
         public bool IsInventoryExpanded
         {
-            get { return isInventoryExpanded; }
-            set { SetProperty(ref isInventoryExpanded, value); }
+            get => isInventoryExpanded;
+            set => SetProperty(ref isInventoryExpanded, value);
         }
 
         public bool IsMinimizedMode
         {
-            get { return isMinimizedMode; }
-            set { SetProperty(ref isMinimizedMode, value); }
+            get => isMinimizedMode;
+            set => SetProperty(ref isMinimizedMode, value);
         }
 
         public bool IsDialogOpen
         {
-            get { return isDialogOpen; }
-            set { SetProperty(ref isDialogOpen, value); }
+            get => isDialogOpen;
+            set => SetProperty(ref isDialogOpen, value);
         }
 
         public bool IsSenseOpen
         {
-            get { return isSenseOpen; }
-            set { SetProperty(ref isSenseOpen, value); }
+            get => isSenseOpen;
+            set => SetProperty(ref isSenseOpen, value);
         }
 
         public bool IsUserChatting
         {
-            get { return isUserChatting; }
-            set { SetProperty(ref isUserChatting, value); }
+            get => isUserChatting;
+            set => SetProperty(ref isUserChatting, value);
         }
 
         public ClientState()
            : this(null) { }
 
         public ClientState(Player owner)
-        {
-            this.owner = owner;
-        }
+            => this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
         public void Update()
         {
@@ -92,7 +90,7 @@ namespace SleepHunter.Models
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

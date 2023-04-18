@@ -4,7 +4,7 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.IO.Process
 {
-    internal static class MemoryVariableExtender
+    public static class MemoryVariableExtender
     {
         private static readonly long MinimumAddress = 0x00400000;
         private static readonly long MaximumAddress = 0x7FFFFFFF;

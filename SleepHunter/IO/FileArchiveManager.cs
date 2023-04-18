@@ -5,7 +5,7 @@ using System.IO;
 
 namespace SleepHunter.IO
 {
-    internal sealed class FileArchiveManager
+    public sealed class FileArchiveManager
     {
         private static readonly FileArchiveManager instance = new FileArchiveManager();
 

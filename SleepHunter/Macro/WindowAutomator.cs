@@ -6,7 +6,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-    internal static class WindowAutomator
+    public static class WindowAutomator
     {
         public static readonly byte VK_SHIFT = 0x10;
         public static readonly byte VK_ESCAPE = 0x1B;

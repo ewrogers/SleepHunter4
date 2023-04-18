@@ -9,7 +9,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Media
 {
-    internal sealed class IconManager
+    public sealed class IconManager
     {
         private static readonly IconManager instance = new IconManager();
 

@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace SleepHunter.Media
 {
-    internal sealed class RenderedBitmap
+    public sealed class RenderedBitmap
     {
         public int Width { get; }
         public int Height { get; }

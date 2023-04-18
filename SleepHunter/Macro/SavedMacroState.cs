@@ -11,79 +11,69 @@ namespace SleepHunter.Macro
 {
     [Serializable]
     [XmlRoot("MacroState")]
-    internal sealed class SavedMacroState : ObservableObject
+    public sealed class SavedMacroState : ObservableObject
     {
         private string characterName;
         private ModifierKeys hotkeyModifiers;
         private Key hotkeyKey;
         private bool useLyliacVineyard;
         private bool flowerAlternateCharacters;
-        private List<SavedSkillState> skills = new List<SavedSkillState>();
-        private List<SavedSpellState> spells = new List<SavedSpellState>();
-        private List<SavedFlowerState> flowers = new List<SavedFlowerState>();
+        private readonly List<SavedSkillState> skills = new List<SavedSkillState>();
+        private readonly List<SavedSpellState> spells = new List<SavedSpellState>();
+        private readonly List<SavedFlowerState> flowers = new List<SavedFlowerState>();
 
         [XmlAttribute("Name")]
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         [XmlAttribute(nameof(HotkeyModifiers))]
         [DefaultValue(ModifierKeys.None)]
         public ModifierKeys HotkeyModifiers
         {
-            get { return hotkeyModifiers; }
-            set { SetProperty(ref hotkeyModifiers, value); }
+            get => hotkeyModifiers;
+            set => SetProperty(ref hotkeyModifiers, value);
         }
 
         [XmlAttribute("Hotkey")]
         [DefaultValue(Key.None)]
         public Key HotkeyKey
         {
-            get { return hotkeyKey; }
-            set { SetProperty(ref hotkeyKey, value); }
+            get => hotkeyKey;
+            set => SetProperty(ref hotkeyKey, value);
         }
 
         [XmlAttribute(nameof(UseLyliacVineyard))]
         [DefaultValue(false)]
         public bool UseLyliacVineyard
         {
-            get { return useLyliacVineyard; }
-            set { SetProperty(ref useLyliacVineyard, value); }
+            get => useLyliacVineyard;
+            set => SetProperty(ref useLyliacVineyard, value);
         }
 
         [XmlAttribute(nameof(FlowerAlternateCharacters))]
         [DefaultValue(false)]
         public bool FlowerAlternateCharacters
         {
-            get { return flowerAlternateCharacters; }
-            set { SetProperty(ref flowerAlternateCharacters, value); }
+            get => flowerAlternateCharacters;
+            set => SetProperty(ref flowerAlternateCharacters, value);
         }
 
         [XmlArray(nameof(Skills))]
         [XmlArrayItem("Skill")]
-        public List<SavedSkillState> Skills
-        {
-            get { return skills; }
-            private set { SetProperty(ref skills, value); }
-        }
+        public List<SavedSkillState> Skills => skills;
+
 
         [XmlArray(nameof(Spells))]
         [XmlArrayItem("Spell")]
-        public List<SavedSpellState> Spells
-        {
-            get { return spells; }
-            private set { SetProperty(ref spells, value); }
-        }
+        public List<SavedSpellState> Spells => spells;
+
 
         [XmlArray(nameof(Flowers))]
         [XmlArrayItem("Flower")]
-        public List<SavedFlowerState> Flowers
-        {
-            get { return flowers; }
-            private set { SetProperty(ref flowers, value); }
-        }
+        public List<SavedFlowerState> Flowers => flowers;
 
         public SavedMacroState(PlayerMacroState macroState)
         {

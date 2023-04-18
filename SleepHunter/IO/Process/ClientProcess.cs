@@ -6,7 +6,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal sealed class ClientProcess : ObservableObject
+    public sealed class ClientProcess : ObservableObject
     {
         private int processId;
         private IntPtr windowHandle;
@@ -53,7 +53,6 @@ namespace SleepHunter.IO.Process
         }
 
         public double WindowScaleX => Math.Floor(WindowWidth / 640.0);
-
         public double WindowScaleY => Math.Floor(WindowHeight / 480.0);
 
         public DateTime CreationTime

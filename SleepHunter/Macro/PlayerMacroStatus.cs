@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Macro
 {
-    internal enum PlayerMacroStatus
+    public enum PlayerMacroStatus
     {
         Idle = 0,
         Waiting,

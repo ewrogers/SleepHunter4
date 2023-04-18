@@ -75,8 +75,14 @@
     <Compile Include="Converters\VisibilityInverter.cs" />
     <Compile Include="Extensions\ControlExtender.cs" />
     <Compile Include="Extensions\VersionExtender.cs" />
+    <Compile Include="IO\Process\ProcessAccessExtender.cs" />
+    <Compile Include="Macro\MacroAction.cs" />
+    <Compile Include="Macro\MacroStatus.cs" />
+    <Compile Include="Macro\MacroStatusEventArgs.cs" />
     <Compile Include="Metadata\ModifierAction.cs" />
     <Compile Include="Metadata\ModifierScope.cs" />
+    <Compile Include="Models\EquipmentSlot.cs" />
+    <Compile Include="Models\InterfacePanelExtender.cs" />
     <Compile Include="Models\PlayerSortOrder.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
@@ -121,7 +127,6 @@
     <Compile Include="Settings\ColorThemeCollection.cs" />
     <Compile Include="Settings\ColorThemeEventArgs.cs" />
     <Compile Include="Settings\ColorThemeManager.cs" />
-    <Compile Include="Settings\MacroAction.cs" />
     <Compile Include="Settings\UserSetting.cs" />
     <Compile Include="Settings\UserSettings.cs" />
     <Compile Include="Settings\UserSettingsManager.cs" />

@@ -7,7 +7,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-    internal static class PlayerInterfaceExtender
+    public static class PlayerInterfaceExtender
     {
         public const char BacktickCharacter = '`';
         public static void Disarm(this Player client)

@@ -9,7 +9,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-    internal sealed class MacroManager
+    public sealed class MacroManager
     {
         private static readonly MacroManager instance = new MacroManager();
 

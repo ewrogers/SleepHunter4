@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 namespace SleepHunter.IO.Process
 {
     [Serializable]
-    internal class MemoryVariable
+    public class MemoryVariable
     {
         protected long address;
 

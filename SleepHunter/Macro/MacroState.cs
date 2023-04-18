@@ -8,16 +8,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-    internal enum MacroStatus
-    {
-        Idle,
-        Running,
-        Paused,
-        Stopped,
-        Error = -1
-    }
-
-    internal abstract class MacroState : ObservableObject, IDisposable
+    public abstract class MacroState : ObservableObject, IDisposable
     {
         bool isDisposed;
 
@@ -35,20 +26,20 @@ namespace SleepHunter.Macro
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public Player Client
         {
-            get { return client; }
-            set { SetProperty(ref client, value); }
+            get => client;
+            set => SetProperty(ref client, value);
         }
 
         public MacroStatus Status
         {
-            get { return status; }
-            set { SetProperty(ref status, value); }
+            get => status;
+            set => SetProperty(ref status, value);
         }
 
         public MacroState(Player client)

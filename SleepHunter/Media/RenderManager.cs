@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    internal sealed class RenderManager
+    public sealed class RenderManager
     {
         private static readonly RenderManager instance = new RenderManager();
 

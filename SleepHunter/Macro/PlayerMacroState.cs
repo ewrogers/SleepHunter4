@@ -10,7 +10,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-    internal sealed class PlayerMacroState : MacroState
+    public sealed class PlayerMacroState : MacroState
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
@@ -44,8 +44,8 @@ namespace SleepHunter.Macro
 
         public PlayerMacroStatus PlayerStatus
         {
-            get { return playerStatus; }
-            set { SetProperty(ref playerStatus, value, "PlayerStatus"); }
+            get => playerStatus;
+            set => SetProperty(ref playerStatus, value);
         }
 
         public IReadOnlyList<SpellQueueItem> QueuedSpells => spellQueue;
@@ -62,32 +62,32 @@ namespace SleepHunter.Macro
 
         public bool IsWaitingOnMana
         {
-            get { return isWaitingOnMana; }
-            set { SetProperty(ref isWaitingOnMana, value, "IsWaitingOnMana"); }
+            get => isWaitingOnMana;
+            set => SetProperty(ref isWaitingOnMana, value);
         }
 
         public bool UseLyliacVineyard
         {
-            get { return useLyliacVineyard; }
-            set { SetProperty(ref useLyliacVineyard, value, "UseLyliacVineyard"); }
+            get => useLyliacVineyard;
+            set => SetProperty(ref useLyliacVineyard, value);
         }
 
         public bool FlowerAlternateCharacters
         {
-            get { return flowerAlternateCharacters; }
-            set { SetProperty(ref flowerAlternateCharacters, value, "FlowerAlternateCharacters"); }
+            get => flowerAlternateCharacters;
+            set => SetProperty(ref flowerAlternateCharacters, value);
         }
 
         public DateTime SpellCastTimestamp
         {
-            get { return spellCastTimestamp; }
-            private set { spellCastTimestamp = value; }
+            get => spellCastTimestamp;
+            private set => SetProperty(ref spellCastTimestamp, value);
         }
 
         public TimeSpan SpellCastDuration
         {
-            get { return spellCastDuration; }
-            private set { spellCastDuration = value; }
+            get => spellCastDuration;
+            private set => SetProperty(ref spellCastDuration, value);
         }
 
         public bool IsSpellCasting
@@ -107,6 +107,9 @@ namespace SleepHunter.Macro
 
         public void AddToSpellQueue(SpellQueueItem spell, int index = -1)
         {
+            if (spell == null)
+                throw new ArgumentNullException(nameof(spell));
+            
             spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
 
             spellQueueLock.EnterWriteLock();
@@ -124,6 +127,9 @@ namespace SleepHunter.Macro
 
         public void AddToFlowerQueue(FlowerQueueItem flower, int index = -1)
         {
+            if (flower == null)
+                throw new ArgumentNullException(nameof(flower));
+
             flowerQueueLock.EnterWriteLock();
             try
             {
@@ -159,6 +165,9 @@ namespace SleepHunter.Macro
 
         public bool RemoveFromSpellQueue(SpellQueueItem spell)
         {
+            if (spell == null)
+                throw new ArgumentNullException(nameof(spell));
+
             var wasRemoved = false;
 
             spellQueueLock.EnterWriteLock();
@@ -190,6 +199,9 @@ namespace SleepHunter.Macro
 
         public bool RemoveFromFlowerQueue(FlowerQueueItem flower)
         {
+            if (flower == null)
+                throw new ArgumentNullException(nameof(flower));
+
             var wasRemoved = false;
 
             flowerQueueLock.EnterWriteLock();
@@ -255,6 +267,9 @@ namespace SleepHunter.Macro
 
         public bool SpellQueueMoveItemUp(SpellQueueItem item)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
             var hasChanges = false;
 
             spellQueueLock.EnterWriteLock();
@@ -272,6 +287,9 @@ namespace SleepHunter.Macro
 
         public bool SpellQueueMoveItemDown(SpellQueueItem item)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
             var hasChanges = false;
 
             spellQueueLock.EnterWriteLock();
@@ -289,6 +307,9 @@ namespace SleepHunter.Macro
 
         public bool FlowerQueueMoveItemUp(FlowerQueueItem item)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
             var hasChanges = false;
 
             flowerQueueLock.EnterWriteLock();
@@ -306,6 +327,9 @@ namespace SleepHunter.Macro
 
         public bool FlowerQueueMoveItemDown(FlowerQueueItem item)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
             var hasChanges = false;
 
             flowerQueueLock.EnterWriteLock();
@@ -364,10 +388,7 @@ namespace SleepHunter.Macro
             finally { flowerQueueLock.ExitUpgradeableReadLock(); }
         }
 
-        public void CancelCasting()
-        {
-            spellCastDuration = TimeSpan.Zero;
-        }
+        public void CancelCasting() => spellCastDuration = TimeSpan.Zero;
 
         protected override void MacroLoop(object argument)
         {
@@ -1214,11 +1235,11 @@ namespace SleepHunter.Macro
             switch (status)
             {
                 case MacroStatus.Running:
-                    SetPlayerStatus(this.PlayerStatus);
+                    SetPlayerStatus(PlayerStatus);
                     break;
 
                 case MacroStatus.Paused:
-                    SetPlayerStatus(this.PlayerStatus);
+                    SetPlayerStatus(PlayerStatus);
                     client.Status = string.Format("Paused: {0}", client.Status);
                     break;
 

@@ -6,7 +6,7 @@ using System.Xml.Serialization;
 namespace SleepHunter.IO.Process
 {
     [Serializable]
-    internal sealed class MemoryOffset
+    public sealed class MemoryOffset
     {
         private long offset;
 

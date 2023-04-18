@@ -10,7 +10,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal sealed class Inventory : IEnumerable<InventoryItem>
+    public sealed class Inventory : IEnumerable<InventoryItem>
     {
         private static readonly string InventoryKey = @"Inventory";
 
