@@ -1125,6 +1125,9 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -1164,7 +1167,7 @@
 
                     <Separator Grid.Row="5"
                                Style="{StaticResource ObsidianSeparator}"
-                               Margin="8"/>
+                               Margin="16"/>
 
                     <TextBlock Name="versionText" 
                                Grid.Row="6" 
@@ -1174,22 +1177,44 @@
                                TextAlignment="Center"
                                Margin="4,8,4,4"/>
 
-                    <TextBlock Name="buildText" 
-                               Grid.Row="7" 
-                               Text="Build ??"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="20"
-                               TextAlignment="Center"
-                               Opacity="0.75"
-                               Margin="4,4"/>
+                    <Separator Grid.Row="7"
+                               Style="{StaticResource ObsidianSeparator}"
+                               Margin="8,16"/>
 
-                    <TextBlock Name="buildDateText" 
+                    <TextBlock Name="osVersionText" 
                                Grid.Row="8" 
-                               Text="Unknown Build Date"
+                               Text="OS Version"
                                Style="{StaticResource ObsidianText}"
                                FontSize="18"
                                TextAlignment="Center"
                                Opacity="0.75"
+                               Margin="4,4"/>
+
+                    <TextBlock Name="cpuNameText" 
+                               Grid.Row="9" 
+                               Text="Unknown CPU"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4,4"/>
+
+                    <TextBlock Name="cpuCountText" 
+                               Grid.Row="10" 
+                               Text="Unknown CPU"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4,4"/>
+                    
+                    <TextBlock Name="memorySizeText" 
+                               Grid.Row="11" 
+                               Text="Unknown RAM"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               TextAlignment="Center"
+                               Opacity="0.5"
                                Margin="4,4"/>
                 </Grid>
             </TabItem>

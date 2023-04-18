@@ -35,7 +35,7 @@ namespace SleepHunter.IO
 
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, null, HandleInheritability.None, true);
+                mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, true);
                 ReadTableOfContents();
             }
 

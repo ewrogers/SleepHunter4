@@ -3,7 +3,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>Updater</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
@@ -12,10 +12,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>SleepHunter-Updater.ico</ApplicationIcon>
+    <Title>SleepHunter Updater</Title>
+    <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
+    <PackageProjectUrl>https://github.com/ewrogers/SleepHunter4</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ewrogers/SleepHunter4</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>Auto-Update utility for SleepHunter</Description>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.IO.Compression" />
-  </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter-Updater.ico" />
   </ItemGroup>
