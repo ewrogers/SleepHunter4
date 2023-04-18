@@ -7,7 +7,7 @@ using SleepHunter.Views;
 
 namespace SleepHunter.Extensions
 {
-    public static class WindowExtender
+    internal static class WindowExtender
     {
         public static T InvokeIfRequired<T>(this Dispatcher dispatcher, Func<T> action, T value, DispatcherPriority priority = DispatcherPriority.Normal)
         {

@@ -2,13 +2,13 @@
 
 namespace SleepHunter.Metadata
 {
-    public delegate void StaffMetadataEventHandler(object sender, StaffMetadataEventArgs e);
+    internal delegate void StaffMetadataEventHandler(object sender, StaffMetadataEventArgs e);
 
-    public sealed class StaffMetadataEventArgs : EventArgs
+    internal sealed class StaffMetadataEventArgs : EventArgs
     {
-        readonly StaffMetadata staff;
+        private readonly StaffMetadata staff;
 
-        public StaffMetadata Staff { get { return staff; } }
+        public StaffMetadata Staff => staff;
 
         public StaffMetadataEventArgs(StaffMetadata staff)
         {

@@ -10,10 +10,9 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Media
 {
-    public sealed class IconManager
+    internal sealed class IconManager
     {
-        #region Singleton
-        static readonly IconManager instance = new IconManager();
+        private static readonly IconManager instance = new IconManager();
 
         public static IconManager Instance { get { return instance; } }
 
@@ -21,15 +20,14 @@ namespace SleepHunter.Media
         {
 
         }
-        #endregion
 
-        TaskScheduler context;
-        ConcurrentDictionary<int, BitmapSource> skillIcons = new ConcurrentDictionary<int, BitmapSource>();
-        ConcurrentDictionary<int, BitmapSource> spellIcons = new ConcurrentDictionary<int, BitmapSource>();
-        ColorPalette skillIconPalette;
-        ColorPalette spellIconPalette;
-        EpfImage skillIconImage;
-        EpfImage spellIconImage;
+        private TaskScheduler context;
+        private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new ConcurrentDictionary<int, BitmapSource>();
+        private readonly ConcurrentDictionary<int, BitmapSource> spellIcons = new ConcurrentDictionary<int, BitmapSource>();
+        private ColorPalette skillIconPalette;
+        private ColorPalette spellIconPalette;
+        private EpfImage skillIconImage;
+        private EpfImage spellIconImage;
 
         public TaskScheduler Context
         {
@@ -126,7 +124,7 @@ namespace SleepHunter.Media
             spellIcons.Clear();
         }
 
-        RenderedBitmap RenderSkillIcon(int index)
+        private RenderedBitmap RenderSkillIcon(int index)
         {
             var settings = UserSettingsManager.Instance.Settings;
 
@@ -148,7 +146,7 @@ namespace SleepHunter.Media
             return bitmap;
         }
 
-        RenderedBitmap RenderSpellIcon(int index)
+        private RenderedBitmap RenderSpellIcon(int index)
         {
             var settings = UserSettingsManager.Instance.Settings;
 
@@ -181,7 +179,7 @@ namespace SleepHunter.Media
             spellIconImage = GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
         }
 
-        static string GetRelativePath(string currentDirectory, string filename)
+        private static string GetRelativePath(string currentDirectory, string filename)
         {
             if (Path.IsPathRooted(filename))
                 return filename;
@@ -192,7 +190,7 @@ namespace SleepHunter.Media
             return path;
         }
 
-        static ColorPalette GetColorPalette(string archiveFile, string paletteFile)
+        private static ColorPalette GetColorPalette(string archiveFile, string paletteFile)
         {
             var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
             var archive = FileArchiveManager.Instance.GetArchive(archivePath);
@@ -210,7 +208,7 @@ namespace SleepHunter.Media
             catch { return null; }
         }
 
-        static EpfImage GetEpfImage(string archiveFile, string epfFile)
+        private static EpfImage GetEpfImage(string archiveFile, string epfFile)
         {
             var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
             var archive = FileArchiveManager.Instance.GetArchive(archivePath);

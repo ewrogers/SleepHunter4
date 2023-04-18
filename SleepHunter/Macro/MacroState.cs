@@ -8,7 +8,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-    public enum MacroStatus
+    internal enum MacroStatus
     {
         Idle,
         Running,
@@ -17,7 +17,7 @@ namespace SleepHunter.Macro
         Error = -1
     }
 
-    public abstract class MacroState : ObservableObject, IDisposable
+    internal abstract class MacroState : ObservableObject, IDisposable
     {
         bool isDisposed;
         protected string name;
@@ -52,13 +52,9 @@ namespace SleepHunter.Macro
 
         public MacroState(Player client)
         {
-            if (client == null)
-                throw new ArgumentNullException("client");
-
-            this.client = client;
+            this.client = client ?? throw new ArgumentNullException("client");
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
@@ -78,7 +74,6 @@ namespace SleepHunter.Macro
 
             isDisposed = true;
         }
-        #endregion
 
         public void Start()
         {

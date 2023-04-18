@@ -9,17 +9,15 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-    public sealed class HotkeyManager
+    internal sealed class HotkeyManager
     {
-        #region Singleton
-        static readonly HotkeyManager instance = new HotkeyManager();
+        private static readonly HotkeyManager instance = new HotkeyManager();
 
         public static HotkeyManager Instance { get { return instance; } }
 
         private HotkeyManager() { }
-        #endregion
 
-        ConcurrentDictionary<int, Hotkey> hotkeys = new ConcurrentDictionary<int, Hotkey>();
+        private readonly ConcurrentDictionary<int, Hotkey> hotkeys = new ConcurrentDictionary<int, Hotkey>();
 
         public int Count { get { return hotkeys.Count; } }
 
@@ -66,11 +64,10 @@ namespace SleepHunter.Macro
         {
             if (hotkey == null)
                 throw new ArgumentNullException("hotkey");
+            
+            NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
 
-            var success = NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
-
-            Hotkey removedHotkey;
-            var wasRemoved = hotkeys.TryRemove(hotkey.Id, out removedHotkey);
+            var wasRemoved = hotkeys.TryRemove(hotkey.Id, out var removedHotkey);
 
             if (wasRemoved && hotkey.Id > 0)
                 NativeMethods.GlobalDeleteAtom((ushort)hotkey.Id);

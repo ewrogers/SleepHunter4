@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,7 +10,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public enum EquipmentSlot : byte
+    internal enum EquipmentSlot : byte
     {
         Weapon,
         Armor,
@@ -33,14 +32,14 @@ namespace SleepHunter.Models
         Accessory3
     }
 
-    public sealed class EquipmentSet : IEnumerable<InventoryItem>
+    internal sealed class EquipmentSet : IEnumerable<InventoryItem>
     {
-        static readonly string EquipmentKey = @"Equipment";
+        private static readonly string EquipmentKey = @"Equipment";
 
         public static readonly int EquipmentCount = 18;
 
-        Player owner;
-        List<InventoryItem> equipment = new List<InventoryItem>(EquipmentCount);
+        private Player owner;
+        private readonly List<InventoryItem> equipment = new List<InventoryItem>(EquipmentCount);
 
         public Player Owner
         {
@@ -287,7 +286,7 @@ namespace SleepHunter.Models
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
         #endregion
     }

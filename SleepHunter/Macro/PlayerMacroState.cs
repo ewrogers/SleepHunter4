@@ -10,7 +10,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Macro
 {
-    public sealed class PlayerMacroState : MacroState
+    internal sealed class PlayerMacroState : MacroState
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);

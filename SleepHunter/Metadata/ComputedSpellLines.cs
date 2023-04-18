@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace SleepHunter.Metadata
 {
-    public sealed class ComputedSpellLines
+    internal sealed class ComputedSpellLines
     {
-        ConcurrentDictionary<string, int> spellLines = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, int> spellLines = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public int SpellCount
         {
@@ -35,9 +35,7 @@ namespace SleepHunter.Metadata
         {
             spellName = spellName.Trim();
 
-            int lines;
-
-            if (!spellLines.TryGetValue(spellName, out lines))
+            if (!spellLines.TryGetValue(spellName, out var lines))
                 return null;
 
             return lines;
@@ -47,8 +45,7 @@ namespace SleepHunter.Metadata
         {
             spellName = spellName.Trim();
 
-            int lines;
-            return spellLines.TryRemove(spellName, out lines);
+            return spellLines.TryRemove(spellName, out var lines);
         }
 
         public void ClearLines()

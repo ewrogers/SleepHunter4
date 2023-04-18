@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    public sealed class RenderManager
+    internal sealed class RenderManager
     {
-        #region Singleton
-        static readonly RenderManager instance = new RenderManager();
+        private static readonly RenderManager instance = new RenderManager();
 
         public static RenderManager Instance { get { return instance; } }
 
         private RenderManager() { }
-        #endregion
 
         public IEnumerable<RenderedBitmap> Render(EpfImage image, ColorPalette palette)
         {
@@ -74,7 +73,8 @@ namespace SleepHunter.Media
             return bitmap;
         }
 
-        static void SetPixel(byte[] bits, int x, int y, int stride, Color c)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetPixel(byte[] bits, int x, int y, int stride, Color c)
         {
             var i = (x * 4) + (y * stride);
 

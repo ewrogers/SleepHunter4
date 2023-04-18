@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,22 +15,22 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
+    internal sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
     {
-        static readonly string SkillbookKey = @"Skillbook";
-        static readonly string SkillCooldownsKey = "SkillCooldowns";
+        private static readonly string SkillbookKey = @"Skillbook";
+        private static readonly string SkillCooldownsKey = "SkillCooldowns";
 
         public static readonly int TemuairSkillCount = 36;
         public static readonly int MedeniaSkillCount = 36;
         public static readonly int WorldSkillCount = 18;
 
-        bool isDisposed;
-        Player owner;
-        List<Skill> skills = new List<Skill>(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
-        ConcurrentDictionary<string, bool> activeSkills = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        private bool isDisposed;
+        private Player owner;
+        private readonly List<Skill> skills = new List<Skill>(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
+        private readonly ConcurrentDictionary<string, bool> activeSkills = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-        ProcessMemoryScanner scanner;
-        IntPtr baseCooldownPointer;
+        private readonly ProcessMemoryScanner scanner;
+        private IntPtr baseCooldownPointer;
 
         public Player Owner
         {
@@ -91,8 +90,7 @@ namespace SleepHunter.Models
 
             if (isDisposing)
             {
-                if (scanner != null)
-                    scanner.Dispose();
+                scanner?.Dispose();
             }
 
             isDisposed = true;
@@ -222,8 +220,8 @@ namespace SleepHunter.Models
                             ushort iconIndex = reader.ReadUInt16();
                             string name = reader.ReadFixedString(skillbookVariable.MaxLength);
 
-                            int currentLevel, maximumLevel;
-                            if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
+                            int maximumLevel;
+                            if (!Ability.TryParseLevels(name, out name, out var currentLevel, out maximumLevel))
                             {
                                 if (!string.IsNullOrWhiteSpace(name))
                                     skills[i].Name = name.Trim();
@@ -239,7 +237,7 @@ namespace SleepHunter.Models
                             if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
                                 metadata = SkillMetadataManager.Instance.GetSkill(name);
 
-                            var isActive = this.IsActive(skills[i].Name);
+                            var isActive = IsActive(skills[i].Name);
                             skills[i].IsActive = isActive.HasValue && isActive.Value;
 
                             if (metadata != null)
@@ -281,7 +279,7 @@ namespace SleepHunter.Models
             }
         }
 
-        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader)
+        private bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader)
         {
             if (version == null || !UpdateSkillbookCooldownPointer(version, reader))
                 return false;
@@ -293,9 +291,7 @@ namespace SleepHunter.Models
 
             try
             {
-                var cooldownVariable = version.GetVariable(SkillCooldownsKey) as SearchMemoryVariable;
-
-                if (cooldownVariable == null)
+                if (!(version.GetVariable(SkillCooldownsKey) is SearchMemoryVariable cooldownVariable))
                     return false;
 
                 var offset = cooldownVariable.Offets.FirstOrDefault();
@@ -333,7 +329,7 @@ namespace SleepHunter.Models
             finally { reader.BaseStream.Position = position; }
         }
 
-        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader)
+        private bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader)
         {
             if (version == null)
                 return false;
@@ -342,8 +338,7 @@ namespace SleepHunter.Models
 
             try
             {
-                var cooldownVariable = version.GetVariable(SkillCooldownsKey) as SearchMemoryVariable;
-                if (cooldownVariable == null)
+                if (!(version.GetVariable(SkillCooldownsKey) is SearchMemoryVariable cooldownVariable))
                     return false;
 
                 if (baseCooldownPointer != IntPtr.Zero)
@@ -371,7 +366,6 @@ namespace SleepHunter.Models
             finally { reader.BaseStream.Position = position; }
         }
 
-        #region IEnumerable Methods
         public IEnumerator<Skill> GetEnumerator()
         {
             foreach (var skill in skills)
@@ -383,6 +377,5 @@ namespace SleepHunter.Models
         {
             return GetEnumerator();
         }
-        #endregion
     }
 }

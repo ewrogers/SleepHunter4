@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,18 +14,18 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Models
 {
-    public sealed class Spellbook : ObservableObject, IEnumerable<Spell>
+    internal sealed class Spellbook : ObservableObject, IEnumerable<Spell>
     {
-        static readonly string SpellbookKey = @"Spellbook";
+        private static readonly string SpellbookKey = @"Spellbook";
 
         public static readonly int TemuairSpellCount = 36;
         public static readonly int MedeniaSpellCount = 36;
         public static readonly int WorldSpellCount = 18;
 
-        Player owner;
-        List<Spell> spells = new List<Spell>(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
-        ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new ConcurrentDictionary<string, DateTime>();
-        string activeSpell;
+        private Player owner;
+        private readonly List<Spell> spells = new List<Spell>(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
+        private readonly ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new ConcurrentDictionary<string, DateTime>();
+        private string activeSpell;
 
         public Player Owner
         {
@@ -71,7 +70,7 @@ namespace SleepHunter.Models
             InitialzeSpellbook();
         }
 
-        void InitialzeSpellbook()
+        private void InitialzeSpellbook()
         {
             spells.Clear();
 
@@ -185,15 +184,14 @@ namespace SleepHunter.Models
 
                         try
                         {
-                            bool hasSpell = reader.ReadInt16() != 0;
-                            ushort iconIndex = reader.ReadUInt16();
-                            SpellTargetMode targetMode = (SpellTargetMode)reader.ReadByte();
-                            string name = reader.ReadFixedString(spellbookVariable.MaxLength);
-                            string prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
+                            var hasSpell = reader.ReadInt16() != 0;
+                            var iconIndex = reader.ReadUInt16();
+                            var targetMode = (SpellTargetMode)reader.ReadByte();
+                            var name = reader.ReadFixedString(spellbookVariable.MaxLength);
+                            var prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
                             reader.ReadByte();
 
-                            int currentLevel, maximumLevel;
-                            if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
+                            if (!Ability.TryParseLevels(name, out name, out var currentLevel, out var maximumLevel))
                             {
                                 if (!string.IsNullOrWhiteSpace(name))
                                     spells[i].Name = name.Trim();
@@ -263,7 +261,6 @@ namespace SleepHunter.Models
             }
         }
 
-        #region IEnumerable Methods
         public IEnumerator<Spell> GetEnumerator()
         {
             foreach (var spell in spells)
@@ -275,6 +272,5 @@ namespace SleepHunter.Models
         {
             return GetEnumerator();
         }
-        #endregion
     }
 }

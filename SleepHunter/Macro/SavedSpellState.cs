@@ -8,18 +8,18 @@ using SleepHunter.Models;
 namespace SleepHunter.Macro
 {
     [Serializable]
-    public sealed class SavedSpellState : ObservableObject
+    internal sealed class SavedSpellState : ObservableObject
     {
-        string spellName;
-        TargetCoordinateUnits targetMode;
-        string characterName;
-        double locationX;
-        double locationY;
-        double offsetX;
-        double offsetY;
-        int innerRadius;
-        int outerRadius;
-        int targetLevel;
+        private string spellName;
+        private TargetCoordinateUnits targetMode;
+        private string characterName;
+        private double locationX;
+        private double locationY;
+        private double offsetX;
+        private double offsetY;
+        private int innerRadius;
+        private int outerRadius;
+        private int targetLevel;
 
         [XmlAttribute("Name")]
         public string SpellName

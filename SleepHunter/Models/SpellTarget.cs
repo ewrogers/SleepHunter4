@@ -8,7 +8,7 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    public enum TargetCoordinateUnits
+    internal enum TargetCoordinateUnits
     {
         None = 0,
         Self,
@@ -20,16 +20,16 @@ namespace SleepHunter.Models
         AbsoluteRadius
     }
 
-    public sealed class SpellTarget : ObservableObject
+    internal sealed class SpellTarget : ObservableObject
     {
-        TargetCoordinateUnits unitType;
-        string characterName;
-        Point location = new Point();
-        Point offset = new Point();
-        int innerRadius;
-        int outerRadius;
-        List<Point> radiusPoints;
-        int radiusIndex;
+        private TargetCoordinateUnits unitType;
+        private string characterName;
+        private Point location = new Point();
+        private Point offset = new Point();
+        private int innerRadius;
+        private int outerRadius;
+        private List<Point> radiusPoints;
+        private int radiusIndex;
 
         public TargetCoordinateUnits Units
         {
@@ -86,7 +86,7 @@ namespace SleepHunter.Models
 
         public SpellTarget(TargetCoordinateUnits units, Point location, Point offset)
         {
-            this.unitType = units;
+            unitType = units;
             this.location = location;
             this.offset = offset;
 
@@ -123,21 +123,20 @@ namespace SleepHunter.Models
             return point;
         }
 
-        int ComparePolarAscending(Point a, Point b)
+        private int ComparePolarAscending(Point a, Point b)
         {
             return ComparePolar(a, b, isDescending: false);
         }
 
-        int ComparePolarDescending(Point a, Point b)
+        private int ComparePolarDescending(Point a, Point b)
         {
             return ComparePolar(a, b, isDescending: true);
         }
 
-        int ComparePolar(Point a, Point b, bool isDescending = false)
+        private int ComparePolar(Point a, Point b, bool isDescending = false)
         {
             var polarA = RectToPolar(a);
             var polarB = RectToPolar(b);
-            var center = RectToPolar(location);
 
             var radiusADist = polarA.X - location.X;
             var radiusBDist = polarB.X - location.X;
@@ -164,13 +163,13 @@ namespace SleepHunter.Models
             return 0;
         }
 
-        double Determinant(Point a, Point b)
+        private double Determinant(Point a, Point b)
         {
             var det = (a.X * b.Y - a.Y * b.X);
             return det;
         }
 
-        Point RectToPolar(Point pt)
+        private Point RectToPolar(Point pt)
         {
             var r = Math.Sqrt(pt.X * pt.X + pt.Y * pt.Y);
             var theta = Math.Atan2(pt.Y, pt.X);
@@ -179,7 +178,7 @@ namespace SleepHunter.Models
             return polar;
         }
 
-        Point PolarToRect(Point pt)
+        private Point PolarToRect(Point pt)
         {
             var r = pt.X;
             var theta = pt.Y;
@@ -191,7 +190,7 @@ namespace SleepHunter.Models
             return rect;
         }
 
-        IEnumerable<Point> GetRadiusPoints(Point center, int innerRadius, int outerRadius)
+        private IEnumerable<Point> GetRadiusPoints(Point center, int innerRadius, int outerRadius)
         {
             for (int i = 0; i <= outerRadius; i++)
             {
@@ -240,7 +239,7 @@ namespace SleepHunter.Models
             }
         }
 
-        string ToRelativeString(Point pt)
+        private string ToRelativeString(Point pt)
         {
             if (pt.X == 0 && pt.Y == 0)
                 return "Self";

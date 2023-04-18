@@ -8,19 +8,19 @@ using SleepHunter.Models;
 namespace SleepHunter.Macro
 {
     [Serializable]
-    public sealed class SavedFlowerState : ObservableObject
+    internal sealed class SavedFlowerState : ObservableObject
     {
-        TargetCoordinateUnits targetMode;
-        string characterName;
-        double locationX;
-        double locationY;
-        double offsetX;
-        double offsetY;
-        int innerRadius;
-        int outerRadius;
-        bool hasInterval = true;
-        TimeSpan interval;
-        int manaThreshold;
+        private TargetCoordinateUnits targetMode;
+        private string characterName;
+        private double locationX;
+        private double locationY;
+        private double offsetX;
+        private double offsetY;
+        private int innerRadius;
+        private int outerRadius;
+        private bool hasInterval = true;
+        private TimeSpan interval;
+        private int manaThreshold;
 
         [XmlAttribute("Mode")]
         public TargetCoordinateUnits TargetMode
@@ -105,7 +105,7 @@ namespace SleepHunter.Macro
         public double IntervalSeconds
         {
             get { return interval.TotalSeconds; }
-            set { this.Interval = TimeSpan.FromSeconds(value); }
+            set { Interval = TimeSpan.FromSeconds(value); }
         }
 
         [XmlAttribute("IfManaLessThan")]

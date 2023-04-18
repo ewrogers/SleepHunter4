@@ -8,15 +8,15 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    public sealed class SpellMetadata : ObservableObject
+    internal sealed class SpellMetadata : ObservableObject
     {
-        string name;
-        PlayerClass playerClass;
-        string groupName;
-        int manaCost;
-        int numberOfLines;
-        TimeSpan cooldown;
-        bool canImprove = true;
+        private string name;
+        private PlayerClass playerClass;
+        private string groupName;
+        private int manaCost;
+        private int numberOfLines;
+        private TimeSpan cooldown;
+        private bool canImprove = true;
 
         [XmlAttribute("Name")]
         public string Name

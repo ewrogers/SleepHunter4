@@ -7,12 +7,11 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    public sealed class StaffMetadataManager
+    internal sealed class StaffMetadataManager
     {
         public static readonly string StaffMetadataFile = "Staves.xml";
 
-        #region Singleton
-        static readonly StaffMetadataManager instance = new StaffMetadataManager();
+        private static readonly StaffMetadataManager instance = new StaffMetadataManager();
 
         public static StaffMetadataManager Instance
         {
@@ -30,26 +29,22 @@ namespace SleepHunter.Metadata
             if (e.Spell != null)
                 RecalculateSpellForAllStaves(e.Spell);
         }
-        #endregion
 
-        ConcurrentDictionary<string, StaffMetadata> staves = new ConcurrentDictionary<string, StaffMetadata>(StringComparer.OrdinalIgnoreCase);
-        ConcurrentDictionary<string, ComputedSpellLines> computedLines = new ConcurrentDictionary<string, ComputedSpellLines>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, StaffMetadata> staves = new ConcurrentDictionary<string, StaffMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ComputedSpellLines> computedLines = new ConcurrentDictionary<string, ComputedSpellLines>(StringComparer.OrdinalIgnoreCase);
 
         public event StaffMetadataEventHandler StaffAdded;
         public event StaffMetadataEventHandler StaffUpdated;
         public event StaffMetadataEventHandler StaffRemoved;
         public event SpellLineModifiersEventHandler StaffModifiersChanged;
 
-        #region Collection Properties
         public int Count { get { return staves.Count; } }
 
         public IEnumerable<StaffMetadata> Staves
         {
             get { return from s in staves.Values orderby s.AbilityLevel, s.Level, s.Name select s; }
         }
-        #endregion
 
-        #region Collection Methods
         public void AddStaff(StaffMetadata staff)
         {
             if (staff == null)
@@ -76,8 +71,7 @@ namespace SleepHunter.Metadata
         {
             staffName = staffName.Trim();
 
-            StaffMetadata staff;
-            if (staves.TryGetValue(staffName, out staff))
+            if (staves.TryGetValue(staffName, out var staff))
                 return staff;
 
             return null;
@@ -85,11 +79,8 @@ namespace SleepHunter.Metadata
 
         public bool RemoveStaff(string staffName)
         {
-            StaffMetadata staff;
-            ComputedSpellLines lines;
-
-            var wasRemoved = staves.TryRemove(staffName, out staff);
-            computedLines.TryRemove(staffName, out lines);
+            var wasRemoved = staves.TryRemove(staffName, out var staff);
+            computedLines.TryRemove(staffName, out var _);
 
             if (wasRemoved)
                 OnStaffRemoved(staff);
@@ -99,11 +90,9 @@ namespace SleepHunter.Metadata
 
         public bool RenameStaff(string originalName, string newName)
         {
-            StaffMetadata staff = null;
-            ComputedSpellLines lines = null;
 
-            var wasStaffFound = staves.TryRemove(originalName, out staff);
-            var wasLinesFound = computedLines.TryRemove(originalName, out lines);
+            var wasStaffFound = staves.TryRemove(originalName, out var staff);
+            var wasLinesFound = computedLines.TryRemove(originalName, out var lines);
 
             if (wasLinesFound)
                 computedLines[newName] = lines;
@@ -125,9 +114,7 @@ namespace SleepHunter.Metadata
 
             staves.Clear();
         }
-        #endregion
 
-        #region Spell Lines Methods
         public int? GetLinesWithStaff(string staffName, string spellName)
         {
             if (string.IsNullOrEmpty(staffName))
@@ -141,9 +128,8 @@ namespace SleepHunter.Metadata
 
             staffName = staffName.Trim();
             spellName = spellName.Trim();
-            ComputedSpellLines spellLines = null;
 
-            if (!computedLines.TryGetValue(staffName, out spellLines))
+            if (!computedLines.TryGetValue(staffName, out var spellLines))
                 return null;
 
             if (!SpellMetadataManager.Instance.ContainsSpell(spellName))
@@ -154,8 +140,7 @@ namespace SleepHunter.Metadata
 
         public StaffMetadata GetBestStaffForSpell(string spellName, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
         {
-            int? numberOfLines;
-            return GetBestStaffForSpell(spellName, out numberOfLines, possibleStaves, maximumLevel, maximumAbilityLevel);
+            return GetBestStaffForSpell(spellName, out var numberOfLines, possibleStaves, maximumLevel, maximumAbilityLevel);
         }
 
         public StaffMetadata GetBestStaffForSpell(string spellName, out int? numberOfLines, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
@@ -170,8 +155,7 @@ namespace SleepHunter.Metadata
 
             foreach (var lines in computedLines)
             {
-                StaffMetadata staff = null;
-                if (!staves.TryGetValue(lines.Key, out staff))
+                if (!staves.TryGetValue(lines.Key, out var staff))
                     continue;
 
                 if (possibleStaves != null && !possibleStaves.Contains(staff.Name, StringComparer.OrdinalIgnoreCase))
@@ -230,10 +214,9 @@ namespace SleepHunter.Metadata
 
         public void RecalculateSpell(StaffMetadata staff, SpellMetadata spell)
         {
-            ComputedSpellLines allLines = null;
             var lines = CalculateLinesForSpell(staff, spell);
 
-            if (!computedLines.TryGetValue(staff.Name, out allLines))
+            if (!computedLines.TryGetValue(staff.Name, out var allLines))
             {
                 allLines = CalculateLines(staff);
                 computedLines[staff.Name] = allLines;
@@ -247,9 +230,7 @@ namespace SleepHunter.Metadata
             foreach (var staff in staves.Values)
                 RecalculateSpell(staff, spell);
         }
-        #endregion
 
-        #region File Load & Save Methods
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -261,9 +242,8 @@ namespace SleepHunter.Metadata
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(StaffMetadataCollection));
-            var collection = serializer.Deserialize(stream) as StaffMetadataCollection;
 
-            if (collection != null)
+            if (serializer.Deserialize(stream) is StaffMetadataCollection collection)
                 foreach (var staff in collection.Staves)
                     AddStaff(staff);
         }
@@ -286,9 +266,8 @@ namespace SleepHunter.Metadata
 
             serializer.Serialize(stream, collection, namespaces);
         }
-        #endregion
 
-        ComputedSpellLines CalculateLines(StaffMetadata staff)
+        private ComputedSpellLines CalculateLines(StaffMetadata staff)
         {
             var staffSpellLines = new ComputedSpellLines();
 
@@ -301,7 +280,7 @@ namespace SleepHunter.Metadata
             return staffSpellLines;
         }
 
-        int CalculateLinesForSpell(StaffMetadata staff, SpellMetadata spell)
+        private int CalculateLinesForSpell(StaffMetadata staff, SpellMetadata spell)
         {
             var originalLines = spell.NumberOfLines;
             var lines = spell.NumberOfLines;
@@ -349,61 +328,45 @@ namespace SleepHunter.Metadata
             return Math.Max(0, lines);
         }
 
-        #region Event Handler Methods
-        void OnStaffAdded(StaffMetadata staff)
+        private void OnStaffAdded(StaffMetadata staff)
         {
             staff.ModifiersAdded += staff_ModifiersChanged;
             staff.ModifiersChanged += staff_ModifiersChanged;
             staff.ModifiersRemoved += staff_ModifiersChanged;
 
-            var handler = this.StaffAdded;
-
-            if (handler != null)
-                handler(this, new StaffMetadataEventArgs(staff));
+            StaffAdded?.Invoke(this, new StaffMetadataEventArgs(staff));
         }
 
-        void OnStaffUpdated(StaffMetadata staff)
+        private void OnStaffUpdated(StaffMetadata staff)
         {
             staff.ModifiersAdded += staff_ModifiersChanged;
             staff.ModifiersChanged += staff_ModifiersChanged;
             staff.ModifiersRemoved += staff_ModifiersChanged;
 
-            var handler = this.StaffUpdated;
-
-            if (handler != null)
-                handler(this, new StaffMetadataEventArgs(staff));
+            StaffUpdated?.Invoke(this, new StaffMetadataEventArgs(staff));
         }
 
-        void OnStaffRemoved(StaffMetadata staff)
+        private void OnStaffRemoved(StaffMetadata staff)
         {
             staff.ModifiersAdded -= staff_ModifiersChanged;
             staff.ModifiersChanged -= staff_ModifiersChanged;
             staff.ModifiersRemoved -= staff_ModifiersChanged;
 
-            var handler = this.StaffRemoved;
-
-            if (handler != null)
-                handler(this, new StaffMetadataEventArgs(staff));
+            StaffRemoved?.Invoke(this, new StaffMetadataEventArgs(staff));
         }
 
-        void staff_ModifiersChanged(object sender, SpellLineModifiersEventArgs e)
+        private void staff_ModifiersChanged(object sender, SpellLineModifiersEventArgs e)
         {
-            var staff = sender as StaffMetadata;
-            if (staff == null)
+            if (!(sender is StaffMetadata staff))
                 return;
 
             OnStaffModifiersChanged(staff, e.Modifiers);
         }
 
-        void OnStaffModifiersChanged(StaffMetadata staff, SpellLineModifiers modifiers)
+        private void OnStaffModifiersChanged(StaffMetadata staff, SpellLineModifiers modifiers)
         {
             RecalculateAllSpells(staff);
-
-            var handler = StaffModifiersChanged;
-
-            if (handler != null)
-                handler(staff, new SpellLineModifiersEventArgs(modifiers));
+            StaffModifiersChanged?.Invoke(staff, new SpellLineModifiersEventArgs(modifiers));
         }
-        #endregion
     }
 }

@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    public sealed class NumericConverter : IValueConverter
+    internal sealed class NumericConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -27,15 +27,13 @@ namespace SleepHunter.Converters
 
             if (isHexadecimal)
             {
-                uint hexValue;
-                if (!uint.TryParse(valueString, NumberStyles.HexNumber, null, out hexValue))
+                if (!uint.TryParse(valueString, NumberStyles.HexNumber, null, out var hexValue))
                     return 0;
                 else
                     return hexValue;
             }
 
-            double decValue;
-            if (!double.TryParse(valueString, out decValue))
+            if (!double.TryParse(valueString, out var decValue))
                 return 0;
             else
                 return decValue;

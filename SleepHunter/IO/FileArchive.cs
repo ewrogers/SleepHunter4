@@ -9,14 +9,14 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.IO
 {
-    public sealed class FileArchive : IDisposable
+    internal sealed class FileArchive : IDisposable
     {
-        static readonly int NameLength = 13;
+        private static readonly int NameLength = 13;
 
-        bool isDisposed;
-        string name;
-        Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
-        MemoryMappedFile mappedFile;
+        private bool isDisposed;
+        private string name;
+        private readonly Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
+        private readonly MemoryMappedFile mappedFile;
 
         public string Name
         {
@@ -42,7 +42,7 @@ namespace SleepHunter.IO
             name = filename;
         }
 
-        void ReadTableOfContents()
+        private void ReadTableOfContents()
         {
             Stream stream = null;
             try
@@ -107,10 +107,9 @@ namespace SleepHunter.IO
             if (isDisposed)
                 return;
 
-            if (mappedFile != null)
-                mappedFile.Dispose();
+            if (isDisposing) { }
 
-            mappedFile = null;
+            mappedFile?.Dispose();
 
             isDisposed = true;
         }

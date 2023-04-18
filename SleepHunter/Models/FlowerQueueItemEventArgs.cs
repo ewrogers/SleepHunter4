@@ -2,13 +2,13 @@
 
 namespace SleepHunter.Models
 {
-    public delegate void FlowerQueueItemEventHandler(object sender, FlowerQueueItemEventArgs e);
+    internal delegate void FlowerQueueItemEventHandler(object sender, FlowerQueueItemEventArgs e);
 
-    public sealed class FlowerQueueItemEventArgs : EventArgs
+    internal sealed class FlowerQueueItemEventArgs : EventArgs
     {
-        readonly FlowerQueueItem flower;
+        private readonly FlowerQueueItem flower;
 
-        public FlowerQueueItem Flower { get { return flower; } }
+        public FlowerQueueItem Flower => flower;
 
         public FlowerQueueItemEventArgs(FlowerQueueItem flower)
         {

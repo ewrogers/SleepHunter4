@@ -6,7 +6,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
-    public static class WindowAutomator
+    internal static class WindowAutomator
     {
         public static readonly byte VK_SHIFT = 0x10;
         public static readonly byte VK_ESCAPE = 0x1B;
@@ -50,23 +50,23 @@ namespace SleepHunter.Macro
             WM_CLOSE = 0x10
         }
 
-        sealed class KeyParameter
+        private sealed class KeyParameter
         {
-            short repeatCount;
-            byte scanCode;
-            bool isExtendedKey;
-            bool contextCode;
-            bool previousState;
-            bool transitionState;
+            private readonly short repeatCount;
+            private readonly byte scanCode;
+            private readonly bool isExtendedKey;
+            private readonly bool contextCode;
+            private readonly bool previousState;
+            private readonly bool transitionState;
 
             public KeyParameter(uint lParam)
             {
-                this.repeatCount = (short)(lParam & 0xFFFF);
-                this.scanCode = (byte)((lParam >> 16) & 0xFF);
-                this.isExtendedKey = (lParam & (1 << 24)) != 0;
-                this.contextCode = (lParam & (1 << 29)) != 0;
-                this.previousState = (lParam & (1 << 30)) != 0;
-                this.transitionState = (lParam & (1 << 31)) != 0;
+                repeatCount = (short)(lParam & 0xFFFF);
+                scanCode = (byte)((lParam >> 16) & 0xFF);
+                isExtendedKey = (lParam & (1 << 24)) != 0;
+                contextCode = (lParam & (1 << 29)) != 0;
+                previousState = (lParam & (1 << 30)) != 0;
+                transitionState = (lParam & (1 << 31)) != 0;
             }
 
             public KeyParameter(short repeatCount, byte scanCode, bool isExtendedKey = false, bool contextCode = false, bool previousState = false, bool transitionState = true)
@@ -104,25 +104,19 @@ namespace SleepHunter.Macro
         #region Keyboard Actions
         public static void SendKeyDown(IntPtr windowHandle, char key)
         {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
-
+            var virtualKey = GetVirtualKey(key, out var _);
             SendKeyDown(windowHandle, virtualKey);
         }
 
         public static void SendKeyChar(IntPtr windowHandle, char key)
         {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
-
+            var virtualKey = GetVirtualKey(key, out var _);
             SendKeyChar(windowHandle, virtualKey);
         }
 
         public static void SendKeyUp(IntPtr windowHandle, char key)
         {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
-
+            var virtualKey = GetVirtualKey(key, out var _);
             SendKeyUp(windowHandle, virtualKey);
         }
 
@@ -240,7 +234,7 @@ namespace SleepHunter.Macro
         #region Helper Methods
         static uint MakeXYParameter(Point pt)
         {
-            uint parameter = (uint)pt.X;
+            var parameter = (uint)pt.X;
             parameter |= ((uint)pt.Y << 16);
 
             return parameter;
@@ -263,16 +257,14 @@ namespace SleepHunter.Macro
 
         static byte GetVirtualKey(char c)
         {
-            ModifierKeys modifiers;
-            return GetVirtualKey(c, out modifiers);
+            return GetVirtualKey(c, out var _);
         }
 
         static byte GetVirtualKey(char c, out ModifierKeys modifiers)
         {
-            modifiers = ModifierKeys.None;
             var keyScan = NativeMethods.VkKeyScan(c);
 
-            byte vkey = (byte)keyScan;
+            var vkey = (byte)keyScan;
             byte modifierScan = (byte)(keyScan >> 8);
 
             modifiers = (ModifierKeys)modifierScan;

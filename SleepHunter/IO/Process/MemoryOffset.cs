@@ -6,10 +6,10 @@ using System.Xml.Serialization;
 namespace SleepHunter.IO.Process
 {
     [Serializable]
-    public sealed class MemoryOffset
+    internal sealed class MemoryOffset
     {
-        long offset;
-        bool isNegative;
+        private long offset;
+        private bool isNegative;
 
         [XmlIgnore]
         public long Offset

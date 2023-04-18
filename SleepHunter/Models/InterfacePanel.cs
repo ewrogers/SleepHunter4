@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Models
 {
-    public enum InterfacePanel : byte
+    internal enum InterfacePanel : byte
     {
         Inventory = 0,
         TemuairSpells = 1,
@@ -18,7 +18,7 @@ namespace SleepHunter.Models
         Unknown = 0xFF
     }
 
-    public static class InterfacePanelExtender
+    internal static class InterfacePanelExtender
     {
         public static bool IsSameAs(this InterfacePanel panel, InterfacePanel target)
         {
@@ -157,7 +157,7 @@ namespace SleepHunter.Models
             else
                 pt = new Point(110, 350);
 
-            slot = slot % (Inventory.InventoryCount + 1);
+            slot %= (Inventory.InventoryCount + 1);
 
             var rowSize = panel.IsWorldPanel() ? 6 : 12;
             var rowOffset = 0;

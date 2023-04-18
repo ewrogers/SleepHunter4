@@ -9,16 +9,16 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryScanner : IDisposable
     {
-        static readonly int PageSize = 64 * 1024;
-        static readonly uint MinimumVmAddress = 0x00400000;
-        static readonly uint MaximumVmAddress = 0xFFFFFFFF;
+        private static readonly int PageSize = 64 * 1024;
+        private static readonly uint MinimumVmAddress = 0x00400000;
+        private static readonly uint MaximumVmAddress = 0xFFFFFFFF;
 
-        bool isDisposed;
-        IntPtr processHandle;
-        bool leaveOpen;
-        byte[] internalBuffer = new byte[8];
-        byte[] internalStringBuffer = new byte[256];
-        byte[] searchBuffer;
+        private bool isDisposed;
+        private IntPtr processHandle;
+        private readonly bool leaveOpen;
+        private readonly byte[] internalBuffer = new byte[8];
+        private readonly byte[] internalStringBuffer = new byte[4096];
+        private readonly byte[] searchBuffer;
 
         public IntPtr ProcessHandle
         {
@@ -120,7 +120,7 @@ namespace SleepHunter.IO.Process
         public IntPtr FindString(string value, long startingAddress = 0, long endingAddress = 0)
         {
             if (value.Length >= internalStringBuffer.Length)
-                internalStringBuffer = new byte[value.Length];
+                throw new InvalidOperationException("Length exceeded the buffer size");
 
             Encoding.ASCII.GetBytes(value, 0, value.Length, internalStringBuffer, 0);
             return Find(internalStringBuffer, value.Length, startingAddress, endingAddress);
@@ -138,12 +138,11 @@ namespace SleepHunter.IO.Process
                 end = MaximumVmAddress;
 
             long address = start;
-            MemoryBasicInformation memoryInfo;
             int sizeofMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
 
             while (address <= end)
             {
-                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out memoryInfo, (IntPtr)sizeofMemoryInfo);
+                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out var memoryInfo, (IntPtr)sizeofMemoryInfo);
 
                 if (queryResult <= 0)
                     break;
@@ -154,8 +153,8 @@ namespace SleepHunter.IO.Process
 
                     for (int i = 0; i < numberOfPages; i++)
                     {
-                        int numberOfBytesRead;
-                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, (IntPtr)searchBuffer.Length, out numberOfBytesRead);
+                        var count = (IntPtr)searchBuffer.Length;
+                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, count, out var numberOfBytesRead);
 
                         if (!result || numberOfBytesRead != searchBuffer.Length)
                             throw new Win32Exception("Unable to read memory page from process.");
@@ -163,7 +162,7 @@ namespace SleepHunter.IO.Process
                         var index = IndexOfSequence(searchBuffer, bytes, size);
 
                         if (index >= 0)
-                            return (IntPtr)memoryInfo.BaseAddress + (i * PageSize) + index;
+                            return memoryInfo.BaseAddress + (i * PageSize) + index;
                     }
                 }
 
@@ -173,7 +172,7 @@ namespace SleepHunter.IO.Process
             return IntPtr.Zero;
         }
 
-        static int IndexOfSequence(byte[] sourceArray, byte[] patternArray, int patternSize)
+        private static int IndexOfSequence(byte[] sourceArray, byte[] patternArray, int patternSize)
         {
             for (int i = 0; i < sourceArray.Length; i++)
             {

@@ -3,13 +3,13 @@ using System.Windows.Media.Imaging;
 
 namespace SleepHunter.Media
 {
-    public sealed class RenderedBitmap
+    internal sealed class RenderedBitmap
     {
-        int width;
-        int height;
-        int stride;
-        PixelFormat format;
-        byte[] bits;
+        private readonly int width;
+        private readonly int height;
+        private readonly int stride;
+        private readonly PixelFormat format;
+        private readonly byte[] bits;
 
         public int Width { get { return width; } }
         public int Height { get { return height; } }

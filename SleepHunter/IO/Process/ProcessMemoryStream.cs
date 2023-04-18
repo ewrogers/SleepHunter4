@@ -8,12 +8,12 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryStream : Stream
     {
-        bool isDisposed;
-        IntPtr processHandle;
-        ProcessAccess access;
-        long position = 0x400000;
-        byte[] internalBuffer = new byte[256];
-        bool leaveOpen;
+        private bool isDisposed;
+        private IntPtr processHandle;
+        private ProcessAccess access;
+        private long position = 0x400000;
+        private readonly byte[] internalBuffer = new byte[4096];
+        private readonly bool leaveOpen;
 
         public override bool CanRead { get { return processHandle != IntPtr.Zero && access.HasFlag(ProcessAccess.Read); } }
         public override bool CanSeek { get { return processHandle != IntPtr.Zero; } }
@@ -69,12 +69,11 @@ namespace SleepHunter.IO.Process
             CheckIfDisposed();
             CheckBufferSize(count);
 
-            int numberOfBytesRead = 0;
-            bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out numberOfBytesRead);
+            var success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != count)
             {
-                int error = NativeMethods.GetLastError();
+                var error = NativeMethods.GetLastError();
                 throw new Win32Exception(error, "Unable to read from process memory.");
             }
 
@@ -88,12 +87,11 @@ namespace SleepHunter.IO.Process
         {
             CheckIfDisposed();
 
-            int numberOfBytesRead = 0;
-            bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out numberOfBytesRead);
+            var success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != 1)
             {
-                int error = NativeMethods.GetLastError();
+                var error = NativeMethods.GetLastError();
                 throw new Win32Exception(error, "Unable to read from process memory.");
             }
 
@@ -138,12 +136,11 @@ namespace SleepHunter.IO.Process
 
             Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
 
-            int numberOfBytesWritten = 0;
-            bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out numberOfBytesWritten);
+            var success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != count)
             {
-                int error = NativeMethods.GetLastError();
+                var error = NativeMethods.GetLastError();
                 throw new Win32Exception(error, "Unable to write to process memory.");
             }
 
@@ -157,15 +154,13 @@ namespace SleepHunter.IO.Process
 
             internalBuffer[0] = value;
 
-            int numberOfBytesWritten = 0;
-            bool success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out numberOfBytesWritten);
+            var success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != 1)
             {
-                int error = NativeMethods.GetLastError();
+                var error = NativeMethods.GetLastError();
                 throw new Win32Exception(error, "Unable to write to process memory.");
             }
-
 
             position += numberOfBytesWritten;
         }
@@ -195,17 +190,10 @@ namespace SleepHunter.IO.Process
                 throw new ObjectDisposedException("ProcessMemoryStream");
         }
 
-        void CheckBufferSize(int count, bool copyContents = false)
+        void CheckBufferSize(int count)
         {
-            if (internalBuffer.Length >= count)
-                return;
-
-            var newBuffer = new byte[count];
-
-            if (copyContents)
-                Buffer.BlockCopy(internalBuffer, 0, newBuffer, 0, internalBuffer.Length);
-
-            internalBuffer = newBuffer;
+            if (internalBuffer.Length < count)
+                throw new InvalidOperationException("Length exceeds buffer length");
         }
     }
 }

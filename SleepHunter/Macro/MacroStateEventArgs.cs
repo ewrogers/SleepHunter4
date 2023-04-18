@@ -2,13 +2,15 @@
 
 namespace SleepHunter.Macro
 {
-    public delegate void MacroStateEventHandler(object sender, MacroStateEventArgs e);
+    internal delegate void MacroStateEventHandler(object sender, MacroStateEventArgs e);
 
-    public delegate void MacroStatusEventHandler(object sender, MacroStatusEventArgs e);
+    internal delegate void MacroStatusEventHandler(object sender, MacroStatusEventArgs e);
 
-    public sealed class MacroStateEventArgs : EventArgs
+    internal sealed class MacroStateEventArgs : EventArgs
     {
-        readonly MacroState state;
+        private readonly MacroState state;
+
+        public MacroState State => state;
 
         public MacroStateEventArgs(MacroState state)
         {
@@ -16,11 +18,11 @@ namespace SleepHunter.Macro
         }
     }
 
-    public sealed class MacroStatusEventArgs : EventArgs
+    internal sealed class MacroStatusEventArgs : EventArgs
     {
-        readonly MacroStatus status;
+        private readonly MacroStatus status;
 
-        public MacroStatus Status { get { return status; } }
+        public MacroStatus Status => status;
 
         public MacroStatusEventArgs(MacroStatus status)
         {

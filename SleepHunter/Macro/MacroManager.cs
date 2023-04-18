@@ -9,22 +9,20 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-    public sealed class MacroManager
+    internal sealed class MacroManager
     {
-        #region Singleton
         static readonly MacroManager instance = new MacroManager();
 
         public static MacroManager Instance { get { return instance; } }
 
         private MacroManager() { }
-        #endregion
 
-        bool isLockedDown;
-        ConcurrentDictionary<int, PlayerMacroState> clientMacros = new ConcurrentDictionary<int, PlayerMacroState>();
+        private bool isLockedDown;
+        private readonly ConcurrentDictionary<int, PlayerMacroState> clientMacros = new ConcurrentDictionary<int, PlayerMacroState>();
 
         public bool IsLockedDown
         {
-            get { return isLockedDown; }
+            get => isLockedDown;
         }
 
         public int Count { get { return clientMacros.Count; } }
@@ -50,8 +48,7 @@ namespace SleepHunter.Macro
 
         public bool RemoveMacroState(int processId)
         {
-            PlayerMacroState removedClient;
-            var wasRemoved = clientMacros.TryRemove(processId, out removedClient);
+            var wasRemoved = clientMacros.TryRemove(processId, out var removedClient);
 
             if (wasRemoved && removedClient != null)
                 removedClient.Stop();

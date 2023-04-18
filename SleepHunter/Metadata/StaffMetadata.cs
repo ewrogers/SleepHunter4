@@ -9,15 +9,15 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    public sealed class StaffMetadata : ObservableObject
+    internal sealed class StaffMetadata : ObservableObject
     {
-        public readonly static StaffMetadata NoStaff = new StaffMetadata { Name = "No Staff", Class = PlayerClass.All };
+        public static readonly StaffMetadata NoStaff = new StaffMetadata { Name = "No Staff", Class = PlayerClass.All };
 
-        string name;
-        int level;
-        int abilityLevel;
-        PlayerClass playerClass;
-        List<SpellLineModifiers> lineModifiers = new List<SpellLineModifiers>();
+        private string name;
+        private int level;
+        private int abilityLevel;
+        private PlayerClass playerClass;
+        private List<SpellLineModifiers> lineModifiers = new List<SpellLineModifiers>();
 
         public event SpellLineModifiersEventHandler ModifiersAdded;
         public event SpellLineModifiersEventHandler ModifiersChanged;
@@ -106,25 +106,13 @@ namespace SleepHunter.Metadata
             lineModifiers.Clear();
         }
 
-        void OnModifiersAdded(SpellLineModifiers modifiers)
-        {
-            ModifiersAdded?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
-        }
+        private void OnModifiersAdded(SpellLineModifiers modifiers) => ModifiersAdded?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
 
-        void OnModifiersChanged(SpellLineModifiers modifiers)
-        {
-            ModifiersChanged?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
-        }
+        private void OnModifiersChanged(SpellLineModifiers modifiers) => ModifiersChanged?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
 
-        void OnModifiersRemoved(SpellLineModifiers modifiers)
-        {
-            ModifiersRemoved?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
-        }
+        private void OnModifiersRemoved(SpellLineModifiers modifiers) => ModifiersRemoved?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
 
-        public override string ToString()
-        {
-            return Name ?? "Unknown Staff";
-        }
+        public override string ToString() => Name ?? "Unknown Staff";
 
         public void CopyTo(StaffMetadata other, bool copyModifiers = true)
         {

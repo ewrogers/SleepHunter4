@@ -6,12 +6,12 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    public sealed class ColorPalette : IEnumerable<Color>
+    internal sealed class ColorPalette : IEnumerable<Color>
     {
         public static readonly int ColorCount = 256;
 
-        string name;
-        List<Color> colors;
+        private string name;
+        private readonly List<Color> colors;
 
         public string Name
         {
@@ -24,7 +24,7 @@ namespace SleepHunter.Media
         public ColorPalette(string filename)
            : this(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), leaveOpen: false)
         {
-            this.name = filename;
+            name = filename;
         }
 
         public Color this[int index]
@@ -84,7 +84,7 @@ namespace SleepHunter.Media
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
         #endregion
     }

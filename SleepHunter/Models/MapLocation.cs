@@ -8,19 +8,19 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class MapLocation : ObservableObject
+    internal sealed class MapLocation : ObservableObject
     {
-        static readonly string MapNumberKey = @"MapNumber";
-        static readonly string MapNameKey = @"MapName";
-        static readonly string MapXKey = @"MapX";
-        static readonly string MapYKey = @"MapY";
+        private static readonly string MapNumberKey = @"MapNumber";
+        private static readonly string MapNameKey = @"MapName";
+        private static readonly string MapXKey = @"MapX";
+        private static readonly string MapYKey = @"MapY";
 
-        Player owner;
-        int mapNumber;
-        int x;
-        int y;
-        string mapName;
-        string mapHash;
+        private Player owner;
+        private int mapNumber;
+        private int x;
+        private int y;
+        private string mapName;
+        private string mapHash;
 
         public Player Owner
         {
@@ -108,10 +108,6 @@ namespace SleepHunter.Models
             var mapYVariable = version.GetVariable(MapYKey);
             var mapNameVariable = version.GetVariable(MapNameKey);
 
-            int mapNumber;
-            int mapX, mapY;
-            string mapName;
-
             Stream stream = null;
             try
             {
@@ -120,22 +116,22 @@ namespace SleepHunter.Models
                 {
                     stream = null;
 
-                    if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
+                    if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out var mapNumber))
                         MapNumber = mapNumber;
                     else
                         MapNumber = 0;
 
-                    if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out mapX))
+                    if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out var mapX))
                         X = mapX;
                     else
                         X = 0;
 
-                    if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out mapY))
+                    if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out var mapY))
                         Y = mapY;
                     else
                         Y = 0;
 
-                    if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out mapName))
+                    if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out var mapName))
                         MapName = mapName;
                     else
                         MapName = null;

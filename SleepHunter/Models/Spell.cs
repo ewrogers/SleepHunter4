@@ -1,14 +1,14 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum SpellTargetMode : byte
+    internal enum SpellTargetMode : byte
     {
         None = 5,
         Target = 2,
         TextInput = 1
     }
 
-    public sealed class Spell : Ability
+    internal sealed class Spell : Ability
     {
         public static readonly string LyliacPlantKey = "Lyliac Plant";
         public static readonly string LyliacVineyardKey = "Lyliac Vineyard";

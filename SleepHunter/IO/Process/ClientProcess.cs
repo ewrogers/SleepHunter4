@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 
 using SleepHunter.Common;
@@ -7,15 +6,15 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    public sealed class ClientProcess : ObservableObject
+    internal sealed class ClientProcess : ObservableObject
     {
-        int processId;
-        IntPtr windowHandle;
-        string windowClassName = string.Empty;
-        string windowTitle = string.Empty;
-        int windowWidth = 640;
-        int windowHeight = 480;
-        DateTime creationTime;
+        private int processId;
+        private IntPtr windowHandle;
+        private string windowClassName = string.Empty;
+        private string windowTitle = string.Empty;
+        private int windowWidth = 640;
+        private int windowHeight = 480;
+        private DateTime creationTime;
 
         public int ProcessId
         {
@@ -79,9 +78,7 @@ namespace SleepHunter.IO.Process
 
             WindowTitle = windowTextBuffer.ToString(0, windowTextLength);
 
-            Rect windowRect;
-
-            if (NativeMethods.GetWindowRect(windowHandle, out windowRect))
+            if (NativeMethods.GetWindowRect(windowHandle, out var windowRect))
             {
                 WindowWidth = windowRect.Width;
                 WindowHeight = windowRect.Height;

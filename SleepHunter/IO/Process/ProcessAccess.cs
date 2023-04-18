@@ -5,14 +5,14 @@ using SleepHunter.Win32;
 namespace SleepHunter.IO.Process
 {
     [Flags]
-    public enum ProcessAccess
+    internal enum ProcessAccess
     {
         Read = 0x1,
         Write = 0x2,
         ReadWrite = Read | Write
     }
 
-    public static class ProcessAccessExtender
+    internal static class ProcessAccessExtender
     {
         internal static ProcessAccessFlags ToWin32Flags(this ProcessAccess access)
         {

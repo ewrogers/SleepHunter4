@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace SleepHunter.Common
 {
-    public abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging
+    internal abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public event PropertyChangingEventHandler PropertyChanging;

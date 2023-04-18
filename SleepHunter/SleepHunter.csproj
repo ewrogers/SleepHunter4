@@ -69,6 +69,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Collections\IObservableList.cs" />
     <Compile Include="Common\DisplayValue.cs" />
     <Compile Include="Common\ObservableObject.cs" />
     <Compile Include="Converters\PlayerClassConverter.cs" />

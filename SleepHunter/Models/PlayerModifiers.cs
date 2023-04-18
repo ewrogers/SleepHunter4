@@ -6,7 +6,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerModifiers : ObservableObject
+    internal sealed class PlayerModifiers : ObservableObject
     {
         Player owner;
 

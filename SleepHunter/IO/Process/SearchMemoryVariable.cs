@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace SleepHunter.IO.Process
 {
     [Serializable]
-    public class SearchMemoryVariable : DynamicMemoryVariable
+    internal class SearchMemoryVariable : DynamicMemoryVariable
     {
         protected MemoryOffset offset = new MemoryOffset();
 

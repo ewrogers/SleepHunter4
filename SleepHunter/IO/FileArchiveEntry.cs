@@ -1,12 +1,12 @@
 ﻿
 namespace SleepHunter.IO
 {
-    public sealed class FileArchiveEntry
+    internal sealed class FileArchiveEntry
     {
-        int index;
-        string name;
-        long offset;
-        long size;
+        private int index;
+        private string name;
+        private long offset;
+        private long size;
 
         public int Index
         {

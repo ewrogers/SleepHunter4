@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Extensions
 {
-    public static class StringExtender
+    internal static class StringExtender
     {
         public static string StripNumbers(this string text)
         {

@@ -4,14 +4,14 @@ using System.Windows.Media;
 namespace SleepHunter.Media
 {
     [Serializable]
-    public struct HueSaturationValue
+    internal struct HueSaturationValue
     {
         [NonSerialized]
-        Color color;
+        private Color color;
 
-        double hue;
-        double saturation;
-        double value;
+        private double hue;
+        private double saturation;
+        private double value;
 
         public Color Color { get { return color; } }
         public double Hue { get { return hue; } }
@@ -28,7 +28,6 @@ namespace SleepHunter.Media
         void CalculateHSV()
         {
             var rgbMax = (double)Math.Max(Math.Max(color.R, color.G), color.B);
-            var rgbMin = (double)Math.Min(Math.Min(color.R, color.G), color.B);
 
             value = rgbMax;
 
@@ -44,7 +43,7 @@ namespace SleepHunter.Media
             var b = color.B / rgbMax;
 
             rgbMax = Max3(r, g, b);
-            rgbMin = Min3(r, g, b);
+            var rgbMin = Min3(r, g, b);
 
             saturation = rgbMax - rgbMin;
 
@@ -53,7 +52,6 @@ namespace SleepHunter.Media
             b = (b - rgbMin) / (rgbMax - rgbMin);
 
             rgbMax = Max3(r, g, b);
-            rgbMin = Min3(r, g, b);
 
             if (rgbMax == r)
             {

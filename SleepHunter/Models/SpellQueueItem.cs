@@ -7,19 +7,19 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
+    internal sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
     {
-        int id;
-        ImageSource icon;
-        string name;
-        SpellTarget target = new SpellTarget();
-        DateTime lastUsedTimestamp;
-        int startingLevel;
-        int currentLevel;
-        int maximumLevel;
-        int? targetLevel;
-        bool isUndefined;
-        bool isActive;
+        private int id;
+        private ImageSource icon;
+        private string name;
+        private SpellTarget target = new SpellTarget();
+        private DateTime lastUsedTimestamp;
+        private int startingLevel;
+        private int currentLevel;
+        private int maximumLevel;
+        private int? targetLevel;
+        private bool isUndefined;
+        private bool isActive;
 
         public int Id
         {
@@ -132,10 +132,12 @@ namespace SleepHunter.Models
         {
             Icon = spellInfo.Icon;
             Name = spell.SpellName;
-            Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
-            Target.CharacterName = spell.CharacterName;
-            Target.OuterRadius = spell.OuterRadius;
-            Target.InnerRadius = spell.InnerRadius;
+            Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY))
+            {
+                CharacterName = spell.CharacterName,
+                OuterRadius = spell.OuterRadius,
+                InnerRadius = spell.InnerRadius
+            };
             TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
 
             CurrentLevel = spellInfo.CurrentLevel;

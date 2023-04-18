@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace SleepHunter.Controls
 {
-    public partial class NumericUpDown : UserControl
+    internal partial class NumericUpDown : UserControl
     {
         private static readonly Regex UnsignedIntegerRegex = new Regex(@"^\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex UnsignedDoubleRegex = new Regex(@"^\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -16,7 +16,7 @@ namespace SleepHunter.Controls
         private static readonly Regex SignedDoubleRegex = new Regex(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex HexadecimalRegex = new Regex(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        new public Brush BorderBrush
+        public new Brush BorderBrush
         {
             get { return base.BorderBrush; }
             set { base.BorderBrush = value; }

@@ -2,13 +2,13 @@
 
 namespace SleepHunter.Models
 {
-    public delegate void PlayerEventHandler(object sender, PlayerEventArgs e);
+    internal delegate void PlayerEventHandler(object sender, PlayerEventArgs e);
 
-    public sealed class PlayerEventArgs : EventArgs
+    internal sealed class PlayerEventArgs : EventArgs
     {
-        readonly Player player;
+        private readonly Player player;
 
-        public Player Player { get { return player; } }
+        public Player Player => player;
 
         public PlayerEventArgs(Player player)
         {

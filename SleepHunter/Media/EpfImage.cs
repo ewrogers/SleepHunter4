@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace SleepHunter.Media
 {
-    public sealed class EpfImage
+    internal sealed class EpfImage
     {
-        string name;
-        int width;
-        int height;
-        List<EpfFrame> frames;
+        private string name;
+        private int width;
+        private int height;
+        private readonly List<EpfFrame> frames;
 
         public string Name
         {
@@ -51,19 +51,19 @@ namespace SleepHunter.Media
         public EpfImage(string filename)
            : this(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), leaveOpen: false)
         {
-            this.name = filename;
+            name = filename;
         }
 
         public EpfImage(Stream stream, bool leaveOpen = true)
         {
-            this.frames = new List<EpfFrame>();
+            frames = new List<EpfFrame>();
 
             var reader = new BinaryReader(stream);
 
             var frameCount = reader.ReadUInt16();
 
-            this.width = reader.ReadInt16();
-            this.height = reader.ReadInt16();
+            width = reader.ReadInt16();
+            height = reader.ReadInt16();
 
             var unknown = reader.ReadUInt16();
             var tableOffset = reader.ReadUInt32();

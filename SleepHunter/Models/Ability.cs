@@ -6,26 +6,26 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    public delegate void AbilityCallback(Ability ability);
+    internal delegate void AbilityCallback(Ability ability);
 
-    public abstract class Ability : ObservableObject
+    internal abstract class Ability : ObservableObject
     {
-        static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
+        static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        bool isEmpty;
-        int slot;
-        InterfacePanel panel;
-        string name;
-        int iconIndex;
-        ImageSource icon;
-        TimeSpan cooldown;
-        bool isOnCooldown;
-        int currentLevel;
-        int maximumLevel;
-        int numberOfLines;
-        int manaCost;
-        bool canImprove;
-        bool isActive;
+        private bool isEmpty;
+        private int slot;
+        private InterfacePanel panel;
+        private string name;
+        private int iconIndex;
+        private ImageSource icon;
+        private TimeSpan cooldown;
+        private bool isOnCooldown;
+        private int currentLevel;
+        private int maximumLevel;
+        private int numberOfLines;
+        private int manaCost;
+        private bool canImprove;
+        private bool isActive;
 
         public bool IsEmpty
         {

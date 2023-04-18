@@ -8,19 +8,19 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Converters
 {
-    public sealed class PlayerClassConverter : IValueConverter
+    internal sealed class PlayerClassConverter : IValueConverter
     {
-        static readonly Regex WarriorRegex = new Regex(@"\s*Warrior\s*");
-        static readonly Regex WizardRegex = new Regex(@"\s*Wizard\s*");
-        static readonly Regex PriestRegex = new Regex(@"\s*Priest\s*");
-        static readonly Regex RogueRegex = new Regex(@"\s*Rogue\s*");
-        static readonly Regex MonkRegex = new Regex(@"\s*Monk\s*");
-        static readonly Regex GladiatorRegex = new Regex(@"\s*Gladiator\s*");
-        static readonly Regex SummonerRegex = new Regex(@"\s*Summoner\s*");
-        static readonly Regex BardRegex = new Regex(@"\s*Bard\s*");
-        static readonly Regex ArcherRegex = new Regex(@"\s*Archer\s*");
-        static readonly Regex DruidRegex = new Regex(@"\s*Druid\s*");
-        static readonly Regex AllClassRegex = new Regex(@"\s*All\s*");
+        private static readonly Regex WarriorRegex = new Regex(@"\s*Warrior\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex WizardRegex = new Regex(@"\s*Wizard\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex PriestRegex = new Regex(@"\s*Priest\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RogueRegex = new Regex(@"\s*Rogue\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex MonkRegex = new Regex(@"\s*Monk\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex GladiatorRegex = new Regex(@"\s*Gladiator\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SummonerRegex = new Regex(@"\s*Summoner\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex BardRegex = new Regex(@"\s*Bard\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ArcherRegex = new Regex(@"\s*Archer\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex DruidRegex = new Regex(@"\s*Druid\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex AllClassRegex = new Regex(@"\s*All\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -88,11 +88,9 @@ namespace SleepHunter.Converters
         {
             var isMedenia = string.Equals("Medenia", parameter as string, StringComparison.OrdinalIgnoreCase);
 
-            var valueString = value as string;
-
             var playerClass = PlayerClass.Peasant;
 
-            if (valueString == null)
+            if (!(value is string valueString))
                 return playerClass;
 
             if (AllClassRegex.IsMatch(valueString))

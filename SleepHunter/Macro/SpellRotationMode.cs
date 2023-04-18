@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Macro
 {
-    public enum SpellRotationMode
+    internal enum SpellRotationMode
     {
         None,
         Singular,

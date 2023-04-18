@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SleepHunter.IO
 {
-    public static class PathHelper
+    internal static class PathHelper
     {
         public static string RootPath(string baseDirectory, string path)
         {

@@ -3,12 +3,12 @@ using System.Text.RegularExpressions;
 
 namespace SleepHunter.Extensions
 {
-    public static class TimeSpanExtender
+    internal static class TimeSpanExtender
     {
-        static readonly Regex TimeSpanSecondsRegex = new Regex(@"\s*(?<seconds>-?[0-9]*\.?[0-9]{1,})\s*s\s*");
-        static readonly Regex TimeSpanMinutesRegex = new Regex(@"\s*(?<minutes>-?[0-9]*\.?[0-9]{1,})\s*m\s*");
-        static readonly Regex TimeSpanHoursRegex = new Regex(@"\s*(?<hours>-?[0-9]*\.?[0-9]{1,})\s*h\s*");
-        static readonly Regex TimeSpanDaysRegex = new Regex(@"\s*(?<days>-?[0-9]*\.?[0-9]{1,})\s*d\s*");
+        private static readonly Regex TimeSpanSecondsRegex = new Regex(@"\s*(?<seconds>-?[0-9]*\.?[0-9]{1,})\s*s\s*", RegexOptions.Compiled);
+        private static readonly Regex TimeSpanMinutesRegex = new Regex(@"\s*(?<minutes>-?[0-9]*\.?[0-9]{1,})\s*m\s*", RegexOptions.Compiled);
+        private static readonly Regex TimeSpanHoursRegex = new Regex(@"\s*(?<hours>-?[0-9]*\.?[0-9]{1,})\s*h\s*", RegexOptions.Compiled);
+        private static readonly Regex TimeSpanDaysRegex = new Regex(@"\s*(?<days>-?[0-9]*\.?[0-9]{1,})\s*d\s*", RegexOptions.Compiled);
 
         public static string ToFractionalEnglish(this TimeSpan timeSpan, bool useShortNotation = false, string format = null)
         {
@@ -123,8 +123,7 @@ namespace SleepHunter.Extensions
 
             if (daysMatch.Success)
             {
-                double days;
-                if (double.TryParse(daysMatch.Groups["days"].Value, out days))
+                if (double.TryParse(daysMatch.Groups["days"].Value, out var days))
                     value = value.Add(TimeSpan.FromDays(days));
                 else
                     return false;
@@ -132,8 +131,7 @@ namespace SleepHunter.Extensions
 
             if (hoursMatch.Success)
             {
-                double hours;
-                if (double.TryParse(hoursMatch.Groups["hours"].Value, out hours))
+                if (double.TryParse(hoursMatch.Groups["hours"].Value, out var hours))
                     value = value.Add(TimeSpan.FromHours(hours));
                 else
                     return false;
@@ -141,8 +139,7 @@ namespace SleepHunter.Extensions
 
             if (minutesMatch.Success)
             {
-                double minutes;
-                if (double.TryParse(minutesMatch.Groups["minutes"].Value, out minutes))
+                if (double.TryParse(minutesMatch.Groups["minutes"].Value, out var minutes))
                     value = value.Add(TimeSpan.FromMinutes(minutes));
                 else
                     return false;
@@ -150,8 +147,7 @@ namespace SleepHunter.Extensions
 
             if (secondsMatch.Success)
             {
-                double seconds;
-                if (double.TryParse(secondsMatch.Groups["seconds"].Value, out seconds))
+                if (double.TryParse(secondsMatch.Groups["seconds"].Value, out var seconds))
                     value = value.Add(TimeSpan.FromSeconds(seconds));
                 else
                     return false;

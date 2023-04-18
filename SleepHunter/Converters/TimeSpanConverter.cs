@@ -6,7 +6,7 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.Converters
 {
-    public sealed class TimeSpanConverter : IValueConverter
+    internal sealed class TimeSpanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -15,7 +15,7 @@ namespace SleepHunter.Converters
             if (value == null)
                 return null;
 
-            if (value is Nullable<TimeSpan>)
+            if (value is TimeSpan?)
             {
                 var nullableTimeSpan = value as TimeSpan?;
 
@@ -29,9 +29,9 @@ namespace SleepHunter.Converters
                 timeSpan = (TimeSpan)value;
             }
 
-            string format = parameter as string;
-            bool useShortFormat = false;
-            bool showSecondary = true;
+            var format = parameter as string;
+            var useShortFormat = false;
+            var showSecondary = true;
 
             if (string.Equals(format, "short", StringComparison.OrdinalIgnoreCase))
                 useShortFormat = true;

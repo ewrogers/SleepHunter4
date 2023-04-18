@@ -1,14 +1,14 @@
 ﻿
 namespace SleepHunter.Media
 {
-    public sealed class EpfFrame
+    internal sealed class EpfFrame
     {
-        int index;
-        int x;
-        int y;
-        int width;
-        int height;
-        byte[] rawData;
+        private int index;
+        private int x;
+        private int y;
+        private int width;
+        private int height;
+        private byte[] rawData;
 
         public int Index
         {

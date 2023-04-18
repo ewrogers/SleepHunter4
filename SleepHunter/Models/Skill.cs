@@ -1,14 +1,14 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public sealed class Skill : Ability
+    internal sealed class Skill : Ability
     {
         public Skill()
            : base() { }
 
-        bool isAssail;
-        bool opensDialog;
-        bool requiresDisarm;
+        private bool isAssail;
+        private bool opensDialog;
+        private bool requiresDisarm;
 
         public bool IsAssail
         {

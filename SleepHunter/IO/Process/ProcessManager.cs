@@ -8,24 +8,21 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    public sealed class ProcessManager
+    internal sealed class ProcessManager
     {
-        #region Singleton
-        static readonly ProcessManager instance = new ProcessManager();
+        private static readonly ProcessManager instance = new ProcessManager();
 
         public static ProcessManager Instance { get { return instance; } }
 
         private ProcessManager() { }
-        #endregion
 
-        ConcurrentDictionary<int, ClientProcess> clientProcesses = new ConcurrentDictionary<int, ClientProcess>();
-        ConcurrentQueue<ClientProcess> deadClients = new ConcurrentQueue<ClientProcess>();
-        ConcurrentQueue<ClientProcess> newClients = new ConcurrentQueue<ClientProcess>();
+        private ConcurrentDictionary<int, ClientProcess> clientProcesses = new ConcurrentDictionary<int, ClientProcess>();
+        private ConcurrentQueue<ClientProcess> deadClients = new ConcurrentQueue<ClientProcess>();
+        private ConcurrentQueue<ClientProcess> newClients = new ConcurrentQueue<ClientProcess>();
 
         public event ClientProcessEventHandler ProcessCreated;
         public event ClientProcessEventHandler ProcessTerminated;
 
-        #region Client Process Properties
         public int ActiveClientCount { get { return clientProcesses.Count; } }
 
         public int DeadClientCount { get { return deadClients.Count; } }
@@ -46,9 +43,7 @@ namespace SleepHunter.IO.Process
         {
             get { return from n in newClients select n; }
         }
-        #endregion
 
-        #region Queue Methods
         public void EnqueueDeadClient(ClientProcess process)
         {
             deadClients.Enqueue(process);
@@ -63,33 +58,26 @@ namespace SleepHunter.IO.Process
 
         public ClientProcess PeekDeadClient()
         {
-            ClientProcess process = null;
-            deadClients.TryPeek(out process);
+            deadClients.TryPeek(out var process);
 
             return process;
         }
 
         public ClientProcess PeekNewClient()
         {
-            ClientProcess process = null;
-            newClients.TryPeek(out process);
-
+            newClients.TryPeek(out var process);
             return process;
         }
 
         public ClientProcess DequeueDeadClient()
         {
-            ClientProcess process = null;
-            deadClients.TryDequeue(out process);
-
+            deadClients.TryDequeue(out var process);
             return process;
         }
 
         public ClientProcess DequeueNewClient()
         {
-            ClientProcess process = null;
-            newClients.TryDequeue(out process);
-
+            newClients.TryDequeue(out var process);
             return process;
         }
 
@@ -102,9 +90,7 @@ namespace SleepHunter.IO.Process
         {
             newClients = new ConcurrentQueue<ClientProcess>();
         }
-        #endregion
 
-        #region Scan Methods
         public void ScanForProcesses(Action<ClientProcess> enumProcessCallback = null)
         {
             var foundClients = new Dictionary<int, ClientProcess>();
@@ -157,11 +143,10 @@ namespace SleepHunter.IO.Process
             // Find Dead Clients
             foreach (var client in clientProcesses.Values.ToArray())
             {
-                ClientProcess process;
 
                 if (!foundClients.ContainsKey(client.ProcessId))
                 {
-                    clientProcesses.TryRemove(client.ProcessId, out process);
+                    clientProcesses.TryRemove(client.ProcessId, out var process);
                     EnqueueDeadClient(client);
                 }
             }
@@ -176,10 +161,8 @@ namespace SleepHunter.IO.Process
                 }
             }
         }
-        #endregion
 
-        #region Event Handler Methods
-        void OnProcessCreated(ClientProcess process)
+        private void OnProcessCreated(ClientProcess process)
         {
             if (process == null)
                 throw new ArgumentNullException("process");
@@ -187,13 +170,12 @@ namespace SleepHunter.IO.Process
             ProcessCreated?.Invoke(this, new ClientProcessEventArgs(process));
         }
 
-        void OnProcessTerminated(ClientProcess process)
+        private void OnProcessTerminated(ClientProcess process)
         {
             if (process == null)
                 throw new ArgumentNullException("process");
 
             ProcessTerminated?.Invoke(this, new ClientProcessEventArgs(process));
         }
-        #endregion
     }
 }

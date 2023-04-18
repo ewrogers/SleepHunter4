@@ -11,7 +11,7 @@ using SleepHunter.Win32;
 namespace SleepHunter.Models
 {
     [Flags]
-    public enum PlayerFieldFlags : uint
+    internal enum PlayerFieldFlags : uint
     {
         None = 0x0,
         Name = 0x1,
@@ -32,40 +32,40 @@ namespace SleepHunter.Models
         All = 0xFFFFFFFF
     }
 
-    public sealed class Player : ObservableObject, IDisposable
+    internal sealed class Player : ObservableObject, IDisposable
     {
-        static readonly string CharacterNameKey = @"CharacterName";
+        private static readonly string CharacterNameKey = @"CharacterName";
 
-        bool isDisposed;
-        ClientProcess process;
-        ClientVersion version;
-        ProcessMemoryAccessor accessor;
-        string name;
-        string guild;
-        string guildRank;
-        string title;
-        PlayerClass playerClass;
-        Inventory inventory;
-        EquipmentSet equipment;
-        Skillbook skillbook;
-        Spellbook spellbook;
-        PlayerStats stats;
-        PlayerModifiers modifiers;
-        MapLocation location;
-        ClientState gameClient;
-        DateTime? loginTimestamp;
-        bool isLoggedIn;
-        string status;
-        Hotkey hotkey;
-        int selectedTabIndex;
-        double? skillbookScrollPosition;
-        double? spellbookScrollPosition;
-        double? spellQueueScrollPosition;
-        double? flowerScrollPosition;
-        bool hasLyliacPlant;
-        bool hasLyliacVineyard;
-        bool hasFasSpiorad;
-        DateTime lastFlowerTimestamp;
+        private bool isDisposed;
+        private ClientProcess process;
+        private ClientVersion version;
+        private readonly ProcessMemoryAccessor accessor;
+        private string name;
+        private string guild;
+        private string guildRank;
+         string title;
+        private PlayerClass playerClass;
+        private Inventory inventory;
+        private EquipmentSet equipment;
+        private Skillbook skillbook;
+        private Spellbook spellbook;
+        private PlayerStats stats;
+        private PlayerModifiers modifiers;
+        private MapLocation location;
+        private ClientState gameClient;
+        private DateTime? loginTimestamp;
+        private bool isLoggedIn;
+        private string status;
+        private Hotkey hotkey;
+        private int selectedTabIndex;
+        private double? skillbookScrollPosition;
+        private double? spellbookScrollPosition;
+        private double? spellQueueScrollPosition;
+        private double? flowerScrollPosition;
+        private bool hasLyliacPlant;
+        private bool hasLyliacVineyard;
+        private bool hasFasSpiorad;
+        private DateTime lastFlowerTimestamp;
 
         public ClientProcess Process
         {
@@ -300,11 +300,8 @@ namespace SleepHunter.Models
 
             if (isDisposing)
             {
-                if (skillbook != null)
-                    skillbook.Dispose();
-
-                if (accessor != null)
-                    accessor.Dispose();
+                skillbook?.Dispose();
+                accessor?.Dispose();
             }
 
             isDisposed = true;

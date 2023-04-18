@@ -492,7 +492,6 @@ namespace SleepHunter.Views
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
             UpdateToolbarState();
-            UpdateClientList();
         }
 
         private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
@@ -502,7 +501,6 @@ namespace SleepHunter.Views
             OnPlayerLoggedOut(e.Player);
 
             UpdateToolbarState();
-            UpdateClientList();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
@@ -554,8 +552,6 @@ namespace SleepHunter.Views
             if (!player.LoginTimestamp.HasValue)
                 player.LoginTimestamp = DateTime.Now;
 
-            UpdateClientList();
-
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
 
             if (!string.IsNullOrEmpty(player.Name))
@@ -598,7 +594,6 @@ namespace SleepHunter.Views
                 return;
 
             player.LoginTimestamp = null;
-            UpdateClientList();
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
 
@@ -2209,10 +2204,7 @@ namespace SleepHunter.Views
                 ApplyTheme();
 
             if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
                 PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
-                UpdateClientList(PlayerManager.Instance.SortedPlayers);
-            }
 
             if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSkillGridWidth(settings.SkillGridWidth);
@@ -2232,7 +2224,7 @@ namespace SleepHunter.Views
             // Debug settings
 
             if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                UpdateClientList(settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers);
+                clientListBox.ItemsSource = settings.ShowAllProcesses ? PlayerManager.Instance.AllClients : PlayerManager.Instance.SortedPlayers;
         }
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2313,21 +2305,6 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
-        }
-
-        private void UpdateClientList(IEnumerable<Player> itemsSource = null)
-        {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(UpdateClientList, itemsSource, DispatcherPriority.DataBind);
-                return;
-            }
-
-            if (itemsSource != null)
-                clientListBox.ItemsSource = itemsSource;
-
-            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-            clientListBox.Items.Refresh();
         }
 
         private async void CheckForNewVersion()

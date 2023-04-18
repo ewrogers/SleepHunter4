@@ -7,41 +7,36 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Metadata
 {
-    public sealed class SkillMetadataManager
+    internal sealed class SkillMetadataManager
     {
         public static readonly string SkillMetadataFile = @"Skills.xml";
 
-        #region Singleton
-        static readonly SkillMetadataManager instance = new SkillMetadataManager();
+        private static readonly SkillMetadataManager instance = new SkillMetadataManager();
 
         public static SkillMetadataManager Instance { get { return instance; } }
 
         private SkillMetadataManager() { }
-        #endregion
 
-        ConcurrentDictionary<string, SkillMetadata> skills = new ConcurrentDictionary<string, SkillMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SkillMetadata> skills = new ConcurrentDictionary<string, SkillMetadata>(StringComparer.OrdinalIgnoreCase);
 
         public event SkillMetadataEventHandler SkillAdded;
         public event SkillMetadataEventHandler SkillChanged;
         public event SkillMetadataEventHandler SkillRemoved;
 
-        #region Collection Properties
         public int Count { get { return skills.Count; } }
 
         public IEnumerable<SkillMetadata> Skills
         {
             get { return from s in skills.Values orderby s.Name ascending select s; }
         }
-        #endregion
 
-        #region Collection Methods
         public void AddSkill(SkillMetadata skill)
         {
             if (skill == null)
                 throw new ArgumentNullException("skill");
 
-            string skillName = skill.Name.Trim();
-            bool wasUpdated = false;
+            var skillName = skill.Name.Trim();
+            var wasUpdated = false;
 
             if (skills.ContainsKey(skillName))
                 wasUpdated = true;
@@ -65,8 +60,7 @@ namespace SleepHunter.Metadata
         {
             skillName = skillName.Trim();
 
-            SkillMetadata skill = null;
-            skills.TryGetValue(skillName, out skill);
+            skills.TryGetValue(skillName, out var skill);
 
             return skill;
         }
@@ -75,8 +69,7 @@ namespace SleepHunter.Metadata
         {
             skillName = skillName.Trim();
 
-            SkillMetadata removedSkill;
-            var wasRemoved = skills.TryRemove(skillName, out removedSkill);
+            var wasRemoved = skills.TryRemove(skillName, out var removedSkill);
 
             if (wasRemoved)
                 OnSkillRemoved(removedSkill);
@@ -86,8 +79,7 @@ namespace SleepHunter.Metadata
 
         public bool RenameSkill(string originalName, string newName)
         {
-            SkillMetadata skill = null;
-            var wasFound = skills.TryRemove(originalName, out skill);
+            var wasFound = skills.TryRemove(originalName, out var skill);
 
             if (wasFound)
             {
@@ -106,9 +98,7 @@ namespace SleepHunter.Metadata
 
             skills.Clear();
         }
-        #endregion
-
-        #region File Load/Save Methods
+        
         public void LoadFromFile(string filename)
         {
             using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -120,9 +110,8 @@ namespace SleepHunter.Metadata
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(SkillMetadataCollection));
-            var collection = serializer.Deserialize(stream) as SkillMetadataCollection;
 
-            if (collection != null)
+            if (serializer.Deserialize(stream) is SkillMetadataCollection collection)
                 foreach (var skill in collection.Skills)
                     AddSkill(skill);
         }
@@ -145,32 +134,11 @@ namespace SleepHunter.Metadata
 
             serializer.Serialize(stream, collection, namespaces);
         }
-        #endregion
+        
+        private void OnSkillAdded(SkillMetadata skill) => SkillAdded?.Invoke(this, new SkillMetadataEventArgs(skill));
 
-        #region Event Handler Methods
-        void OnSkillAdded(SkillMetadata skill)
-        {
-            var handler = this.SkillAdded;
+        private void OnSkillChanged(SkillMetadata skill) => SkillChanged?.Invoke(this, new SkillMetadataEventArgs(skill));
 
-            if (handler != null)
-                handler(this, new SkillMetadataEventArgs(skill));
-        }
-
-        void OnSkillChanged(SkillMetadata skill)
-        {
-            var handler = this.SkillChanged;
-
-            if (handler != null)
-                handler(this, new SkillMetadataEventArgs(skill));
-        }
-
-        void OnSkillRemoved(SkillMetadata skill)
-        {
-            var handler = this.SkillRemoved;
-
-            if (handler != null)
-                handler(this, new SkillMetadataEventArgs(skill));
-        }
-        #endregion
+        private void OnSkillRemoved(SkillMetadata skill) => SkillRemoved?.Invoke(this, new SkillMetadataEventArgs(skill));   
     }
 }

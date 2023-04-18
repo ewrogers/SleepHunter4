@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,14 +10,14 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class Inventory : IEnumerable<InventoryItem>
+    internal sealed class Inventory : IEnumerable<InventoryItem>
     {
-        static readonly string InventoryKey = @"Inventory";
+        private static readonly string InventoryKey = @"Inventory";
 
         public static readonly int InventoryCount = 60;
 
-        Player owner;
-        List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
+        private Player owner;
+        private readonly List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
 
         public Player Owner
         {
@@ -148,7 +147,6 @@ namespace SleepHunter.Models
             }
         }
 
-        #region IEnumerable Methods
         public IEnumerator<InventoryItem> GetEnumerator()
         {
             foreach (var item in inventory)
@@ -158,8 +156,7 @@ namespace SleepHunter.Models
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
-        #endregion
     }
 }

@@ -7,7 +7,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Macro
 {
-    public static class PlayerInterfaceExtender
+    internal static class PlayerInterfaceExtender
     {
         public static void Disarm(this Player client)
         {
@@ -306,7 +306,7 @@ namespace SleepHunter.Macro
             WindowAutomator.SendCloseWindow(client.Process.WindowHandle);
         }
 
-        static int GetRelativeSlot(this InterfacePanel panel, int slot)
+        private static int GetRelativeSlot(this InterfacePanel panel, int slot)
         {
             int maxSlotCount = 36;
 
@@ -319,13 +319,13 @@ namespace SleepHunter.Macro
             return slot % maxSlotCount;
         }
 
-        static Point ScalePoint(this Point pt, double scaleX, double scaleY)
+        private static Point ScalePoint(this Point pt, double scaleX, double scaleY)
         {
             if (scaleX > 0 && scaleX != 1)
-                pt.X = pt.X * scaleX;
+                pt.X *= scaleX;
 
             if (scaleY > 0 && scaleY != 1)
-                pt.Y = pt.Y * scaleY;
+                pt.Y *= scaleY;
 
             return pt;
         }

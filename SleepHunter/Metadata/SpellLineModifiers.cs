@@ -8,7 +8,7 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.Metadata
 {
-    public enum ModifierAction
+    internal enum ModifierAction
     {
         None = 0,
         Increase,
@@ -16,7 +16,7 @@ namespace SleepHunter.Metadata
         Set
     }
 
-    public enum ModifierScope
+    internal enum ModifierScope
     {
         None = 0,
         Single,
@@ -25,14 +25,14 @@ namespace SleepHunter.Metadata
     }
 
     [Serializable]
-    public sealed class SpellLineModifiers : ObservableObject
+    internal sealed class SpellLineModifiers : ObservableObject
     {
-        ModifierAction action;
-        ModifierScope scope;
-        string scopeName;
-        int value;
-        int minThreshold;
-        int maxThreshold;
+        private ModifierAction action;
+        private ModifierScope scope;
+        private string scopeName;
+        private int value;
+        private int minThreshold;
+        private int maxThreshold;
 
         [XmlAttribute("Action")]
         public ModifierAction Action

@@ -7,22 +7,22 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerStats : ObservableObject
+    internal sealed class PlayerStats : ObservableObject
     {
-        static readonly string CurrentHealthKey = @"CurrentHealth";
-        static readonly string MaximumHealthKey = @"MaximumHealth";
-        static readonly string CurrentManaKey = @"CurrentMana";
-        static readonly string MaximumManaKey = @"MaximumMana";
-        static readonly string LevelKey = @"Level";
-        static readonly string AbilityLevelKey = @"AbilityLevel";
+        private static readonly string CurrentHealthKey = @"CurrentHealth";
+        private static readonly string MaximumHealthKey = @"MaximumHealth";
+        private static readonly string CurrentManaKey = @"CurrentMana";
+        private static readonly string MaximumManaKey = @"MaximumMana";
+        private static readonly string LevelKey = @"Level";
+        private static readonly string AbilityLevelKey = @"AbilityLevel";
 
-        Player owner;
-        int currentHealth;
-        int maximumHealth;
-        int currentMana;
-        int maximumMana;
-        int level;
-        int abilityLevel;
+        private Player owner;
+        private int currentHealth;
+        private int maximumHealth;
+        private int currentMana;
+        private int maximumMana;
+        private int level;
+        private int abilityLevel;
 
         public Player Owner
         {
@@ -152,9 +152,6 @@ namespace SleepHunter.Models
             var levelVariable = version.GetVariable(LevelKey);
             var abilityLevelVariable = version.GetVariable(AbilityLevelKey);
 
-            long currentHealth, maximumHealth;
-            long currentMana, maximumMana;
-            long level, abilityLevel;
 
             Stream stream = null;
             try
@@ -165,37 +162,37 @@ namespace SleepHunter.Models
                     stream = null;
 
                     // Current Health
-                    if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out currentHealth))
+                    if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out var currentHealth))
                         CurrentHealth = (int)currentHealth;
                     else
                         CurrentHealth = 0;
 
                     // Max Health
-                    if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out maximumHealth))
+                    if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out var maximumHealth))
                         MaximumHealth = (int)maximumHealth;
                     else
                         MaximumHealth = 0;
 
                     // Current Mana
-                    if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out currentMana))
+                    if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out var currentMana))
                         CurrentMana = (int)currentMana;
                     else
                         CurrentMana = 0;
 
                     // Max Mana
-                    if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out maximumMana))
+                    if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out var maximumMana))
                         MaximumMana = (int)maximumMana;
                     else
                         MaximumMana = 0;
 
                     // Level
-                    if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out level))
+                    if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out var level))
                         Level = (int)level;
                     else
                         Level = 0;
 
                     // Ability Level
-                    if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out abilityLevel))
+                    if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out var abilityLevel))
                         AbilityLevel = (int)abilityLevel;
                     else
                         AbilityLevel = 0;

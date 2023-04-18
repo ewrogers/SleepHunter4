@@ -3,12 +3,12 @@ using System.Windows.Input;
 
 namespace SleepHunter.Macro
 {
-    public sealed class Hotkey
+    internal sealed class Hotkey
     {
-        string atomName;
-        ModifierKeys modifiers;
-        Key key;
-        int id = -1;
+        private string atomName;
+        private ModifierKeys modifiers;
+        private Key key;
+        private int id = -1;
 
         public string AtomName
         {

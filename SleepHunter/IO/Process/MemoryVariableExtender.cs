@@ -1,21 +1,18 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 
 using SleepHunter.Extensions;
 
 namespace SleepHunter.IO.Process
 {
-    public static class MemoryVariableExtender
+    internal static class MemoryVariableExtender
     {
-        static readonly long MinimumAddress = 0x00400000;
-        static readonly long MaximumAddress = 0x7FFFFFFF;
+        private static readonly long MinimumAddress = 0x00400000;
+        private static readonly long MaximumAddress = 0x7FFFFFFF;
 
         public static long DereferencePointer(long address, BinaryReader reader)
         {
             if (address == 0)
                 return 0;
-
-            var pointer = address;
 
             reader.BaseStream.Position = address;
             var reference = reader.ReadUInt32();
@@ -85,8 +82,7 @@ namespace SleepHunter.IO.Process
 
             try
             {
-                byte byteValue;
-                var success = TryReadByte(variable, reader, out byteValue);
+                var success = TryReadByte(variable, reader, out var byteValue);
 
                 if (!success)
                     return false;
@@ -103,8 +99,7 @@ namespace SleepHunter.IO.Process
 
             try
             {
-                byte byteValue;
-                var success = TryReadByte(variable, reader, out byteValue);
+                var success = TryReadByte(variable, reader, out var byteValue);
 
                 if (!success)
                     return false;
@@ -273,15 +268,13 @@ namespace SleepHunter.IO.Process
 
             try
             {
-                string stringValue;
-                var success = TryReadString(variable, reader, out stringValue);
+                var success = TryReadString(variable, reader, out var stringValue);
 
                 if (!success)
                     return false;
 
-                long integerValue;
 
-                if (long.TryParse(stringValue.Trim(), out integerValue))
+                if (long.TryParse(stringValue.Trim(), out var integerValue))
                     value = integerValue;
                 else
                     value = 0;

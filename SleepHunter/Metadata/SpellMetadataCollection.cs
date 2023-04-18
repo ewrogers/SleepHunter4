@@ -7,10 +7,10 @@ namespace SleepHunter.Metadata
 {
     [Serializable]
     [XmlRoot("SpellMetadata")]
-    public sealed class SpellMetadataCollection
+    internal sealed class SpellMetadataCollection
     {
-        string version;
-        List<SpellMetadata> spells;
+        private string version;
+        private List<SpellMetadata> spells;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]

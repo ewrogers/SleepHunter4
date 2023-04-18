@@ -2,13 +2,13 @@
 
 namespace SleepHunter.Models
 {
-    public delegate void SpellQueueItemEventHandler(object sender, SpellQueueItemEventArgs e);
+    internal delegate void SpellQueueItemEventHandler(object sender, SpellQueueItemEventArgs e);
 
-    public sealed class SpellQueueItemEventArgs : EventArgs
+    internal sealed class SpellQueueItemEventArgs : EventArgs
     {
-        readonly SpellQueueItem spell;
+        private readonly SpellQueueItem spell;
 
-        public SpellQueueItem Spell { get { return spell; } }
+        public SpellQueueItem Spell => spell;
 
         public SpellQueueItemEventArgs(SpellQueueItem spell)
         {

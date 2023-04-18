@@ -6,14 +6,14 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
+    internal sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
     {
-        int id;
-        SpellTarget target = new SpellTarget();
-        DateTime lastUsedTimestamp = DateTime.Now;
-        TimeSpan? interval;
-        TimeSpan intervalRemaining;
-        int? manaThreshold;
+        private int id;
+        private SpellTarget target = new SpellTarget();
+        private DateTime lastUsedTimestamp = DateTime.Now;
+        private TimeSpan? interval;
+        private TimeSpan intervalRemaining;
+        private int? manaThreshold;
 
         public int Id
         {
@@ -47,8 +47,8 @@ namespace SleepHunter.Models
             get { return interval; }
             set
             {
-                var originalTime = interval.HasValue ? interval.Value : TimeSpan.Zero;
-                var newTime = value.HasValue ? value.Value : TimeSpan.Zero;
+                var originalTime = interval ?? TimeSpan.Zero;
+                var newTime = value ?? TimeSpan.Zero;
 
                 var deltaTime = originalTime - newTime;
 
@@ -115,10 +115,12 @@ namespace SleepHunter.Models
 
         public FlowerQueueItem(SavedFlowerState flower)
         {
-            Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
-            Target.CharacterName = flower.CharacterName;
-            Target.OuterRadius = flower.OuterRadius;
-            Target.InnerRadius = flower.InnerRadius;
+            Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY))
+            {
+                CharacterName = flower.CharacterName,
+                OuterRadius = flower.OuterRadius,
+                InnerRadius = flower.InnerRadius
+            };
 
             Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
             ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;

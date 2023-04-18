@@ -6,10 +6,9 @@ using System.Linq;
 
 namespace SleepHunter.IO
 {
-    public sealed class FileArchiveManager
+    internal sealed class FileArchiveManager
     {
-        #region Singleton
-        static readonly FileArchiveManager instance = new FileArchiveManager();
+        private static readonly FileArchiveManager instance = new FileArchiveManager();
 
         public static FileArchiveManager Instance { get { return instance; } }
 
@@ -17,9 +16,8 @@ namespace SleepHunter.IO
         {
 
         }
-        #endregion
 
-        ConcurrentDictionary<string, FileArchive> archives = new ConcurrentDictionary<string, FileArchive>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileArchive> archives = new ConcurrentDictionary<string, FileArchive>(StringComparer.OrdinalIgnoreCase);
 
         public int Count { get { return archives.Count; } }
 
@@ -56,8 +54,7 @@ namespace SleepHunter.IO
             var archive = archives[filename];
             archive.Dispose();
 
-            FileArchive removedArchive;
-            return archives.TryRemove(filename, out removedArchive);
+            return archives.TryRemove(filename, out var _);
         }
 
         public void ClearArchives()

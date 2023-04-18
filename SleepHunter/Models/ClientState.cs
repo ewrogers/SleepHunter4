@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -8,23 +7,23 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class ClientState : ObservableObject
+    internal sealed class ClientState : ObservableObject
     {
-        static readonly string ActivePanelKey = @"ActivePanel";
-        static readonly string InventoryExpandedKey = @"InventoryExpanded";
-        static readonly string MinimizedModeKey = @"MinimizedMode";
-        static readonly string DialogOpenKey = @"DialogOpen";
-        static readonly string SenseOpenKey = @"SenseOpen";
-        static readonly string UserChattingKey = @"UserChatting";
+        private static readonly string ActivePanelKey = @"ActivePanel";
+        private static readonly string InventoryExpandedKey = @"InventoryExpanded";
+        private static readonly string MinimizedModeKey = @"MinimizedMode";
+        private static readonly string DialogOpenKey = @"DialogOpen";
+        private static readonly string SenseOpenKey = @"SenseOpen";
+        private static readonly string UserChattingKey = @"UserChatting";
 
-        Player owner;
-        string versionKey;
-        InterfacePanel activePanel;
-        bool isInventoryExpanded;
-        bool isMinimizedMode;
-        bool isDialogOpen;
-        bool isSenseOpen;
-        bool isUserChatting;
+        private Player owner;
+        private string versionKey;
+        private InterfacePanel activePanel;
+        private bool isInventoryExpanded;
+        private bool isMinimizedMode;
+        private bool isDialogOpen;
+        private bool isSenseOpen;
+        private bool isUserChatting;
 
         public Player Owner
         {
@@ -110,11 +109,6 @@ namespace SleepHunter.Models
             var senseOpenVariable = version.GetVariable(SenseOpenKey);
             var userChattingVariable = version.GetVariable(UserChattingKey);
 
-            byte activePanelByte;
-            bool isInventoryExpanded;
-            bool isMinimizedMode;
-            bool isDialogOpen;
-            bool isUserChatting;
 
             Stream stream = null;
             try
@@ -124,22 +118,22 @@ namespace SleepHunter.Models
                 {
                     stream = null;
 
-                    if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
+                    if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out var activePanelByte))
                         ActivePanel = (InterfacePanel)activePanelByte;
                     else
                         ActivePanel = InterfacePanel.Unknown;
 
-                    if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out isInventoryExpanded))
+                    if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out var isInventoryExpanded))
                         IsInventoryExpanded = isInventoryExpanded;
                     else
                         IsInventoryExpanded = false;
 
-                    if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out isMinimizedMode))
+                    if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out var isMinimizedMode))
                         IsMinimizedMode = isMinimizedMode;
                     else
                         IsMinimizedMode = false;
 
-                    if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out isDialogOpen))
+                    if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out var isDialogOpen))
                         IsDialogOpen = isDialogOpen;
                     else
                         IsDialogOpen = false;
@@ -149,7 +143,7 @@ namespace SleepHunter.Models
                     else
                         IsSenseOpen = false;
 
-                    if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
+                    if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out var isUserChatting))
                         IsUserChatting = isUserChatting;
                     else
                         IsUserChatting = false;

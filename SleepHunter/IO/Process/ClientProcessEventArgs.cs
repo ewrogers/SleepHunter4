@@ -2,11 +2,11 @@
 
 namespace SleepHunter.IO.Process
 {
-    public delegate void ClientProcessEventHandler(object sender, ClientProcessEventArgs e);
+    internal delegate void ClientProcessEventHandler(object sender, ClientProcessEventArgs e);
 
-    public sealed class ClientProcessEventArgs : EventArgs
+    internal sealed class ClientProcessEventArgs : EventArgs
     {
-        readonly ClientProcess process;
+        private readonly ClientProcess process;
 
         public ClientProcess Process { get { return process; } }
 

@@ -7,10 +7,10 @@ namespace SleepHunter.Metadata
 {
     [Serializable]
     [XmlRoot("StaffMetadata")]
-    public sealed class StaffMetadataCollection
+    internal sealed class StaffMetadataCollection
     {
-        string version;
-        List<StaffMetadata> staves;
+        private string version;
+        private List<StaffMetadata> staves;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]

@@ -9,10 +9,9 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerManager : INotifyPropertyChanged
+    internal sealed class PlayerManager : INotifyPropertyChanged
     {
-        #region Singleton
-        static readonly PlayerManager instance = new PlayerManager();
+        private static readonly PlayerManager instance = new PlayerManager();
 
         public static PlayerManager Instance
         {
@@ -20,7 +19,6 @@ namespace SleepHunter.Models
         }
 
         private PlayerManager() { }
-        #endregion
 
         private readonly ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
         private PlayerSortOrder sortOrder = PlayerSortOrder.LoginTime;

@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum PlayerSortOrder
+    internal enum PlayerSortOrder
     {
         LoginTime,
         Alphabetical,

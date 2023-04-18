@@ -11,16 +11,16 @@ namespace SleepHunter.Macro
 {
     [Serializable]
     [XmlRoot("MacroState")]
-    public sealed class SavedMacroState : ObservableObject
+    internal sealed class SavedMacroState : ObservableObject
     {
-        string characterName;
-        ModifierKeys hotkeyModifiers;
-        Key hotkeyKey;
-        bool useLyliacVineyard;
-        bool flowerAlternateCharacters;
-        List<SavedSkillState> skills = new List<SavedSkillState>();
-        List<SavedSpellState> spells = new List<SavedSpellState>();
-        List<SavedFlowerState> flowers = new List<SavedFlowerState>();
+        private string characterName;
+        private ModifierKeys hotkeyModifiers;
+        private Key hotkeyKey;
+        private bool useLyliacVineyard;
+        private bool flowerAlternateCharacters;
+        private List<SavedSkillState> skills = new List<SavedSkillState>();
+        private List<SavedSpellState> spells = new List<SavedSpellState>();
+        private List<SavedFlowerState> flowers = new List<SavedFlowerState>();
 
         [XmlAttribute("Name")]
         public string CharacterName

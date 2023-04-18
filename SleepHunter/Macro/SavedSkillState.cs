@@ -6,7 +6,7 @@ using SleepHunter.Common;
 namespace SleepHunter.Macro
 {
     [Serializable]
-    public sealed class SavedSkillState : ObservableObject
+    internal sealed class SavedSkillState : ObservableObject
     {
         string skillName;
 
