@@ -15,7 +15,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    internal sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
+    public sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
     {
         private static readonly string SkillbookKey = @"Skillbook";
         private static readonly string SkillCooldownsKey = "SkillCooldowns";
@@ -34,56 +34,43 @@ namespace SleepHunter.Models
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
 
-        public int Count { get { return skills.Count((skill) => { return !skill.IsEmpty; }); } }
+        public int Count => skills.Count((skill) => { return !skill.IsEmpty; });
 
-        public IEnumerable<Skill> Skills
-        {
-            get { return from s in skills select s; }
-        }
+        public IEnumerable<Skill> Skills => skills;
 
-        public IEnumerable<Skill> TemuairSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot < TemuairSkillCount select s; }
-        }
+        public IEnumerable<Skill> TemuairSkills => from skill in skills
+                                                   where skill.Panel == InterfacePanel.TemuairSkills && skill.Slot < TemuairSkillCount 
+                                                   select skill;
 
-        public IEnumerable<Skill> MedeniaSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount) select s; }
-        }
+        public IEnumerable<Skill> MedeniaSkills => from skill in skills 
+                                                   where skill.Panel == InterfacePanel.MedeniaSkills && skill.Slot < (TemuairSkillCount + MedeniaSkillCount)
+                                                   select skill;
 
-        public IEnumerable<Skill> WorldSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s; }
-        }
+        public IEnumerable<Skill> WorldSkills => from skill in skills
+                                                 where skill.Panel == InterfacePanel.WorldSkills && skill.Slot < (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) 
+                                                 select skill;
 
-        public IEnumerable<string> ActiveSkills
-        {
-            get { return from a in activeSkills where a.Value select a.Key; }
-        }
-
-        public Skillbook()
-           : this(null) { }
+        public IEnumerable<string> ActiveSkills => from skill in activeSkills where skill.Value select skill.Key;
 
         public Skillbook(Player owner)
         {
-            this.owner = owner;
+            this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
             scanner = new ProcessMemoryScanner(owner.ProcessHandle, leaveOpen: true);
 
             InitializeSkillbook();
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
@@ -95,9 +82,8 @@ namespace SleepHunter.Models
 
             isDisposed = true;
         }
-        #endregion
 
-        void InitializeSkillbook()
+        private void InitializeSkillbook()
         {
             skills.Clear();
 
@@ -159,23 +145,12 @@ namespace SleepHunter.Models
             return wasActive;
         }
 
-        public void ClearActiveSkills()
-        {
-            activeSkills.Clear();
-        }
-
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
+        public void ClearActiveSkills() => activeSkills.Clear();
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 
@@ -294,7 +269,7 @@ namespace SleepHunter.Models
                 if (!(version.GetVariable(SkillCooldownsKey) is SearchMemoryVariable cooldownVariable))
                     return false;
 
-                var offset = cooldownVariable.Offets.FirstOrDefault();
+                var offset = cooldownVariable.Offsets.FirstOrDefault();
 
                 if (offset == null)
                     return false;
@@ -373,9 +348,6 @@ namespace SleepHunter.Models
                     yield return skill;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

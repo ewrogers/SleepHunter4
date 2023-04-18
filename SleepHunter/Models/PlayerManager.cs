@@ -13,10 +13,7 @@ namespace SleepHunter.Models
     {
         private static readonly PlayerManager instance = new PlayerManager();
 
-        public static PlayerManager Instance
-        {
-            get { return instance; }
-        }
+        public static PlayerManager Instance => instance;
 
         private PlayerManager() { }
 
@@ -30,7 +27,7 @@ namespace SleepHunter.Models
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int Count { get { return players.Count; } }
+        public int Count => players.Count;
 
         public PlayerSortOrder SortOrder
         {
@@ -38,15 +35,14 @@ namespace SleepHunter.Models
             set => sortOrder = value;
         }
 
-        public IEnumerable<Player> AllClients
-        {
-            get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
-        }
+        public IEnumerable<Player> AllClients => from p in players.Values 
+                                                 orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId
+                                                 select p;
 
-        public IEnumerable<Player> LoggedInPlayers
-        {
-            get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
-        }
+        public IEnumerable<Player> LoggedInPlayers => from p in players.Values
+                                                      orderby p.Name 
+                                                      where p.IsLoggedIn 
+                                                      select p;
 
         public IEnumerable<Player> SortedPlayers
         {
@@ -96,15 +92,11 @@ namespace SleepHunter.Models
                 OnPlayerAdded(player);
         }
 
-        public bool ContainsPlayer(int processId)
-        {
-            return players.ContainsKey(processId);
-        }
+        public bool ContainsPlayer(int processId) => players.ContainsKey(processId);
 
         public Player GetPlayer(int processId)
         {
             players.TryGetValue(processId, out var player);
-
             return player;
         }
 

@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
 {
-    internal sealed class UserSettingsManager
+    public sealed class UserSettingsManager
     {
         public static readonly string SettingsFile = @"Settings.xml";
 

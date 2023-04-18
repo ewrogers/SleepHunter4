@@ -7,43 +7,27 @@ namespace SleepHunter.Settings
 {
     [Serializable]
     [XmlRoot("ColorThemes")]
-    internal sealed class ColorThemeCollection
+    public sealed class ColorThemeCollection
     {
-        private string version;
-        private List<ColorTheme> themes;
+        private readonly List<ColorTheme> themes = new List<ColorTheme>();
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
-        public string Version
-        {
-            get { return version; }
-            set { version = value; }
-        }
+        public string Version { get; set; }
 
         [XmlIgnore]
-        public int Count { get { return themes.Count; } }
+        public int Count => themes.Count;
 
         [XmlArray("Themes")]
         [XmlArrayItem("Theme")]
-        public List<ColorTheme> Themes
-        {
-            get { return themes; }
-            private set { themes = value; }
-        }
-
-        public ColorThemeCollection()
-        {
-            themes = new List<ColorTheme>();
-        }
-
-        public ColorThemeCollection(int capacity)
-        {
-            themes = new List<ColorTheme>(capacity);
-        }
+        public List<ColorTheme> Themes => themes;
 
         public ColorThemeCollection(IEnumerable<ColorTheme> collection)
         {
-            themes = new List<ColorTheme>(collection);
+            if (collection != null)
+                themes.AddRange(collection);
         }
+
+        public override string ToString() => $"Themes = {Count}";
     }
 }

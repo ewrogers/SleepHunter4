@@ -8,19 +8,7 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    internal enum TargetCoordinateUnits
-    {
-        None = 0,
-        Self,
-        Character,
-        RelativeTile,
-        AbsoluteTile,
-        AbsoluteXY,
-        RelativeRadius,
-        AbsoluteRadius
-    }
-
-    internal sealed class SpellTarget : ObservableObject
+    public sealed class SpellTarget : ObservableObject
     {
         private TargetCoordinateUnits unitType;
         private string characterName;
@@ -33,49 +21,46 @@ namespace SleepHunter.Models
 
         public TargetCoordinateUnits Units
         {
-            get { return unitType; }
-            set { SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => unitType;
+            set => SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         public Point Location
         {
-            get { return location; }
-            set { SetProperty(ref location, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => location;
+            set => SetProperty(ref location, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public Point Offset
         {
-            get { return offset; }
-            set { SetProperty(ref offset, value); }
+            get => offset;
+            set => SetProperty(ref offset, value);
         }
 
         public int InnerRadius
         {
-            get { return innerRadius; }
-            set { SetProperty(ref innerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => innerRadius;
+            set => SetProperty(ref innerRadius, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public int OuterRadius
         {
-            get { return outerRadius; }
-            set { SetProperty(ref outerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => outerRadius;
+            set => SetProperty(ref outerRadius, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
-        public IList<Point> RadiusPoints
-        {
-            get { return radiusPoints; }
-        }
+        public IList<Point> RadiusPoints => radiusPoints;
 
         public int RadiusIndex
         {
-            get { return radiusIndex; }
-            set { SetProperty(ref radiusIndex, value); }
+            get => radiusIndex;
+            set => SetProperty(ref radiusIndex, value);
         }
 
         public SpellTarget()
@@ -123,15 +108,8 @@ namespace SleepHunter.Models
             return point;
         }
 
-        private int ComparePolarAscending(Point a, Point b)
-        {
-            return ComparePolar(a, b, isDescending: false);
-        }
-
-        private int ComparePolarDescending(Point a, Point b)
-        {
-            return ComparePolar(a, b, isDescending: true);
-        }
+        private int ComparePolarAscending(Point a, Point b) => ComparePolar(a, b, isDescending: false);
+        private int ComparePolarDescending(Point a, Point b) => ComparePolar(a, b, isDescending: true);
 
         private int ComparePolar(Point a, Point b, bool isDescending = false)
         {

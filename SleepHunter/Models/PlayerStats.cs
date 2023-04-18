@@ -7,7 +7,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal sealed class PlayerStats : ObservableObject
+    public sealed class PlayerStats : ObservableObject
     {
         private static readonly string CurrentHealthKey = @"CurrentHealth";
         private static readonly string MaximumHealthKey = @"MaximumHealth";
@@ -26,55 +26,53 @@ namespace SleepHunter.Models
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
 
         public int CurrentHealth
         {
-            get { return currentHealth; }
-            set
+            get => currentHealth;
+            set => SetProperty(ref currentHealth, value, onChanged: (s) =>
             {
-                SetProperty(ref currentHealth, value, onChanged: (s) => { RaisePropertyChanged("HealthPercent"); RaisePropertyChanged("HasFullHealth"); });
-            }
+                RaisePropertyChanged(nameof(HealthPercent));
+                RaisePropertyChanged(nameof(HasFullHealth));
+            });
         }
 
         public int MaximumHealth
         {
-            get { return maximumHealth; }
-            set
+            get => maximumHealth; 
+            set => SetProperty(ref maximumHealth, value, onChanged: (s) =>
             {
-                SetProperty(ref maximumHealth, value, onChanged: (s) => { RaisePropertyChanged("HealthPercent"); RaisePropertyChanged("HasFullHealth"); });
-            }
+                RaisePropertyChanged(nameof(HealthPercent));
+                RaisePropertyChanged(nameof(HasFullHealth));
+            });
         }
 
-        public bool HasFullHealth
-        {
-            get { return currentHealth >= maximumHealth && currentHealth > 0; }
-        }
+        public bool HasFullHealth => currentHealth >= maximumHealth && currentHealth > 0;
 
         public int CurrentMana
         {
-            get { return currentMana; }
-            set
-            {
-                SetProperty(ref currentMana, value, onChanged: (s) => { RaisePropertyChanged("ManaPercent"); RaisePropertyChanged("HasFullMana"); });
-            }
+            get => currentMana;
+            set => SetProperty(ref currentMana, value, onChanged: (s) =>
+            { 
+                RaisePropertyChanged(nameof(ManaPercent));
+                RaisePropertyChanged(nameof(HasFullMana));
+            });
         }
 
         public int MaximumMana
         {
-            get { return maximumMana; }
-            set
+            get => maximumMana;
+            set => SetProperty(ref maximumMana, value, onChanged: (s) =>
             {
-                SetProperty(ref maximumMana, value, onChanged: (s) => { RaisePropertyChanged("ManaPercent"); RaisePropertyChanged("HasFullMana"); });
-            }
+                RaisePropertyChanged(nameof(ManaPercent));
+                RaisePropertyChanged(nameof(HasFullMana));
+            });
         }
 
-        public bool HasFullMana
-        {
-            get { return currentMana >= maximumMana && currentMana > 0; }
-        }
+        public bool HasFullMana => currentMana >= maximumMana && currentMana > 0;
 
         public double HealthPercent
         {
@@ -106,36 +104,24 @@ namespace SleepHunter.Models
 
         public int Level
         {
-            get { return level; }
-            set { SetProperty(ref level, value); }
+            get => level;
+            set => SetProperty(ref level, value);
         }
 
         public int AbilityLevel
         {
-            get { return abilityLevel; }
-            set { SetProperty(ref abilityLevel, value); }
+            get => abilityLevel;
+            set => SetProperty(ref abilityLevel, value);
         }
-
-        public PlayerStats()
-           : this(null) { }
 
         public PlayerStats(Player owner)
-        {
-            this.owner = owner;
-        }
+            => this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

@@ -83,9 +83,12 @@
     <Compile Include="Metadata\ModifierScope.cs" />
     <Compile Include="Models\EquipmentSlot.cs" />
     <Compile Include="Models\InterfacePanelExtender.cs" />
+    <Compile Include="Models\PlayerFieldFlags.cs" />
     <Compile Include="Models\PlayerSortOrder.cs" />
     <Compile Include="Models\ReleaseAsset.cs" />
     <Compile Include="Models\ReleaseVersion.cs" />
+    <Compile Include="Models\SpellTargetMode.cs" />
+    <Compile Include="Models\TargetCoordinateUnits.cs" />
     <Compile Include="Services\Logging\ILogger.cs" />
     <Compile Include="Services\Releases\IReleaseService.cs" />
     <Compile Include="Services\IServiceProvider.cs" />

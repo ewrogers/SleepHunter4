@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SleepHunter.Services
 {
-    internal class ServiceProvider : IServiceProvider
+    public class ServiceProvider : IServiceProvider
     {
         private bool isDisposed;
 
@@ -61,9 +61,7 @@ namespace SleepHunter.Services
                                         select ctor;
 
             // Throw if no suitable constructor was found
-            var constructor = availableConstructors.FirstOrDefault();
-            if (constructor == null)
-                throw new InvalidOperationException($"{type.Name} cannot be instantiated, no valid constructor found");
+            var constructor = availableConstructors.FirstOrDefault() ?? throw new InvalidOperationException($"{type.Name} cannot be instantiated, no valid constructor found");
 
             // Dynamically build a list of arguments for the constructor
             var arguments = constructor.GetParameters().Select(arg => GetServiceInternal(arg.ParameterType)).ToArray();

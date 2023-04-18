@@ -2,22 +2,15 @@
 
 namespace SleepHunter.Models
 {
-    internal delegate void PlayerEventHandler(object sender, PlayerEventArgs e);
+    public delegate void PlayerEventHandler(object sender, PlayerEventArgs e);
 
-    internal sealed class PlayerEventArgs : EventArgs
+    public sealed class PlayerEventArgs : EventArgs
     {
-        private readonly Player player;
-
-        public Player Player => player;
+        public Player Player { get; }
 
         public PlayerEventArgs(Player player)
-        {
-            this.player = player;
-        }
+            => Player = player ?? throw new ArgumentNullException(nameof(player));
 
-        public override string ToString()
-        {
-            return player.Name;
-        }
+        public override string ToString() => Player.Name;
     }
 }

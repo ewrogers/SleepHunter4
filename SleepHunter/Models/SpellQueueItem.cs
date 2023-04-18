@@ -7,7 +7,7 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    internal sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
+    public sealed class SpellQueueItem : ObservableObject, ICloneable
     {
         private int id;
         private ImageSource icon;
@@ -23,68 +23,72 @@ namespace SleepHunter.Models
 
         public int Id
         {
-            get { return id; }
-            set { SetProperty(ref id, value); }
+            get => id;
+            set => SetProperty(ref id, value);
         }
 
         public ImageSource Icon
         {
-            get { return icon; }
-            set { SetProperty(ref icon, value); }
+            get => icon;
+            set => SetProperty(ref icon, value);
         }
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public SpellTarget Target
         {
-            get { return target; }
-            set { SetProperty(ref target, value); }
+            get => target;
+            set => SetProperty(ref target, value);
         }
 
         public DateTime LastUsedTimestamp
         {
-            get { return lastUsedTimestamp; }
-            set { SetProperty(ref lastUsedTimestamp, value); }
+            get => lastUsedTimestamp;
+            set => SetProperty(ref lastUsedTimestamp, value);
         }
 
         public int StartingLevel
         {
-            get { return startingLevel; }
-            set
+            get => startingLevel;
+            set => SetProperty(ref startingLevel, value, onChanged: (s) =>
             {
-                SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged("PercentCompleted"); });
-            }
+                RaisePropertyChanged(nameof(PercentCompleted));
+            });
         }
 
         public int CurrentLevel
         {
-            get { return currentLevel; }
-            set
-            {
-                SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-            }
+            get => currentLevel; 
+            set => SetProperty(ref currentLevel, value, onChanged: (s) =>
+            { 
+                RaisePropertyChanged(nameof(IsDone));
+                RaisePropertyChanged(nameof(PercentCompleted));
+            });
         }
 
         public int MaximumLevel
         {
-            get { return maximumLevel; }
-            set
+            get => maximumLevel;
+            set => SetProperty(ref maximumLevel, value, onChanged: (s) =>
             {
-                SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-            }
+                RaisePropertyChanged(nameof(IsDone));
+                RaisePropertyChanged(nameof(PercentCompleted));
+            });
         }
 
         public int? TargetLevel
         {
-            get { return targetLevel; }
-            set
+            get => targetLevel; 
+            set => SetProperty(ref targetLevel, value, onChanged: (s) =>
             {
-                SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("HasTargetLevel"); RaisePropertyChanged("PercentCompleted"); });
-            }
+                RaisePropertyChanged(nameof(IsDone));
+                RaisePropertyChanged(nameof(HasTargetLevel)); 
+                RaisePropertyChanged(nameof(PercentCompleted));
+            });
         }
 
         public double PercentCompleted
@@ -98,10 +102,7 @@ namespace SleepHunter.Models
             }
         }
 
-        public bool HasTargetLevel
-        {
-            get { return targetLevel.HasValue; }
-        }
+        public bool HasTargetLevel => targetLevel.HasValue;
 
         public bool IsDone
         {
@@ -116,14 +117,14 @@ namespace SleepHunter.Models
 
         public bool IsUndefined
         {
-            get { return isUndefined; }
-            set { SetProperty(ref isUndefined, value); }
+            get => isUndefined;
+            set => SetProperty(ref isUndefined, value);
         }
 
         public bool IsActive
         {
-            get { return isActive; }
-            set { SetProperty(ref isActive, value); }
+            get => isActive;
+            set => SetProperty(ref isActive, value);
         }
 
         public SpellQueueItem() { }
@@ -144,35 +145,23 @@ namespace SleepHunter.Models
             MaximumLevel = spellInfo.MaximumLevel;
         }
 
-        public void CopyTo(SpellQueueItem other)
+        public object Clone()
         {
-            CopyTo(other, true, false);
+            return new SpellQueueItem()
+            {
+                Id = Id,
+                Icon = Icon,
+                Name = Name,
+                Target = Target,
+                StartingLevel = StartingLevel,
+                CurrentLevel = CurrentLevel,
+                MaximumLevel = MaximumLevel,
+                TargetLevel = TargetLevel,
+                IsUndefined = IsUndefined,
+                IsActive = IsActive,
+            };
         }
 
-        public void CopyTo(SpellQueueItem other, bool copyId)
-        {
-            CopyTo(other, copyId, false);
-        }
-
-        public void CopyTo(SpellQueueItem other, bool copyId = true, bool copyTimestamp = false)
-        {
-            if (copyId)
-                other.Id = Id;
-
-            other.Icon = Icon;
-            other.Name = Name;
-            other.Target = Target;
-            other.StartingLevel = StartingLevel;
-            other.CurrentLevel = CurrentLevel;
-            other.MaximumLevel = MaximumLevel;
-            other.TargetLevel = TargetLevel;
-            other.IsUndefined = IsUndefined;
-            other.IsActive = IsActive;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0} on {1}", name, target.ToString());
-        }
+        public override string ToString() => $"{Name} on {Target}";
     }
 }

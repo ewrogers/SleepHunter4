@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<ColorThemes>
+  <Themes>
+    <Theme Name="Steel" SortIndex="1" Background="#FF475569" Foreground="#FFF8FAFC" />
+    <Theme Name="Slate" SortIndex="2" Background="#FF334155" Foreground="#FFF8FAFC" />
+    <Theme Name="Midnight" SortIndex="3" Background="#FF1E293B" Foreground="#FFF8FAFC" />
+    <Theme Name="Battleship" SortIndex="4" Background="#FF4B5563" Foreground="#FFF9FAFB" />
+    <Theme Name="Stealth" SortIndex="5" Background="#FF374151" Foreground="#FFF9FAFB" />
+    <Theme Name="Lead" SortIndex="6" Background="#FF1F2937" Foreground="#FFF9FAFB" />
+    <Theme Name="Silver" SortIndex="7" Background="#FF52525B" Foreground="#FFFAFAFA" />
+    <Theme Name="Zinc" SortIndex="8" Background="#FF3F3F46" Foreground="#FFFAFAFA" />
+    <Theme Name="Gunmetal" SortIndex="9" Background="#FF27272A" Foreground="#FFFAFAFA" />
+    <Theme Name="Tin" SortIndex="10" Background="#FF525252" Foreground="#FFFAFAFA" />
+    <Theme Name="Pewter" SortIndex="11" Background="#FF404040" Foreground="#FFFAFAFA" />
+    <Theme Name="Carbon" SortIndex="12" Background="#FF262626" Foreground="#FFFAFAFA" />
+    <Theme Name="Stone" SortIndex="13" Background="#FF57534E" Foreground="#FFFAFAF9" />
+    <Theme Name="Taupe" SortIndex="14" Background="#FF44403C" Foreground="#FFFAFAF9" />
+    <Theme Name="Coffee" SortIndex="15" Background="#FF292524" Foreground="#FFFAFAF9" />
+    <Theme Name="Cherry" SortIndex="16" Background="#FFDC2626" Foreground="#FFFEF2F2" />
+    <Theme Name="Crimson" SortIndex="17" Background="#FFB91C1C" Foreground="#FFFEF2F2" />
+    <Theme Name="Ruby" SortIndex="18" Background="#FF991B1B" Foreground="#FFFEF2F2" />
+    <Theme Name="Tangerine" SortIndex="19" Background="#FFEA580C" Foreground="#FFFFF7ED" />
+    <Theme Name="Orange" SortIndex="20" Background="#FFC2410C" Foreground="#FFFFF7ED" />
+    <Theme Name="Rust" SortIndex="21" Background="#FF9A3412" Foreground="#FFFFF7ED" />
+    <Theme Name="Citrine" SortIndex="22" Background="#FFD97706" Foreground="#FFFFFBEB" />
+    <Theme Name="Amber" SortIndex="23" Background="#FFB45309" Foreground="#FFFFFBEB" />
+    <Theme Name="Harvest" SortIndex="24" Background="#FF92400E" Foreground="#FFFFFBEB" />
+    <Theme Name="Topaz" SortIndex="25" Background="#FFCA8A04" Foreground="#FFFEFCE8" />
+    <Theme Name="Wheat" SortIndex="26" Background="#FFA16207" Foreground="#FFFEFCE8" />
+    <Theme Name="Leather" SortIndex="27" Background="#FF854D0E" Foreground="#FFFEFCE8" />
+    <Theme Name="Peridot" SortIndex="28" Background="#FF65A30D" Foreground="#FFF7FEE7" />
+    <Theme Name="Lime" SortIndex="29" Background="#FF4D7C0F" Foreground="#FFF7FEE7" />
+    <Theme Name="Moss" SortIndex="30" Background="#FF3F6212" Foreground="#FFF7FEE7" />
+    <Theme Name="Jade" SortIndex="31" Background="#FF16A34A" Foreground="#FFF0FDF4" />
+    <Theme Name="Grass" SortIndex="32" Background="#FF15803D" Foreground="#FFF0FDF4" />
+    <Theme Name="Forest" SortIndex="33" Background="#FF166534" Foreground="#FFF0FDF4" />
+    <Theme Name="Seafoam" SortIndex="34" Background="#FF059669" Foreground="#FFECFDF5" />
+    <Theme Name="Emerald" SortIndex="35" Background="#FF047857" Foreground="#FFECFDF5" />
+    <Theme Name="Turquoise" SortIndex="36" Background="#FF065F46" Foreground="#FFECFDF5" />
+    <Theme Name="Air" SortIndex="37" Background="#FF0891B2" Foreground="#FFECFEFF" />
+    <Theme Name="Cerulean" SortIndex="38" Background="#FF0E7490" Foreground="#FFECFEFF" />
+    <Theme Name="Teal" SortIndex="39" Background="#FF155E75" Foreground="#FFECFEFF" />
+    <Theme Name="Sky" SortIndex="40" Background="#FF0284C7" Foreground="#FFF0F9FF" />
+    <Theme Name="Azure" SortIndex="41" Background="#FF0369A1" Foreground="#FFF0F9FF" />
+    <Theme Name="Stormy" SortIndex="42" Background="#FF075985" Foreground="#FFF0F9FF" />
+    <Theme Name="Lapis" SortIndex="44" Background="#FF1D4ED8" Foreground="#FFEFF6FF" />
+    <Theme Name="Sapphire" SortIndex="45" Background="#FF1E40AF" Foreground="#FFEFF6FF" IsDefault="true" />
+    <Theme Name="Cornflower" SortIndex="46" Background="#FF4F46E5" Foreground="#FFEEF2FF" />
+    <Theme Name="Indigo" SortIndex="47" Background="#FF4338CA" Foreground="#FFEEF2FF" />
+    <Theme Name="Twilight" SortIndex="48" Background="#FF3730A3" Foreground="#FFEEF2FF" />
+    <Theme Name="Lavender" SortIndex="49" Background="#FF7C3AED" Foreground="#FFF5F3FF" />
+    <Theme Name="Nightshade" SortIndex="50" Background="#FF6D28D9" Foreground="#FFF5F3FF" />
+    <Theme Name="Amethyst" SortIndex="51" Background="#FF5B21B6" Foreground="#FFF5F3FF" />
+    <Theme Name="Lilac" SortIndex="52" Background="#FF9333EA" Foreground="#FFFAF5FF" />
+    <Theme Name="Grape" SortIndex="53" Background="#FF7E22CE" Foreground="#FFFAF5FF" />
+    <Theme Name="Royal" SortIndex="54" Background="#FF6B21A8" Foreground="#FFFAF5FF" />
+    <Theme Name="Bubblegum" SortIndex="55" Background="#FFC026D3" Foreground="#FFFDF4FF" />
+    <Theme Name="Orchid" SortIndex="56" Background="#FFA21CAF" Foreground="#FFFDF4FF" />
+    <Theme Name="Wine" SortIndex="57" Background="#FF86198F" Foreground="#FFFDF4FF" />
+    <Theme Name="Peony" SortIndex="58" Background="#FFDB2777" Foreground="#FFFDF2F8" />
+    <Theme Name="Strawberry" SortIndex="59" Background="#FFBE185D" Foreground="#FFFDF2F8" />
+    <Theme Name="Raspberry" SortIndex="60" Background="#FF9D174D" Foreground="#FFFDF2F8" />
+    <Theme Name="Vermillion" SortIndex="61" Background="#FFE11D48" Foreground="#FFFDF2F8" />
+    <Theme Name="Rose" SortIndex="62" Background="#FFBE123C" Foreground="#FFFDF2F8" />
+    <Theme Name="Garnet" SortIndex="63" Background="#FF9F1239" Foreground="#FFFDF2F8" />
+  </Themes>
+</ColorThemes>

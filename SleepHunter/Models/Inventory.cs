@@ -16,32 +16,23 @@ namespace SleepHunter.Models
 
         public static readonly int InventoryCount = 60;
 
-        private Player owner;
         private readonly List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { owner = value; }
-        }
+        public Player Owner { get; set; }
 
-        public int Count { get { return inventory.Count((item) => { return !item.IsEmpty; }); } }
+        public int Count => inventory.Count((item) => { return !item.IsEmpty; });
 
-        public IEnumerable<string> ItemNames
-        {
-            get { return from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name; }
-        }
-
-        public Inventory()
-           : this(null) { }
+        public IEnumerable<string> ItemNames => from item in inventory 
+                                                where !item.IsEmpty && !string.IsNullOrWhiteSpace(item.Name) 
+                                                select item.Name;
 
         public Inventory(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InitializeInventory();
         }
 
-        void InitializeInventory()
+        private void InitializeInventory()
         {
             inventory.Clear();
 
@@ -71,20 +62,12 @@ namespace SleepHunter.Models
             return -1;
         }
 
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
-
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
-            var version = this.Owner.Version;
+            var version = Owner.Version;
 
             if (version == null)
             {
@@ -154,9 +137,6 @@ namespace SleepHunter.Models
                     yield return item;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

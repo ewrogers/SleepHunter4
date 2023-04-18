@@ -14,7 +14,7 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Models
 {
-    internal sealed class Spellbook : ObservableObject, IEnumerable<Spell>
+    public sealed class Spellbook : ObservableObject, IEnumerable<Spell>
     {
         private static readonly string SpellbookKey = @"Spellbook";
 
@@ -29,44 +29,35 @@ namespace SleepHunter.Models
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
 
-        public int Count { get { return spells.Count((spell) => { return !spell.IsEmpty; }); } }
+        public int Count => spells.Count((spell) => { return !spell.IsEmpty; });
 
-        public IEnumerable<Spell> Spells
-        {
-            get { return from s in spells select s; }
-        }
+        public IEnumerable<Spell> Spells => spells;
 
-        public IEnumerable<Spell> TemuairSpells
-        {
-            get { return from s in spells where s.Panel == InterfacePanel.TemuairSpells && s.Slot < TemuairSpellCount select s; }
-        }
+        public IEnumerable<Spell> TemuairSpells => from spell in spells
+                                                   where spell.Panel == InterfacePanel.TemuairSpells && spell.Slot < TemuairSpellCount
+                                                   select spell;
 
-        public IEnumerable<Spell> MedeniaSpells
-        {
-            get { return from s in spells where s.Panel == InterfacePanel.MedeniaSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount) select s; }
-        }
+        public IEnumerable<Spell> MedeniaSpells => from spell in spells
+                                                   where spell.Panel == InterfacePanel.MedeniaSpells && spell.Slot < (TemuairSpellCount + MedeniaSpellCount)
+                                                   select spell;
 
-        public IEnumerable<Spell> WorldSpells
-        {
-            get { return from s in spells where s.Panel == InterfacePanel.WorldSpells && s.Slot < (TemuairSpellCount + MedeniaSpellCount + WorldSpellCount) select s; }
-        }
+        public IEnumerable<Spell> WorldSpells => from spell in spells
+                                                 where spell.Panel == InterfacePanel.WorldSpells && spell.Slot < (TemuairSpellCount + MedeniaSpellCount + WorldSpellCount)
+                                                 select spell;
 
         public string ActiveSpell
         {
-            get { return activeSpell; }
-            set { SetProperty(ref activeSpell, value); }
+            get => activeSpell;
+            set => SetProperty(ref activeSpell, value);
         }
-
-        public Spellbook()
-           : this(null) { }
 
         public Spellbook(Player owner)
         {
-            this.owner = owner;
+            this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InitialzeSpellbook();
         }
 
@@ -119,28 +110,15 @@ namespace SleepHunter.Models
         public bool ClearCooldown(string spellName)
         {
             spellName = spellName.Trim();
-
-            DateTime timestamp;
-            return spellCooldownTimestamps.TryRemove(spellName, out timestamp);
+            return spellCooldownTimestamps.TryRemove(spellName, out var _);
         }
 
-        public void ClearAllCooldowns()
-        {
-            spellCooldownTimestamps.Clear();
-        }
-
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
+        public void ClearAllCooldowns() => spellCooldownTimestamps.Clear();
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 
@@ -268,9 +246,6 @@ namespace SleepHunter.Models
                     yield return spell;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

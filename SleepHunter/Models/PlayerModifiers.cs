@@ -1,41 +1,27 @@
 ﻿using System;
-using System.Diagnostics;
 
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal sealed class PlayerModifiers : ObservableObject
+    public sealed class PlayerModifiers : ObservableObject
     {
         Player owner;
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
-
-        public PlayerModifiers()
-           : this(null) { }
 
         public PlayerModifiers(Player owner)
-        {
-            this.owner = owner;
-        }
-
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
+            => this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
     }
 }

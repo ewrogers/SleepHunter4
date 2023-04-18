@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SleepHunter.Services.Logging
 {
-    internal class Logger : ILogger
+    public class Logger : ILogger
     {
         private bool isDisposed;
         private bool autoFlush = true;

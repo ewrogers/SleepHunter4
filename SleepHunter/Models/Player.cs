@@ -10,27 +10,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Models
 {
-    [Flags]
-    public enum PlayerFieldFlags : uint
-    {
-        None = 0x0,
-        Name = 0x1,
-        Guild = 0x2,
-        GuildRank = 0x4,
-        Title = 0x8,
-        Inventory = 0x10,
-        Equipment = 0x20,
-        Skillbook = 0x40,
-        Spellbook = 0x80,
-        Stats = 0x100,
-        Modifiers = 0x200,
-        Location = 0x400,
-        GameClient = 0x800,
-        Status = 0x1000,
-        Window = 0x2000,
-
-        All = 0xFFFFFFFF
-    }
+    
 
     public sealed class Player : ObservableObject, IDisposable
     {
@@ -69,199 +49,187 @@ namespace SleepHunter.Models
 
         public ClientProcess Process
         {
-            get { return process; }
-            private set { SetProperty(ref process, value); }
+            get => process;
+            private set => SetProperty(ref process, value);
         }
 
         public ClientVersion Version
         {
-            get { return version; }
-            set { SetProperty(ref version, value); }
+            get => version;
+            set => SetProperty(ref version, value);
         }
 
-        public IntPtr ProcessHandle
-        {
-            get { return accessor.ProcessHandle; }
-        }
+        public IntPtr ProcessHandle => accessor.ProcessHandle;
 
-        public ProcessMemoryAccessor Accessor
-        {
-            get { return accessor; }
-        }
+        public ProcessMemoryAccessor Accessor => accessor;
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public string Guild
         {
-            get { return guild; }
-            set { SetProperty(ref guild, value); }
+            get => guild;
+            set => SetProperty(ref guild, value);
         }
 
         public string GuildRank
         {
-            get { return guildRank; }
-            set { SetProperty(ref guildRank, value); }
+            get => guildRank;
+            set => SetProperty(ref guildRank, value);
         }
 
         public string Title
         {
-            get { return title; }
-            set { SetProperty(ref title, value); }
+            get => title;
+            set => SetProperty(ref title, value);
         }
 
         public PlayerClass Class
         {
-            get { return playerClass; }
-            set { SetProperty(ref playerClass, value); }
+            get => playerClass;
+            set => SetProperty(ref playerClass, value);
         }
 
         public Inventory Inventory
         {
-            get { return inventory; }
-            private set { SetProperty(ref inventory, value); }
+            get => inventory;
+            set => SetProperty(ref inventory, value);
         }
 
         public EquipmentSet Equipment
         {
-            get { return equipment; }
-            set { SetProperty(ref equipment, value); }
+            get => equipment;
+            set => SetProperty(ref equipment, value);
         }
 
         public Skillbook Skillbook
         {
-            get { return skillbook; }
-            private set { SetProperty(ref skillbook, value); }
+            get => skillbook;
+            set => SetProperty(ref skillbook, value);
         }
 
         public Spellbook Spellbook
         {
-            get { return spellbook; }
-            private set { SetProperty(ref spellbook, value); }
+            get => spellbook;
+            set => SetProperty(ref spellbook, value);
         }
 
         public PlayerStats Stats
         {
-            get { return stats; }
-            private set { SetProperty(ref stats, value); }
+            get => stats;
+            set => SetProperty(ref stats, value);
         }
 
         public PlayerModifiers Modifiers
         {
-            get { return modifiers; }
-            private set { SetProperty(ref modifiers, value); }
+            get => modifiers;
+            set => SetProperty(ref modifiers, value);
         }
 
         public MapLocation Location
         {
-            get { return location; }
-            private set { SetProperty(ref location, value); }
+            get => location;
+            set => SetProperty(ref location, value);
         }
 
         public ClientState GameClient
         {
-            get { return gameClient; }
-            private set { SetProperty(ref gameClient, value); }
+            get => gameClient;
+            set => SetProperty(ref gameClient, value);
         }
 
         public bool IsLoggedIn
         {
-            get { return isLoggedIn; }
-            set { SetProperty(ref isLoggedIn, value); }
+            get => isLoggedIn;
+            set => SetProperty(ref isLoggedIn, value);
         }
 
         public DateTime? LoginTimestamp
         {
-            get { return loginTimestamp; }
-            set { SetProperty(ref loginTimestamp, value); }
+            get => loginTimestamp;
+            set => SetProperty(ref loginTimestamp, value);
         }
 
         public string Status
         {
-            get { return status; }
-            set { SetProperty(ref status, value); }
+            get => status;
+            set => SetProperty(ref status, value);
         }
 
-        public string HotkeyString
-        {
-            get { return hotkey?.ToString(); }
-        }
+        public string HotkeyString => hotkey?.ToString();
 
         public Hotkey Hotkey
         {
-            get { return hotkey; }
-            set { SetProperty(ref hotkey, value, onChanged: (playerClass) => { RaisePropertyChanged("HotkeyStrike"); RaisePropertyChanged("HasHotkey"); }); }
+            get => hotkey;
+            set => SetProperty(ref hotkey, value, onChanged: (playerClass) =>
+            {
+                RaisePropertyChanged(nameof(HasHotkey));
+            });
         }
 
-        public bool HasHotkey
-        {
-            get { return !string.IsNullOrWhiteSpace(HotkeyString); }
-        }
+        public bool HasHotkey => !string.IsNullOrWhiteSpace(HotkeyString);
 
         public int SelectedTabIndex
         {
-            get { return selectedTabIndex; }
-            set { SetProperty(ref selectedTabIndex, value); }
+            get => selectedTabIndex;
+            set => SetProperty(ref selectedTabIndex, value);
         }
 
         public double? SkillbookScrollPosition
         {
-            get { return skillbookScrollPosition; }
-            set { SetProperty(ref skillbookScrollPosition, value); }
+            get => skillbookScrollPosition;
+            set => SetProperty(ref skillbookScrollPosition, value);
         }
 
         public double? SpellbookScrollPosition
         {
-            get { return spellbookScrollPosition; }
-            set { SetProperty(ref spellbookScrollPosition, value); }
+            get => spellbookScrollPosition;
+            set => SetProperty(ref spellbookScrollPosition, value);
         }
 
         public double? SpellQueueScrollPosition
         {
-            get { return spellQueueScrollPosition; }
-            set { SetProperty(ref spellQueueScrollPosition, value); }
+            get => spellQueueScrollPosition;
+            set => SetProperty(ref spellQueueScrollPosition, value);
         }
 
         public double? FlowerScrollPosition
         {
-            get { return flowerScrollPosition; }
-            set { SetProperty(ref flowerScrollPosition, value); }
+            get => flowerScrollPosition;
+            set => SetProperty(ref flowerScrollPosition, value);
         }
 
         public bool HasLyliacPlant
         {
-            get { return hasLyliacPlant; }
-            set { SetProperty(ref hasLyliacPlant, value); }
+            get => hasLyliacPlant;
+            set => SetProperty(ref hasLyliacPlant, value);
         }
 
         public bool HasLyliacVineyard
         {
-            get { return hasLyliacVineyard; }
-            set { SetProperty(ref hasLyliacVineyard, value); }
+            get => hasLyliacVineyard;
+            set => SetProperty(ref hasLyliacVineyard, value);
         }
 
         public bool HasFasSpiorad
         {
-            get { return hasFasSpiorad; }
-            set { SetProperty(ref hasFasSpiorad, value); }
+            get => hasFasSpiorad;
+            set => SetProperty(ref hasFasSpiorad, value);
         }
 
         public DateTime LastFlowerTimestamp
         {
-            get { return lastFlowerTimestamp; }
-            set { SetProperty(ref lastFlowerTimestamp, value, onChanged: (p) => { RaisePropertyChanged("TimeSinceFlower"); }); }
+            get => lastFlowerTimestamp;
+            set => SetProperty(ref lastFlowerTimestamp, value, onChanged: (p) =>
+            {
+                RaisePropertyChanged(nameof(TimeSinceFlower));
+            });
         }
 
-        public TimeSpan TimeSinceFlower
-        {
-            get { return DateTime.Now - lastFlowerTimestamp; }
-        }
-
-        public Player()
-           : this(null) { }
+        public TimeSpan TimeSinceFlower => DateTime.Now - lastFlowerTimestamp;
 
         public Player(ClientProcess process)
         {
@@ -281,10 +249,7 @@ namespace SleepHunter.Models
             gameClient = new ClientState(this);
         }
 
-        ~Player()
-        {
-            Dispose(false);
-        }
+        ~Player() => Dispose(false);
 
         public void Dispose()
         {
@@ -306,8 +271,15 @@ namespace SleepHunter.Models
             isDisposed = true;
         }
 
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
+
         public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
         {
+            CheckIfDisposed();
             GameClient.VersionKey = Version?.Key ?? "Unknown";
 
             try
@@ -392,7 +364,7 @@ namespace SleepHunter.Models
                 throw new ArgumentNullException(nameof(accessor));
         }
 
-        void UpdateGuildRank(ProcessMemoryAccessor accessor)
+        private void UpdateGuildRank(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
@@ -404,9 +376,6 @@ namespace SleepHunter.Models
                 throw new ArgumentNullException(nameof(accessor));
         }
 
-        public override string ToString()
-        {
-            return Name ?? string.Format("Process {0}", Process.ProcessId.ToString());
-        }
+        public override string ToString() => Name ?? $"Process {Process.ProcessId}";
     }
 }

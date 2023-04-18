@@ -73,19 +73,8 @@ namespace SleepHunter.Models
             set => SetProperty(ref isUserChatting, value);
         }
 
-        public ClientState()
-           : this(null) { }
-
         public ClientState(Player owner)
             => this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
 
         public void Update(ProcessMemoryAccessor accessor)
         {

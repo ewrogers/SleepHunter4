@@ -15,6 +15,8 @@ namespace SleepHunter.Metadata
         [DefaultValue(null)]
         public string Version { get; set; }
 
+        [XmlIgnore]
+        public int Count => staves.Count;
 
         [XmlArray(nameof(Staves))]
         [XmlArrayItem("Staff")]
@@ -28,5 +30,7 @@ namespace SleepHunter.Metadata
             if (collection != null)
                 staves.AddRange(collection);
         }
+
+        public override string ToString() => $"Staves = {Count}";
     }
 }

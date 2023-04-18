@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -8,7 +7,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    internal sealed class MapLocation : ObservableObject
+    public sealed class MapLocation : ObservableObject
     {
         private static readonly string MapNumberKey = @"MapNumber";
         private static readonly string MapNameKey = @"MapName";
@@ -24,52 +23,45 @@ namespace SleepHunter.Models
 
         public Player Owner
         {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
+            get => owner;
+            set => SetProperty(ref owner, value);
         }
 
         public int MapNumber
         {
-            get { return mapNumber; }
-            set { SetProperty(ref mapNumber, value); }
+            get => mapNumber;
+            set => SetProperty(ref mapNumber, value);
         }
 
         public int X
         {
-            get { return x; }
-            set { SetProperty(ref x, value); }
+            get => x;
+            set => SetProperty(ref x, value);
         }
 
         public int Y
         {
-            get { return y; }
-            set { SetProperty(ref y, value); }
+            get => y;
+            set => SetProperty(ref y, value);
         }
 
         public string MapName
         {
-            get { return mapName; }
-            set { SetProperty(ref mapName, value); }
+            get => mapName;
+            set => SetProperty(ref mapName, value);
         }
 
         public string MapHash
         {
-            get { return mapHash; }
-            set { SetProperty(ref mapHash, value); }
+            get => mapHash;
+            set => SetProperty(ref mapHash, value);
         }
-
-        public MapLocation()
-           : this(null) { }
 
         public MapLocation(Player owner)
-        {
-            this.owner = owner;
-        }
+            => this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-        public bool IsSameMap(MapLocation other)
-        {
-            return MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
-        }
+        public bool IsSameMap(MapLocation other) => 
+            MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
 
         public bool IsWithinRange(MapLocation other, int maxX = 10, int maxY = 10)
         {
@@ -82,18 +74,10 @@ namespace SleepHunter.Models
             return deltaX <= maxX && deltaY <= maxY;
         }
 
-        public void Update()
-        {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-        }
-
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

@@ -30,5 +30,7 @@ namespace SleepHunter.Metadata
             if (collection != null)
                 spells.AddRange(collection);
         }
+
+        public override string ToString() => $"Spells = {Count}";
     }
 }

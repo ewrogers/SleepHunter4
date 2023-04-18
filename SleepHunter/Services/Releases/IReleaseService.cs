@@ -4,7 +4,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Services.Releases
 {
-    internal interface IReleaseService
+    public interface IReleaseService
     {
         Uri GetLatestReleaseNotesUri();
 

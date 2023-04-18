@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Models
 {
-    internal class ReleaseVersion
+    public class ReleaseVersion
     {
         public int Id { get; }
         public Version Version { get; }

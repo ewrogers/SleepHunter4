@@ -7,43 +7,30 @@ namespace SleepHunter.Settings
 {
     [Serializable]
     [XmlRoot("ClientVersions")]
-    internal sealed class ClientVersionCollection
+    public sealed class ClientVersionCollection
     {
-        private string version;
-        private List<ClientVersion> versions;
+        private readonly List<ClientVersion> versions = new List<ClientVersion>();
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
-        public string Version
-        {
-            get { return version; }
-            set { version = value; }
-        }
+        public string Version { get; set; }
 
         [XmlIgnore]
-        public int Count { get { return versions.Count; } }
+        public int Count => versions.Count;
 
         [XmlArray("Clients")]
         [XmlArrayItem("Client")]
-        public List<ClientVersion> Versions
-        {
-            get { return versions; }
-            private set { versions = value; }
-        }
+        public List<ClientVersion> Versions => versions;
 
-        public ClientVersionCollection()
-        {
-            versions = new List<ClientVersion>();
-        }
+        public ClientVersionCollection() { }
 
-        public ClientVersionCollection(int capacity)
-        {
-            versions = new List<ClientVersion>(capacity);
-        }
 
         public ClientVersionCollection(IEnumerable<ClientVersion> collection)
         {
-            versions = new List<ClientVersion>(collection);
+            if (collection != null)
+                versions.AddRange(collection);
         }
+
+        public override string ToString() => $"Versions = {Count}";
     }
 }

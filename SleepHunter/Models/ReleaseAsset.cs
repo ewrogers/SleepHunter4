@@ -2,7 +2,7 @@
 
 namespace SleepHunter.Models
 {
-    internal sealed class ReleaseAsset
+    public sealed class ReleaseAsset
     {
         public int Id { get; }
 

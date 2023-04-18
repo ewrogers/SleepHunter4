@@ -29,5 +29,7 @@ namespace SleepHunter.Metadata
             if (collection != null)
                 skills.AddRange(collection);
         }
+
+        public override string ToString() => $"Skills = {Count}";
     }
 }

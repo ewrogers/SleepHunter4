@@ -1,5 +1,4 @@
-﻿using System.Windows;
-
+﻿
 namespace SleepHunter.Models
 {
     public enum InterfacePanel : byte
@@ -17,6 +16,4 @@ namespace SleepHunter.Models
         WorldSpells = 10,
         Unknown = 0xFF
     }
-
-    
 }

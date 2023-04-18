@@ -22,9 +22,6 @@ namespace SleepHunter.Models
 
         public int Count => equipment.Count((item) => { return !item.IsEmpty; });
 
-        public EquipmentSet()
-           : this(null) { }
-
         public EquipmentSet(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -169,14 +166,6 @@ namespace SleepHunter.Models
 
             var isEmpty = item == null || item.IsEmpty;
             return isEmpty;
-        }
-
-        public void Update()
-        {
-            if (Owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(Owner.Accessor);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
