@@ -710,6 +710,10 @@ namespace SleepHunter.Views
 
                 this.ShowMessageBox("Invalid Client Versions", "Unable to load the client versions file.", "You should re-install the application.");
             }
+            finally
+            {
+                UpdateToolbarState();
+            }
         }
 
         private void LoadThemes()
@@ -1322,38 +1326,6 @@ namespace SleepHunter.Views
 
             try
             {
-                var versionsFile = ClientVersionManager.VersionsFile;
-
-                if (!File.Exists(versionsFile))
-                {
-                    logger.LogInfo($"Client versions file does not exist, saving to file: {versionsFile}");
-                    ClientVersionManager.Instance.SaveToFile(versionsFile);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save client versions file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var themesFile = ColorThemeManager.ThemesFile;
-
-                if (!File.Exists(themesFile))
-                {
-                    logger.LogInfo($"Themes file does not exist, saving to file: {themesFile}");
-                    ColorThemeManager.Instance.SaveToFile(ColorThemeManager.ThemesFile);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save themes file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
                 var settingsFile = UserSettingsManager.SettingsFile;
 
                 logger.LogInfo($"Saving user settings to file: {settingsFile}");
@@ -1362,45 +1334,6 @@ namespace SleepHunter.Views
             catch (Exception ex)
             {
                 logger.LogError("Unable to save user settings file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var skillsFile = SkillMetadataManager.SkillMetadataFile;
-
-                logger.LogInfo($"Saving skills metadata to file: {skillsFile}");
-                SkillMetadataManager.Instance.SaveToFile(skillsFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save skills metadata file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var spellsFile = SpellMetadataManager.SpellMetadataFile;
-
-                logger.LogInfo($"Saving spells metadata to file: {spellsFile}");
-                SpellMetadataManager.Instance.SaveToFile(spellsFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save spells metadata file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                var stavesFile = StaffMetadataManager.StaffMetadataFile;
-
-                logger.LogInfo($"Saving staves metadata to file: {stavesFile}");
-                StaffMetadataManager.Instance.SaveToFile(stavesFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unable to save staves metadata file");
                 logger.LogException(ex);
             }
 
@@ -2252,6 +2185,8 @@ namespace SleepHunter.Views
 
         private void UpdateToolbarState()
         {
+            startNewClientButton.IsEnabled = ClientVersionManager.Instance.Count > 0;
+
             stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
 
             if (selectedMacro == null)

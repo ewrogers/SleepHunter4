@@ -142,12 +142,6 @@ namespace SleepHunter.Settings
             Application.Current.Resources["ObsidianForeground"] = theme.Foreground;
         }
 
-        public void ApplyRainbowMode()
-        {
-            Application.Current.Resources["ObsidianBackground"] = Application.Current.Resources["RainbowBackground"];
-            Application.Current.Resources["ObsidianForeground"] = Application.Current.Resources["RainbowForeground"];
-        }
-
         private void OnThemeAdded(ColorTheme theme)
         {
             if (theme == null)

@@ -116,7 +116,7 @@ namespace SleepHunter.Settings
             }
         }
 
-        [XmlArray("Variables")]
+        [XmlArray(nameof(Variables))]
         [XmlArrayItem("Static", typeof(MemoryVariable))]
         [XmlArrayItem("Dynamic", typeof(DynamicMemoryVariable))]
         [XmlArrayItem("Search", typeof(SearchMemoryVariable))]
@@ -125,6 +125,10 @@ namespace SleepHunter.Settings
             get => variables;
             set => SetProperty(ref variables, value);
         }
+
+        // Necessary for the XmlSerializer to deserialize
+        public ClientVersion()
+            : this(string.Empty) { }
 
         public ClientVersion(string key)
             => this.key = key ?? throw new ArgumentNullException(nameof(key));

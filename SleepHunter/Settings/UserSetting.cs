@@ -35,6 +35,8 @@ namespace SleepHunter.Settings
             set => SetProperty(ref this.value, value);
         }
 
+        public UserSetting() { }
+
         public UserSetting(string key, string displayText, object value = null)
         {
             this.key = key;

@@ -42,20 +42,18 @@ namespace SleepHunter.IO.Process
         [DefaultValue(0)]
         public int Count { get; set; }
 
+        // Necessary for the XMLSerializer to deserialize
         public MemoryVariable()
            : this(string.Empty, 0, 0) { }
 
         public MemoryVariable(string key, long address, int maxLength = 0, int size = 0, int count = 0)
         {
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentException("Key cannot be null or whitespace", nameof(key));
-
             Key = key;
             MaxLength = maxLength;
             Size = size;
             Count = count;
 
-            this.address = address;
+            Address = address;
         }
 
         public override string ToString() => Key;
