@@ -9,10 +9,10 @@
     <!-- Blue 900 -->
     <SolidColorBrush x:Key="ObsidianBackground" Color="#1e3a8a"/>
 
-    <!-- Neutral 50 -->
-    <SolidColorBrush x:Key="ObsidianForeground" Color="#FAFAFA"/>
-    <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#FAFAFA"/>
-    <SolidColorBrush x:Key="ObsidianActive" Color="#FAFAFA"/>
+    <!-- Blue 50 -->
+    <SolidColorBrush x:Key="ObsidianForeground" Color="#eff6ff"/>
+    <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#eff6ff"/>
+    <SolidColorBrush x:Key="ObsidianActive" Color="#eff6ff"/>
 
     <!-- Neutral 200 -->
     <SolidColorBrush x:Key="ObsidianMouseOver" Color="#E5E5E5"/>

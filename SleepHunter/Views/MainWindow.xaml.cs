@@ -742,16 +742,13 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-                    ColorThemeManager.Instance.LoadDefaultThemes();
-                    logger.LogInfo("No themes file was found, using defaults");
+                    logger.LogInfo("No themes file was found, using default theme");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load themes, resetting to defaults");
+                logger.LogError("Failed to load themes, resetting to default theme");
                 logger.LogException(ex);
-
-                ColorThemeManager.Instance.LoadDefaultThemes();
             }
         }
 
@@ -1010,9 +1007,10 @@ namespace SleepHunter.Views
                 themeName = ColorThemeManager.Instance.DefaultTheme?.Name;
             }
 
-            if (themeName == null)
+            if (themeName == null || !ColorThemeManager.Instance.ContainsTheme(themeName))
             {
-                logger.LogWarn("Theme name is null, unable to apply");
+                logger.LogWarn("Theme name is null or invalid, using default theme instead");
+                ColorThemeManager.Instance.ApplyDefaultTheme();
                 return;
             }
 
