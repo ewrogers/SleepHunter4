@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
+    <PublishSingleFile>true</PublishSingleFile>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -21,6 +23,7 @@
     <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
     <Description>Dark Ages Automation Tool</Description>
     <Title>SleepHunter</Title>
+    <FileVersion>4.5.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
@@ -31,9 +34,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.1" />
   </ItemGroup>
 </Project>

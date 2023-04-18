@@ -50,3 +50,32 @@ I am not sure of WPF support within other IDEs.
 
 Unfortunately this repository does not have *any* unit tests, so you will have to test for regressions manually.
 Please be mindful of the users of this application, and thoroughly test any functionality for breaking changes.
+
+## Packaging 📦
+
+To package and deploy the application and updater binaries as neat, single-file executables, use the following command:
+
+```powershell
+cd SleepHunter
+dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true --self-contained false
+
+```
+
+You will get similar output:
+
+```powershell
+MSBuild version 17.5.1+f6fdcf537 for .NET
+  Determining projects to restore...
+  Restored C:\Users\Erik\Projects\SleepHunter4\SleepHunter.Updater\SleepHunter.Updater.csproj (in 230 ms).
+  Restored C:\Users\Erik\Projects\SleepHunter4\SleepHunter\SleepHunter.csproj (in 230 ms).
+  SleepHunter.Updater -> C:\Users\Erik\Projects\SleepHunter4\SleepHunter.Updater\bin\Release\net7.0-windows\win-x64\Upd
+  ater.dll
+  SleepHunter.Updater -> C:\Users\Erik\Projects\SleepHunter4\SleepHunter.Updater\bin\Release\net7.0-windows\win-x64\pub
+  lish\
+  SleepHunter -> C:\Users\Erik\Projects\SleepHunter4\SleepHunter\bin\Release\net7.0-windows\win-x64\SleepHunter.dll
+  SleepHunter -> C:\Users\Erik\Projects\SleepHunter4\SleepHunter\bin\Release\net7.0-windows\win-x64\publish\
+```
+
+You should then see the binaries in `$PROJECT_ROOT/bin/Release/.net7.0-windows/win-x64/publish`.
+
+Unfortunately, it seems publishing through VS 2022 does not respect the `PublishSingleFile` property, even when specified in the `.csproj` file.
