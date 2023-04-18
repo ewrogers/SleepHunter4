@@ -106,5 +106,9 @@ namespace SleepHunter.Win32
 
         [DllImport("kernel32", EntryPoint = "GetLastError", CharSet = CharSet.Auto)]
         internal static extern int GetLastError();
+
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetPhysicallyInstalledSystemMemory(out long totalMemoryKilobytes);
     }
 }

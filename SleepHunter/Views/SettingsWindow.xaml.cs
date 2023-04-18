@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +11,7 @@ using SleepHunter.Models;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Settings;
+using SleepHunter.Win32;
 
 namespace SleepHunter.Views
 {
@@ -54,23 +57,44 @@ namespace SleepHunter.Views
         void GetVersion()
         {
             currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            var isDebug = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration == "Debug";
             versionText.Text = $"Version {currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
-            var buildNumber = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-            var buildYear = Convert.ToInt32(buildNumber.Substring(0, 2)) + 2000;
-            var buildMonth = Convert.ToInt32(buildNumber.Substring(2, 1), 16);
-            var buildDay = Convert.ToInt32(buildNumber.Substring(3, 2));
-
-            var buildDate = new DateTime(buildYear, buildMonth, buildDay);
-
-            buildText.Text = $"Build {buildNumber}";
-            buildDateText.Text = $"{buildDate:MMMM} {buildDate.Day}{GetDayOrdinal(buildDate.Day)} {buildDate:yyyy}";
-
             currentVersionText.Text = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
+            frameworkVersionText.Text = $"{RuntimeInformation.FrameworkDescription}";
+        }
 
-            if (isDebug)
-                buildText.Text += "  (Debug)";
+        void GetComputerInfo()
+        {
+            var cpuArch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
+            osVersionText.Text = $"{Environment.OSVersion} ({cpuArch})";
+
+            var cpuCount = Environment.ProcessorCount;
+
+            if (cpuCount == 8)
+                cpuCountText.Text = "Octa-core";
+            else if (cpuCount == 6)
+                cpuCountText.Text = "Hexa-core";
+            else if (cpuCount == 4)
+                cpuCountText.Text = "Quad-core";
+            else if (cpuCount == 2)
+                cpuCountText.Text = "Dual-core";
+            else if (cpuCount == 1)
+                cpuCountText.Text = "Single-core";
+            else
+                cpuCountText.Text = $"{cpuCount}-core";
+
+            if (NativeMethods.GetPhysicallyInstalledSystemMemory(out var ramKilobytes))
+            {
+                var mb = ramKilobytes / 1024.0;
+                var gb = mb / 1024.0;
+
+                if (gb >= 1)
+                    memorySizeText.Text = $"{gb:0.0} GB RAM";
+                else
+                    memorySizeText.Text = $"{mb:0.0} MB RAM";
+            }
+            else
+                memorySizeText.Text = string.Empty;
         }
 
         async Task CheckForLatestVersion()
@@ -178,6 +202,11 @@ namespace SleepHunter.Views
             logger.LogInfo($"User has selected '{headerName}' tab in Settings window");
 
             Title = $"Settings - {headerName}";
+
+            if (tabItem.TabIndex == AboutTabIndex)
+            {
+                GetComputerInfo();
+            }
 
             if (tabItem.TabIndex == UpdatesTabIndex)
             {

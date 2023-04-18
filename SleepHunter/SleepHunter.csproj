@@ -1,371 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9B964768-970E-4190-8574-EBEF7BE09E7E}</ProjectGuid>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SleepHunter</RootNamespace>
-    <AssemblyName>SleepHunter</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>SleepHunter.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup />
   <PropertyGroup>
     <StartupObject>SleepHunter.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ewrogers/SleepHunter4</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ewrogers/SleepHunter4</PackageProjectUrl>
+    <AssemblyVersion>4.5.0.0</AssemblyVersion>
+    <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
+    <Description>Dark Ages Automation Tool</Description>
+    <Title>SleepHunter</Title>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Common\DisplayValue.cs" />
-    <Compile Include="Common\ObservableObject.cs" />
-    <Compile Include="Converters\PlayerClassConverter.cs" />
-    <Compile Include="Converters\VisibilityInverter.cs" />
-    <Compile Include="Extensions\ControlExtender.cs" />
-    <Compile Include="Extensions\VersionExtender.cs" />
-    <Compile Include="Models\PlayerSortOrder.cs" />
-    <Compile Include="Models\ReleaseAsset.cs" />
-    <Compile Include="Models\ReleaseVersion.cs" />
-    <Compile Include="Services\Logging\ILogger.cs" />
-    <Compile Include="Services\Releases\IReleaseService.cs" />
-    <Compile Include="Services\IServiceProvider.cs" />
-    <Compile Include="Services\Logging\Logger.cs" />
-    <Compile Include="Services\Releases\ReleaseService.cs" />
-    <Compile Include="Services\ServiceCollection.cs" />
-    <Compile Include="Services\ServiceLifetime.cs" />
-    <Compile Include="Services\ServiceMapping.cs" />
-    <Compile Include="Services\ServiceProvider.cs" />
-    <Compile Include="Views\FlowerTargetWindow.xaml.cs">
-      <DependentUpon>FlowerTargetWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\LineModifiersEditorWindow.xaml.cs">
-      <DependentUpon>LineModifiersEditorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MessageBoxWindow.xaml.cs">
-      <DependentUpon>MessageBoxWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MetadataEditorWindow.xaml.cs">
-      <DependentUpon>MetadataEditorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Obsidian.xaml.cs">
-      <DependentUpon>Obsidian.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SettingsWindow.xaml.cs">
-      <DependentUpon>SettingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Settings\ClientVersion.cs" />
-    <Compile Include="Settings\ClientVersionCollection.cs" />
-    <Compile Include="Settings\ClientVersionEventArgs.cs" />
-    <Compile Include="Settings\ClientVersionManager.cs" />
-    <Compile Include="Settings\ColorTheme.cs" />
-    <Compile Include="Settings\ColorThemeCollection.cs" />
-    <Compile Include="Settings\ColorThemeEventArgs.cs" />
-    <Compile Include="Settings\ColorThemeManager.cs" />
-    <Compile Include="Settings\MacroAction.cs" />
-    <Compile Include="Settings\UserSetting.cs" />
-    <Compile Include="Settings\UserSettings.cs" />
-    <Compile Include="Settings\UserSettingsManager.cs" />
-    <Compile Include="Views\SkillEditorWindow.xaml.cs">
-      <DependentUpon>SkillEditorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SpellEditorWindow.xaml.cs">
-      <DependentUpon>SpellEditorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SpellTargetWindow.xaml.cs">
-      <DependentUpon>SpellTargetWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\StaffEditorWindow.xaml.cs">
-      <DependentUpon>StaffEditorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\StringExtender.cs" />
-    <Compile Include="Views\UpdateProgressWindow.xaml.cs">
-      <DependentUpon>UpdateProgressWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Win32\MemoryBasicInformation.cs" />
-    <Compile Include="Win32\NativeExtensions.cs" />
-    <Compile Include="Win32\NativeMethods.cs" />
-    <Compile Include="Win32\ProcessAccessFlags.cs" />
-    <Compile Include="Win32\ProcessCreationFlags.cs" />
-    <Compile Include="Win32\ProcessInformation.cs" />
-    <Compile Include="Win32\Rect.cs" />
-    <Compile Include="Win32\SecurityAttributes.cs" />
-    <Compile Include="Win32\StartupInfo.cs" />
-    <Compile Include="Win32\VirtualKeyMapMode.cs" />
-    <Compile Include="Win32\VirtualMemoryProtection.cs" />
-    <Compile Include="Win32\VirtualMemoryStatus.cs" />
-    <Compile Include="Win32\VirtualMemoryType.cs" />
-    <Compile Include="Extensions\WindowExtender.cs" />
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Page Include="Controls\NumericUpDown.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="Controls\NumericUpDown.xaml.cs">
-      <DependentUpon>NumericUpDown.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Ability.cs" />
-    <Compile Include="Converters\BooleanInverter.cs" />
-    <Compile Include="Converters\ByteStringConverter.cs" />
-    <Compile Include="Extensions\CharacterExtender.cs" />
-    <Compile Include="Models\ClientState.cs" />
-    <Compile Include="Converters\ComparisonConverters.cs" />
-    <Compile Include="Models\EquipmentSet.cs" />
-    <Compile Include="Models\FlowerQueueItem.cs" />
-    <Compile Include="Models\FlowerQueueItemEventArgs.cs" />
-    <Compile Include="Common\ICopyable.cs" />
-    <Compile Include="Models\InterfacePanel.cs" />
-    <Compile Include="Models\Inventory.cs" />
-    <Compile Include="Models\InventoryItem.cs" />
-    <Compile Include="Models\MapLocation.cs" />
-    <Compile Include="Converters\NumericConverter.cs" />
-    <Compile Include="Models\Player.cs" />
-    <Compile Include="Models\PlayerEventArgs.cs" />
-    <Compile Include="Models\PlayerManager.cs" />
-    <Compile Include="Models\PlayerModifiers.cs" />
-    <Compile Include="Models\PlayerStats.cs" />
-    <Compile Include="Models\Skill.cs" />
-    <Compile Include="Models\Skillbook.cs" />
-    <Compile Include="Models\Spell.cs" />
-    <Compile Include="Models\Spellbook.cs" />
-    <Compile Include="Models\SpellQueueItem.cs" />
-    <Compile Include="Models\SpellQueueItemEventArgs.cs" />
-    <Compile Include="Models\SpellTarget.cs" />
-    <Compile Include="Converters\TimeSpanConverter.cs" />
-    <Compile Include="Extensions\TimeSpanExtender.cs" />
-    <Compile Include="Converters\VisibilityConverter.cs" />
-    <Compile Include="Extensions\BinaryReaderExtender.cs" />
-    <Compile Include="IO\FileArchive.cs" />
-    <Compile Include="IO\FileArchiveEntry.cs" />
-    <Compile Include="IO\FileArchiveManager.cs" />
-    <Compile Include="IO\PathHelper.cs" />
-    <Compile Include="IO\Process\ClientProcess.cs" />
-    <Compile Include="IO\Process\ClientProcessEventArgs.cs" />
-    <Compile Include="IO\Process\DynamicMemoryVariable.cs" />
-    <Compile Include="IO\Process\MemoryOffset.cs" />
-    <Compile Include="IO\Process\MemoryVariable.cs" />
-    <Compile Include="IO\Process\MemoryVariableExtender.cs" />
-    <Compile Include="IO\Process\ProcessAccess.cs" />
-    <Compile Include="IO\Process\ProcessManager.cs" />
-    <Compile Include="IO\Process\ProcessMemoryAccessor.cs" />
-    <Compile Include="IO\Process\ProcessMemoryScanner.cs" />
-    <Compile Include="IO\Process\ProcessMemoryStream.cs" />
-    <Compile Include="IO\Process\SearchMemoryVariable.cs" />
-    <Compile Include="Macro\Hotkey.cs" />
-    <Compile Include="Macro\HotkeyManager.cs" />
-    <Compile Include="Macro\MacroManager.cs" />
-    <Compile Include="Macro\MacroState.cs" />
-    <Compile Include="Macro\MacroStateEventArgs.cs" />
-    <Compile Include="Macro\PlayerInterfaceExtender.cs" />
-    <Compile Include="Macro\PlayerMacroState.cs" />
-    <Compile Include="Macro\PlayerMacroStatus.cs" />
-    <Compile Include="Macro\SavedFlowerState.cs" />
-    <Compile Include="Macro\SavedMacroState.cs" />
-    <Compile Include="Macro\SavedSkillState.cs" />
-    <Compile Include="Macro\SavedSpellState.cs" />
-    <Compile Include="Macro\SpellRotationMode.cs" />
-    <Compile Include="Macro\WindowAutomator.cs" />
-    <Page Include="Templates\FlowerQueueDataTemplate.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Templates\SpellQueueDataTemplate.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Templates\ToolTipTemplate.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FlowerTargetWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\LineModifiersEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MessageBoxWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MetadataEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Obsidian.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SettingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SkillEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SpellEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SpellTargetWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\StaffEditorWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\AbilityDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\ClientVersionDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\ColorThemeDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\MetadataDataTemplates.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\PlayerDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\SpellTargetDataTemplates.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\StringDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\TimeSpanDataTemplate.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\UpdateProgressWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Media\ColorPalette.cs" />
-    <Compile Include="Media\EpfFrame.cs" />
-    <Compile Include="Media\EpfImage.cs" />
-    <Compile Include="Media\HueSaturationValue.cs" />
-    <Compile Include="Media\IconManager.cs" />
-    <Compile Include="Media\RenderedBitmap.cs" />
-    <Compile Include="Media\RenderManager.cs" />
-    <Compile Include="Metadata\ComputedSpellLines.cs" />
-    <Compile Include="Models\PlayerClass.cs" />
-    <Compile Include="Metadata\SkillMetadata.cs" />
-    <Compile Include="Metadata\SkillMetadataCollection.cs" />
-    <Compile Include="Metadata\SkillMetadataEventArgs.cs" />
-    <Compile Include="Metadata\SkillMetadataManager.cs" />
-    <Compile Include="Metadata\SpellLineModifiers.cs" />
-    <Compile Include="Metadata\SpellLineModifiersEventArgs.cs" />
-    <Compile Include="Metadata\SpellMetadata.cs" />
-    <Compile Include="Metadata\SpellMetadataCollection.cs" />
-    <Compile Include="Metadata\SpellMetadataEventArgs.cs" />
-    <Compile Include="Metadata\SpellMetadataManager.cs" />
-    <Compile Include="Metadata\StaffMetadata.cs" />
-    <Compile Include="Metadata\StaffMetadataCollection.cs" />
-    <Compile Include="Metadata\StaffMetadataEventArgs.cs" />
-    <Compile Include="Metadata\StaffMetadataManager.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.1" />
+  </ItemGroup>
 </Project>

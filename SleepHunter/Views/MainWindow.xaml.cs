@@ -191,7 +191,7 @@ namespace SleepHunter.Views
                     logger.LogInfo($"Attempting to auto-detect client version for executable: {clientPath}");
 
                     inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    using (var md5 = new MD5CryptoServiceProvider())
+                    using (var md5 = MD5.Create())
                     {
                         md5.ComputeHash(inputStream);
                         inputStream.Close();
