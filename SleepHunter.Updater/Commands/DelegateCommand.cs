@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace SleepHunter.Updater.Commands
 {
-    internal class DelegateCommand : ICommand
+    public class DelegateCommand : ICommand
     {
         private readonly Action onExecute;
         private readonly Predicate<object> canExecute;

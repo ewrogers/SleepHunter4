@@ -8,7 +8,7 @@ using SleepHunter.Updater.Commands;
 
 namespace SleepHunter.Updater.ViewModels
 {
-    internal sealed class MainWindowViewModel : INotifyPropertyChanged, INotifyPropertyChanging
+    public sealed class MainWindowViewModel : INotifyPropertyChanged, INotifyPropertyChanging
     {
         private bool isBusy;
         private string statusText = "Preparing...";

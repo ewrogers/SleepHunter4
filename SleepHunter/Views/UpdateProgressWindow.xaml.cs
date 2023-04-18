@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Windows;
 using SleepHunter.Models;
 using SleepHunter.Services.Releases;
 
 namespace SleepHunter.Views
 {
-    internal partial class UpdateProgressWindow : Window
+    public partial class UpdateProgressWindow : Window
     {
         private readonly IReleaseService releaseService;
 

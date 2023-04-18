@@ -11,7 +11,7 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Views
 {
-    internal partial class MetadataEditorWindow : Window
+    public partial class MetadataEditorWindow : Window
     {
         public static readonly int SkillsTabIndex = 0;
         public static readonly int SpellsTabIndex = 1;
@@ -323,27 +323,20 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            staff.ChangeModifiers(modifiers, modifiersWindow.Modifiers);
+            staff.ClearModifiers();
+            staff.AddModifiers(modifiersWindow.Modifiers);
+
             lineModifiersListBox.Items.Refresh();
 
             lineModifiersListBox.SelectedItem = modifiers;
             lineModifiersListBox.ScrollIntoView(modifiers);
         }
 
-        private bool RemoveSkill(string skillName)
-        {
-            return SkillMetadataManager.Instance.RemoveSkill(skillName);
-        }
+        private bool RemoveSkill(string skillName) => SkillMetadataManager.Instance.RemoveSkill(skillName);
 
-        private bool RemoveSpell(string spellName)
-        {
-            return SpellMetadataManager.Instance.RemoveSpell(spellName);
-        }
+        private bool RemoveSpell(string spellName) => SpellMetadataManager.Instance.RemoveSpell(spellName);
 
-        private bool RemoveStaff(string staffName)
-        {
-            return StaffMetadataManager.Instance.RemoveStaff(staffName);
-        }
+        private bool RemoveStaff(string staffName) => StaffMetadataManager.Instance.RemoveStaff(staffName);
 
         private bool RemoveModifiers(SpellLineModifiers modifiers)
         {

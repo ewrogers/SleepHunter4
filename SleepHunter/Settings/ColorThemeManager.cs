@@ -31,7 +31,7 @@ namespace SleepHunter.Settings
         }
         public int Count => colorThemes.Count;
 
-        public IEnumerable<ColorTheme> Themes => from theme in colorThemes.Values()
+        public IEnumerable<ColorTheme> Themes => from theme in colorThemes.Values
                                                  orderby theme.SortIndex
                                                  select theme;
 

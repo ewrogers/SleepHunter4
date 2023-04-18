@@ -6,24 +6,20 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Views
 {
-    internal partial class LineModifiersEditorWindow : Window
+    public partial class LineModifiersEditorWindow : Window
     {
-        private SpellLineModifiers modifiers = new SpellLineModifiers();
+        private readonly SpellLineModifiers modifiers = new SpellLineModifiers();
 
-        public SpellLineModifiers Modifiers
-        {
-            get { return modifiers; }
-            private set { modifiers = value; }
-        }
+        public static readonly DependencyProperty IsEditModeProperty =
+            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(LineModifiersEditorWindow), new PropertyMetadata(false));
+
+        public SpellLineModifiers Modifiers { get; private set; }
 
         public bool IsEditMode
         {
             get { return (bool)GetValue(IsEditModeProperty); }
             set { SetValue(IsEditModeProperty, value); }
         }
-
-        public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(LineModifiersEditorWindow), new PropertyMetadata(false));
 
         public LineModifiersEditorWindow(SpellLineModifiers modifiers, bool isEditMode = true)
            : this()
@@ -44,14 +40,10 @@ namespace SleepHunter.Views
         public LineModifiersEditorWindow()
         {
             InitializeComponent();
-
             Title = "Add Modifiers";
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            actionComboBox.Focus();
-        }
+        private void Window_Loaded(object sender, RoutedEventArgs e) => actionComboBox.Focus();
 
         private bool ValidateModifiers()
         {

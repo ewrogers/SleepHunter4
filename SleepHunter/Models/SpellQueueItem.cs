@@ -7,7 +7,7 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class SpellQueueItem : ObservableObject, ICloneable
+    public sealed class SpellQueueItem : ObservableObject
     {
         private int id;
         private ImageSource icon;
@@ -62,9 +62,9 @@ namespace SleepHunter.Models
 
         public int CurrentLevel
         {
-            get => currentLevel; 
+            get => currentLevel;
             set => SetProperty(ref currentLevel, value, onChanged: (s) =>
-            { 
+            {
                 RaisePropertyChanged(nameof(IsDone));
                 RaisePropertyChanged(nameof(PercentCompleted));
             });
@@ -82,11 +82,11 @@ namespace SleepHunter.Models
 
         public int? TargetLevel
         {
-            get => targetLevel; 
+            get => targetLevel;
             set => SetProperty(ref targetLevel, value, onChanged: (s) =>
             {
                 RaisePropertyChanged(nameof(IsDone));
-                RaisePropertyChanged(nameof(HasTargetLevel)); 
+                RaisePropertyChanged(nameof(HasTargetLevel));
                 RaisePropertyChanged(nameof(PercentCompleted));
             });
         }
@@ -145,21 +145,23 @@ namespace SleepHunter.Models
             MaximumLevel = spellInfo.MaximumLevel;
         }
 
-        public object Clone()
+        public void CopyTo(SpellQueueItem other, bool copyId = true)
         {
-            return new SpellQueueItem()
-            {
-                Id = Id,
-                Icon = Icon,
-                Name = Name,
-                Target = Target,
-                StartingLevel = StartingLevel,
-                CurrentLevel = CurrentLevel,
-                MaximumLevel = MaximumLevel,
-                TargetLevel = TargetLevel,
-                IsUndefined = IsUndefined,
-                IsActive = IsActive,
-            };
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            if (copyId)
+                other.Id = Id;
+
+            other.Icon = Icon;
+            other.Name = Name;
+            other.Target = Target;
+            other.StartingLevel = StartingLevel;
+            other.CurrentLevel = CurrentLevel;
+            other.MaximumLevel = MaximumLevel;
+            other.TargetLevel = TargetLevel;
+            other.IsUndefined = IsUndefined;
+            other.IsActive = IsActive;
         }
 
         public override string ToString() => $"{Name} on {Target}";

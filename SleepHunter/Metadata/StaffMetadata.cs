@@ -9,7 +9,7 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    public sealed class StaffMetadata : ObservableObject, ICloneable
+    public sealed class StaffMetadata : ObservableObject
     {
         public static readonly StaffMetadata NoStaff = new StaffMetadata { Name = "No Staff", Class = PlayerClass.All };
 
@@ -104,6 +104,23 @@ namespace SleepHunter.Metadata
                 Modifiers.RemoveAt(i);
 
                 OnModifiersRemoved(modifier);
+            }
+        }
+
+        public void CopyTo(StaffMetadata other, bool copyModifiers = true)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            other.Name = Name;
+            other.Level = Level;
+            other.AbilityLevel = AbilityLevel;
+            other.Class = Class;
+
+            if (copyModifiers)
+            {
+                other.ClearModifiers();
+                other.AddAllModifiers(Modifiers);
             }
         }
 

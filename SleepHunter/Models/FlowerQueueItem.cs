@@ -6,7 +6,7 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
-    public sealed class FlowerQueueItem : ObservableObject, ICloneable
+    public sealed class FlowerQueueItem : ObservableObject
     {
         private int id;
         private SpellTarget target = new SpellTarget();
@@ -124,16 +124,18 @@ namespace SleepHunter.Models
             RaisePropertyChanged(nameof(IsReady));
         }
 
-        public object Clone()
+        public void CopyTo(FlowerQueueItem other, bool copyTimestamp = false)
         {
-            return new FlowerQueueItem()
-            {
-                Id = Id,
-                Target = Target,
-                Interval = Interval,
-                ManaThreshold = ManaThreshold,
-                LastUsedTimestamp = LastUsedTimestamp,
-            };
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            other.Id = Id;
+            other.Target = Target;
+            other.Interval = Interval;
+            other.ManaThreshold = ManaThreshold;
+
+            if (copyTimestamp)
+                other.LastUsedTimestamp = LastUsedTimestamp;
         }
 
         public override string ToString() => $"Flowering on {target}";

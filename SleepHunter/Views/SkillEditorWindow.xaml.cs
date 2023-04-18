@@ -7,16 +7,12 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
-    internal partial class SkillEditorWindow : Window
+    public partial class SkillEditorWindow : Window
     {
-        private string originalName;
-        private SkillMetadata skill = new SkillMetadata();
+        private readonly string originalName;
+        private readonly SkillMetadata skill = new SkillMetadata();
 
-        public SkillMetadata Skill
-        {
-            get { return skill; }
-            private set { skill = value; }
-        }
+        public SkillMetadata Skill { get; private set; }
 
         public bool IsEditMode
         {

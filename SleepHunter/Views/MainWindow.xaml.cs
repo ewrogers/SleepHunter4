@@ -31,7 +31,7 @@ using System.Linq;
 
 namespace SleepHunter.Views
 {
-    internal partial class MainWindow : Window, IDisposable
+    public partial class MainWindow : Window, IDisposable
     {
         private static readonly int WM_HOTKEY = 0x312;
         private enum ClientLoadResult
@@ -699,16 +699,16 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-                    ClientVersionManager.Instance.LoadDefaultVersions();
-                    logger.LogInfo("No client version file was found, using defaults");
+                    logger.LogInfo("No client version file was found");
+                    this.ShowMessageBox("Missing Client Versions", "Unable to locate the client versions file.", "You should re-install the application.");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load client versions, resetting to defaults");
+                logger.LogError("Failed to load client versions");
                 logger.LogException(ex);
 
-                ClientVersionManager.Instance.LoadDefaultVersions();
+                this.ShowMessageBox("Invalid Client Versions", "Unable to load the client versions file.", "You should re-install the application.");
             }
         }
 
@@ -726,16 +726,13 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-                    ColorThemeManager.Instance.LoadDefaultThemes();
-                    logger.LogInfo("No themes file was found, using defaults");
+                    logger.LogInfo("No themes file was found, using default built-in theme");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load themes, resetting to defaults");
+                logger.LogError("Failed to load themes, using the default built-in theme");
                 logger.LogException(ex);
-
-                ColorThemeManager.Instance.LoadDefaultThemes();
             }
         }
 

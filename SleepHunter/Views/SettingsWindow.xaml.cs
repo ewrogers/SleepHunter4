@@ -12,7 +12,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
-    internal partial class SettingsWindow : Window
+    public partial class SettingsWindow : Window
     {
         public static readonly int GeneralTabIndex = 0;
         public static readonly int UserInterfaceTabIndex = 1;

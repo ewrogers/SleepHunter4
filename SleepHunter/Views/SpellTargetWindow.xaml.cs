@@ -15,13 +15,15 @@ namespace SleepHunter.Views
 {
     internal partial class SpellTargetWindow : Window
     {
-        private SpellQueueItem spellQueueItem = new SpellQueueItem();
+        private readonly SpellQueueItem spellQueueItem = new SpellQueueItem();
 
-        public SpellQueueItem SpellQueueItem
-        {
-            get { return spellQueueItem; }
-            private set { spellQueueItem = value; }
-        }
+        public static readonly DependencyProperty IsEditModeProperty =
+             DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty SpellProperty =
+            DependencyProperty.Register("Spell", typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
+
+        public SpellQueueItem SpellQueueItem { get; private set; }
 
         public Spell Spell
         {
@@ -34,12 +36,6 @@ namespace SleepHunter.Views
             get { return (bool)GetValue(IsEditModeProperty); }
             set { SetValue(IsEditModeProperty, value); }
         }
-
-        public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
-
-        public static readonly DependencyProperty SpellProperty =
-            DependencyProperty.Register("Spell", typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
 
         public SpellTargetWindow(Spell spell, SpellQueueItem item, bool isEditMode = true)
            : this(spell)

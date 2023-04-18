@@ -7,26 +7,21 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
-    internal partial class SpellEditorWindow : Window
+    public partial class SpellEditorWindow : Window
     {
-        private string originalName;
-        private SpellMetadata spell = new SpellMetadata();
+        private readonly string originalName;
+        private readonly SpellMetadata spell = new SpellMetadata();
 
-        public SpellMetadata Spell
-        {
-            get { return spell; }
-            private set { spell = value; }
-        }
+        public static readonly DependencyProperty IsEditModeProperty =
+            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellEditorWindow), new PropertyMetadata(false));
+
+        public SpellMetadata Spell { get; private set; }
 
         public bool IsEditMode
         {
             get { return (bool)GetValue(IsEditModeProperty); }
             set { SetValue(IsEditModeProperty, value); }
         }
-
-        public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellEditorWindow), new PropertyMetadata(false));
-
 
         public SpellEditorWindow(SpellMetadata spell, bool isEditMode = true)
            : this()

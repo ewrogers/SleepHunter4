@@ -8,7 +8,7 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    public sealed class SkillMetadata : ObservableObject, ICloneable
+    public sealed class SkillMetadata : ObservableObject
     {
         private string name;
         private PlayerClass playerClass;
@@ -98,22 +98,22 @@ namespace SleepHunter.Metadata
             set => SetProperty(ref requiresDisarm, value);
         }
 
-        public override string ToString() => Name ?? "Unknown Skill";
-
-        public object Clone()
+        public void CopyTo(SkillMetadata other)
         {
-            return new SkillMetadata()
-            {
-                Name = Name,
-                Class = Class,
-                GroupName = GroupName,
-                ManaCost = ManaCost,
-                Cooldown = Cooldown,
-                IsAssail = IsAssail,
-                OpensDialog = OpensDialog,
-                CanImprove = CanImprove,
-                RequiresDisarm = RequiresDisarm
-            };
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            other.Name = Name;
+            other.Class = Class;
+            other.GroupName = GroupName;
+            other.ManaCost = ManaCost;
+            other.Cooldown = Cooldown;
+            other.IsAssail = IsAssail;
+            other.OpensDialog = OpensDialog;
+            other.CanImprove = CanImprove;
+            other.RequiresDisarm = RequiresDisarm;
         }
+
+        public override string ToString() => Name ?? "Unknown Skill";
     }
 }

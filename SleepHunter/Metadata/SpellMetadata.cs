@@ -8,7 +8,7 @@ using SleepHunter.Models;
 namespace SleepHunter.Metadata
 {
     [Serializable]
-    public sealed class SpellMetadata : ObservableObject, ICloneable
+    public sealed class SpellMetadata : ObservableObject
     {
         private string name;
         private PlayerClass playerClass;
@@ -80,20 +80,20 @@ namespace SleepHunter.Metadata
             set => SetProperty(ref canImprove, value);
         }
 
-        public override string ToString() => Name ?? "Unknown Spell";
-
-        public object Clone()
+        public void CopyTo(SpellMetadata other)
         {
-            return new SpellMetadata
-            {
-                Name = Name,
-                Class = Class,
-                GroupName = GroupName,
-                ManaCost = ManaCost,
-                NumberOfLines = NumberOfLines,
-                Cooldown = Cooldown,
-                CanImprove = CanImprove
-            };
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            other.Name = Name;
+            other.Class = Class;
+            other.GroupName = GroupName;
+            other.ManaCost = ManaCost;
+            other.NumberOfLines = NumberOfLines;
+            other.Cooldown = Cooldown;
+            other.CanImprove = CanImprove;
         }
+
+        public override string ToString() => Name ?? "Unknown Spell";
     }
 }

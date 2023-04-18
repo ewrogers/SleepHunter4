@@ -28,13 +28,13 @@
             <!-- Decorator Text -->
             <Border Grid.RowSpan="2"
                     Background="{Binding ElementName=incrementButton, Path=Background, Mode=OneWay}"
-                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Converter={StaticResource VisibilityConverter}}">
+                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
                 <TextBlock Style="{StaticResource ObsidianText}"
                            Foreground="{Binding ElementName=incrementButton, Path=Foreground}"
                            MinWidth="20"
                            FontSize="16"
                            FontWeight="Normal"
-                           Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText}"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Mode=OneWay}"
                            TextAlignment="Center"
                            Margin="8,2"/>
             </Border>
@@ -47,11 +47,11 @@
                      BorderThickness="1"
                      FontSize="{Binding ElementName=Root, Path=FontSize}"
                      FontWeight="Normal"
-                     Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter}}"
+                     Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=Value, Converter={StaticResource NumericConverter, Mode=OneWay}}"
                      TextAlignment="Center"
                      Padding="1"
                      Margin="0"
-                     IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}}"
+                     IsReadOnly="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=AllowTextInput, Converter={StaticResource BooleanInverter}, Mode=OneWay}"
                      PreviewTextInput="TextBox_PreviewTextInput"
                      LostFocus="TextBox_LostFocus"
                      MouseWheel="TextBox_MouseWheel"/>

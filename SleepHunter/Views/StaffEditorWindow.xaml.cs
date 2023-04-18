@@ -9,23 +9,19 @@ namespace SleepHunter.Views
 {
     internal partial class StaffEditorWindow : Window
     {
-        private string originalName;
-        private StaffMetadata staff = new StaffMetadata();
+        private readonly string originalName;
+        private readonly StaffMetadata staff = new StaffMetadata();
 
-        public StaffMetadata Staff
-        {
-            get { return staff; }
-            private set { staff = value; }
-        }
+        public static readonly DependencyProperty IsEditModeProperty =
+            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(StaffEditorWindow), new PropertyMetadata(false));
+
+        public StaffMetadata Staff { get; private set; }
 
         public bool IsEditMode
         {
             get { return (bool)GetValue(IsEditModeProperty); }
             set { SetValue(IsEditModeProperty, value); }
         }
-
-        public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(StaffEditorWindow), new PropertyMetadata(false));
 
         public StaffEditorWindow(StaffMetadata staff, bool isEditMode = true)
            : this()
