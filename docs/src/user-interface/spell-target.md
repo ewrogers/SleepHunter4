@@ -8,10 +8,10 @@ It supports several different types of targets:
 - [Self](#self)
 - [Alternate Character](#alternate-character)
 - [Relative Tile](#relative-tile)
-- [Relative Tile Radius](#relative-tile-radius)
+- [Relative Tile Area](#relative-tile-area)
 - [Absolute Tile](#absolute-tile)
-- [Absolute Tile Radius](#absolute-tile-radius)
-- [Absolute Coordinates](#absolute-coordinates)
+- [Absolute Tile Area](#absolute-tile-area)
+- [Screen Position](#screen-position)
 
 This may seem like a lot of options, but it's actually quite simple. See each section below for more information.
 
@@ -21,6 +21,8 @@ This may seem like a lot of options, but it's actually quite simple. See each se
 
 This is used when a spell does not require a target, such as a self-only or group spell.
 
+The `Mouse Offset X/Y` has no effect here.
+
 **NOTE:** This option cannot be selected, it is automatically selected when the spell does not require a target.
 
 ## Self
@@ -29,21 +31,21 @@ This is used when a spell does not require a target, such as a self-only or grou
 
 This will cast the spell on yourself as the target.
 
-The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
+The `Mouse Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
 **NOTE:** The older `Relative Coordinates` target type has been replaced with this new `Offset X/Y` target type on `Self`, as it was redundant.
 
 ## Alternate Character
 
-![image](../screenshots/spell-target-alternate-character.png)
+![image](../screenshots/spell-target-character.png)
 
 This will cast the spell on another character logged in on the same computer.
 
 **NOTE:** The other character must be within visible range of the character casting the spell.
 
-The `Target Character` is used to select the character you wish to cast the spell on.
+The `Character` specifies the other character you wish to cast the spell on.
 
-The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
+The `Mouse Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
 ## Relative Tile
 
@@ -54,13 +56,13 @@ For example, "2 Left, 1 Down" would be the tile located 2 tiles left and 1 tile 
 
 This relative tile will be preserved even if the character moves to a different tile.
 
-The `Relative X/Y` is used to select the tile relative to your character's current position.
+The `Relative Tile` is the tile relative to your character's current position. It will be cast on.
 
-The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
+The `Mouse Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
-## Relative Tile Radius
+## Relative Tile Area
 
-![image](../screenshots/spell-target-relative-tile-radius.png)
+![image](../screenshots/spell-target-relative-tile-area.png)
 
 This will cast the spell in an circular area relative to the character's current position.
 The spell will be cast on the tiles in a clockwise order.
@@ -71,7 +73,7 @@ In the above example, the `Inner Radius` is set to **2**, and the `Outer Radius`
 The dead-zone is the area in the center of the circle, where no spells will be cast.
 The solid blue tiles are the tiles that will be selected for casting the spell, in clockwise order.
 
-The `Relative X/Y` is used to select the tile relative to your character's current position. This will be the center of the circular region.
+The `Relative Tile` is the tile relative to your character's current position. This will be the center of the circular region.
 
 The `Inner Radius` is used to select the dead-zone, where no spells will be cast.
 Use **Zero (0)** to disable the dead-zone and include the center tile, turning it into a solid circle.
@@ -79,7 +81,7 @@ Use **Zero (0)** to disable the dead-zone and include the center tile, turning i
 The `Outer Radius` is used to select the outer radius of the circle. This is the maximum distance from the center where spells will be cast.
 This value must be greater than the `Inner Radius`.
 
-The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
+The `Mouse Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
 This can be useful in some instances, such as periodically casting a spell on targets within an area without knowing their exact location.
 
@@ -91,13 +93,13 @@ This will cast the spell on a tile at a specific location on the map, regardless
 
 **NOTE:** You must be within visible range of the tile for the spell to be cast.
 
-The `Absolute X/Y` is used to select the tile on the map to cast the spell on.
+The `Absolute Tile` is the tile on the map to cast the spell on. It is not relative to your character's current position.
 
 The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
-## Absolute Tile Radius
+## Absolute Tile Area
 
-![image](../screenshots/spell-target-absolute-tile-radius.png)
+![image](../screenshots/spell-target-absolute-tile-area.png)
 
 This will cast the spell in an circular area around a location on the map, regardless of the character's current position.
 The spell will be cast on the tiles in a clockwise order.
@@ -108,7 +110,8 @@ In the above example, the `Inner Radius` is set to **2**, and the `Outer Radius`
 The dead-zone is the area in the center of the circle, where no spells will be cast.
 The solid blue tiles are the tiles that will be selected for casting the spell, in clockwise order.
 
-The `Absolute X/Y` is used to select the tile on the map. This will be the center of the circular region.
+The `Absolute Tile` is used to select the tile on the map. This will be the center of the circular region.
+It is not relative to your character's current position.
 
 The `Inner Radius` is used to select the dead-zone, where no spells will be cast.
 Use **Zero (0)** to disable the dead-zone and include the center tile, turning it into a solid circle.
@@ -118,14 +121,12 @@ This value must be greater than the `Inner Radius`.
 
 The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
-This can be useful in some instances, such as periodically casting a spell on targets within an area without knowing their exact location.
+This can be useful in some instances, such as periodically casting a spell on targets within an area without worrying about the character's current position.
 
-## Absolute Coordinates
+## Screen Position
 
-![image](../screenshots/spell-target-absolute-coordinates.png)
+![image](../screenshots/spell-target-screen-coordinates.png)
 
 This will cast the spell on a specific location on the screen, regardless of the character's current position.
 
-The `Absolute X/Y` is used to select the location on the screen to cast the spell on, in pixels.
-
-The `Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
+The `Screen Position X/Y` is used to select the location on the screen to cast the spell on, in pixels.
