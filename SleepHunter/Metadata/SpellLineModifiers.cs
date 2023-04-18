@@ -8,7 +8,7 @@ using SleepHunter.Extensions;
 
 namespace SleepHunter.Metadata
 {
-    internal enum ModifierAction
+    public enum ModifierAction
     {
         None = 0,
         Increase,
@@ -16,7 +16,7 @@ namespace SleepHunter.Metadata
         Set
     }
 
-    internal enum ModifierScope
+    public enum ModifierScope
     {
         None = 0,
         Single,

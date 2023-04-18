@@ -6,13 +6,9 @@ namespace SleepHunter.IO.Process
 
     internal sealed class ClientProcessEventArgs : EventArgs
     {
-        private readonly ClientProcess process;
-
-        public ClientProcess Process { get { return process; } }
+        public ClientProcess Process { get; }
 
         public ClientProcessEventArgs(ClientProcess process)
-        {
-            this.process = process;
-        }
+            => Process = process ?? throw new ArgumentNullException(nameof(process));
     }
 }

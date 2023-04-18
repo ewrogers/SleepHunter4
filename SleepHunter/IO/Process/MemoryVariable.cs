@@ -9,78 +9,55 @@ namespace SleepHunter.IO.Process
     [Serializable]
     internal class MemoryVariable
     {
-        protected string key;
         protected long address;
-        protected int maxLength;
-        protected int size;
-        protected int count;
 
-        [XmlAttribute("Key")]
-        public string Key
-        {
-            get { return key; }
-            set { key = value; }
-        }
+        [XmlAttribute(nameof(Key))]
+        public string Key { get; set; }
 
         [XmlIgnore]
-        public long Address
-        {
-            get { return address; }
-            set { address = value; }
-        }
+        public long Address { get; set; }
 
         [XmlAttribute("Address")]
         public string AddressHex
         {
-            get { return address.ToString("X"); }
+            get => $"{AddressHex:X8}";
             set
             {
-                long parsedLong;
+                if (!long.TryParse(value, NumberStyles.HexNumber, null, out var parsedLong))
+                    throw new FormatException("Invalid hex format");
 
-                if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
-                    address = parsedLong;
+                address = parsedLong;
             }
         }
 
-        [XmlAttribute("MaxLength")]
+        [XmlAttribute(nameof(MaxLength))]
         [DefaultValue(0)]
-        public int MaxLength
-        {
-            get { return maxLength; }
-            set { maxLength = value; }
-        }
+        public int MaxLength { get; set; }
 
-        [XmlAttribute("Size")]
+        [XmlAttribute(nameof(Size))]
         [DefaultValue(0)]
-        public int Size
-        {
-            get { return size; }
-            set { size = value; }
-        }
+        public int Size { get; set; }
 
-        [XmlAttribute("Count")]
+        [XmlAttribute(nameof(Count))]
         [DefaultValue(0)]
-        public int Count
-        {
-            get { return count; }
-            set { count = value; }
-        }
+        public int Count { get; set; }
 
         public MemoryVariable()
            : this(string.Empty, 0, 0) { }
 
         public MemoryVariable(string key, long address, int maxLength = 0, int size = 0, int count = 0)
         {
-            this.key = key;
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key cannot be null or whitespace", nameof(key));
+
+            Key = key;
+            MaxLength = maxLength;
+            Size = size;
+            Count = count;
+
             this.address = address;
-            this.maxLength = maxLength;
-            this.size = size;
-            this.count = count;
         }
 
-        public override string ToString()
-        {
-            return Key ?? string.Empty;
-        }
+        public override string ToString() => Key;
     }
 }

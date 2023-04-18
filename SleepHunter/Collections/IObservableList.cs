@@ -3,5 +3,5 @@ using System.Collections.Specialized;
 
 namespace SleepHunter.Collections
 {
-    internal interface IObservableList<T> : IReadOnlyList<T>, INotifyCollectionChanged { }
+    public interface IObservableList<T> : IReadOnlyList<T>, INotifyCollectionChanged { }
 }

@@ -14,19 +14,21 @@ namespace SleepHunter.IO
         private static readonly int NameLength = 13;
 
         private bool isDisposed;
-        private string name;
         private readonly Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
         private readonly MemoryMappedFile mappedFile;
 
-        public string Name
+        public string Name { get; set; }
+
+        public int Count => entries.Count;
+
+        public IEnumerable<FileArchiveEntry> Entries
         {
-            get { return name; }
-            set { name = value; }
+            get
+            {
+                CheckIfDisposed();
+                return entries.Values;
+            }
         }
-
-        public int Count { get { return entries.Count; } }
-
-        public IEnumerable<FileArchiveEntry> Entries { get { return from e in entries.Values select e; } }
 
         public FileArchive(string filename)
         {
@@ -39,7 +41,7 @@ namespace SleepHunter.IO
                 ReadTableOfContents();
             }
 
-            name = filename;
+            Name = filename;
         }
 
         private void ReadTableOfContents()
@@ -79,40 +81,51 @@ namespace SleepHunter.IO
 
         public bool ContainsFile(string filename)
         {
+            CheckIfDisposed();
             return entries.ContainsKey(filename);
         }
 
         public FileArchiveEntry GetEntry(string filename)
         {
+            CheckIfDisposed();
             return entries[filename];
         }
 
         public Stream GetStream(string filename)
         {
+            CheckIfDisposed();
+
             var entry = entries[filename];
             var stream = mappedFile.CreateViewStream(entry.Offset, entry.Size, MemoryMappedFileAccess.Read);
 
             return stream;
         }
 
-        #region IDisposable Methods
+        ~FileArchive() => Dispose(false);
+
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
-            if (isDisposing) { }
-
-            mappedFile?.Dispose();
+            if (isDisposing)
+            {
+                mappedFile?.Dispose();
+            }
 
             isDisposed = true;
         }
-        #endregion
+
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
     }
 }

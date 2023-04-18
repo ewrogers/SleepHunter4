@@ -9,7 +9,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    internal sealed class PlayerManager : INotifyPropertyChanged
+    public sealed class PlayerManager : INotifyPropertyChanged
     {
         private static readonly PlayerManager instance = new PlayerManager();
 

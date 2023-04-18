@@ -4,11 +4,13 @@ using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    internal sealed class NumericConverter : IValueConverter
+    public sealed class NumericConverter : IValueConverter
     {
+        public const string HexadecimalParameter = "Hexadecimal";
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isHexadecimal = string.Equals("Hexadecimal", parameter as string, StringComparison.OrdinalIgnoreCase);
+            var isHexadecimal = string.Equals(HexadecimalParameter, parameter as string, StringComparison.OrdinalIgnoreCase);
 
             if (isHexadecimal)
             {
@@ -22,7 +24,7 @@ namespace SleepHunter.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isHexadecimal = string.Equals("Hexadecimal", parameter as string, StringComparison.OrdinalIgnoreCase);
+            var isHexadecimal = string.Equals(HexadecimalParameter, parameter as string, StringComparison.OrdinalIgnoreCase);
             var valueString = value as string;
 
             if (isHexadecimal)
@@ -37,7 +39,6 @@ namespace SleepHunter.Converters
                 return 0;
             else
                 return decValue;
-
         }
     }
 }

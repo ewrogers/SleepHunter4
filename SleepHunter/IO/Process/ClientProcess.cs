@@ -18,54 +18,48 @@ namespace SleepHunter.IO.Process
 
         public int ProcessId
         {
-            get { return processId; }
-            set { SetProperty(ref processId, value); }
+            get => processId;
+            set => SetProperty(ref processId, value);
         }
 
         public IntPtr WindowHandle
         {
-            get { return windowHandle; }
-            set { SetProperty(ref windowHandle, value); }
+            get => windowHandle;
+            set => SetProperty(ref windowHandle, value);
         }
 
         public string WindowClassName
         {
-            get { return windowClassName; }
-            set { SetProperty(ref windowClassName, value); }
+            get => windowClassName;
+            set => SetProperty(ref windowClassName, value);
         }
 
         public string WindowTitle
         {
-            get { return windowTitle; }
-            set { SetProperty(ref windowTitle, value); }
+            get => windowTitle;
+            set => SetProperty(ref windowTitle, value);
         }
 
         public int WindowWidth
         {
-            get { return windowWidth; }
-            set { SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged("WindowScaleX"); }); }
+            get => windowWidth;
+            set => SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleX)); });
         }
 
         public int WindowHeight
         {
-            get { return windowHeight; }
-            set { SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged("WindowScaleY"); }); }
+            get => windowHeight;
+            set => SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleY)); });
         }
 
-        public double WindowScaleX
-        {
-            get { return Math.Floor(WindowWidth / 640.0); }
-        }
+        public double WindowScaleX => Math.Floor(WindowWidth / 640.0);
 
-        public double WindowScaleY
-        {
-            get { return Math.Floor(WindowHeight / 480.0); }
-        }
+        public double WindowScaleY => Math.Floor(WindowHeight / 480.0);
 
         public DateTime CreationTime
         {
-            get { return creationTime; }
-            set { SetProperty(ref creationTime, value); }
+            get => creationTime;
+            set => SetProperty(ref creationTime, value);
         }
 
         public ClientProcess() { }

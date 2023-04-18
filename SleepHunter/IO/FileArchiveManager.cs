@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 
 namespace SleepHunter.IO
 {
@@ -10,23 +9,15 @@ namespace SleepHunter.IO
     {
         private static readonly FileArchiveManager instance = new FileArchiveManager();
 
-        public static FileArchiveManager Instance { get { return instance; } }
-
-        private FileArchiveManager()
-        {
-
-        }
+        public static FileArchiveManager Instance => instance;
 
         private readonly ConcurrentDictionary<string, FileArchive> archives = new ConcurrentDictionary<string, FileArchive>(StringComparer.OrdinalIgnoreCase);
 
-        public int Count { get { return archives.Count; } }
+        public int Count => archives.Count;
 
-        public IEnumerable<FileArchive> Archives { get { return from a in archives.Values select a; } }
+        public IEnumerable<FileArchive> Archives => archives.Values;
 
-        public bool ContainsArchive(string filename)
-        {
-            return archives.ContainsKey(filename);
-        }
+        public bool ContainsArchive(string filename) => archives.ContainsKey(filename);
 
         public FileArchive GetArchive(string filename)
         {

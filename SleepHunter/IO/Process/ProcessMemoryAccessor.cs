@@ -9,49 +9,34 @@ namespace SleepHunter.IO.Process
     internal sealed class ProcessMemoryAccessor : IDisposable
     {
         private bool isDisposed;
-        private int processId;
-        private IntPtr processHandle;
-        private ProcessAccess access;
 
-        public int ProcessId
-        {
-            get { return processId; }
-        }
+        public int ProcessId { get; }
 
-        public IntPtr ProcessHandle
-        {
-            get { return processHandle; }
-        }
+        public IntPtr ProcessHandle { get; private set; }
 
-        public ProcessAccess Access
-        {
-            get { return access; }
-        }
+        public ProcessAccess Access { get; }
 
         public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)
         {
-            this.processId = processId;
-            processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
+            ProcessId = processId;
+            ProcessHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
 
-            if (processHandle == IntPtr.Zero)
+            if (ProcessHandle == IntPtr.Zero)
             {
                 var error = NativeMethods.GetLastError();
                 throw new Win32Exception(error, "Unable to open process.");
             }
 
-            this.access = access;
+            Access = access;
         }
 
         public Stream GetStream()
         {
-            return new ProcessMemoryStream(processHandle, access, leaveOpen: true);
+            CheckIfDisposed();
+            return new ProcessMemoryStream(ProcessHandle, Access, leaveOpen: true);
         }
 
-        #region IDisposable Methods
-        ~ProcessMemoryAccessor()
-        {
-            Dispose(false);
-        }
+        ~ProcessMemoryAccessor() => Dispose(false);
 
         public void Dispose()
         {
@@ -59,21 +44,24 @@ namespace SleepHunter.IO.Process
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
-            if (isDisposing)
-            {
-            }
+            if (isDisposing) { }
 
-            if (processHandle != IntPtr.Zero)
-                NativeMethods.CloseHandle(processHandle);
+            if (ProcessHandle != IntPtr.Zero)
+                NativeMethods.CloseHandle(ProcessHandle);
 
-            processHandle = IntPtr.Zero;
+            ProcessHandle = IntPtr.Zero;
             isDisposed = true;
         }
-        #endregion
+
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
     }
 }

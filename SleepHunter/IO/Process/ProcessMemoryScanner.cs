@@ -14,31 +14,22 @@ namespace SleepHunter.IO.Process
         private static readonly uint MaximumVmAddress = 0xFFFFFFFF;
 
         private bool isDisposed;
-        private IntPtr processHandle;
-        private readonly bool leaveOpen;
+        private readonly bool leaveOpen;        
         private readonly byte[] internalBuffer = new byte[8];
         private readonly byte[] internalStringBuffer = new byte[4096];
         private readonly byte[] searchBuffer;
 
-        public IntPtr ProcessHandle
-        {
-            get { return processHandle; }
-            private set { processHandle = value; }
-        }
+        public IntPtr ProcessHandle { get; private set; }
 
         public ProcessMemoryScanner(IntPtr processHandle, bool leaveOpen = false)
         {
-            this.processHandle = processHandle;
+            ProcessHandle = processHandle;
             this.leaveOpen = leaveOpen;
 
             searchBuffer = new byte[PageSize];
         }
 
-        #region IDisposable Methods
-        ~ProcessMemoryScanner()
-        {
-            Dispose(false);
-        }
+        ~ProcessMemoryScanner() => Dispose(false);
 
         public void Dispose()
         {
@@ -46,47 +37,56 @@ namespace SleepHunter.IO.Process
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
-            if (isDisposing)
-            {
-
-            }
+            if (isDisposing) { }
 
             if (!leaveOpen)
-                NativeMethods.CloseHandle(processHandle);
+                NativeMethods.CloseHandle(ProcessHandle);
 
-            processHandle = IntPtr.Zero;
+            ProcessHandle = IntPtr.Zero;
             isDisposed = true;
         }
-        #endregion
+
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
 
         public IntPtr FindByte(byte value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             internalBuffer[0] = value;
             return Find(internalBuffer, 1, startingAddress, endingAddress);
         }
 
         public IntPtr FindInt16(short value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
             return FindUInt16((ushort)value, startingAddress, endingAddress);
         }
 
         public IntPtr FindInt32(int value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
             return FindUInt32((uint)value, startingAddress, endingAddress);
         }
 
         public IntPtr FindInt64(long value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
             return FindUInt64((ulong)value, startingAddress, endingAddress);
         }
 
         public IntPtr FindUInt16(ushort value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
 
@@ -95,6 +95,8 @@ namespace SleepHunter.IO.Process
 
         public IntPtr FindUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
             internalBuffer[2] = (byte)(value >> 16);
@@ -105,6 +107,8 @@ namespace SleepHunter.IO.Process
 
         public IntPtr FindUInt64(ulong value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
             internalBuffer[2] = (byte)(value >> 16);
@@ -119,6 +123,8 @@ namespace SleepHunter.IO.Process
 
         public IntPtr FindString(string value, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             if (value.Length >= internalStringBuffer.Length)
                 throw new InvalidOperationException("Length exceeded the buffer size");
 
@@ -128,6 +134,8 @@ namespace SleepHunter.IO.Process
 
         public IntPtr Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
         {
+            CheckIfDisposed();
+
             var start = (uint)startingAddress;
             var end = (uint)endingAddress;
 
@@ -142,7 +150,7 @@ namespace SleepHunter.IO.Process
 
             while (address <= end)
             {
-                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out var memoryInfo, (IntPtr)sizeofMemoryInfo);
+                var queryResult = (int)NativeMethods.VirtualQueryEx(ProcessHandle, (IntPtr)address, out var memoryInfo, (IntPtr)sizeofMemoryInfo);
 
                 if (queryResult <= 0)
                     break;
@@ -154,7 +162,7 @@ namespace SleepHunter.IO.Process
                     for (int i = 0; i < numberOfPages; i++)
                     {
                         var count = (IntPtr)searchBuffer.Length;
-                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, count, out var numberOfBytesRead);
+                        var result = NativeMethods.ReadProcessMemory(ProcessHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, count, out var numberOfBytesRead);
 
                         if (!result || numberOfBytesRead != searchBuffer.Length)
                             throw new Win32Exception("Unable to read memory page from process.");

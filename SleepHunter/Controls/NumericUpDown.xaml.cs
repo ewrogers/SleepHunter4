@@ -16,6 +16,33 @@ namespace SleepHunter.Controls
         private static readonly Regex SignedDoubleRegex = new Regex(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex HexadecimalRegex = new Regex(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        public static readonly DependencyProperty DecoratorTextProperty =
+            DependencyProperty.Register("DecoratorText", typeof(string), typeof(NumericUpDown), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty AllowTextInputProperty =
+            DependencyProperty.Register("AllowTextInput", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(true));
+
+        public static readonly DependencyProperty MaximumProperty =
+            DependencyProperty.Register("Maximum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(100.0));
+
+        public static readonly DependencyProperty MinimumProperty =
+            DependencyProperty.Register("Minimum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty IsHexadecimalProperty =
+            DependencyProperty.Register("IsHexadecimal", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty DecimalPlacesProperty =
+           DependencyProperty.Register("DecimalPlaces", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0));
+
+        public static readonly DependencyProperty LargeIncrementProperty =
+            DependencyProperty.Register("LargeIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(5.0));
+
+        public static readonly DependencyProperty SmallIncrementProperty =
+            DependencyProperty.Register("SmallIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(1.0));
+
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register("Value", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
+
         public new Brush BorderBrush
         {
             get { return base.BorderBrush; }
@@ -76,37 +103,7 @@ namespace SleepHunter.Controls
             set { SetValue(DecoratorTextProperty, value); }
         }
 
-        public static readonly DependencyProperty DecoratorTextProperty =
-            DependencyProperty.Register("DecoratorText", typeof(string), typeof(NumericUpDown), new PropertyMetadata(string.Empty));
-
-        public static readonly DependencyProperty AllowTextInputProperty =
-            DependencyProperty.Register("AllowTextInput", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(true));
-
-        public static readonly DependencyProperty MaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(100.0));
-
-        public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
-
-        public static readonly DependencyProperty IsHexadecimalProperty =
-            DependencyProperty.Register("IsHexadecimal", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
-
-        public static readonly DependencyProperty DecimalPlacesProperty =
-           DependencyProperty.Register("DecimalPlaces", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0));
-
-        public static readonly DependencyProperty LargeIncrementProperty =
-            DependencyProperty.Register("LargeIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(5.0));
-
-        public static readonly DependencyProperty SmallIncrementProperty =
-            DependencyProperty.Register("SmallIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(1.0));
-
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
-
-        public NumericUpDown()
-        {
-            InitializeComponent();
-        }
+        public NumericUpDown() => InitializeComponent();
 
         public void SelectAll()
         {
@@ -114,17 +111,11 @@ namespace SleepHunter.Controls
             PART_Value.SelectAll();
         }
 
-        void incrementButton_Click(object sender, RoutedEventArgs e)
-        {
-            Value = Math.Min(Maximum, Value + SmallIncrement);
-        }
+        private void incrementButton_Click(object sender, RoutedEventArgs e) => Value = Math.Min(Maximum, Value + SmallIncrement);
 
-        void decrementButton_Click(object sender, RoutedEventArgs e)
-        {
-            Value = Math.Max(Minimum, Value - SmallIncrement);
-        }
+        private void decrementButton_Click(object sender, RoutedEventArgs e) => Value = Math.Max(Minimum, Value - SmallIncrement);
 
-        void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             if (!(sender is TextBox textBox))
                 return;
@@ -173,7 +164,7 @@ namespace SleepHunter.Controls
             }
         }
 
-        void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             var delta = e.Delta;
 
@@ -185,7 +176,7 @@ namespace SleepHunter.Controls
             UpdateValue();
         }
 
-        void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (!(sender is TextBox textBox))
                 return;
@@ -196,7 +187,7 @@ namespace SleepHunter.Controls
             UpdateValue();
         }
 
-        void UpdateValue()
+        private void UpdateValue()
         {
             var binding = BindingOperations.GetBindingExpression(PART_Value, TextBox.TextProperty);
             binding?.UpdateSource();

@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    internal class VisibilityInverter : IValueConverter
+    public class VisibilityInverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -15,9 +15,6 @@ namespace SleepHunter.Converters
             return value;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return Convert(value, targetType, parameter, culture);
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Convert(value, targetType, parameter, culture);
     }
 }

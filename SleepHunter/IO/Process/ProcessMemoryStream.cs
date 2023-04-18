@@ -9,67 +9,49 @@ namespace SleepHunter.IO.Process
     internal sealed class ProcessMemoryStream : Stream
     {
         private bool isDisposed;
-        private IntPtr processHandle;
-        private ProcessAccess access;
-        private long position = 0x400000;
-        private readonly byte[] internalBuffer = new byte[4096];
         private readonly bool leaveOpen;
+        private readonly byte[] internalBuffer = new byte[4096];
 
-        public override bool CanRead { get { return processHandle != IntPtr.Zero && access.HasFlag(ProcessAccess.Read); } }
-        public override bool CanSeek { get { return processHandle != IntPtr.Zero; } }
-        public override bool CanWrite { get { return processHandle != IntPtr.Zero && access.HasFlag(ProcessAccess.Write); } }
+        public override bool CanRead => ProcessHandle != IntPtr.Zero && Access.HasFlag(ProcessAccess.Read);
+        public override bool CanSeek => ProcessHandle != IntPtr.Zero;
+        public override bool CanWrite => ProcessHandle != IntPtr.Zero && Access.HasFlag(ProcessAccess.Write);
         public override bool CanTimeout { get { return false; } }
 
-        public IntPtr ProcessHandle
-        {
-            get { return processHandle; }
-            private set { processHandle = value; }
-        }
+        public IntPtr ProcessHandle { get; set; }
 
-        public override long Length
-        {
-            get { throw new NotSupportedException("Length is not supported."); }
-        }
+        public ProcessAccess Access { get; }
 
-        public override long Position
-        {
-            get { return position; }
-            set { position = value; }
-        }
+        public override long Length => throw new NotSupportedException("Length is not supported.");
 
-        ~ProcessMemoryStream()
-        {
-            Dispose(false);
-        }
+        public override long Position { get; set; } = 0x400000;
+
+        ~ProcessMemoryStream() => Dispose(false);
 
         public ProcessMemoryStream(IntPtr processHandle, ProcessAccess access = ProcessAccess.ReadWrite, bool leaveOpen = true)
         {
-            this.access = access;
-            this.processHandle = processHandle;
+            ProcessHandle = processHandle;
+            Access = access;
+
             this.leaveOpen = leaveOpen;
         }
 
         public override void Close()
         {
-            if (processHandle != IntPtr.Zero && !leaveOpen)
-                NativeMethods.CloseHandle(processHandle);
+            if (ProcessHandle != IntPtr.Zero && !leaveOpen)
+                NativeMethods.CloseHandle(ProcessHandle);
 
-            processHandle = IntPtr.Zero;
-
+            ProcessHandle = IntPtr.Zero;
             base.Close();
         }
 
-        public override void Flush()
-        {
-            CheckIfDisposed();
-        }
+        public override void Flush() => CheckIfDisposed();
 
         public override int Read(byte[] buffer, int offset, int count)
         {
             CheckIfDisposed();
             CheckBufferSize(count);
 
-            var success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out var numberOfBytesRead);
+            var success = NativeMethods.ReadProcessMemory(ProcessHandle, (IntPtr)Position, internalBuffer, (IntPtr)count, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != count)
             {
@@ -77,7 +59,7 @@ namespace SleepHunter.IO.Process
                 throw new Win32Exception(error, "Unable to read from process memory.");
             }
 
-            position += numberOfBytesRead;
+            Position += numberOfBytesRead;
 
             Buffer.BlockCopy(internalBuffer, 0, buffer, offset, count);
             return numberOfBytesRead;
@@ -87,7 +69,7 @@ namespace SleepHunter.IO.Process
         {
             CheckIfDisposed();
 
-            var success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out var numberOfBytesRead);
+            var success = NativeMethods.ReadProcessMemory(ProcessHandle, (IntPtr)Position, internalBuffer, (IntPtr)1, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != 1)
             {
@@ -95,7 +77,7 @@ namespace SleepHunter.IO.Process
                 throw new Win32Exception(error, "Unable to read from process memory.");
             }
 
-            position += numberOfBytesRead;
+            Position += numberOfBytesRead;
 
             return internalBuffer[0];
         }
@@ -107,25 +89,24 @@ namespace SleepHunter.IO.Process
             switch (origin)
             {
                 case SeekOrigin.Begin:
-                    position = offset;
+                    Position = offset;
                     break;
 
                 case SeekOrigin.Current:
-                    position += offset;
+                    Position += offset;
                     break;
 
                 case SeekOrigin.End:
-                    position -= offset;
+                    Position -= offset;
                     break;
             }
 
-            return position;
+            return Position;
         }
 
         public override void SetLength(long value)
         {
             CheckIfDisposed();
-
             throw new NotSupportedException("SetLength is not supported.");
         }
 
@@ -136,7 +117,7 @@ namespace SleepHunter.IO.Process
 
             Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
 
-            var success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out var numberOfBytesWritten);
+            var success = NativeMethods.WriteProcessMemory(ProcessHandle, (IntPtr)Position, internalBuffer, (IntPtr)count, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != count)
             {
@@ -145,7 +126,7 @@ namespace SleepHunter.IO.Process
             }
 
 
-            position += numberOfBytesWritten;
+            Position += numberOfBytesWritten;
         }
 
         public override void WriteByte(byte value)
@@ -154,7 +135,7 @@ namespace SleepHunter.IO.Process
 
             internalBuffer[0] = value;
 
-            var success = NativeMethods.WriteProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)1, out var numberOfBytesWritten);
+            var success = NativeMethods.WriteProcessMemory(ProcessHandle, (IntPtr)Position, internalBuffer, (IntPtr)1, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != 1)
             {
@@ -162,7 +143,7 @@ namespace SleepHunter.IO.Process
                 throw new Win32Exception(error, "Unable to write to process memory.");
             }
 
-            position += numberOfBytesWritten;
+            Position += numberOfBytesWritten;
         }
 
         protected override void Dispose(bool isDisposing)
@@ -175,25 +156,25 @@ namespace SleepHunter.IO.Process
 
             }
 
-            if (processHandle != IntPtr.Zero && !leaveOpen)
-                NativeMethods.CloseHandle(processHandle);
+            if (ProcessHandle != IntPtr.Zero && !leaveOpen)
+                NativeMethods.CloseHandle(ProcessHandle);
 
-            processHandle = IntPtr.Zero;
+            ProcessHandle = IntPtr.Zero;
 
             base.Dispose(isDisposing);
             isDisposed = true;
         }
 
-        void CheckIfDisposed()
+        private void CheckIfDisposed()
         {
             if (isDisposed)
-                throw new ObjectDisposedException("ProcessMemoryStream");
+                throw new ObjectDisposedException(GetType().Name);
         }
 
-        void CheckBufferSize(int count)
+        private void CheckBufferSize(int count)
         {
             if (internalBuffer.Length < count)
-                throw new InvalidOperationException("Length exceeds buffer length");
+                throw new InvalidOperationException("Length exceeds buffer length.");
         }
     }
 }

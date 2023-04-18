@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    internal sealed class BooleanInverter : IValueConverter
+    public sealed class BooleanInverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var boolean = (bool)value;
             return !boolean;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var boolean = (bool)value;
             return !boolean;

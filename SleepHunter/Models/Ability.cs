@@ -6,9 +6,9 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    internal delegate void AbilityCallback(Ability ability);
+    public delegate void AbilityCallback(Ability ability);
 
-    internal abstract class Ability : ObservableObject
+    public abstract class Ability : ObservableObject
     {
         static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

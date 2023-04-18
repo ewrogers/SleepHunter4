@@ -7,16 +7,8 @@ using SleepHunter.Views;
 
 namespace SleepHunter.Extensions
 {
-    internal static class WindowExtender
+    public static class WindowExtender
     {
-        public static T InvokeIfRequired<T>(this Dispatcher dispatcher, Func<T> action, T value, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            if (dispatcher.Thread != Thread.CurrentThread)
-                return (T)dispatcher.Invoke(action, priority, null);
-            else
-                return action();
-        }
-
         public static void InvokeIfRequired(this Dispatcher dispatcher, Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             if (dispatcher.Thread != Thread.CurrentThread)
@@ -35,12 +27,14 @@ namespace SleepHunter.Extensions
 
         public static bool? ShowMessageBox(this Window owner, string windowTitle, string messageText, string subText = null, MessageBoxButton buttons = MessageBoxButton.OK, int width = 420, int height = 280)
         {
-            var messageBox = new MessageBoxWindow();
-            messageBox.Title = windowTitle ?? string.Empty;
-            messageBox.Width = width;
-            messageBox.Height = height;
-            messageBox.MessageText = messageText ?? string.Empty;
-            messageBox.SubText = subText ?? string.Empty;
+            var messageBox = new MessageBoxWindow
+            {
+                Title = windowTitle ?? string.Empty,
+                Width = width,
+                Height = height,
+                MessageText = messageText ?? string.Empty,
+                SubText = subText ?? string.Empty
+            };
 
             if (buttons == MessageBoxButton.OK)
             {

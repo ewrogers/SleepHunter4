@@ -11,7 +11,7 @@ using SleepHunter.Updater.Win32;
 
 namespace SleepHunter.Updater
 {
-    public partial class App : Application
+    internal partial class App : Application
     {
         private static readonly string[] IgnoredFilenames = new string[] { "Updater.exe", "Settings.xml" };
 

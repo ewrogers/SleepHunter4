@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SleepHunter.Extensions
 {
-    internal static class TimeSpanExtender
+    public static class TimeSpanExtender
     {
         private static readonly Regex TimeSpanSecondsRegex = new Regex(@"\s*(?<seconds>-?[0-9]*\.?[0-9]{1,})\s*s\s*", RegexOptions.Compiled);
         private static readonly Regex TimeSpanMinutesRegex = new Regex(@"\s*(?<minutes>-?[0-9]*\.?[0-9]{1,})\s*m\s*", RegexOptions.Compiled);
@@ -11,21 +11,15 @@ namespace SleepHunter.Extensions
         private static readonly Regex TimeSpanDaysRegex = new Regex(@"\s*(?<days>-?[0-9]*\.?[0-9]{1,})\s*d\s*", RegexOptions.Compiled);
 
         public static string ToFractionalEnglish(this TimeSpan timeSpan, bool useShortNotation = false, string format = null)
-        {
-            return ToEnglish(timeSpan, useShortNotation, false, true, format);
-        }
+            => ToEnglish(timeSpan, useShortNotation, false, true, format);
 
         public static string ToShortEnglish(this TimeSpan timeSpan, bool includeMinorComponent = true, string format = null)
-        {
-            return ToEnglish(timeSpan, true, includeMinorComponent, false, format);
-        }
+            => ToEnglish(timeSpan, true, includeMinorComponent, false, format);
 
         public static string ToLongEnglish(this TimeSpan timeSpan, bool includeMinorComponent = true, string format = null)
-        {
-            return ToEnglish(timeSpan, false, includeMinorComponent, false, format);
-        }
+            => ToEnglish(timeSpan, false, includeMinorComponent, false, format);
 
-        static string ToEnglish(this TimeSpan timeSpan, bool useShortNotation, bool includeMinorComponent = true, bool isFracitonal = false, string format = null)
+        private static string ToEnglish(this TimeSpan timeSpan, bool useShortNotation, bool includeMinorComponent = true, bool isFracitonal = false, string format = null)
         {
             var pluralDays = " days";
             var singularDay = " day";

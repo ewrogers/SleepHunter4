@@ -10,15 +10,16 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessManager
     {
+        private const string DarkAgesClassName = "DarkAges";
         private static readonly ProcessManager instance = new ProcessManager();
 
         public static ProcessManager Instance { get { return instance; } }
 
         private ProcessManager() { }
 
-        private ConcurrentDictionary<int, ClientProcess> clientProcesses = new ConcurrentDictionary<int, ClientProcess>();
-        private ConcurrentQueue<ClientProcess> deadClients = new ConcurrentQueue<ClientProcess>();
-        private ConcurrentQueue<ClientProcess> newClients = new ConcurrentQueue<ClientProcess>();
+        private readonly ConcurrentDictionary<int, ClientProcess> clientProcesses = new ConcurrentDictionary<int, ClientProcess>();
+        private readonly ConcurrentQueue<ClientProcess> deadClients = new ConcurrentQueue<ClientProcess>();
+        private readonly ConcurrentQueue<ClientProcess> newClients = new ConcurrentQueue<ClientProcess>();
 
         public event ClientProcessEventHandler ProcessCreated;
         public event ClientProcessEventHandler ProcessTerminated;
@@ -29,20 +30,11 @@ namespace SleepHunter.IO.Process
 
         public int NewClientCount { get { return newClients.Count; } }
 
-        public IEnumerable<ClientProcess> ActiveClients
-        {
-            get { return from a in clientProcesses.Values select a; }
-        }
+        public IEnumerable<ClientProcess> ActiveClients => clientProcesses.Values;
 
-        public IEnumerable<ClientProcess> DeadClients
-        {
-            get { return from d in deadClients select d; }
-        }
+        public IEnumerable<ClientProcess> DeadClients => deadClients;
 
-        public IEnumerable<ClientProcess> NewClients
-        {
-            get { return from n in newClients select n; }
-        }
+        public IEnumerable<ClientProcess> NewClients => newClients;
 
         public void EnqueueDeadClient(ClientProcess process)
         {
@@ -56,19 +48,6 @@ namespace SleepHunter.IO.Process
             OnProcessCreated(process);
         }
 
-        public ClientProcess PeekDeadClient()
-        {
-            deadClients.TryPeek(out var process);
-
-            return process;
-        }
-
-        public ClientProcess PeekNewClient()
-        {
-            newClients.TryPeek(out var process);
-            return process;
-        }
-
         public ClientProcess DequeueDeadClient()
         {
             deadClients.TryDequeue(out var process);
@@ -79,16 +58,6 @@ namespace SleepHunter.IO.Process
         {
             newClients.TryDequeue(out var process);
             return process;
-        }
-
-        public void ClearDeadClients()
-        {
-            deadClients = new ConcurrentQueue<ClientProcess>();
-        }
-
-        public void ClearNewClients()
-        {
-            newClients = new ConcurrentQueue<ClientProcess>();
         }
 
         public void ScanForProcesses(Action<ClientProcess> enumProcessCallback = null)
@@ -108,7 +77,7 @@ namespace SleepHunter.IO.Process
                 var className = classNameBuffer.ToString();
 
                 // Check Class Name (DA)
-                if (!string.Equals("DarkAges", className, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(className, DarkAgesClassName, StringComparison.OrdinalIgnoreCase))
                     return true;
 
                 // Get Window Title
@@ -165,7 +134,7 @@ namespace SleepHunter.IO.Process
         private void OnProcessCreated(ClientProcess process)
         {
             if (process == null)
-                throw new ArgumentNullException("process");
+                throw new ArgumentNullException(nameof(process));
 
             ProcessCreated?.Invoke(this, new ClientProcessEventArgs(process));
         }
@@ -173,7 +142,7 @@ namespace SleepHunter.IO.Process
         private void OnProcessTerminated(ClientProcess process)
         {
             if (process == null)
-                throw new ArgumentNullException("process");
+                throw new ArgumentNullException(nameof(process));
 
             ProcessTerminated?.Invoke(this, new ClientProcessEventArgs(process));
         }

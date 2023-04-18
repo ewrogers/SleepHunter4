@@ -8,7 +8,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Converters
 {
-    internal sealed class PlayerClassConverter : IValueConverter
+    public sealed class PlayerClassConverter : IValueConverter
     {
         private static readonly Regex WarriorRegex = new Regex(@"\s*Warrior\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex WizardRegex = new Regex(@"\s*Wizard\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -22,9 +22,11 @@ namespace SleepHunter.Converters
         private static readonly Regex DruidRegex = new Regex(@"\s*Druid\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex AllClassRegex = new Regex(@"\s*All\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        public const string MedeniaParameter = "Medenia";
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isMedenia = string.Equals("Medenia", parameter as string, StringComparison.OrdinalIgnoreCase);
+            var isMedenia = string.Equals(MedeniaParameter, parameter as string, StringComparison.OrdinalIgnoreCase);
 
             var playerClass = (PlayerClass)value;
 
@@ -86,7 +88,7 @@ namespace SleepHunter.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isMedenia = string.Equals("Medenia", parameter as string, StringComparison.OrdinalIgnoreCase);
+            var isMedenia = string.Equals(MedeniaParameter, parameter as string, StringComparison.OrdinalIgnoreCase);
 
             var playerClass = PlayerClass.Peasant;
 

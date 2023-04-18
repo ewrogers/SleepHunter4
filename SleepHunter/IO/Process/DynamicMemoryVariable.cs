@@ -7,15 +7,9 @@ namespace SleepHunter.IO.Process
     [Serializable]
     internal class DynamicMemoryVariable : MemoryVariable
     {
-        protected List<MemoryOffset> offsets = new List<MemoryOffset>();
-
-        [XmlArray("Offsets")]
+        [XmlArray(nameof(Offsets))]
         [XmlArrayItem("Offset", typeof(MemoryOffset))]
-        public List<MemoryOffset> Offets
-        {
-            get { return offsets; }
-            set { offsets = value; }
-        }
+        public List<MemoryOffset> Offsets { get; set; } = new List<MemoryOffset>();
 
         public DynamicMemoryVariable()
            : this(string.Empty, 0, 0) { }
@@ -23,9 +17,11 @@ namespace SleepHunter.IO.Process
         public DynamicMemoryVariable(string key, long address, int maxLength = 0, int size = 0, int count = 0, params long[] offsets)
            : base(key, address, maxLength, size, count)
         {
-            if (offsets != null)
-                foreach (var offset in offsets)
-                    this.offsets.Add(new MemoryOffset(offset));
+            if (offsets == null)
+                return;
+
+            foreach (var offset in offsets)
+                Offsets.Add(new MemoryOffset(offset));
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    internal sealed class LessThanConverter : IValueConverter
+    public sealed class LessThanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -16,10 +16,7 @@ namespace SleepHunter.Converters
             return integer < threshold;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
     public sealed class LessThanOrEqualConverter : IValueConverter
@@ -34,10 +31,7 @@ namespace SleepHunter.Converters
             return integer <= threshold;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
     public sealed class GreaterThanConverter : IValueConverter
@@ -52,10 +46,7 @@ namespace SleepHunter.Converters
             return integer > threshold;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
     public sealed class GreaterThanOrEqualConverter : IValueConverter
@@ -70,10 +61,7 @@ namespace SleepHunter.Converters
             return integer >= threshold;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 
     public sealed class AbsoluteValueConverter : IValueConverter
@@ -81,13 +69,9 @@ namespace SleepHunter.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var integer = value is double doubleValue ? doubleValue : (int)value;
-
             return Math.Abs(integer);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 }

@@ -11,7 +11,7 @@ using SleepHunter.Win32;
 namespace SleepHunter.Models
 {
     [Flags]
-    internal enum PlayerFieldFlags : uint
+    public enum PlayerFieldFlags : uint
     {
         None = 0x0,
         Name = 0x1,
@@ -32,7 +32,7 @@ namespace SleepHunter.Models
         All = 0xFFFFFFFF
     }
 
-    internal sealed class Player : ObservableObject, IDisposable
+    public sealed class Player : ObservableObject, IDisposable
     {
         private static readonly string CharacterNameKey = @"CharacterName";
 
@@ -43,7 +43,7 @@ namespace SleepHunter.Models
         private string name;
         private string guild;
         private string guildRank;
-         string title;
+        private string title;
         private PlayerClass playerClass;
         private Inventory inventory;
         private EquipmentSet equipment;
@@ -187,7 +187,7 @@ namespace SleepHunter.Models
 
         public string HotkeyString
         {
-            get { return hotkey != null ? hotkey.ToString() : null; }
+            get { return hotkey?.ToString(); }
         }
 
         public Hotkey Hotkey
@@ -286,14 +286,13 @@ namespace SleepHunter.Models
             Dispose(false);
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
@@ -306,7 +305,6 @@ namespace SleepHunter.Models
 
             isDisposed = true;
         }
-        #endregion
 
         public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
         {
@@ -360,10 +358,10 @@ namespace SleepHunter.Models
             }
         }
 
-        void UpdateName(ProcessMemoryAccessor accessor)
+        private void UpdateName(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             string name = null;
 
@@ -388,22 +386,22 @@ namespace SleepHunter.Models
                 Name = name;
         }
 
-        void UpdateGuild(ProcessMemoryAccessor accessor)
+        private void UpdateGuild(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
 
         void UpdateGuildRank(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
 
-        void UpdateTitle(ProcessMemoryAccessor accessor)
+        private void UpdateTitle(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
 
         public override string ToString()

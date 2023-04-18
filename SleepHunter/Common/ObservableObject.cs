@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace SleepHunter.Common
 {
-    internal abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging
+    public abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public event PropertyChangingEventHandler PropertyChanging;
@@ -47,18 +47,7 @@ namespace SleepHunter.Common
             return true;
         }
 
-        #region INotifyPropertyChanged Methods
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
-
-        #region INotifyPropertyChanging Methods
-        protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
-        }
-        #endregion
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = "") => PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
     }
 }

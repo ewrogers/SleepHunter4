@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Common
 {
-    internal interface ICopyable<T>
+    public interface ICopyable<T>
     {
         void CopyTo(T other);
         void CopyTo(T other, bool copyId);

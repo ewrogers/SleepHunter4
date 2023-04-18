@@ -5,12 +5,15 @@ using System.Windows.Data;
 
 namespace SleepHunter.Converters
 {
-    internal class VisibilityConverter : IValueConverter
+    public class VisibilityConverter : IValueConverter
     {
+        public const string ReverseParameter = "Reverse";
+        public const string CollapseParameter = "Collapse";
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var parameterString = parameter as string;
-            var isReversed = string.Equals("Reverse", parameterString, StringComparison.OrdinalIgnoreCase);
+            var isReversed = string.Equals(ReverseParameter, parameterString, StringComparison.OrdinalIgnoreCase);
 
             if (value is string stringValue)
                 return string.IsNullOrWhiteSpace(stringValue) ? Visibility.Collapsed : Visibility.Visible;
@@ -32,7 +35,7 @@ namespace SleepHunter.Converters
                 return Visibility.Visible;
             else
             {
-                if (string.Equals("Collapse", parameterString, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(CollapseParameter, parameterString, StringComparison.OrdinalIgnoreCase))
                     return Visibility.Collapsed;
                 else
                     return Visibility.Hidden;
