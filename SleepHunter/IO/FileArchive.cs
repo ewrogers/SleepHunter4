@@ -14,15 +14,11 @@ namespace SleepHunter.IO
         static readonly int NameLength = 13;
 
         bool isDisposed;
-        string name;
-        Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
-        MemoryMappedFile mappedFile;
+        readonly Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
+        readonly FileStream fileStream;
+        readonly MemoryMappedFile mappedFile;
 
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public string Name { get; private set; }
 
         public int Count { get { return entries.Count; } }
 
@@ -33,69 +29,65 @@ namespace SleepHunter.IO
             if (!File.Exists(filename))
                 throw new FileNotFoundException("File archive was not found", filename);
 
-            using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                mappedFile = MemoryMappedFile.CreateFromFile(inputStream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, true);
-                ReadTableOfContents();
-            }
+            fileStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            mappedFile = MemoryMappedFile.CreateFromFile(fileStream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, true);
+            ReadTableOfContents();
 
-            name = filename;
+            Name = filename;
         }
+
+        public override string ToString() => $"{Name}, Entries = {entries.Count}";
 
         void ReadTableOfContents()
         {
-            Stream stream = null;
-            try
+            using var stream = mappedFile.CreateViewStream(0, 0, MemoryMappedFileAccess.Read);
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+            var entryCount = reader.ReadUInt32() - 1;
+
+            for (int i = 0; i < entryCount; i++)
             {
-                stream = mappedFile.CreateViewStream(0, 0, MemoryMappedFileAccess.Read);
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
+                var index = i;
+                var startAddress = reader.ReadUInt32();
+                var name = reader.ReadFixedString(NameLength).Trim();
+                var size = reader.ReadInt32() - startAddress;
+
+                reader.BaseStream.Position -= sizeof(uint);
+
+                var entry = new FileArchiveEntry
                 {
-                    stream = null;
-                    var entryCount = reader.ReadUInt32() - 1;
+                    Index = index,
+                    Name = name,
+                    Offset = startAddress,
+                    Size = size
+                };
 
-                    for (int i = 0; i < entryCount; i++)
-                    {
-                        var index = i;
-                        var startAddress = reader.ReadUInt32();
-                        var name = reader.ReadFixedString(NameLength).Trim();
-                        var size = reader.ReadInt32() - startAddress;
-
-                        reader.BaseStream.Position -= sizeof(uint);
-
-                        var entry = new FileArchiveEntry
-                        {
-                            Index = index,
-                            Name = name,
-                            Offset = startAddress,
-                            Size = size
-                        };
-
-                        entries[name] = entry;
-                    }
-                }
+                entries[name] = entry;
             }
-            finally { stream?.Dispose(); }
         }
 
         public bool ContainsFile(string filename)
         {
+            CheckIfDisposed();
             return entries.ContainsKey(filename);
         }
 
         public FileArchiveEntry GetEntry(string filename)
         {
+            CheckIfDisposed();
             return entries[filename];
         }
 
         public Stream GetStream(string filename)
         {
+            CheckIfDisposed();
+
             var entry = entries[filename];
             var stream = mappedFile.CreateViewStream(entry.Offset, entry.Size, MemoryMappedFileAccess.Read);
 
             return stream;
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
@@ -107,13 +99,19 @@ namespace SleepHunter.IO
             if (isDisposed)
                 return;
 
-            if (mappedFile != null)
-                mappedFile.Dispose();
-
-            mappedFile = null;
+            if (isDisposing)
+            {
+                mappedFile?.Dispose();
+                fileStream?.Dispose();
+            }
 
             isDisposed = true;
         }
-        #endregion
+
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
     }
 }

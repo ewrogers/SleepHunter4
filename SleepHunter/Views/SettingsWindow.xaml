@@ -1127,7 +1127,6 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -1155,15 +1154,15 @@
                                FontSize="18"
                                TextAlignment="Center"
                                Opacity="0.75"
-                               Margin="4,8,4,4"/>
+                               Margin="4"/>
 
-                    <TextBlock Grid.Row="4" 
+                    <TextBlock Grid.Row="4"
                                Text="ewrogers@gmail.com"
                                Style="{StaticResource ObsidianText}"
                                FontSize="16"
                                TextAlignment="Center"
                                Opacity="0.5"
-                               Margin="4,4"/>
+                               Margin="4"/>
 
                     <Separator Grid.Row="5"
                                Style="{StaticResource ObsidianSeparator}"
@@ -1174,30 +1173,31 @@
                                Text="Version ??"
                                Style="{StaticResource ObsidianText}"
                                FontSize="24"
+                               FontWeight="Normal"
                                TextAlignment="Center"
-                               Margin="4,8,4,4"/>
+                               Margin="4"/>
 
-                    <Separator Grid.Row="7"
+                    <TextBlock Name="frameworkVersionText" 
+                               Grid.Row="7"
+                               Text="Framework Version ??"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="18"
+                               TextAlignment="Center"
+                               Opacity="0.5"
+                               Margin="4"/>
+
+                    <Separator Grid.Row="8"
                                Style="{StaticResource ObsidianSeparator}"
                                Margin="8,16"/>
 
                     <TextBlock Name="osVersionText" 
-                               Grid.Row="8" 
+                               Grid.Row="9" 
                                Text="OS Version"
                                Style="{StaticResource ObsidianText}"
                                FontSize="18"
                                TextAlignment="Center"
                                Opacity="0.75"
-                               Margin="4,4"/>
-
-                    <TextBlock Name="cpuNameText" 
-                               Grid.Row="9" 
-                               Text="Unknown CPU"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="16"
-                               TextAlignment="Center"
-                               Opacity="0.5"
-                               Margin="4,4"/>
+                               Margin="4"/>
 
                     <TextBlock Name="cpuCountText" 
                                Grid.Row="10" 
@@ -1206,7 +1206,7 @@
                                FontSize="16"
                                TextAlignment="Center"
                                Opacity="0.5"
-                               Margin="4,4"/>
+                               Margin="4"/>
                     
                     <TextBlock Name="memorySizeText" 
                                Grid.Row="11" 
@@ -1215,7 +1215,7 @@
                                FontSize="16"
                                TextAlignment="Center"
                                Opacity="0.5"
-                               Margin="4,4"/>
+                               Margin="4"/>
                 </Grid>
             </TabItem>
         </TabControl>

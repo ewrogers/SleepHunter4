@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
 namespace SleepHunter.Media
@@ -74,6 +75,7 @@ namespace SleepHunter.Media
             return bitmap;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void SetPixel(byte[] bits, int x, int y, int stride, Color c)
         {
             var i = (x * 4) + (y * stride);

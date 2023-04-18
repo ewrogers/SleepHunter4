@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Management;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,6 +60,7 @@ namespace SleepHunter.Views
             versionText.Text = $"Version {currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
 
             currentVersionText.Text = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
+            frameworkVersionText.Text = $"{RuntimeInformation.FrameworkDescription}";
         }
 
         void GetComputerInfo()
@@ -66,7 +68,6 @@ namespace SleepHunter.Views
             var cpuArch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
             osVersionText.Text = $"{Environment.OSVersion} ({cpuArch})";
 
-            cpuNameText.Text = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
             var cpuCount = Environment.ProcessorCount;
 
             if (cpuCount == 8)

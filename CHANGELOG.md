@@ -6,9 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.0] - 2023-04-18
 
+### Added
+
+- CPU info in `Settings-About` tab
+- .NET version displayed in `Settings->About` tab
+
 ### Changed
 
 - Now built against newer [.NET 7](https://dotnet.microsoft.com/en-us/download/dotnet/7.00) instead of older .NET Framework 4.8.1 runtime
+- Removed build date from `Settings->About` tab
 
 ## [4.4.2] - 2023-04-18
 
