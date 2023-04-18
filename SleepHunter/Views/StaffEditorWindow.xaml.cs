@@ -7,7 +7,7 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Views
 {
-    internal partial class StaffEditorWindow : Window
+    public partial class StaffEditorWindow : Window
     {
         private readonly string originalName;
         private readonly StaffMetadata staff = new StaffMetadata();

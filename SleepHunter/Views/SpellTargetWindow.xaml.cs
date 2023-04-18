@@ -13,7 +13,7 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
-    internal partial class SpellTargetWindow : Window
+    public partial class SpellTargetWindow : Window
     {
         private readonly SpellQueueItem spellQueueItem = new SpellQueueItem();
 
