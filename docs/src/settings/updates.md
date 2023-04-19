@@ -10,7 +10,7 @@ Displays the current version of the application.
 
 ## Latest Version
 
-Displays the latest version of the application, available from the [GitHub] releases page](https://github.com/ewrogers/SleepHunter4/releases).
+Displays the latest version of the application, available from the [GitHub releases page](https://github.com/ewrogers/SleepHunter4/releases).
 
 If an update is available, an `Update` button will be displayed and allow the user to download and install it.
 
