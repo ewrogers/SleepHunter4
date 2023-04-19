@@ -32,3 +32,7 @@ When the timer reaches zero, the target will be flowered (when possible), and ti
 
 Targets can be removed from the queue by clicking the `Remove` or `Clear All` buttons at the bottom.
 Alternatively, you can select a target and press the `Delete` or `Backspace` key.
+
+## Additional Settings
+
+Additional settings for the `Flowering` tab can be found in the [Flowering Settings](../settings/flowering.md) window.

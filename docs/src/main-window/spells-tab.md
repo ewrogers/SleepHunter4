@@ -29,3 +29,7 @@ You can change the number of spells displayed per row in the [Settings](../setti
 ## Tooltip Help
 
 You can mouse over a spell to see the tooltip for that spell.
+
+## Additional Settings
+
+Additional settings for spell macros can be found in the [Spell Macros Settings](../settings/spell-macros.md) window.

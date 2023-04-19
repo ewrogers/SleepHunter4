@@ -26,3 +26,7 @@ Alternatively, you can select a target and press the `Delete` or `Backspace` key
 
 The Spell Queue visibility can be toggled using the show/hide button.
 It will be shown when adding a new spell target for a character.
+
+## Additional Settings
+
+Additional settings for the `Spell Queue` can be found in the [Spell Macros Settings](../settings/spell-macros.md) window.

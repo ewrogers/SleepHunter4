@@ -49,4 +49,4 @@ This button will open the [Metadata Editor](./metadata-editor.md) window.
 
 ## App Settings
 
-This button will open the [Settings](./settings.md) window.
+This button will open the [Settings](../settings/general.md) window.

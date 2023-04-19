@@ -22,4 +22,4 @@ You can unbind a hotkey by selecting the character and pressing the `Delete` or 
 ## Character Sorting
 
 By default, characters are sorted by their login time (oldest to newest).
-This sorting can be modified in the [Settings](./settings.md) window.
+This sorting can be modified in the [User Interface Settings](../settings/user-interface.md) window.

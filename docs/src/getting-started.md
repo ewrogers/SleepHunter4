@@ -95,5 +95,5 @@ You can also configure SleepHunter to close the game client entirely when you le
 ## Can I customize certain behaviors?
 
 Yes, many of the behaviors of SleepHunter can be customized to your liking in the `Settings` tab.
-It is recommended that you review the settings before starting macroing.
+It is recommended that you review the [Settings](./settings/general.md) before starting macroing.
 The default settings are designed to work for most users, but you may want to customize them to your needs.

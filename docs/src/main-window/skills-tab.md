@@ -29,3 +29,7 @@ You can change the number of skills displayed per row in the [Settings](../setti
 ## Tooltip Help
 
 You can mouse over a skill to see the tooltip for that skill.
+
+## Additional Settings
+
+Additional settings for the `Skills` tab can be found in the [Skill Macros Settings](../settings/skill-macros.md) window.
