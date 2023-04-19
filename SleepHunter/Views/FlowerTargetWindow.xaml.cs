@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
@@ -311,7 +312,7 @@ namespace SleepHunter.Views
                 absoluteXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (offsetXUpDown != null)
-                offsetXUpDown.Visibility = (units != TargetCoordinateUnits.None) ? Visibility.Visible : Visibility.Collapsed;
+                offsetXUpDown.Visibility = (units != TargetCoordinateUnits.None && units != TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (innerRadiusUpDown != null)
                 innerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
@@ -378,6 +379,16 @@ namespace SleepHunter.Views
 
             DialogResult = true;
             Close();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                DialogResult = false;
+                Close();
+            }
         }
     }
 }

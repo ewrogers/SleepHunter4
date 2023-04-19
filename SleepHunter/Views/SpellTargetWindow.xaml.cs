@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
@@ -48,7 +49,7 @@ namespace SleepHunter.Views
             {
                 Title = "Edit Target";
                 okButton.Content = "_Save Changes";
-            }
+            }            
 
             SpellQueueItem.Id = item.Id;
             SetTargetForMode(item.Target);
@@ -75,7 +76,10 @@ namespace SleepHunter.Views
                 targetModeComboBox.IsEnabled = false;
             }
             else
+            {
+                targetModeComboBox.Items.RemoveAt(0);
                 targetModeComboBox.SelectedValue = "Self";
+            }
 
             if (!SpellMetadataManager.Instance.ContainsSpell(spell.Name))
             {
@@ -317,17 +321,13 @@ namespace SleepHunter.Views
                 absoluteXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (offsetXUpDown != null)
-                offsetXUpDown.Visibility = (units != TargetCoordinateUnits.None) ? Visibility.Visible : Visibility.Collapsed;
+                offsetXUpDown.Visibility = (units != TargetCoordinateUnits.None && units != TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (innerRadiusUpDown != null)
                 innerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
 
             if (outerRadiusUpDown != null)
                 outerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
-
-            // Do not show mouse offset for absolute x/y (screen position) as it is redundant
-            if (offsetXUpDown != null)
-                offsetXUpDown.Visibility = units != TargetCoordinateUnits.AbsoluteXY ? Visibility.Visible : Visibility.Collapsed;
 
             SizeToFit(units, IsLoaded);
         }
@@ -342,6 +342,8 @@ namespace SleepHunter.Views
                 measuredHeight += 42;
             else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
                 measuredHeight += 84;
+            else if (units == TargetCoordinateUnits.None)
+                measuredHeight -= 42;
 
             if (!animate)
             {
@@ -380,6 +382,16 @@ namespace SleepHunter.Views
 
             DialogResult = true;
             Close();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                DialogResult = false;
+                Close();
+            }
         }
     }
 }
