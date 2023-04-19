@@ -14,7 +14,6 @@ It is divided into main sections:
   - [Spells Tab](#spells-tab) shows all spells that are currently available for macroing.
   - [Flowering Tab](#flowering-tab) shows targets for casting `Lyliac Plant` and `Lyliac Vineyard`.
 - [Spell Queue](#spell-queue) shows all spells that have been added to the queue for macroing.
-- [Status Bar](#status-bar) - Unused, provides a way to resize the window on the bottom-right corner.
 
 The `Skills` and `Spells` tabs are also divided into sections for `Temuair`, `Medenia` and `World` abilities.
 These correspond to the three different skill and spell panels in the game client.
@@ -23,14 +22,16 @@ These correspond to the three different skill and spell panels in the game clien
 
 ## Toolbar
 
-![image](../screenshots/toolbar.png)
+![image](../screenshots/tool-bar.png)
 
 The toolbar has the following buttons:
 
 - `Start New Client` - Launches a new game client, applying any tweaks that are enabled in the [Settings](./settings.md#game-client) window.
-- `Start Macroing` - Starts macroing the selected character.
-- `Pause Macroing` - Pauses macroing the selected character.
-- `Stop Macroing` - Stops macroing the selected character.
+- `Start Macro` - Starts macroing the selected character.
+- `Pause Macro` - Pauses macroing the selected character.
+- `Stop Macro` - Stops macroing the selected character.
+- `Stop All` - Stops macroing on all characters.
+- `Metadata Editor` - Opens the [Metadata Editor](./metadata-editor.md) window.
 - `Settings` - Opens the [Settings](./settings.md) window.
 
 The main difference between `Pause Macroing` and `Stop Macroing` is that pause acts as a temporary stop, while stop will reset the macro state for that character.
@@ -56,7 +57,7 @@ This will act as a global hotkey that can be used to pause/resume macroing for t
 If a hotkey is bound to a character, the hotkey combination will be displayed in the character window.
 You can unbind a hotkey by selecting the character and pressing the `Delete` or `Backspace` key.
 
-**NOTE:** Binding the same hotkey combination to another character will unbind it from the previous character.
+**NOTE:** The character sorting order can be modified in the [Settings](./settings.md) window.
 
 ## Abilities
 
@@ -103,8 +104,10 @@ The `Flower Queue` is the list contained in the `Flowering` tab itself.
 Here all targets for `Lyliac Planet` will be displayed, with the condition set as well as a countdown timer.
 
 Double-clicking a flower target will bring up the [Flower Target](./flower-target.md) dialog for modifying the cast target.
-
 You can re-arrange the order of the targets by dragging and dropping them.
+
+While the character macro is running, the timer will tick down and show the remaining time.
+When the timer reaches zero, the target will be flowered (when possible), and timer reset.
 
 Targets can be removed from the queue by clicking the `Remove` or `Clear All` buttons at the bottom.
 Alternatively, you can select a target and press the `Delete` or `Backspace` key.
@@ -119,12 +122,9 @@ The user-selected spell in the queue will have a left-side highlight indicator.
 While being cast, the spell will be highlighted white and a thick border will be displayed around the spell.
 
 Double-clicking a spell will bring up the [Spell Target](./spell-target.md) dialog for modifying the cast target.
-
 You can re-arrange the order of the targets by dragging and dropping them.
 
 Targets can be removed from the queue by clicking the `Remove` or `Clear All` buttons at the bottom.
 Alternatively, you can select a target and press the `Delete` or `Backspace` key.
 
-## Status Bar
-
-The status bar is currently unused, but provides a way to resize the window on the bottom-right corner.
+The Spell Queue visibility can be toggled using the show/hide button.
