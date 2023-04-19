@@ -21,8 +21,6 @@ This may seem like a lot of options, but it's actually quite simple. See each se
 
 This is used when a spell does not require a target, such as a self-only or group spell.
 
-The `Mouse Offset X/Y` has no effect here.
-
 **NOTE:** This option cannot be selected, it is automatically selected when the spell does not require a target.
 
 ## Self
