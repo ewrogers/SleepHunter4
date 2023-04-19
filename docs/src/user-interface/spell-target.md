@@ -56,7 +56,7 @@ For example, "2 Left, 1 Down" would be the tile located 2 tiles left and 1 tile 
 
 This relative tile will be preserved even if the character moves to a different tile.
 
-The `Relative Tile` is the tile relative to your character's current position. It will be cast on.
+The `Relative Tile` is the tile relative to your character's current position.
 
 The `Mouse Offset X/Y` is used to fine-tune the mouse screen coordinates, if needed.
 
