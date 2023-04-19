@@ -51,3 +51,10 @@
 - [Updates](./settings/updates.md)
 - [Debug](./settings/debug.md)
 - [About](./settings/about.md)
+
+# Metadata Editor
+
+- [Skills Editor](./metadata-editor/skills-editor.md)
+- [Spells Editor](./metadata-editor/spells-editor.md)
+- [Staves Editor](./metadata-editor/staves-editor.md)
+

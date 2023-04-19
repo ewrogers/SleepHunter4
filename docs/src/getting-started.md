@@ -13,7 +13,7 @@ You can macro any number of skills at the same time, simply double-click on the 
 
 The skill will be highlighted in white as well as a colorful box around it, indicating that is is "enabled".
 
-Once you have enabled all the skills you wish to macro, you can start the macro by clicking the `Start Macroing` button in the toolbar.
+Once you have enabled all the skills you wish to macro, you can start the macro by clicking the `Start Macro` button in the toolbar.
 The selected character will then begin to macro the skills you have enabled.
 
 You can toggle any skill on or off at any time by double-clicking on it, even while the macro is running.
@@ -30,7 +30,7 @@ You can leave the `Offset X/Y` to zero, as that is only needed for fine-tuning t
 Once you add a spell to the queue, you will see it appear on the right sidebar. You can add as many spells as you wish to the queue.
 The spell queue supports drag and drop for re-ordering.
 
-Once you have added all the spells you wish to macro, you can start the macro by clicking the `Start Macroing` button in the toolbar.
+Once you have added all the spells you wish to macro, you can start the macro by clicking the `Start Macro` button in the toolbar.
 
 You can add and remove spells from the queue at any time, even while the macro is running.
 
@@ -46,7 +46,7 @@ You can leave the `Offset X/Y` to zero, as that is only needed for fine-tuning t
 Once you add a flower target, you will set it appear in the `Flowering` tab queue. You can add as many flower targets as you wish.
 The flower queue supports drag and drop for re-ordering.
 
-Once you have added all the flower targets you wish to macro, you can start the macro by clicking the `Start Macroing` button in the toolbar.
+Once you have added all the flower targets you wish to macro, you can start the macro by clicking the `Start Macro` button in the toolbar.
 
 You can add and remove flower targets from the queue at any time, even while the macro is running.
 
@@ -59,7 +59,7 @@ This will automatically cast `Lyliac Plant` on all other characters in your grou
 
 You can enable this option at any time, even while individually casting `Lyliac Plant` on other characters.
 
-Remember, you must click the `Start Macroing` button in the toolbar to start the process.
+Remember, you must click the `Start Macro` button in the toolbar to start the process.
 
 ## Can I use all of these together?
 
