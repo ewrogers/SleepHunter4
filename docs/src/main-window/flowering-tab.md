@@ -16,6 +16,8 @@ This dialog allows you to select a target for the spell and add it to the `Flowe
 The `Flower Queue` is the list contained in the `Flowering` tab itself.
 Here all targets for `Lyliac Planet` will be displayed, with the condition set as well as a countdown timer.
 
+For more information about the `Flower Target` dialog, see the sidebar.
+
 ## Modifying Flower Targets
 
 Double-clicking a flower target will bring up the `Flower Target` dialog for modifying the cast target.

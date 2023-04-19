@@ -14,10 +14,12 @@ Spells are organized into 3 tabs:
 
 ## Queueing Spells
 
-Double-clicking a spell will bring up the [Spell Target](./spell-target.md) dialog for that casting spell.
-This dialog allows you to select a target for the spell and add it to the [Spell Queue](#spell-queue).
+Double-clicking a spell will bring up the `Spell Target` dialog for that casting spell.
+This dialog allows you to select a target for the spell and add it to the [Spell Queue](./spell-queue.md).
 
 When a spell is being cast, it will be highlighted white and a thick border will be displayed around the spell icon.
+
+For more information about the `Spell Target` dialog, see the sidebar.
 
 ## Grid Layout
 
