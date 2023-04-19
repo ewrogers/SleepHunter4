@@ -5,7 +5,7 @@ So you just installed SleepHunter, and you're ready to start using it. Now what?
 One tip is that most of the user interface supports tooltips.
 If you hover your mouse over a control, you will see information appear with a description of what it does.
 
-See the [User Interface](./user-interface/main-window.md) section for more information.
+See the `Main Window` section in the sidebar for more information.
 
 ## How do I macro a skill?
 
@@ -18,7 +18,7 @@ The selected character will then begin to macro the skills you have enabled.
 
 You can toggle any skill on or off at any time by double-clicking on it, even while the macro is running.
 
-See more information about the [Skills Tab](./user-interface/main-window.md#skills-tab).
+See more information about the [Skills Tab](./main-window/skills-tab.md).
 
 ## How do I macro a spell?
 
@@ -34,7 +34,7 @@ Once you have added all the spells you wish to macro, you can start the macro by
 
 You can add and remove spells from the queue at any time, even while the macro is running.
 
-See more information about the [Spell Queue](./user-interface/main-window.md#spell-queue).
+See more information about the [Spell Queue](./main-window/spell-queue.md).
 
 ## How do I flower another character? (Lyliac Plant)
 
@@ -50,7 +50,7 @@ Once you have added all the flower targets you wish to macro, you can start the 
 
 You can add and remove flower targets from the queue at any time, even while the macro is running.
 
-See more information about [Flowering](./user-interface/main-window.md#flowering-tab).
+See more information about [Flowering](./main-window/flowering-tab.md).
 
 ## How do I flower my entire group? (Lyliac Vineyard)
 
