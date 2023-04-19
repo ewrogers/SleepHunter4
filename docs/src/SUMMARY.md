@@ -10,10 +10,14 @@
 - [Release Notes](./CHANGELOG.md)
 - [License](./LICENSE.md)
 
-# User Interface
+# Main Window
 
-- [Main Window](./user-interface/main-window.md)
-- [Metadata Editor](./user-interface/metadata-editor.md)
+- [Toolbar](./main-window/toolbar.md)
+- [Character List](./main-window/character-list.md)
+- [Skills Tab](./main-window/skills-tab.md)
+- [Spells Tab](./main-window/spells-tab.md)
+- [Flowering Tab](./main-window/flowering-tab.md)
+- [Spell Queue](./main-window/spell-queue.md)
 
 # Spell Targets
 
