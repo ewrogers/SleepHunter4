@@ -181,7 +181,7 @@ namespace SleepHunter.Updater
             }
         }
 
-        private void TerminateAndWait(string executableFile, int timeoutSeconds = 10)
+        private static void TerminateAndWait(string executableFile, int timeoutSeconds = 10)
         {
             var processName = Path.GetFileNameWithoutExtension(executableFile);
             var processes = Enumerable.Empty<Process>();

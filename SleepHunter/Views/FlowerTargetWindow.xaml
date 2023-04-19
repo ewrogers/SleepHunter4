@@ -4,13 +4,13 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:models="clr-namespace:SleepHunter.Models"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
-        xmlns:views="clr-namespace:SleepHunter.Views"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Add Flower Target"
         Width="500" Height="576"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        PreviewKeyDown="Window_PreviewKeyDown">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
