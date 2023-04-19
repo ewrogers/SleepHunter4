@@ -44,7 +44,7 @@ namespace SleepHunter.Views
                 SetStatusText($"Downloading version {ReleaseInfo.VersionString}...");
                 var progressReporter = new Progress<long>(UpdateProgress);
                 DownloadPath = await releaseService.DownloadLatestReleaseAsync(ReleaseInfo.DownloadUri, progressReporter);
-            } 
+            }
             catch (Exception ex)
             {
                 SetStatusText("Unable to Fetch!");
@@ -69,15 +69,29 @@ namespace SleepHunter.Views
             progressBar.Value = Math.Max(0, Math.Min(percentage, 100));
             progressPercentText.Text = $"{percentage}%";
 
-            var downloadedKb = Math.Ceiling(downloadedSize / 1024.0);
-            var contentKb = Math.Ceiling(contentSize / 1024.0);
-
-            if (downloadedSize >= contentSize)
-                progressSizeText.Text = $"{contentKb:0} KB"; 
-            else if (contentSize > 0)
-                progressSizeText.Text = $"{downloadedKb:0} KB / {contentKb:0} KB";
+            if (contentSize > 0)
+                UpdateProgressSize(downloadedSize, contentSize);
             else
                 progressSizeText.Text = string.Empty;
+        }
+
+        void UpdateProgressSize(long downloadedSize, long totalSize)
+        {
+            var downloadedKb = downloadedSize / 1024.0;
+            var downloadedMb = downloadedKb / 1024.0;
+
+            var totalKb = totalSize / 1024.0;
+            var totalMb = totalKb / 1024.0;
+
+            var isDone = downloadedSize >= totalSize;
+
+            var downloadedString = downloadedMb >= 1 ? $"{downloadedMb:0.0} MB" : $"{downloadedKb:0.0} KB";
+            var totalString = totalMb >= 1 ? $"{totalMb:0.0} MB" : $"{totalKb:0.0} KB";
+
+            if (isDone)
+                progressSizeText.Text = totalString;
+            else
+                progressSizeText.Text = $"{downloadedString} / {totalString}";
         }
 
         void installButton_Click(object sender, RoutedEventArgs e)
