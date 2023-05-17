@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <StaffMetadata>
   <Staves>
     <Staff Name="Holy Apollo" Level="19" Class="Priest">
@@ -152,6 +152,11 @@
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
       </LineModifiers>
     </Staff>
+    <Staff Name="Staff of Deliverance" AbilityLevel="25" Class="Peasant">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
     <Staff Name="Assassin's Cross" AbilityLevel="27" Class="Priest">
       <LineModifiers>
         <Lines Action="Decrease" Scope="All" Name="" Value="2" />
@@ -170,6 +175,11 @@
     <Staff Name="Serpant Sphere" AbilityLevel="45" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Staff of Clarity" AbilityLevel="50" Class="Peasant">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
       </LineModifiers>
     </Staff>
     <Staff Name="Empowered Hwarone Lute" AbilityLevel="55" Class="Priest">
@@ -192,6 +202,21 @@
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
       </LineModifiers>
     </Staff>
+    <Staff Name="Divinities Staff" AbilityLevel="75" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Skylight Staff" AbilityLevel="75" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Staff of Eternity" AbilityLevel="75" Class="Peasant">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" />
+      </LineModifiers>
+    </Staff>
     <Staff Name="Brute's Quill" AbilityLevel="80" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
@@ -200,6 +225,26 @@
     <Staff Name="Yowien Tree Staff" AbilityLevel="80" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Dragon Emberwood Staff" AbilityLevel="90" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Dragon Infused Staff" AbilityLevel="90" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="1" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Dark Star" AbilityLevel="95" Class="Priest">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
+      </LineModifiers>
+    </Staff>
+    <Staff Name="Star Crafted Staff" AbilityLevel="95" Class="Wizard">
+      <LineModifiers>
+        <Lines Action="Decrease" Scope="All" Name="" Value="2" />
       </LineModifiers>
     </Staff>
   </Staves>
