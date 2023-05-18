@@ -45,7 +45,7 @@ namespace SleepHunter.Macro
         public PlayerMacroStatus PlayerStatus
         {
             get { return playerStatus; }
-            set { SetProperty(ref playerStatus, value, "PlayerStatus"); }
+            set { SetProperty(ref playerStatus, value, nameof(PlayerStatus)); }
         }
 
         public IReadOnlyList<SpellQueueItem> QueuedSpells
@@ -81,19 +81,19 @@ namespace SleepHunter.Macro
         public bool IsWaitingOnMana
         {
             get { return isWaitingOnMana; }
-            set { SetProperty(ref isWaitingOnMana, value, "IsWaitingOnMana"); }
+            set { SetProperty(ref isWaitingOnMana, value, nameof(IsWaitingOnMana)); }
         }
 
         public bool UseLyliacVineyard
         {
             get { return useLyliacVineyard; }
-            set { SetProperty(ref useLyliacVineyard, value, "UseLyliacVineyard"); }
+            set { SetProperty(ref useLyliacVineyard, value, nameof(UseLyliacVineyard)); }
         }
 
         public bool FlowerAlternateCharacters
         {
             get { return flowerAlternateCharacters; }
-            set { SetProperty(ref flowerAlternateCharacters, value, "FlowerAlternateCharacters"); }
+            set { SetProperty(ref flowerAlternateCharacters, value, nameof(FlowerAlternateCharacters)); }
         }
 
         public DateTime SpellCastTimestamp
@@ -283,7 +283,7 @@ namespace SleepHunter.Macro
             finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("QueuedSpells");
+                RaisePropertyChanged(nameof(QueuedSpells));
 
             return hasChanges;
         }
@@ -300,7 +300,7 @@ namespace SleepHunter.Macro
             finally { spellQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("QueuedSpells");
+                RaisePropertyChanged(nameof(QueuedSpells));
 
             return hasChanges;
         }
@@ -317,7 +317,7 @@ namespace SleepHunter.Macro
             finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("FlowerTargets");
+                RaisePropertyChanged(nameof(FlowerTargets));
 
             return hasChanges;
         }
@@ -334,7 +334,7 @@ namespace SleepHunter.Macro
             finally { flowerQueueLock.ExitWriteLock(); }
 
             if (hasChanges)
-                RaisePropertyChanged("FlowerTargets");
+                RaisePropertyChanged(nameof(FlowerTargets));
 
             return hasChanges;
         }
@@ -786,7 +786,7 @@ namespace SleepHunter.Macro
             return false;
         }
 
-        private Player FindAltWaitingOnMana()
+        private static Player FindAltWaitingOnMana()
         {
             Player waitingAlt = null;
 
@@ -818,8 +818,10 @@ namespace SleepHunter.Macro
         {
             if (lyliacPlantQueueItem == null)
             {
-                lyliacPlantQueueItem = new SpellQueueItem();
-                lyliacPlantQueueItem.Name = Spell.LyliacPlantKey;
+                lyliacPlantQueueItem = new SpellQueueItem
+                {
+                    Name = Spell.LyliacPlantKey
+                };
             }
 
             lyliacPlantQueueItem.Target = target;
@@ -966,7 +968,7 @@ namespace SleepHunter.Macro
             int? modifiedNumberOfLines = null;
 
             if (item == null)
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
 
             var useShiftKey = UserSettingsManager.Instance.Settings.UseShiftForMedeniaPane;
 
@@ -1064,7 +1066,7 @@ namespace SleepHunter.Macro
             numberOfLines = null;
 
             if (item == null)
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
 
             client.Update(PlayerFieldFlags.Inventory | PlayerFieldFlags.Equipment | PlayerFieldFlags.Stats);
 
@@ -1108,7 +1110,7 @@ namespace SleepHunter.Macro
         private void ClickTarget(SpellTarget target)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             if (target.Units == TargetCoordinateUnits.None)
                 return;
@@ -1244,6 +1246,8 @@ namespace SleepHunter.Macro
                     ResetMacro();
                     break;
             }
+
+            RaiseStatusChanged(status);
         }
 
         private void InitializeMacro()
