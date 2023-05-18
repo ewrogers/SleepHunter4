@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SleepHunter.Updater": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\Erik\\AppData\\Local\\Temp\\SleepHunter-4.5.2.zip\"\r\n\"C:\\Users\\Erik\\Projects\\SleepHunter4\\SleepHunter\\bin\\Debug\\net7.0-windows\\win-x64\"\r\n"
+    }
+  }
+}

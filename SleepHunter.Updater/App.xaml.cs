@@ -23,12 +23,16 @@ namespace SleepHunter.Updater
             // Usage: Updater.exe <zip file> <install path>
             if (e.Args.Length != 2)
             {
+                Debug.WriteLine("Invalid number of arguments, exiting...");
                 Shutdown();
                 return;
             }
 
             var updateFilePath = e.Args[0];
             var installationPath = e.Args[1];
+
+            Debug.WriteLine($"Update file: {updateFilePath}, Install path: ${installationPath}");
+
 
             base.OnStartup(e);
 
@@ -163,8 +167,15 @@ namespace SleepHunter.Updater
 
                 try
                 {
+                    Debug.WriteLine($"Starting SleepHunter, path = {executableName}");
+
                     // Start SleepHunter process and bring to front
-                    var process = Process.Start(executableName);
+                    var startInfo = new ProcessStartInfo(executableName)
+                    {
+                        WorkingDirectory = installationPath
+                    };
+
+                    var process = Process.Start(startInfo);
                     NativeMethods.SetForegroundWindow(process.MainWindowHandle);
 
                     Shutdown();

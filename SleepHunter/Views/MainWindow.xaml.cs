@@ -1310,7 +1310,7 @@ namespace SleepHunter.Views
             }
 
             logger.LogInfo($"Starting the updater with arguments: {updateFile} {installationPath}");
-            Process.Start(updaterExecutable, $"{updateFile} {installationPath}");
+            Process.Start(updaterExecutable, $"\"{updateFile}\" \"{installationPath}\"");
             Application.Current.Shutdown();
         }
 
