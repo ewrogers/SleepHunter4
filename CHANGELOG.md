@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Macro toolbar state now updates more reliably (map/location change)
 - Spell queue now hides when last character logs out
-
+- Non-integer window scaling now supported (ex: 150%, 175%, etc)
 
 ## [4.5.1] - 2023-04-18
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 
 using SleepHunter.Common;
@@ -44,23 +43,23 @@ namespace SleepHunter.IO.Process
         public int WindowWidth
         {
             get { return windowWidth; }
-            set { SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged("WindowScaleX"); }); }
+            set { SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleX)); }); }
         }
 
         public int WindowHeight
         {
             get { return windowHeight; }
-            set { SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged("WindowScaleY"); }); }
+            set { SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleY)); }); }
         }
 
         public double WindowScaleX
         {
-            get { return Math.Floor(WindowWidth / 640.0); }
+            get { return WindowWidth / 640.0; }
         }
 
         public double WindowScaleY
         {
-            get { return Math.Floor(WindowHeight / 480.0); }
+            get { return WindowHeight / 480.0; }
         }
 
         public DateTime CreationTime
@@ -79,12 +78,12 @@ namespace SleepHunter.IO.Process
 
             WindowTitle = windowTextBuffer.ToString(0, windowTextLength);
 
-            Rect windowRect;
+            Rect clientRect;
 
-            if (NativeMethods.GetWindowRect(windowHandle, out windowRect))
+            if (NativeMethods.GetClientRect(windowHandle, out clientRect))
             {
-                WindowWidth = windowRect.Width;
-                WindowHeight = windowRect.Height;
+                WindowWidth = clientRect.Width;
+                WindowHeight = clientRect.Height;
             }
         }
     }

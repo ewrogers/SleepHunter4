@@ -32,9 +32,9 @@ namespace SleepHunter.Win32
         [DllImport("user32", EntryPoint = "GetWindowThreadProcessId", CharSet = CharSet.Auto)]
         internal static extern int GetWindowThreadProcessId(IntPtr windowHandle, out int processId);
 
-        [DllImport("user32", EntryPoint = "GetWindowRect", CharSet = CharSet.Auto)]
+        [DllImport("user32", EntryPoint = "GetClientRect", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetWindowRect(IntPtr windowHandle, out Rect windowRectangle);
+        internal static extern bool GetClientRect(IntPtr windowHandle, out Rect clientRectangle);
 
         [DllImport("user32", EntryPoint = "PostMessage", CharSet = CharSet.Auto)]
         internal static extern bool PostMessage(IntPtr windowHandle, uint message, UIntPtr wParam, UIntPtr lParam);
