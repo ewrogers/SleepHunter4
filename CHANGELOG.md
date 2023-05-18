@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Cooldown detection fixed on 64-bit computers
 - Macro toolbar state now updates more reliably (map/location change)
 - Spell queue now hides when last character logs out
 - Non-integer window scaling now supported (ex: 150%, 175%, etc)
