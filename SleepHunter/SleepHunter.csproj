@@ -19,7 +19,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ewrogers/SleepHunter4</RepositoryUrl>
     <PackageProjectUrl>https://github.com/ewrogers/SleepHunter4</PackageProjectUrl>
-    <AssemblyVersion>4.5.1.0</AssemblyVersion>
+    <AssemblyVersion>4.5.2.0</AssemblyVersion>
     <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
     <Description>Dark Ages Automation Tool</Description>
     <Title>SleepHunter</Title>
