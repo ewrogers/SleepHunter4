@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing staves for bards (AB 70+)
 - Missing staves for summoners (AB 70+)
 
+### Fixed
+
+- Macro toolbar state not updating at times
+
 ## [4.5.1] - 2023-04-18
 
 ### Added
