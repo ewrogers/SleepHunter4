@@ -23,7 +23,7 @@
     <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
     <Description>Dark Ages Automation Tool</Description>
     <Title>SleepHunter</Title>
-    <FileVersion>4.5.1.0</FileVersion>
+    <FileVersion>4.5.2.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
