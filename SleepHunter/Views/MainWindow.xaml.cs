@@ -611,11 +611,6 @@ namespace SleepHunter.Views
             var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
 
-            if (macro != null)
-            {
-                macro.StatusChanged -= HandleMacroStatusChanged;
-            }
-
             try
             {
                 if (shouldSaveMacroStates && macro != null)
@@ -653,12 +648,17 @@ namespace SleepHunter.Views
 
             if (macro != null)
             {
+                macro.StatusChanged -= HandleMacroStatusChanged;
+
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
             }
 
             if (selectedMacro != null && selectedMacro.Name == player.Name)
                 SelectNextAvailablePlayer();
+
+            if (PlayerManager.Instance.LoggedInPlayers.Count() < 1)
+                ToggleSpellQueue(false);
         }
 
         private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e)
@@ -668,11 +668,12 @@ namespace SleepHunter.Views
 
         private void SelectNextAvailablePlayer()
         {
-            if (PlayerManager.Instance.LoggedInPlayers.Count() < 0)
+            if (PlayerManager.Instance.LoggedInPlayers.Count() <= 0)
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
                 UpdateWindowTitle();
+                ToggleSpellQueue(false);
                 return;
             }
         }
