@@ -9,7 +9,7 @@ namespace SleepHunter.Win32
         IntPtr baseAddress;
         IntPtr allocationBase;
         VirtualMemoryProtection allocationProtect;
-        uint regionSize;
+        IntPtr regionSize;
         VirtualMemoryStatus state;
         VirtualMemoryProtection protect;
         VirtualMemoryType type;
@@ -32,7 +32,7 @@ namespace SleepHunter.Win32
             set { allocationProtect = value; }
         }
 
-        public uint RegionSize
+        public IntPtr RegionSize
         {
             get { return regionSize; }
             set { regionSize = value; }

@@ -203,8 +203,10 @@ namespace SleepHunter.Macro
             else
                 client.Status = status.ToString();
 
-            StatusChanged?.Invoke(this, new MacroStatusEventArgs(status));
+            RaiseStatusChanged(status);
         }
+
+        protected void RaiseStatusChanged(MacroStatus status) => StatusChanged?.Invoke(this, new MacroStatusEventArgs(status));
 
         protected virtual void OnMapChanged()
         {

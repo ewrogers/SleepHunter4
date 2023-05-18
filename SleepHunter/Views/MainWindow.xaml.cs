@@ -28,7 +28,6 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace SleepHunter.Views
 {
@@ -564,6 +563,11 @@ namespace SleepHunter.Views
             var shouldRecallMacroState = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var macro = MacroManager.Instance.GetMacroState(player);
 
+            if (macro != null)
+            {
+                macro.StatusChanged += HandleMacroStatusChanged;
+            }
+
             try
             {
                 if (shouldRecallMacroState && macro != null)
@@ -644,21 +648,32 @@ namespace SleepHunter.Views
 
             if (macro != null)
             {
+                macro.StatusChanged -= HandleMacroStatusChanged;
+
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
             }
 
             if (selectedMacro != null && selectedMacro.Name == player.Name)
                 SelectNextAvailablePlayer();
+
+            if (PlayerManager.Instance.LoggedInPlayers.Count() < 1)
+                ToggleSpellQueue(false);
+        }
+
+        private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e)
+        {
+            UpdateToolbarState();
         }
 
         private void SelectNextAvailablePlayer()
         {
-            if (PlayerManager.Instance.LoggedInPlayers.Count() < 0)
+            if (PlayerManager.Instance.LoggedInPlayers.Count() <= 0)
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
                 UpdateWindowTitle();
+                ToggleSpellQueue(false);
                 return;
             }
         }
@@ -2213,14 +2228,17 @@ namespace SleepHunter.Views
 
         private void UpdateToolbarState()
         {
-            startNewClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
+            Dispatcher.InvokeIfRequired(() =>
+            {
+                startNewClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
 
-            stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
+                stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
 
-            if (selectedMacro == null)
-                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
-            else
-                UpdateUIForMacroStatus(selectedMacro.Status);
+                if (selectedMacro == null)
+                    startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
+                else
+                    UpdateUIForMacroStatus(selectedMacro.Status);
+            }, DispatcherPriority.Normal);
         }
 
         private void ToggleSkills(bool show = true)

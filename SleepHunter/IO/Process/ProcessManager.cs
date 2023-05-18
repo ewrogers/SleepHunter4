@@ -132,7 +132,7 @@ namespace SleepHunter.IO.Process
                 var windowText = windowTextBuffer.ToString();
 
                 // Get Window Rectangle
-                NativeMethods.GetWindowRect(windowHandle, out var windowRect);
+                NativeMethods.GetClientRect(windowHandle, out var windowRect);
 
                 var process = new ClientProcess
                 {

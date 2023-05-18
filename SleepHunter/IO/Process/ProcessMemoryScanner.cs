@@ -10,8 +10,8 @@ namespace SleepHunter.IO.Process
     internal sealed class ProcessMemoryScanner : IDisposable
     {
         static readonly int PageSize = 64 * 1024;
-        static readonly uint MinimumVmAddress = 0x00400000;
-        static readonly uint MaximumVmAddress = 0xFFFFFFFF;
+        static readonly uint MinimumVmAddress = 0x0040_0000;
+        static readonly uint MaximumVmAddress = 0xFFFF_FFFF;
 
         bool isDisposed;
         IntPtr processHandle;
@@ -128,8 +128,8 @@ namespace SleepHunter.IO.Process
 
         public IntPtr Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
         {
-            var start = (uint)startingAddress;
-            var end = (uint)endingAddress;
+            var start = startingAddress;
+            var end = endingAddress;
 
             if (start <= 0)
                 start = MinimumVmAddress;
@@ -138,15 +138,18 @@ namespace SleepHunter.IO.Process
                 end = MaximumVmAddress;
 
             long address = start;
-            MemoryBasicInformation memoryInfo;
             int sizeofMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
 
             while (address <= end)
             {
-                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out memoryInfo, (IntPtr)sizeofMemoryInfo);
+                var baseAddress = (IntPtr)address;
+                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, baseAddress, out var memoryInfo, sizeofMemoryInfo);
 
                 if (queryResult <= 0)
-                    break;
+                {
+                    var lastError = NativeMethods.GetLastError();
+                    throw new Win32Exception(lastError);
+                }
 
                 if (memoryInfo.Type == VirtualMemoryType.Private && memoryInfo.State == VirtualMemoryStatus.Commit && memoryInfo.Protect == VirtualMemoryProtection.ReadWrite)
                 {
