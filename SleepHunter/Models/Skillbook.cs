@@ -12,6 +12,10 @@ using SleepHunter.IO.Process;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Settings;
+using System.Net;
+using SleepHunter.Win32;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace SleepHunter.Models
 {
@@ -265,7 +269,7 @@ namespace SleepHunter.Models
                                 skills[i].RequiresDisarm = false;
                             }
 
-                            skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader);
+                            skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, accessor.ProcessHandle);
                         }
                         catch { }
                     }
@@ -285,12 +289,12 @@ namespace SleepHunter.Models
             }
         }
 
-        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader)
+        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, IntPtr processHandle)
         {
-            if (version == null || !UpdateSkillbookCooldownPointer(version, reader))
+            if (version == null || !UpdateSkillbookCooldownPointer(version, reader, processHandle))
                 return false;
 
-            if (baseCooldownPointer == IntPtr.Zero)
+            if (!IsReadableMemory(processHandle, baseCooldownPointer))
                 return false;
 
             long position = reader.BaseStream.Position;
@@ -309,14 +313,13 @@ namespace SleepHunter.Models
 
                 var address = (long)baseCooldownPointer + (slot * cooldownVariable.Size);
 
-                reader.BaseStream.Position = address;
-
-                if (address < 0x15000000 || address > 0x30000000)
+                if (!IsReadableMemory(processHandle, address))
                     return false;
 
+                reader.BaseStream.Position = address;
                 address = reader.ReadUInt32();
 
-                if (address < 0x15000000 || address > 0x30000000)
+                if (!IsReadableMemory(processHandle, address))
                     return false;
 
                 if (offset.IsNegative)
@@ -325,19 +328,19 @@ namespace SleepHunter.Models
                     address += offset.Offset;
 
                 reader.BaseStream.Position = address;
-                var isOnCooldown = reader.ReadBoolean();
+                var cooldownFlag = reader.ReadByte();
 
-                return isOnCooldown;
+                return cooldownFlag != 0x00;
             }
             catch
             {
-                baseCooldownPointer = IntPtr.Zero;
+                ResetCooldownPointer();
                 return false;
             }
             finally { reader.BaseStream.Position = position; }
         }
 
-        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader)
+        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, IntPtr processHandle)
         {
             if (version == null)
                 return false;
@@ -353,27 +356,60 @@ namespace SleepHunter.Models
                 if (baseCooldownPointer != IntPtr.Zero)
                     return true;
 
-                var ptrs = scanner.FindAllUInt32((uint)cooldownVariable.Address).ToList();
-                var firstMatch = ptrs.FirstOrDefault();
+                var ptrs = scanner.FindAllUInt32((uint)cooldownVariable.Address)
+                    .Select(ptr =>
+                    {
+                        if (cooldownVariable.Offset.IsNegative)
+                            ptr = (IntPtr)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
+                        else
+                            ptr = (IntPtr)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
 
-                if (firstMatch == IntPtr.Zero)
-                    return false;
+                        return ptr;
+                    })
+                    .Where(ptr => IsReadableMemory(processHandle, ptr))
+                    .ToList();
+                    
 
-                if (cooldownVariable.Offset.IsNegative)
-                    firstMatch = (IntPtr)((uint)firstMatch - (uint)cooldownVariable.Offset.Offset);
-                else
-                    firstMatch = (IntPtr)((uint)firstMatch + (uint)cooldownVariable.Offset.Offset);
+                foreach (var ptr in ptrs)
+                {
+                    if (ptr == IntPtr.Zero)
+                        continue;
 
-                var address = (long)firstMatch;
+                    reader.BaseStream.Position = ptr;
+                    var cooldownPtr = reader.ReadUInt32();
 
-                reader.BaseStream.Position = address;
-                address = reader.ReadUInt32();
+                    if (cooldownPtr == 0 || !IsReadableMemory(processHandle, cooldownPtr))
+                        continue;
 
-                baseCooldownPointer = (IntPtr)address;
-                return true;
+                    baseCooldownPointer = (IntPtr)cooldownPtr;
+                    Debug.WriteLine($"Found cooldown timers pointer = {cooldownPtr:X}");
+                    return true;
+                }
+
+                return false;
             }
             catch { baseCooldownPointer = IntPtr.Zero; return false; }
             finally { reader.BaseStream.Position = position; }
+        }
+
+        static bool IsReadableMemory(IntPtr processHandle, long address)
+        {
+            if (address <= 0)
+                return false;
+
+            var sizeOfMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
+            var byteCount = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out var memoryInfo, sizeOfMemoryInfo);
+
+            if (byteCount <= 0)
+                return false;
+
+            if (memoryInfo.Type != VirtualMemoryType.Private)
+                return false;
+
+            if (memoryInfo.State == VirtualMemoryStatus.Free)
+                return false;
+
+            return true;
         }
 
         #region IEnumerable Methods

@@ -11,8 +11,9 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryScanner : IDisposable
     {
-        static readonly uint MinimumVmAddress = 0x0040_0000;
-        static readonly uint MaximumVmAddress = 0xFFFF_FFFF;
+        const int DefaultPageSize = 0x1000; 
+        const uint MinimumVmAddress = 0x0040_0000;
+        const uint MaximumVmAddress = 0xFFFF_FFFF;
 
         bool isDisposed;
         IntPtr processHandle;
@@ -35,6 +36,9 @@ namespace SleepHunter.IO.Process
 
             NativeMethods.GetNativeSystemInfo(out var sysInfo);
             pageSize = (int)sysInfo.PageSize;
+
+            if (pageSize <= 0)
+                pageSize = DefaultPageSize;
 
             searchBuffer = new byte[pageSize];
         }
@@ -174,8 +178,7 @@ namespace SleepHunter.IO.Process
 
                     for (int i = 0; i < numberOfPages; i++)
                     {
-                        int numberOfBytesRead;
-                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * pageSize), searchBuffer, searchBuffer.Length, out numberOfBytesRead);
+                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * pageSize), searchBuffer, searchBuffer.Length, out var numberOfBytesRead);
 
                         if (!result || numberOfBytesRead != searchBuffer.Length)
                             throw new Win32Exception("Unable to read memory page from process.");
