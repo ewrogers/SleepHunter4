@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -166,6 +165,11 @@ namespace SleepHunter.Models
             activeSkills.Clear();
         }
 
+        public void ResetCooldownPointer()
+        {
+            baseCooldownPointer = IntPtr.Zero;
+        }
+
         public void Update()
         {
             if (owner == null)
@@ -177,7 +181,7 @@ namespace SleepHunter.Models
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 
@@ -349,17 +353,18 @@ namespace SleepHunter.Models
                 if (baseCooldownPointer != IntPtr.Zero)
                     return true;
 
-                var ptr = scanner.FindUInt32((uint)cooldownVariable.Address);
+                var ptrs = scanner.FindAllUInt32((uint)cooldownVariable.Address).ToList();
+                var firstMatch = ptrs.FirstOrDefault();
 
-                if (ptr == IntPtr.Zero)
+                if (firstMatch == IntPtr.Zero)
                     return false;
 
                 if (cooldownVariable.Offset.IsNegative)
-                    ptr = (IntPtr)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
+                    firstMatch = (IntPtr)((uint)firstMatch - (uint)cooldownVariable.Offset.Offset);
                 else
-                    ptr = (IntPtr)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
+                    firstMatch = (IntPtr)((uint)firstMatch + (uint)cooldownVariable.Offset.Offset);
 
-                var address = (long)ptr;
+                var address = (long)firstMatch;
 
                 reader.BaseStream.Position = address;
                 address = reader.ReadUInt32();

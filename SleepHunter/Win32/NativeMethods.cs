@@ -110,5 +110,8 @@ namespace SleepHunter.Win32
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetPhysicallyInstalledSystemMemory(out long totalMemoryKilobytes);
+
+        [DllImport("kernel32.dll")]
+        internal static extern void GetNativeSystemInfo(out SystemInfo systemInfo);
     }
 }

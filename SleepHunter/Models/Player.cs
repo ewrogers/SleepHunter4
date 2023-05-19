@@ -67,6 +67,9 @@ namespace SleepHunter.Models
         bool hasFasSpiorad;
         DateTime lastFlowerTimestamp;
 
+        public event EventHandler LoggedIn;
+        public event EventHandler LoggedOut;
+
         public ClientProcess Process
         {
             get { return process; }
@@ -193,7 +196,7 @@ namespace SleepHunter.Models
         public Hotkey Hotkey
         {
             get { return hotkey; }
-            set { SetProperty(ref hotkey, value, onChanged: (playerClass) => { RaisePropertyChanged("HotkeyStrike"); RaisePropertyChanged("HasHotkey"); }); }
+            set { SetProperty(ref hotkey, value, onChanged: (playerClass) => { RaisePropertyChanged("HotkeyStrike"); RaisePropertyChanged(nameof(HasHotkey)); }); }
         }
 
         public bool HasHotkey
@@ -252,7 +255,7 @@ namespace SleepHunter.Models
         public DateTime LastFlowerTimestamp
         {
             get { return lastFlowerTimestamp; }
-            set { SetProperty(ref lastFlowerTimestamp, value, onChanged: (p) => { RaisePropertyChanged("TimeSinceFlower"); }); }
+            set { SetProperty(ref lastFlowerTimestamp, value, onChanged: (p) => { RaisePropertyChanged(nameof(TimeSinceFlower)); }); }
         }
 
         public TimeSpan TimeSinceFlower
@@ -270,8 +273,6 @@ namespace SleepHunter.Models
 
             if (NativeMethods.GetProcessTimes(accessor.ProcessHandle, out var creationTime, out _, out _, out _))
                 process.CreationTime = creationTime.FiletimeToDateTime();
-            else
-                throw new Exception("What");
 
             inventory = new Inventory(this);
             equipment = new EquipmentSet(this);
@@ -316,6 +317,8 @@ namespace SleepHunter.Models
         public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
         {
             GameClient.VersionKey = Version?.Key ?? "Unknown";
+
+            var wasLoggedIn = IsLoggedIn;
 
             try
             {
@@ -363,12 +366,19 @@ namespace SleepHunter.Models
             {
                 IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
             }
+
+            var isNowLoggedIn = IsLoggedIn;
+
+            if (isNowLoggedIn && !wasLoggedIn)
+                OnLoggedIn();
+            else if (wasLoggedIn && !isNowLoggedIn)
+                OnLoggedOut();
         }
 
         void UpdateName(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             string name = null;
 
@@ -396,19 +406,32 @@ namespace SleepHunter.Models
         void UpdateGuild(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
 
         void UpdateGuildRank(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
         }
 
         void UpdateTitle(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
+        }
+
+        void OnLoggedIn()
+        {
+            LoggedIn?.Invoke(this, EventArgs.Empty);
+        }
+
+        void OnLoggedOut()
+        {
+            // This memory gets re-allocated when a new character logs into the same client instance
+            skillbook.ResetCooldownPointer();
+
+            LoggedOut?.Invoke(this, EventArgs.Empty);
         }
 
         public override string ToString()

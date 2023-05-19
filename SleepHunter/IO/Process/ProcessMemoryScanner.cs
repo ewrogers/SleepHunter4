@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,13 +11,13 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryScanner : IDisposable
     {
-        static readonly int PageSize = 64 * 1024;
         static readonly uint MinimumVmAddress = 0x0040_0000;
         static readonly uint MaximumVmAddress = 0xFFFF_FFFF;
 
         bool isDisposed;
         IntPtr processHandle;
         bool leaveOpen;
+        int pageSize;
         byte[] internalBuffer = new byte[8];
         byte[] internalStringBuffer = new byte[256];
         byte[] searchBuffer;
@@ -31,7 +33,10 @@ namespace SleepHunter.IO.Process
             this.processHandle = processHandle;
             this.leaveOpen = leaveOpen;
 
-            searchBuffer = new byte[PageSize];
+            NativeMethods.GetNativeSystemInfo(out var sysInfo);
+            pageSize = (int)sysInfo.PageSize;
+
+            searchBuffer = new byte[pageSize];
         }
 
         #region IDisposable Methods
@@ -117,6 +122,16 @@ namespace SleepHunter.IO.Process
             return Find(internalBuffer, 8, startingAddress, endingAddress);
         }
 
+        public IEnumerable<IntPtr> FindAllUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
+        {
+            internalBuffer[0] = (byte)(value);
+            internalBuffer[1] = (byte)(value >> 8);
+            internalBuffer[2] = (byte)(value >> 16);
+            internalBuffer[3] = (byte)(value >> 24);
+
+            return FindAll(internalBuffer, 4, startingAddress, endingAddress);
+        }
+
         public IntPtr FindString(string value, long startingAddress = 0, long endingAddress = 0)
         {
             if (value.Length >= internalStringBuffer.Length)
@@ -126,7 +141,9 @@ namespace SleepHunter.IO.Process
             return Find(internalStringBuffer, value.Length, startingAddress, endingAddress);
         }
 
-        public IntPtr Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
+        public IntPtr Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0) => FindAll(bytes, size, startingAddress, endingAddress).FirstOrDefault();
+
+        public IEnumerable<IntPtr> FindAll(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
         {
             var start = startingAddress;
             var end = endingAddress;
@@ -153,12 +170,12 @@ namespace SleepHunter.IO.Process
 
                 if (memoryInfo.Type == VirtualMemoryType.Private && memoryInfo.State == VirtualMemoryStatus.Commit && memoryInfo.Protect == VirtualMemoryProtection.ReadWrite)
                 {
-                    var numberOfPages = memoryInfo.RegionSize / PageSize;
+                    var numberOfPages = Math.Ceiling((float)memoryInfo.RegionSize / pageSize);
 
                     for (int i = 0; i < numberOfPages; i++)
                     {
                         int numberOfBytesRead;
-                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * PageSize), searchBuffer, (IntPtr)searchBuffer.Length, out numberOfBytesRead);
+                        var result = NativeMethods.ReadProcessMemory(processHandle, memoryInfo.BaseAddress + (i * pageSize), searchBuffer, searchBuffer.Length, out numberOfBytesRead);
 
                         if (!result || numberOfBytesRead != searchBuffer.Length)
                             throw new Win32Exception("Unable to read memory page from process.");
@@ -166,14 +183,12 @@ namespace SleepHunter.IO.Process
                         var index = IndexOfSequence(searchBuffer, bytes, size);
 
                         if (index >= 0)
-                            return (IntPtr)memoryInfo.BaseAddress + (i * PageSize) + index;
+                            yield return memoryInfo.BaseAddress + (i * pageSize) + index;
                     }
                 }
 
                 address = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-
-            return IntPtr.Zero;
         }
 
         static int IndexOfSequence(byte[] sourceArray, byte[] patternArray, int patternSize)
