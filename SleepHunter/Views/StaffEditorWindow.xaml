@@ -26,8 +26,7 @@
         <TextBlock Text="Staff Name:"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <TextBox Name="nameTextBox" 
                  Grid.Column="1" 
@@ -41,8 +40,7 @@
                    Grid.Row="1"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <ctl:NumericUpDown x:Name="levelUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"

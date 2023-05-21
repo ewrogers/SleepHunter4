@@ -149,6 +149,8 @@
         <Setter Property="Height" Value="1"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
     </Style>
 
     <!-- Normal Text Style -->
@@ -159,6 +161,8 @@
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="8,4"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
     </Style>
 
     <!-- Symbol Text Style -->
@@ -169,6 +173,8 @@
         <Setter Property="FontWeight" Value="Regular"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="2"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
     </Style>
 
     <!-- Hyperlink Text Style -->
@@ -181,6 +187,8 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="8,4"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="True"/>
     </Style>
 
     <!-- Command Label Style -->
@@ -188,6 +196,8 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianInactive}"/>
         <Setter Property="Margin" Value="4"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
     </Style>
 
     <!-- Scroll Viewer Style -->
@@ -314,6 +324,8 @@
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -561,6 +573,8 @@
         <Setter Property="MinHeight" Value="16"/>
         <Setter Property="Delay" Value="500"/>
         <Setter Property="Interval" Value="100"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">

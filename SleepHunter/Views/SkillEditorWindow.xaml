@@ -29,8 +29,7 @@
         <TextBlock Text="Skill Name:"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <TextBox Name="nameTextBox" 
                  Grid.Column="1" 
@@ -43,8 +42,7 @@
                    Grid.Row="1"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <TextBox Name="groupNameTextBox" 
                  Grid.Row="1"
@@ -58,8 +56,7 @@
                    Grid.Row="2"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <ctl:NumericUpDown x:Name="manaUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
@@ -75,8 +72,7 @@
                    Grid.Row="3"
                    Style="{StaticResource ObsidianText}"
                    TextAlignment="Right"
-                   FontSize="18"
-                   Focusable="False"/>
+                   FontSize="18"/>
 
         <TextBox Name="cooldownTextBox" 
                  Grid.Row="3"

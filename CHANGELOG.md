@@ -4,12 +4,19 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.5.5] - 2023-05-19
+## [4.5.5] - 2023-05-21
 
 ### Added
 
 - Many missing spells for Temuair
 - Many missing spells for Medenia (AB50+)
+- Many missing skills for Temuair
+- Many missing skills for Medenia (AB50+)
+
+### Fixed
+
+- Spell lines and mana costs for some spells
+- Keyboard navigation via tab in some UI elements
 
 ## [4.5.4] - 2023-05-19
 

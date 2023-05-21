@@ -292,15 +292,15 @@
     <Spell Name="puinsein" Class="Priest" Group="puinsein" Mana="160" Lines="3" />
     <Spell Name="Reflection" Class="Priest" Mana="1000" Lines="8" Cooldown="40" />
     <Spell Name="Regeneration 1" Class="Priest" Group="Regeneration" Mana="1220" />
-    <Spell Name="Regeneration 10" Class="Priest" Group="Regeneration" Mana="7720" Lines="2" />
+    <Spell Name="Regeneration 10" Class="Priest" Group="Regeneration" Mana="7720" />
     <Spell Name="Regeneration 2" Class="Priest" Group="Regeneration" Mana="1520" />
     <Spell Name="Regeneration 3" Class="Priest" Group="Regeneration" Mana="2020" />
     <Spell Name="Regeneration 4" Class="Priest" Group="Regeneration" Mana="2720" />
     <Spell Name="Regeneration 5" Class="Priest" Group="Regeneration" Mana="3420" />
     <Spell Name="Regeneration 6" Class="Priest" Group="Regeneration" Mana="4020" />
     <Spell Name="Regeneration 7" Class="Priest" Group="Regeneration" Mana="4720" />
-    <Spell Name="Regeneration 8" Class="Priest" Group="Regeneration" Mana="5720" Lines="2" />
-    <Spell Name="Regeneration 9" Class="Priest" Group="Regeneration" Mana="6720" Lines="2" />
+    <Spell Name="Regeneration 8" Class="Priest" Group="Regeneration" Mana="5720" />
+    <Spell Name="Regeneration 9" Class="Priest" Group="Regeneration" Mana="6720" />
     <Spell Name="Roar" Class="Monk" Mana="100" Lines="1" />
     <Spell Name="sal" Class="Wizard" Group="sal" Mana="200" Lines="2" />
     <Spell Name="sal gar" Class="Wizard" Group="sal" Mana="8160" Lines="4" />
