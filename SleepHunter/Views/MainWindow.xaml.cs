@@ -33,7 +33,11 @@ namespace SleepHunter.Views
 {
     public partial class MainWindow : Window, IDisposable
     {
-        private static readonly int WM_HOTKEY = 0x312;
+        private const string DirectDrawPatchFile = "ddraw.dll";
+        private const string DirectDrawConfigFile = "DDrawCompatOverlay-Darkages.ini";
+
+        private const int WM_HOTKEY = 0x312;
+
         private enum ClientLoadResult
         {
             Success = 0,
@@ -239,6 +243,16 @@ namespace SleepHunter.Views
         {
             result = ClientLoadResult.Success;
 
+            try
+            {
+                if (UserSettingsManager.Instance.Settings.DirectDrawFix)
+                    ApplyDirectDrawFix(clientPath);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"Unable to apply direct draw fix: {e.Message}");
+            }
+
             // Create Process
             var startupInfo = new StartupInfo { Size = Marshal.SizeOf(typeof(StartupInfo)) };
 
@@ -271,6 +285,49 @@ namespace SleepHunter.Views
             }
 
             return processInformation;
+        }
+
+        private void ApplyDirectDrawFix(string clientPath)
+        {
+            var clientFolder = Path.GetDirectoryName(clientPath);
+            var sourceDllFile = Path.Combine(Environment.CurrentDirectory, DirectDrawPatchFile);
+            var sourceConfigFile = Path.Combine(Environment.CurrentDirectory, DirectDrawConfigFile);
+
+            var destinationDllFile = Path.Combine(clientFolder, DirectDrawPatchFile);
+            var destinationConfigFile = Path.Combine(clientFolder, DirectDrawConfigFile);
+
+            if (!File.Exists(sourceDllFile))
+            {
+                logger.LogInfo($"No {DirectDrawPatchFile} file, not applying compatibility fix");
+                return;
+            }
+
+            if (!File.Exists(destinationDllFile))
+            {
+                logger.LogInfo("Copying direct draw compatibility fix...");
+                File.Copy(sourceDllFile, destinationDllFile);
+            }
+            else
+            {
+                logger.LogInfo("Direct draw compatibility fix already exists, not overriding");
+            }
+
+            if (File.Exists(sourceConfigFile))
+            {
+                if (!File.Exists(destinationConfigFile))
+                {
+                    logger.LogInfo("Copying direct draw compatibility config...");
+                    File.Copy(sourceConfigFile, destinationConfigFile);
+                }
+                else
+                {
+                    logger.LogInfo("Direct draw compatibility config already exists, not overriding");
+                }
+            }
+            else
+            {
+                logger.LogWarn("Direct draw compatibility config not found, unable to copy");
+            }
         }
 
         private void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
