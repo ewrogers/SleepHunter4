@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `DirectDrawCompatibilityFix` option for fixing flickering mouse cursor ([DDrawCompat](https://github.com/narzoul/DDrawCompat) repo)
 
+### Changed
+
+- `UserSettings` are now version `1.4`
 
 ## [4.5.5] - 2023-05-21
 

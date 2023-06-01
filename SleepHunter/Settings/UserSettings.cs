@@ -12,7 +12,7 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.3";
+        public static readonly string CurrentVersion = "1.4";
 
         private bool isDebugMode;
         private string version;
@@ -22,6 +22,7 @@ namespace SleepHunter.Settings
         private TimeSpan clientUpdateInterval;
         private bool saveMacroStates;
         private string selectedTheme;
+
         private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
         private double skillIconSize;
         private int skillGridWidth;
@@ -32,6 +33,7 @@ namespace SleepHunter.Settings
         private bool showSkillLevels;
         private bool showSpellNames;
         private bool showSpellLevels;
+
         private string clientPath;
         private string iconDataFile;
         private string paletteDataFile;
@@ -39,16 +41,21 @@ namespace SleepHunter.Settings
         private string skillPaletteFile;
         private string spellIconFile;
         private string spellPaletteFile;
+
         private string selectedVersion;
-        private bool allowMultipleInstances;
-        private bool skipintroVideo;
-        private bool noWalls;
+        private bool directDrawFix = true;
+        private bool allowMultipleInstances = true;
+        private bool skipintroVideo = true;
+        private bool noWalls = false;
+
         private MacroAction mapChangeAction;
         private MacroAction coordsChangeAction;
+
         private bool useShiftForMedeniaPane;
         private bool preserveUserPanel;
         private bool useSpaceForAssail;
         private bool disarmForAssails;
+
         private SpellRotationMode spellRotationMode;
         private TimeSpan zeroLineDelay;
         private TimeSpan singleLineDelay;
@@ -59,6 +66,7 @@ namespace SleepHunter.Settings
         private bool requireManaForSpells;
         private bool allowStaffSwitching;
         private bool warnOnDuplicateSpells;
+
         private bool flowerAltsFirst;
         private bool flowerBeforeSpellMacros;
         private bool flowerHasMinimum;
@@ -87,7 +95,7 @@ namespace SleepHunter.Settings
         public TimeSpan ProcessUpdateInterval
         {
             get { return processUpdateInterval; }
-            set { SetProperty(ref processUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged("ProcessUpdateIntervalSeconds"); }); }
+            set { SetProperty(ref processUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ProcessUpdateIntervalSeconds)); }); }
         }
 
         [XmlElement("ProcessUpdateInterval")]
@@ -101,7 +109,7 @@ namespace SleepHunter.Settings
         public TimeSpan ClientUpdateInterval
         {
             get { return clientUpdateInterval; }
-            set { SetProperty(ref clientUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged("ClientUpdateIntervalSeconds"); }); }
+            set { SetProperty(ref clientUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ClientUpdateIntervalSeconds)); }); }
         }
 
         [XmlElement("ClientUpdateInterval")]
@@ -279,6 +287,13 @@ namespace SleepHunter.Settings
         {
             get { return selectedVersion; }
             set { SetProperty(ref selectedVersion, value); }
+        }
+
+        [XmlElement("DirectDrawFix")]
+        public bool DirectDrawFix
+        {
+            get { return directDrawFix; }
+            set { SetProperty(ref directDrawFix, value); }
         }
 
         [XmlElement("AllowMultipleInstances")]
