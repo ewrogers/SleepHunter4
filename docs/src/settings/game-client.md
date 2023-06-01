@@ -16,6 +16,13 @@ The default is `Auto-Detect` and will automatically detect the version of the Da
 
 You should not change this unless you are using a custom Dark Ages game client.
 
+## DirectDraw Compatibility Fix
+
+This setting will copy a patched `ddraw.dll` from the [DDrawCompat](https://github.com/narzoul/DDrawCompat) repo into the client folder.
+By default this is `Enabled` for x86/x64 operating systems.
+
+This fixes the flickering mouse cursor issue on modern computers.
+
 ## Allow Multiple Instances
 
 This setting determines when the "multiple instances" patch should be applied when the Dark Ages game client is started.

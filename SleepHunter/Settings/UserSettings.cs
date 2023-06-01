@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 
 using SleepHunter.Common;
@@ -499,7 +500,12 @@ namespace SleepHunter.Settings
             set { SetProperty(ref showAllProcesses, value); }
         }
 
-        public UserSettings() { }
+        public UserSettings()
+        {
+            // The DirectDraw patch may not work properly on non-x86 operating systems, disable by default for ARM
+            var osArch = RuntimeInformation.OSArchitecture;
+            directDrawFix = osArch == Architecture.X86 || osArch == Architecture.X64;
+        }
 
         public static UserSettings CreateDefaults()
         {
@@ -510,6 +516,8 @@ namespace SleepHunter.Settings
 
         public void ResetDefaults()
         {
+            var osArch = RuntimeInformation.OSArchitecture;
+
             Version = CurrentVersion;
 
             ProcessUpdateInterval = TimeSpan.FromSeconds(1);
@@ -537,6 +545,8 @@ namespace SleepHunter.Settings
             SpellPaletteFile = "gui06.pal";
 
             SelectedVersion = "Auto-Detect";
+            // The DirectDraw patch may not work properly on non-x86 operating systems, disable by default for ARM
+            DirectDrawFix = osArch == Architecture.X86 || osArch == Architecture.X64;
             AllowMultipleInstances = true;
             SkipIntroVideo = true;
             NoWalls = false;
