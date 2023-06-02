@@ -10,45 +10,28 @@ namespace SleepHunter.IO.Process
 {
     public sealed class ProcessManager
     {
-        #region Singleton
-        static readonly ProcessManager instance = new ProcessManager();
+        private const string WindowClassName = "DarkAges";
 
-        public static ProcessManager Instance { get { return instance; } }
+        private static readonly ProcessManager instance = new();
+        public static ProcessManager Instance => instance;
 
         private ProcessManager() { }
-        #endregion
 
-        ConcurrentDictionary<int, ClientProcess> clientProcesses = new ConcurrentDictionary<int, ClientProcess>();
-        ConcurrentQueue<ClientProcess> deadClients = new ConcurrentQueue<ClientProcess>();
-        ConcurrentQueue<ClientProcess> newClients = new ConcurrentQueue<ClientProcess>();
+        private readonly ConcurrentDictionary<int, ClientProcess> clientProcesses = new();
+        private readonly ConcurrentQueue<ClientProcess> deadClients = new();
+        private readonly ConcurrentQueue<ClientProcess> newClients = new();
 
         public event ClientProcessEventHandler ProcessCreated;
         public event ClientProcessEventHandler ProcessTerminated;
 
-        #region Client Process Properties
-        public int ActiveClientCount { get { return clientProcesses.Count; } }
+        public int ActiveClientCount => clientProcesses.Count;
+        public int DeadClientCount => deadClients.Count;
+        public int NewClientCount => newClients.Count;
 
-        public int DeadClientCount { get { return deadClients.Count; } }
+        public IEnumerable<ClientProcess> ActiveClients => from a in clientProcesses.Values select a;
+        public IEnumerable<ClientProcess> DeadClients => from d in deadClients select d;
+        public IEnumerable<ClientProcess> NewClients => from n in newClients select n;
 
-        public int NewClientCount { get { return newClients.Count; } }
-
-        public IEnumerable<ClientProcess> ActiveClients
-        {
-            get { return from a in clientProcesses.Values select a; }
-        }
-
-        public IEnumerable<ClientProcess> DeadClients
-        {
-            get { return from d in deadClients select d; }
-        }
-
-        public IEnumerable<ClientProcess> NewClients
-        {
-            get { return from n in newClients select n; }
-        }
-        #endregion
-
-        #region Queue Methods
         public void EnqueueDeadClient(ClientProcess process)
         {
             deadClients.Enqueue(process);
@@ -63,48 +46,31 @@ namespace SleepHunter.IO.Process
 
         public ClientProcess PeekDeadClient()
         {
-            ClientProcess process = null;
-            deadClients.TryPeek(out process);
-
+            deadClients.TryPeek(out var process);
             return process;
         }
 
         public ClientProcess PeekNewClient()
         {
-            ClientProcess process = null;
-            newClients.TryPeek(out process);
-
+            newClients.TryPeek(out var process);
             return process;
         }
 
         public ClientProcess DequeueDeadClient()
         {
-            ClientProcess process = null;
-            deadClients.TryDequeue(out process);
-
+            deadClients.TryDequeue(out var process);
             return process;
         }
 
         public ClientProcess DequeueNewClient()
         {
-            ClientProcess process = null;
-            newClients.TryDequeue(out process);
-
+            newClients.TryDequeue(out var process);
             return process;
         }
 
-        public void ClearDeadClients()
-        {
-            deadClients = new ConcurrentQueue<ClientProcess>();
-        }
+        public void ClearDeadClients() => deadClients.Clear();
+        public void ClearNewClients() => newClients.Clear();
 
-        public void ClearNewClients()
-        {
-            newClients = new ConcurrentQueue<ClientProcess>();
-        }
-        #endregion
-
-        #region Scan Methods
         public void ScanForProcesses(Action<ClientProcess> enumProcessCallback = null)
         {
             var foundClients = new Dictionary<int, ClientProcess>();
@@ -122,7 +88,7 @@ namespace SleepHunter.IO.Process
                 var className = classNameBuffer.ToString();
 
                 // Check Class Name (DA)
-                if (!string.Equals("DarkAges", className, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(WindowClassName, className, StringComparison.OrdinalIgnoreCase))
                     return true;
 
                 // Get Window Title
@@ -157,11 +123,9 @@ namespace SleepHunter.IO.Process
             // Find Dead Clients
             foreach (var client in clientProcesses.Values.ToArray())
             {
-                ClientProcess process;
-
                 if (!foundClients.ContainsKey(client.ProcessId))
                 {
-                    clientProcesses.TryRemove(client.ProcessId, out process);
+                    clientProcesses.TryRemove(client.ProcessId, out var process);
                     EnqueueDeadClient(client);
                 }
             }
@@ -176,13 +140,11 @@ namespace SleepHunter.IO.Process
                 }
             }
         }
-        #endregion
 
-        #region Event Handler Methods
         void OnProcessCreated(ClientProcess process)
         {
             if (process == null)
-                throw new ArgumentNullException("process");
+                throw new ArgumentNullException(nameof(process));
 
             ProcessCreated?.Invoke(this, new ClientProcessEventArgs(process));
         }
@@ -190,10 +152,9 @@ namespace SleepHunter.IO.Process
         void OnProcessTerminated(ClientProcess process)
         {
             if (process == null)
-                throw new ArgumentNullException("process");
+                throw new ArgumentNullException(nameof(process));
 
             ProcessTerminated?.Invoke(this, new ClientProcessEventArgs(process));
         }
-        #endregion
     }
 }

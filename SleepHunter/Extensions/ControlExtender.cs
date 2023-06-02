@@ -8,10 +8,10 @@ namespace SleepHunter.Extensions
         public static T FindItem<T>(this ItemsControl control, Func<T, bool> selector) where T : class
         {
             if (control == null)
-                throw new ArgumentNullException("control");
+                throw new ArgumentNullException(nameof(control));
 
             if (selector == null)
-                throw new ArgumentNullException("selector");
+                throw new ArgumentNullException(nameof(selector));
 
             foreach (T item in control.Items)
             {

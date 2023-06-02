@@ -11,18 +11,18 @@ namespace SleepHunter.IO
 {
     public sealed class FileArchive : IDisposable
     {
-        static readonly int NameLength = 13;
+        private const int NameLength = 13;
 
-        bool isDisposed;
-        readonly Dictionary<string, FileArchiveEntry> entries = new Dictionary<string, FileArchiveEntry>(StringComparer.OrdinalIgnoreCase);
-        readonly FileStream fileStream;
-        readonly MemoryMappedFile mappedFile;
+        private bool isDisposed;
+        private readonly Dictionary<string, FileArchiveEntry> entries = new(StringComparer.OrdinalIgnoreCase);
+        private readonly FileStream fileStream;
+        private readonly MemoryMappedFile mappedFile;
 
         public string Name { get; private set; }
 
-        public int Count { get { return entries.Count; } }
+        public int Count => entries.Count;
 
-        public IEnumerable<FileArchiveEntry> Entries { get { return from e in entries.Values select e; } }
+        public IEnumerable<FileArchiveEntry> Entries => from e in entries.Values select e;
 
         public FileArchive(string filename)
         {

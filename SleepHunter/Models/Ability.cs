@@ -166,8 +166,8 @@ namespace SleepHunter.Models
                 return false;
 
             name = match.Groups["name"].Value.Trim();
-            int.TryParse(match.Groups["current"].Value, out currentLevel);
-            int.TryParse(match.Groups["max"].Value, out maximumLevel);
+            _ = int.TryParse(match.Groups["current"].Value, out currentLevel);
+            _ = int.TryParse(match.Groups["max"].Value, out maximumLevel);
 
             return true;
         }

@@ -7,28 +7,28 @@ namespace SleepHunter.IO.Process
     [Serializable]
     public class SearchMemoryVariable : DynamicMemoryVariable
     {
-        protected MemoryOffset offset = new MemoryOffset();
+        protected MemoryOffset offset = new();
 
         [XmlIgnore]
         public MemoryOffset Offset
         {
-            get { return offset; }
-            private set { offset = value; }
+            get => offset;
+            private set => offset = value;
         }
 
         [XmlAttribute("Offset")]
         public string OffsetString
         {
-            get { return offset.OffsetHex; }
-            set { offset.OffsetHex = value; }
+            get => offset.OffsetHex;
+            set => offset.OffsetHex = value;
         }
 
         [XmlAttribute("IsNegative")]
         [DefaultValue(false)]
         public bool IsOffsetNegative
         {
-            get { return offset.IsNegative; }
-            set { offset.IsNegative = value; }
+            get => offset.IsNegative;
+            set => offset.IsNegative = value;
         }
 
         public SearchMemoryVariable()

@@ -6,13 +6,11 @@ namespace SleepHunter.IO.Process
 
     public sealed class ClientProcessEventArgs : EventArgs
     {
-        readonly ClientProcess process;
-
-        public ClientProcess Process { get { return process; } }
+        public ClientProcess Process { get; }
 
         public ClientProcessEventArgs(ClientProcess process)
         {
-            this.process = process;
+            Process = process;
         }
     }
 }
