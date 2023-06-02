@@ -724,6 +724,8 @@ namespace SleepHunter.Macro
                     client.Status = null;
                     break;
             }
+
+            RaisePropertyChanged(nameof(Status));
         }
 
         private bool FlowerNextAltWaitingForMana()
