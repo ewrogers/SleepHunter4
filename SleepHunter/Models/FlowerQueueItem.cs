@@ -141,11 +141,11 @@ namespace SleepHunter.Models
         {
             intervalRemaining -= deltaTime;
 
-            RaisePropertyChanged("ElapsedTime");
-            RaisePropertyChanged("ElapsedTimeSeconds");
-            RaisePropertyChanged("RemainingTime");
-            RaisePropertyChanged("RemainingTimeSeconds");
-            RaisePropertyChanged("IsReady");
+            RaisePropertyChanged(nameof(ElapsedTime));
+            RaisePropertyChanged(nameof(ElapsedTimeSeconds));
+            RaisePropertyChanged(nameof(RemainingTime));
+            RaisePropertyChanged(nameof(RemainingTimeSeconds));
+            RaisePropertyChanged(nameof(IsReady));
         }
 
         public void CopyTo(FlowerQueueItem other)

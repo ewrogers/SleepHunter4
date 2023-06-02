@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -21,6 +20,8 @@ namespace SleepHunter.Models
         int y;
         string mapName;
         string mapHash;
+
+        public event EventHandler LocationUpdated;
 
         public Player Owner
         {
@@ -88,12 +89,13 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            LocationUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

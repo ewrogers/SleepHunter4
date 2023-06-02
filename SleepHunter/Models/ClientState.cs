@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -10,12 +9,12 @@ namespace SleepHunter.Models
 {
     public sealed class ClientState : ObservableObject
     {
-        static readonly string ActivePanelKey = @"ActivePanel";
-        static readonly string InventoryExpandedKey = @"InventoryExpanded";
-        static readonly string MinimizedModeKey = @"MinimizedMode";
-        static readonly string DialogOpenKey = @"DialogOpen";
-        static readonly string SenseOpenKey = @"SenseOpen";
-        static readonly string UserChattingKey = @"UserChatting";
+        const string ActivePanelKey = @"ActivePanel";
+        const string InventoryExpandedKey = @"InventoryExpanded";
+        const string MinimizedModeKey = @"MinimizedMode";
+        const string DialogOpenKey = @"DialogOpen";
+        const string SenseOpenKey = @"SenseOpen";
+        const string UserChattingKey = @"UserChatting";
 
         Player owner;
         string versionKey;
@@ -25,6 +24,8 @@ namespace SleepHunter.Models
         bool isDialogOpen;
         bool isSenseOpen;
         bool isUserChatting;
+
+        public event EventHandler DidUpdate;
 
         public Player Owner
         {
@@ -88,12 +89,13 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            DidUpdate?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

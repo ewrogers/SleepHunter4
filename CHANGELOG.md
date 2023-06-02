@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - DirectDraw compatbility fix is now a manual Apply/Revert button in `Game Client` settings
 - Small UI tweaks on character list text spacing
+- Adjusted min size on the character list to accomodate new status icon
 
 ### Fixed
 

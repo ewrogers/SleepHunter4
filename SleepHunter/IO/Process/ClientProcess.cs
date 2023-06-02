@@ -16,6 +16,8 @@ namespace SleepHunter.IO.Process
         int windowHeight = 480;
         DateTime creationTime;
 
+        public event EventHandler ProcessUpdated;
+
         public int ProcessId
         {
             get { return processId; }
@@ -85,6 +87,8 @@ namespace SleepHunter.IO.Process
                 WindowWidth = clientRect.Width;
                 WindowHeight = clientRect.Height;
             }
+
+            ProcessUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

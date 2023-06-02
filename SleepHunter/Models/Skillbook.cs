@@ -12,7 +12,6 @@ using SleepHunter.IO.Process;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Settings;
-using System.Net;
 using SleepHunter.Win32;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -35,6 +34,8 @@ namespace SleepHunter.Models
 
         ProcessMemoryScanner scanner;
         IntPtr baseCooldownPointer;
+
+        public event EventHandler SkillbookUpdated;
 
         public Player Owner
         {
@@ -180,6 +181,7 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            SkillbookUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)

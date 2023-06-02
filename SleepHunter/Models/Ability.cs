@@ -10,7 +10,7 @@ namespace SleepHunter.Models
 
     public abstract class Ability : ObservableObject
     {
-        static readonly Regex TrimLevelRegex = new Regex(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
+        static readonly Regex TrimLevelRegex = new(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
 
         bool isEmpty;
         int slot;
@@ -38,7 +38,7 @@ namespace SleepHunter.Models
             get { return slot; }
             set
             {
-                SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged("RelativeSlot"); });
+                SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged(nameof(RelativeSlot)); });
             }
         }
 
@@ -52,7 +52,7 @@ namespace SleepHunter.Models
             get { return panel; }
             set
             {
-                SetProperty(ref panel, value, onChanged: (s) => { RaisePropertyChanged("IsSkill"); RaisePropertyChanged("IsSpell"); });
+                SetProperty(ref panel, value, onChanged: (s) => { RaisePropertyChanged(nameof(IsSkill)); RaisePropertyChanged(nameof(IsSpell)); });
             }
         }
 

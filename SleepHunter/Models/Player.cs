@@ -70,6 +70,7 @@ namespace SleepHunter.Models
         bool hasFasSpiorad;
         DateTime lastFlowerTimestamp;
 
+        public event EventHandler PlayerUpdated;
         public event EventHandler LoggedIn;
         public event EventHandler LoggedOut;
 
@@ -394,6 +395,8 @@ namespace SleepHunter.Models
                 OnLoggedIn();
             else if (wasLoggedIn && !isNowLoggedIn)
                 OnLoggedOut();
+
+            PlayerUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         void UpdateName(ProcessMemoryAccessor accessor)
@@ -428,18 +431,24 @@ namespace SleepHunter.Models
         {
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
+
+            // Not currently implemented
         }
 
         void UpdateGuildRank(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
+
+            // Not currently implemented
         }
 
         void UpdateTitle(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
+
+            // Not currently implemented
         }
 
         void OnLoggedIn()

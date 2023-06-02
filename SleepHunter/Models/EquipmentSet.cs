@@ -35,12 +35,14 @@ namespace SleepHunter.Models
 
     public sealed class EquipmentSet : IEnumerable<InventoryItem>
     {
-        static readonly string EquipmentKey = @"Equipment";
+        const string EquipmentKey = @"Equipment";
 
-        public static readonly int EquipmentCount = 18;
+        public const int EquipmentCount = 18;
 
         Player owner;
-        List<InventoryItem> equipment = new List<InventoryItem>(EquipmentCount);
+        readonly List<InventoryItem> equipment = new(EquipmentCount);
+
+        public event EventHandler EquipmentUpdated;
 
         public Player Owner
         {
@@ -205,12 +207,13 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            EquipmentUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = this.Owner.Version;
 

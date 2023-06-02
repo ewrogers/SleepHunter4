@@ -24,6 +24,8 @@ namespace SleepHunter.Models
         int level;
         int abilityLevel;
 
+        public event EventHandler StatsUpdated;
+
         public Player Owner
         {
             get { return owner; }
@@ -130,12 +132,13 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            StatsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 

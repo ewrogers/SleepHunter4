@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,6 +26,8 @@ namespace SleepHunter.Models
         List<Spell> spells = new List<Spell>(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
         ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new ConcurrentDictionary<string, DateTime>();
         string activeSpell;
+
+        public event EventHandler SpellbookUpdated;
 
         public Player Owner
         {
@@ -136,12 +137,13 @@ namespace SleepHunter.Models
                 throw new InvalidOperationException("Player owner is null, cannot update.");
 
             Update(owner.Accessor);
+            SpellbookUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 
