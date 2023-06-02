@@ -6,9 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.6.1] - 2023-06-02
 
+### Added
+
+- Status icons now next to character name (when running/paused)
+
 ### Changed
 
 - DirectDraw compatbility fix is now a manual Apply/Revert button in `Game Client` settings
+- Small UI tweaks on character list text spacing
 
 ### Fixed
 

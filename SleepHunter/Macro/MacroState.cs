@@ -127,6 +127,8 @@ namespace SleepHunter.Macro
                 {
                     try
                     {
+                        UpdateClientMacroStatus();
+                        
                         if (!CheckMap())
                             cancelSource.Cancel();
 
@@ -139,7 +141,9 @@ namespace SleepHunter.Macro
                             MacroLoop(arg);
                         }
                         else
+                        {
                             Thread.Sleep(100);
+                        }
                     }
                     finally
                     {
@@ -153,23 +157,27 @@ namespace SleepHunter.Macro
                             Stop();
                     }
                 }
+                
+                client.Status = null;
 
             }, state, cancelSource.Token);
         }
 
-        protected virtual void ResumeMacro()
-        {
-
-        }
+        protected virtual void ResumeMacro() => UpdateClientMacroStatus();
 
         protected virtual void StopMacro()
         {
             CancelTask();
+            UpdateClientMacroStatus();
         }
 
-        protected virtual void PauseMacro()
-        {
+        protected virtual void PauseMacro() => UpdateClientMacroStatus();
 
+        protected void UpdateClientMacroStatus()
+        {
+            client.IsMacroRunning = Status == MacroStatus.Running;
+            client.IsMacroPaused = Status == MacroStatus.Paused;
+            client.IsMacroStopped = Status == MacroStatus.Stopped;
         }
 
         protected abstract void MacroLoop(object argument);
@@ -204,6 +212,7 @@ namespace SleepHunter.Macro
                 client.Status = status.ToString();
 
             RaiseStatusChanged(status);
+            UpdateClientMacroStatus();
         }
 
         protected void RaiseStatusChanged(MacroStatus status) => StatusChanged?.Invoke(this, new MacroStatusEventArgs(status));

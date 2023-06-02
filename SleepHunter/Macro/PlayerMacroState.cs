@@ -418,6 +418,7 @@ namespace SleepHunter.Macro
             }
 
             var didUseSkill = DoSkillMacro(out var didAssail);
+
             if (!IsSpellCasting)
                 client.Spellbook.ActiveSpell = null;
 
@@ -724,8 +725,6 @@ namespace SleepHunter.Macro
                     client.Status = null;
                     break;
             }
-
-            RaisePropertyChanged(nameof(Status));
         }
 
         private bool FlowerNextAltWaitingForMana()
@@ -1236,16 +1235,16 @@ namespace SleepHunter.Macro
             switch (status)
             {
                 case MacroStatus.Running:
-                    SetPlayerStatus(this.PlayerStatus);
+                    SetPlayerStatus(PlayerStatus);
                     break;
 
                 case MacroStatus.Paused:
-                    SetPlayerStatus(this.PlayerStatus);
-                    client.Status = string.Format("Paused: {0}", client.Status);
+                    SetPlayerStatus(PlayerStatus);
                     break;
 
                 case MacroStatus.Stopped:
                     ResetMacro();
+                    client.Status = null;
                     break;
             }
 

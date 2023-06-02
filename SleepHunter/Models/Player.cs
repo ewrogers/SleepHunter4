@@ -56,6 +56,9 @@ namespace SleepHunter.Models
         DateTime? loginTimestamp;
         bool isLoggedIn;
         string status;
+        bool isMacroRunning;
+        bool isMacroPaused;
+        bool isMacroStopped;
         Hotkey hotkey;
         int selectedTabIndex;
         double? skillbookScrollPosition;
@@ -186,6 +189,24 @@ namespace SleepHunter.Models
         {
             get { return status; }
             set { SetProperty(ref status, value); }
+        }
+
+        public bool IsMacroRunning
+        {
+            get { return isMacroRunning; }
+            set { SetProperty(ref isMacroRunning, value); }
+        }
+
+        public bool IsMacroPaused
+        {
+            get { return isMacroPaused; }
+            set { SetProperty(ref isMacroPaused, value); }
+        }
+
+        public bool IsMacroStopped
+        {
+            get { return isMacroStopped; }
+            set { SetProperty(ref isMacroStopped, value); }
         }
 
         public string HotkeyString
