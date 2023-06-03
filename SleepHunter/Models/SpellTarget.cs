@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 
@@ -8,74 +9,59 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    public enum TargetCoordinateUnits
-    {
-        None = 0,
-        Self,
-        Character,
-        RelativeTile,
-        AbsoluteTile,
-        AbsoluteXY,
-        RelativeRadius,
-        AbsoluteRadius
-    }
-
     public sealed class SpellTarget : ObservableObject
     {
-        TargetCoordinateUnits unitType;
-        string characterName;
-        Point location = new Point();
-        Point offset = new Point();
-        int innerRadius;
-        int outerRadius;
-        List<Point> radiusPoints;
-        int radiusIndex;
+        private TargetCoordinateUnits unitType;
+        private string characterName;
+        private Point location = new();
+        private Point offset = new();
+        private int innerRadius;
+        private int outerRadius;
+        private List<Point> radiusPoints;
+        private int radiusIndex;
 
         public TargetCoordinateUnits Units
         {
-            get { return unitType; }
-            set { SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => unitType;
+            set => SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         public Point Location
         {
-            get { return location; }
-            set { SetProperty(ref location, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => location;
+            set => SetProperty(ref location, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public Point Offset
         {
-            get { return offset; }
-            set { SetProperty(ref offset, value); }
+            get => offset;
+            set => SetProperty(ref offset, value);
         }
 
         public int InnerRadius
         {
-            get { return innerRadius; }
-            set { SetProperty(ref innerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => innerRadius;
+            set => SetProperty(ref innerRadius, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
         public int OuterRadius
         {
-            get { return outerRadius; }
-            set { SetProperty(ref outerRadius, value, onChanged: (p) => { RecalculatePoints(); }); }
+            get => outerRadius;
+            set => SetProperty(ref outerRadius, value, onChanged: (p) => { RecalculatePoints(); });
         }
 
-        public IList<Point> RadiusPoints
-        {
-            get { return radiusPoints; }
-        }
+        public IReadOnlyList<Point> RadiusPoints => radiusPoints;
 
         public int RadiusIndex
         {
-            get { return radiusIndex; }
-            set { SetProperty(ref radiusIndex, value); }
+            get => radiusIndex;
+            set => SetProperty(ref radiusIndex, value);
         }
 
         public SpellTarget()
@@ -86,7 +72,7 @@ namespace SleepHunter.Models
 
         public SpellTarget(TargetCoordinateUnits units, Point location, Point offset)
         {
-            this.unitType = units;
+            unitType = units;
             this.location = location;
             this.offset = offset;
 
@@ -103,7 +89,7 @@ namespace SleepHunter.Models
             else
                 radiusPoints = null;
 
-            RaisePropertyChanged("RadiusPoints");
+            RaisePropertyChanged(nameof(RadiusPoints));
             RadiusIndex = 0;
         }
 
@@ -123,21 +109,17 @@ namespace SleepHunter.Models
             return point;
         }
 
-        int ComparePolarAscending(Point a, Point b)
-        {
-            return ComparePolar(a, b, isDescending: false);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int ComparePolarAscending(Point a, Point b) => ComparePolar(a, b, isDescending: false);
 
-        int ComparePolarDescending(Point a, Point b)
-        {
-            return ComparePolar(a, b, isDescending: true);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int ComparePolarDescending(Point a, Point b) => ComparePolar(a, b, isDescending: true);
 
-        int ComparePolar(Point a, Point b, bool isDescending = false)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int ComparePolar(Point a, Point b, bool isDescending = false)
         {
             var polarA = RectToPolar(a);
             var polarB = RectToPolar(b);
-            var center = RectToPolar(location);
 
             var radiusADist = polarA.X - location.X;
             var radiusBDist = polarB.X - location.X;
@@ -164,13 +146,15 @@ namespace SleepHunter.Models
             return 0;
         }
 
-        double Determinant(Point a, Point b)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Determinant(Point a, Point b)
         {
             var det = (a.X * b.Y - a.Y * b.X);
             return det;
         }
 
-        Point RectToPolar(Point pt)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Point RectToPolar(Point pt)
         {
             var r = Math.Sqrt(pt.X * pt.X + pt.Y * pt.Y);
             var theta = Math.Atan2(pt.Y, pt.X);
@@ -179,7 +163,8 @@ namespace SleepHunter.Models
             return polar;
         }
 
-        Point PolarToRect(Point pt)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Point PolarToRect(Point pt)
         {
             var r = pt.X;
             var theta = pt.Y;
@@ -191,7 +176,7 @@ namespace SleepHunter.Models
             return rect;
         }
 
-        IEnumerable<Point> GetRadiusPoints(Point center, int innerRadius, int outerRadius)
+        private static IEnumerable<Point> GetRadiusPoints(Point center, int innerRadius, int outerRadius)
         {
             for (int i = 0; i <= outerRadius; i++)
             {
@@ -240,7 +225,7 @@ namespace SleepHunter.Models
             }
         }
 
-        string ToRelativeString(Point pt)
+        private static string ToRelativeString(Point pt)
         {
             if (pt.X == 0 && pt.Y == 0)
                 return "Self";
@@ -265,38 +250,22 @@ namespace SleepHunter.Models
 
         public override string ToString()
         {
-            switch (unitType)
+            return unitType switch
             {
-                case TargetCoordinateUnits.None:
-                    return null;
-
-                case TargetCoordinateUnits.Character:
-                    return string.Format("{0}", characterName);
-
-                case TargetCoordinateUnits.AbsoluteTile:
-                    return string.Format("Tile {0}, {1}", location.X.ToString(), location.Y.ToString());
-
-                case TargetCoordinateUnits.AbsoluteXY:
-                    return string.Format("Screen {0}, {1}", location.X.ToString(), location.Y.ToString());
-
-                case TargetCoordinateUnits.RelativeTile:
-                    return string.Format("{0}", ToRelativeString(location));
-
-                case TargetCoordinateUnits.Self:
-                    return string.Format("Self");
-
-                case TargetCoordinateUnits.RelativeRadius:
-                    return string.Format("{0} Tile Radius from {1}",
-                       (OuterRadius - InnerRadius + 1).ToString(),
-                       ToRelativeString(Location));
-
-                case TargetCoordinateUnits.AbsoluteRadius:
-                    return string.Format("{0} Tile Radius from {1}, {2}",
-                       (OuterRadius - InnerRadius + 1).ToString(),
-                       Location.X.ToString(), Location.Y.ToString());
-            }
-
-            return string.Empty;
+                TargetCoordinateUnits.None => null,
+                TargetCoordinateUnits.Character => string.Format("{0}", characterName),
+                TargetCoordinateUnits.AbsoluteTile => string.Format("Tile {0}, {1}", location.X.ToString(), location.Y.ToString()),
+                TargetCoordinateUnits.AbsoluteXY => string.Format("Screen {0}, {1}", location.X.ToString(), location.Y.ToString()),
+                TargetCoordinateUnits.RelativeTile => string.Format("{0}", ToRelativeString(location)),
+                TargetCoordinateUnits.Self => string.Format("Self"),
+                TargetCoordinateUnits.RelativeRadius => string.Format("{0} Tile Radius from {1}",
+                                       (OuterRadius - InnerRadius + 1).ToString(),
+                                       ToRelativeString(Location)),
+                TargetCoordinateUnits.AbsoluteRadius => string.Format("{0} Tile Radius from {1}, {2}",
+                                       (OuterRadius - InnerRadius + 1).ToString(),
+                                       Location.X.ToString(), Location.Y.ToString()),
+                _ => string.Empty,
+            };
         }
     }
 }

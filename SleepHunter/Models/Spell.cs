@@ -1,35 +1,25 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum SpellTargetMode : byte
-    {
-        None = 5,
-        Target = 2,
-        TextInput = 1
-    }
-
     public sealed class Spell : Ability
     {
-        public static readonly string LyliacPlantKey = "Lyliac Plant";
-        public static readonly string LyliacVineyardKey = "Lyliac Vineyard";
-        public static readonly string FasSpioradKey = "Fas Spiorad";
+        public const string LyliacPlantKey = @"Lyliac Plant";
+        public const string LyliacVineyardKey = @"Lyliac Vineyard";
+        public const string FasSpioradKey = @"Fas Spiorad";
 
-        SpellTargetMode targetMode;
-        string prompt;
-
-        public Spell()
-           : base() { }
+        private SpellTargetMode targetMode;
+        private string prompt;
 
         public SpellTargetMode TargetMode
         {
             get { return targetMode; }
-            set { SetProperty(ref targetMode, value, "TargetMode"); }
+            set { SetProperty(ref targetMode, value); }
         }
 
         public string Prompt
         {
             get { return prompt; }
-            set { SetProperty(ref prompt, value, "Prompt"); }
+            set { SetProperty(ref prompt, value); }
         }
 
         public static Spell MakeEmpty(int slot)
@@ -37,14 +27,11 @@ namespace SleepHunter.Models
             return new Spell
             {
                 Slot = slot,
-                Panel = Ability.GetSpellPanelForSlot(slot),
+                Panel = GetSpellPanelForSlot(slot),
                 IsEmpty = true
             };
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0}", this.Name ?? "Unknown Spell");
-        }
+        public override string ToString() => Name ?? "Unknown Spell";
     }
 }

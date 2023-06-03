@@ -9,23 +9,23 @@ namespace SleepHunter.Views
 {
     public partial class SkillEditorWindow : Window
     {
-        string originalName;
-        SkillMetadata skill = new SkillMetadata();
+        private readonly string originalName;
+        private SkillMetadata skill = new();
 
         public SkillMetadata Skill
         {
-            get { return skill; }
-            private set { skill = value; }
+            get => skill;
+            private set => skill = value;
         }
 
         public bool IsEditMode
         {
-            get { return (bool)GetValue(IsEditModeProperty); }
-            set { SetValue(IsEditModeProperty, value); }
+            get => (bool)GetValue(IsEditModeProperty);
+            set => SetValue(IsEditModeProperty, value);
         }
 
         public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SkillEditorWindow), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(SkillEditorWindow), new PropertyMetadata(false));
 
         public SkillEditorWindow(SkillMetadata skill, bool isEditMode = true)
            : this()
@@ -41,25 +41,25 @@ namespace SleepHunter.Views
 
             SetPlayerClass(skill.Class);
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
 
             if (isEditMode)
-                this.Title = "Edit Skill";
+                Title = "Edit Skill";
         }
 
         public SkillEditorWindow()
         {
             InitializeComponent();
-            this.Title = "Add Skill";
+            Title = "Add Skill";
         }
 
-        void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             nameTextBox.Focus();
             nameTextBox.SelectAll();
         }
 
-        bool ValidateSkill()
+        private bool ValidateSkill()
         {
             string skillName = nameTextBox.Text.Trim();
             string groupName = groupNameTextBox.Text.Trim();
@@ -97,10 +97,9 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            double cooldownSeconds;
             if (string.IsNullOrWhiteSpace(cooldownTextBox.Text.Trim()))
                 cooldown = TimeSpan.Zero;
-            else if (double.TryParse(cooldownTextBox.Text.Trim(), out cooldownSeconds) && cooldownSeconds >= 0)
+            else if (double.TryParse(cooldownTextBox.Text.Trim(), out var cooldownSeconds) && cooldownSeconds >= 0)
                 cooldown = TimeSpan.FromSeconds(cooldownSeconds);
             else if (!TimeSpanExtender.TryParse(cooldownTextBox.Text.Trim(), out cooldown) || cooldown < TimeSpan.Zero)
             {
@@ -127,7 +126,7 @@ namespace SleepHunter.Views
             return true;
         }
 
-        PlayerClass GetPlayerClass()
+        private PlayerClass GetPlayerClass()
         {
             var playerClass = PlayerClass.Peasant;
 
@@ -149,7 +148,7 @@ namespace SleepHunter.Views
             return playerClass;
         }
 
-        void SetPlayerClass(PlayerClass playerClass)
+        private void SetPlayerClass(PlayerClass playerClass)
         {
             warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
             wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
@@ -158,19 +157,19 @@ namespace SleepHunter.Views
             monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateSkill())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
-        void cancelButton_Click(object sender, RoutedEventArgs e)
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }

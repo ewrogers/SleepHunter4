@@ -21,24 +21,16 @@ namespace SleepHunter.Models
     public static class InterfacePanelExtender
     {
         public static bool IsSameAs(this InterfacePanel panel, InterfacePanel target)
-        {
-            return panel == target || (panel.IsWorldPanel() && target.IsWorldPanel());
-        }
+            => panel == target || (panel.IsWorldPanel() && target.IsWorldPanel());
 
         public static bool IsTemuairPanel(this InterfacePanel panel)
-        {
-            return !IsMedeniaPanel(panel) && !IsWorldPanel(panel);
-        }
+            => !IsMedeniaPanel(panel) && !IsWorldPanel(panel);
 
         public static bool IsMedeniaPanel(this InterfacePanel panel)
-        {
-            return (panel == InterfacePanel.MedeniaSkills || panel == InterfacePanel.MedeniaSpells);
-        }
+            => (panel == InterfacePanel.MedeniaSkills || panel == InterfacePanel.MedeniaSpells);
 
         public static bool IsWorldPanel(this InterfacePanel panel)
-        {
-            return (panel == InterfacePanel.WorldSkills || panel == InterfacePanel.WorldSpells);
-        }
+            => (panel == InterfacePanel.WorldSkills || panel == InterfacePanel.WorldSpells);
 
         public static bool IsSharedPanel(this InterfacePanel panel, InterfacePanel target)
         {
@@ -69,31 +61,19 @@ namespace SleepHunter.Models
             return false;
         }
 
-        public static bool IsSkillPanel(this InterfacePanel panel)
-        {
-            return (panel == InterfacePanel.TemuairSkills ||
+        public static bool IsSkillPanel(this InterfacePanel panel) => (panel == InterfacePanel.TemuairSkills ||
                panel == InterfacePanel.MedeniaSkills ||
                panel == InterfacePanel.WorldSkills);
-        }
 
-        public static bool IsSpellPanel(this InterfacePanel panel)
-        {
-            return (panel == InterfacePanel.TemuairSpells ||
+        public static bool IsSpellPanel(this InterfacePanel panel) => (panel == InterfacePanel.TemuairSpells ||
                panel == InterfacePanel.MedeniaSpells ||
                panel == InterfacePanel.WorldSpells);
-        }
 
-        public static bool IsTemuairToMedenia(this InterfacePanel panel, InterfacePanel target)
-        {
-            return (panel == InterfacePanel.TemuairSkills && target == InterfacePanel.MedeniaSkills) ||
+        public static bool IsTemuairToMedenia(this InterfacePanel panel, InterfacePanel target) => (panel == InterfacePanel.TemuairSkills && target == InterfacePanel.MedeniaSkills) ||
                (panel == InterfacePanel.TemuairSpells && target == InterfacePanel.MedeniaSpells);
-        }
 
-        public static bool IsMedeniaToTemuair(this InterfacePanel panel, InterfacePanel target)
-        {
-            return (panel == InterfacePanel.MedeniaSkills && target == InterfacePanel.TemuairSkills) ||
+        public static bool IsMedeniaToTemuair(this InterfacePanel panel, InterfacePanel target) => (panel == InterfacePanel.MedeniaSkills && target == InterfacePanel.TemuairSkills) ||
                (panel == InterfacePanel.MedeniaSpells && target == InterfacePanel.TemuairSpells);
-        }
 
         public static Point ToPoint(this InterfacePanel panel)
         {
@@ -157,7 +137,7 @@ namespace SleepHunter.Models
             else
                 pt = new Point(110, 350);
 
-            slot = slot % (Inventory.InventoryCount + 1);
+            slot %= (Inventory.InventoryCount + 1);
 
             var rowSize = panel.IsWorldPanel() ? 6 : 12;
             var rowOffset = 0;

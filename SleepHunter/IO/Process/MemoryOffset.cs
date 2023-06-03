@@ -8,13 +8,13 @@ namespace SleepHunter.IO.Process
     [Serializable]
     public sealed class MemoryOffset
     {
-        long offset;
-        bool isNegative;
+        private long offset;
+        private bool isNegative;
 
         [XmlIgnore]
         public long Offset
         {
-            get { return offset; }
+            get => offset;
             set
             {
                 isNegative = value < 0;
@@ -25,13 +25,10 @@ namespace SleepHunter.IO.Process
         [XmlAttribute("Value")]
         public string OffsetHex
         {
-            get { return offset.ToString("X"); }
-
+            get => offset.ToString("X");
             set
             {
-                long parsedLong;
-
-                if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
+                if (long.TryParse(value, NumberStyles.HexNumber, null, out var parsedLong))
                     offset = parsedLong;
             }
         }
@@ -40,8 +37,8 @@ namespace SleepHunter.IO.Process
         [DefaultValue(false)]
         public bool IsNegative
         {
-            get { return isNegative; }
-            set { isNegative = value; }
+            get => isNegative;
+            set => isNegative = value;
         }
 
         public MemoryOffset()
@@ -52,9 +49,6 @@ namespace SleepHunter.IO.Process
             Offset = offset;
         }
 
-        public override string ToString()
-        {
-            return OffsetHex;
-        }
+        public override string ToString() => OffsetHex;
     }
 }

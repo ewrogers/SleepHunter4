@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
 namespace SleepHunter.Media
@@ -9,14 +10,14 @@ namespace SleepHunter.Media
         [NonSerialized]
         Color color;
 
-        double hue;
-        double saturation;
-        double value;
+        private double hue;
+        private double saturation;
+        private double value;
 
-        public Color Color { get { return color; } }
-        public double Hue { get { return hue; } }
-        public double Saturation { get { return saturation; } }
-        public double Value { get { return value; } }
+        public Color Color => color;
+        public double Hue => hue;
+        public double Saturation => saturation;
+        public double Value => value;
 
         public HueSaturationValue(Color color)
            : this()
@@ -25,7 +26,7 @@ namespace SleepHunter.Media
             CalculateHSV();
         }
 
-        void CalculateHSV()
+        private void CalculateHSV()
         {
             var rgbMax = (double)Math.Max(Math.Max(color.R, color.G), color.B);
             var rgbMin = (double)Math.Min(Math.Min(color.R, color.G), color.B);
@@ -72,14 +73,16 @@ namespace SleepHunter.Media
             }
         }
 
-        double Max3(double a, double b, double c)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Max3(double a, double b, double c)
         {
             return (b >= c) ?
                (a >= b) ? a : b :
                (a >= c) ? a : c;
         }
 
-        double Min3(double a, double b, double c)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Min3(double a, double b, double c)
         {
             return (b <= c) ?
                (a <= b) ? a : b :

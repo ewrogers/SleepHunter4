@@ -6,19 +6,11 @@ namespace SleepHunter.Metadata
 
     public sealed class SpellMetadataEventArgs : EventArgs
     {
-        readonly SpellMetadata spell;
-
-        public SpellMetadata Spell
-        {
-            get { return spell; }
-        }
+        public SpellMetadata Spell { get; }
 
         public SpellMetadataEventArgs(SpellMetadata spell)
         {
-            if (spell == null)
-                throw new ArgumentNullException("spell");
-
-            this.spell = spell;
+            Spell = spell ?? throw new ArgumentNullException(nameof(spell));
         }
     }
 }

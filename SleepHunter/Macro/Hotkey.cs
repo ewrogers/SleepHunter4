@@ -5,39 +5,36 @@ namespace SleepHunter.Macro
 {
     public sealed class Hotkey
     {
-        string atomName;
-        ModifierKeys modifiers;
-        Key key;
-        int id = -1;
+        private string atomName;
+        private ModifierKeys modifiers;
+        private Key key;
+        private int id = -1;
 
         public string AtomName
         {
-            get { return atomName; }
-            set { atomName = value; }
+            get => atomName;
+            set => atomName = value;
         }
 
         public ModifierKeys Modifiers
         {
-            get { return modifiers; }
-            private set { modifiers = value; }
+            get => modifiers;
+            private set => modifiers = value;
         }
 
         public Key Key
         {
-            get { return key; }
-            private set { key = value; }
+            get => key;
+            private set => key = value;
         }
 
         public int Id
         {
-            get { return id; }
-            set { id = value; }
+            get => id;
+            set => id = value;
         }
 
-        public bool IsActive
-        {
-            get { return id >= 0; }
-        }
+        public bool IsActive => id >= 0;
 
         public Hotkey(ModifierKeys modifiers, Key key)
         {
@@ -52,7 +49,7 @@ namespace SleepHunter.Macro
             if (modifiers.HasFlag(ModifierKeys.Control))
             {
                 if (sb.Length > 0)
-                    sb.Append("+");
+                    sb.Append('+');
 
                 sb.Append("Control");
             }
@@ -60,7 +57,7 @@ namespace SleepHunter.Macro
             if (modifiers.HasFlag(ModifierKeys.Alt))
             {
                 if (sb.Length > 0)
-                    sb.Append("+");
+                    sb.Append('+');
 
                 sb.Append("Alt");
             }
@@ -68,13 +65,13 @@ namespace SleepHunter.Macro
             if (modifiers.HasFlag(ModifierKeys.Shift))
             {
                 if (sb.Length > 0)
-                    sb.Append("+");
+                    sb.Append('+');
 
                 sb.Append("Shift");
             }
 
             if (sb.Length > 0)
-                sb.Append("+");
+                sb.Append('+');
 
             sb.Append(GetKeyFriendlyName(key));
 

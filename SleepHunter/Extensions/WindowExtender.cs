@@ -11,6 +11,12 @@ namespace SleepHunter.Extensions
     {
         public static T InvokeIfRequired<T>(this Dispatcher dispatcher, Func<T> action, T value, DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            if (dispatcher is null)
+                throw new ArgumentNullException(nameof(dispatcher));
+
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
             if (dispatcher.Thread != Thread.CurrentThread)
                 return (T)dispatcher.Invoke(action, priority, null);
             else
@@ -19,6 +25,12 @@ namespace SleepHunter.Extensions
 
         public static void InvokeIfRequired(this Dispatcher dispatcher, Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            if (dispatcher is null)
+                throw new ArgumentNullException(nameof(dispatcher));
+
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
             if (dispatcher.Thread != Thread.CurrentThread)
                 dispatcher.Invoke(action, priority, null);
             else
@@ -27,6 +39,12 @@ namespace SleepHunter.Extensions
 
         public static void InvokeIfRequired<T>(this Dispatcher dispatcher, Action<T> action, T value, DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            if (dispatcher is null)
+                throw new ArgumentNullException(nameof(dispatcher));
+
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
             if (dispatcher.Thread != Thread.CurrentThread)
                 dispatcher.Invoke(action, priority, value);
             else
@@ -35,12 +53,17 @@ namespace SleepHunter.Extensions
 
         public static bool? ShowMessageBox(this Window owner, string windowTitle, string messageText, string subText = null, MessageBoxButton buttons = MessageBoxButton.OK, int width = 420, int height = 280)
         {
-            var messageBox = new MessageBoxWindow();
-            messageBox.Title = windowTitle ?? string.Empty;
-            messageBox.Width = width;
-            messageBox.Height = height;
-            messageBox.MessageText = messageText ?? string.Empty;
-            messageBox.SubText = subText ?? string.Empty;
+            if (owner == null)
+                throw new ArgumentNullException(nameof(owner));
+            
+            var messageBox = new MessageBoxWindow
+            {
+                Title = windowTitle ?? string.Empty,
+                Width = width,
+                Height = height,
+                MessageText = messageText ?? string.Empty,
+                SubText = subText ?? string.Empty
+            };
 
             if (buttons == MessageBoxButton.OK)
             {

@@ -6,13 +6,11 @@ namespace SleepHunter.Metadata
 
     public sealed class SpellLineModifiersEventArgs : EventArgs
     {
-        readonly SpellLineModifiers modifiers;
-
-        public SpellLineModifiers Modifiers { get { return modifiers; } }
+        public SpellLineModifiers Modifiers { get; }
 
         public SpellLineModifiersEventArgs(SpellLineModifiers modifiers)
         {
-            this.modifiers = modifiers;
+            Modifiers = modifiers ?? throw new ArgumentNullException(nameof(modifiers));
         }
     }
 }

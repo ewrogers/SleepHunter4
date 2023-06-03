@@ -8,27 +8,19 @@ namespace SleepHunter.IO
 {
     public sealed class FileArchiveManager
     {
-        #region Singleton
-        static readonly FileArchiveManager instance = new FileArchiveManager();
+        private static readonly FileArchiveManager instance = new();
 
-        public static FileArchiveManager Instance { get { return instance; } }
+        public static FileArchiveManager Instance => instance;
 
-        private FileArchiveManager()
-        {
+        private FileArchiveManager() { }
 
-        }
-        #endregion
+        private readonly ConcurrentDictionary<string, FileArchive> archives = new(StringComparer.OrdinalIgnoreCase);
 
-        ConcurrentDictionary<string, FileArchive> archives = new ConcurrentDictionary<string, FileArchive>(StringComparer.OrdinalIgnoreCase);
+        public int Count => archives.Count;
 
-        public int Count { get { return archives.Count; } }
+        public IEnumerable<FileArchive> Archives => from a in archives.Values select a;
 
-        public IEnumerable<FileArchive> Archives { get { return from a in archives.Values select a; } }
-
-        public bool ContainsArchive(string filename)
-        {
-            return archives.ContainsKey(filename);
-        }
+        public bool ContainsArchive(string filename) => archives.ContainsKey(filename);
 
         public FileArchive GetArchive(string filename)
         {
@@ -56,8 +48,7 @@ namespace SleepHunter.IO
             var archive = archives[filename];
             archive.Dispose();
 
-            FileArchive removedArchive;
-            return archives.TryRemove(filename, out removedArchive);
+            return archives.TryRemove(filename, out _);
         }
 
         public void ClearArchives()

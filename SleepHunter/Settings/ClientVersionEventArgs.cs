@@ -6,16 +6,11 @@ namespace SleepHunter.Settings
 
     public sealed class ClientVersionEventArgs : EventArgs
     {
-        readonly ClientVersion version;
-
-        public ClientVersion Version { get { return version; } }
+        public ClientVersion Version { get; }
 
         public ClientVersionEventArgs(ClientVersion version)
         {
-            if (version == null)
-                throw new ArgumentNullException("version");
-
-            this.version = version;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
         }
     }
 }

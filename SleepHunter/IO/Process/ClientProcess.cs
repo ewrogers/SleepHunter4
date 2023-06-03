@@ -8,64 +8,63 @@ namespace SleepHunter.IO.Process
 {
     public sealed class ClientProcess : ObservableObject
     {
-        int processId;
-        IntPtr windowHandle;
-        string windowClassName = string.Empty;
-        string windowTitle = string.Empty;
-        int windowWidth = 640;
-        int windowHeight = 480;
-        DateTime creationTime;
+        private const int ViewportWidth = 640;
+        private const int ViewportHeight = 480;
+
+        private int processId;
+        private nint windowHandle;
+        private string windowClassName = string.Empty;
+        private string windowTitle = string.Empty;
+        private int windowWidth = ViewportWidth;
+        private int windowHeight = ViewportHeight;
+        private DateTime creationTime;
+
+        public event EventHandler ProcessUpdated;
 
         public int ProcessId
         {
-            get { return processId; }
-            set { SetProperty(ref processId, value); }
+            get => processId;
+            set => SetProperty(ref processId, value);
         }
 
-        public IntPtr WindowHandle
+        public nint WindowHandle
         {
-            get { return windowHandle; }
-            set { SetProperty(ref windowHandle, value); }
+            get => windowHandle;
+            set => SetProperty(ref windowHandle, value);
         }
 
         public string WindowClassName
         {
-            get { return windowClassName; }
-            set { SetProperty(ref windowClassName, value); }
+            get => windowClassName;
+            set => SetProperty(ref windowClassName, value);
         }
 
         public string WindowTitle
         {
-            get { return windowTitle; }
-            set { SetProperty(ref windowTitle, value); }
+            get => windowTitle;
+            set => SetProperty(ref windowTitle, value);
         }
 
         public int WindowWidth
         {
-            get { return windowWidth; }
-            set { SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleX)); }); }
+            get => windowWidth;
+            set => SetProperty(ref windowWidth, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleX)); });
         }
 
         public int WindowHeight
         {
-            get { return windowHeight; }
-            set { SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleY)); }); }
+            get => windowHeight;
+            set => SetProperty(ref windowHeight, value, onChanged: (p) => { RaisePropertyChanged(nameof(WindowScaleY)); });
         }
 
-        public double WindowScaleX
-        {
-            get { return WindowWidth / 640.0; }
-        }
+        public double WindowScaleX => WindowWidth / 640.0;
 
-        public double WindowScaleY
-        {
-            get { return WindowHeight / 480.0; }
-        }
+        public double WindowScaleY => WindowHeight / 480.0;
 
         public DateTime CreationTime
         {
-            get { return creationTime; }
-            set { SetProperty(ref creationTime, value); }
+            get => creationTime;
+            set => SetProperty(ref creationTime, value);
         }
 
         public ClientProcess() { }
@@ -78,13 +77,13 @@ namespace SleepHunter.IO.Process
 
             WindowTitle = windowTextBuffer.ToString(0, windowTextLength);
 
-            Rect clientRect;
-
-            if (NativeMethods.GetClientRect(windowHandle, out clientRect))
+            if (NativeMethods.GetClientRect(windowHandle, out var clientRect))
             {
                 WindowWidth = clientRect.Width;
                 WindowHeight = clientRect.Height;
             }
+
+            ProcessUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

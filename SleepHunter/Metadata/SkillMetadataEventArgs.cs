@@ -6,19 +6,11 @@ namespace SleepHunter.Metadata
 
     public sealed class SkillMetadataEventArgs : EventArgs
     {
-        readonly SkillMetadata skill;
-
-        public SkillMetadata Skill
-        {
-            get { return skill; }
-        }
+        public SkillMetadata Skill { get; }
 
         public SkillMetadataEventArgs(SkillMetadata skill)
         {
-            if (skill == null)
-                throw new ArgumentNullException("skill");
-
-            this.skill = skill;
+            Skill = skill ?? throw new ArgumentNullException(nameof(skill));
         }
     }
 }

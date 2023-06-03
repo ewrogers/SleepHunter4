@@ -1,5 +1,4 @@
-﻿
-namespace SleepHunter.Settings
+﻿namespace SleepHunter.Macro
 {
     public enum MacroAction
     {

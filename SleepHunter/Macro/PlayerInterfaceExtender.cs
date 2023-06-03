@@ -24,14 +24,10 @@ namespace SleepHunter.Macro
         }
 
         public static void Assail(this Player client)
-        {
-            WindowAutomator.SendKeystroke(client.Process.WindowHandle, WindowAutomator.VK_SPACE);
-        }
+            => WindowAutomator.SendKeystroke(client.Process.WindowHandle, WindowAutomator.VK_SPACE);
 
         public static void CancelDialog(this Player client)
-        {
-            WindowAutomator.SendKeystroke(client.Process.WindowHandle, WindowAutomator.VK_ESCAPE);
-        }
+            => WindowAutomator.SendKeystroke(client.Process.WindowHandle, WindowAutomator.VK_ESCAPE);
 
         public static bool UseItemAndWait(this Player client, string itemName, TimeSpan timeout, out bool didRequireSwitch)
         {
@@ -60,7 +56,7 @@ namespace SleepHunter.Macro
             if (!client.SwitchToPanelAndWait(InterfacePanel.Inventory, timeout, out didRequireSwitch))
                 return false;
 
-            var inventoryReady = false;
+            bool inventoryReady;
             if (isInExpandedInventory)
                 inventoryReady = client.ExpandInventoryAndWait(timeout);
             else
@@ -80,9 +76,7 @@ namespace SleepHunter.Macro
         }
 
         public static void ClickAt(this Player client, double x, double y, bool moveMouseBeforeClick = true)
-        {
-            WindowAutomator.SendMouseClick(client.Process.WindowHandle, MouseButton.Left, (int)x, (int)y, moveMouseBeforeClick);
-        }
+            => WindowAutomator.SendMouseClick(client.Process.WindowHandle, MouseButton.Left, (int)x, (int)y, moveMouseBeforeClick);
 
         public static void ClickSlot(this Player client, InterfacePanel panel, int slot, bool isExpandedInventory = false)
         {
@@ -262,9 +256,7 @@ namespace SleepHunter.Macro
         }
 
         public static bool SwitchToPanelAndWait(this Player client, InterfacePanel panel, out bool didRequireSwitch, bool useShiftKey = true)
-        {
-            return SwitchToPanelAndWait(client, panel, TimeSpan.Zero, out didRequireSwitch, useShiftKey);
-        }
+            => SwitchToPanelAndWait(client, panel, TimeSpan.Zero, out didRequireSwitch, useShiftKey);
 
         public static bool SwitchToPanelAndWait(this Player client, InterfacePanel panel, TimeSpan timeout, out bool didRequireSwitch, bool useShiftKey = true)
         {
@@ -273,9 +265,7 @@ namespace SleepHunter.Macro
         }
 
         public static void WaitForPanel(this Player client, InterfacePanel panel)
-        {
-            WaitForPanel(client, panel, TimeSpan.Zero);
-        }
+            => WaitForPanel(client, panel, TimeSpan.Zero);
 
         public static bool WaitForPanel(this Player client, InterfacePanel panel, TimeSpan timeout)
         {
@@ -302,9 +292,7 @@ namespace SleepHunter.Macro
         }
 
         public static void Terminate(this Player client)
-        {
-            WindowAutomator.SendCloseWindow(client.Process.WindowHandle);
-        }
+            => WindowAutomator.SendCloseWindow(client.Process.WindowHandle);
 
         static int GetRelativeSlot(this InterfacePanel panel, int slot)
         {
@@ -322,10 +310,10 @@ namespace SleepHunter.Macro
         static Point ScalePoint(this Point pt, double scaleX, double scaleY)
         {
             if (scaleX > 0 && scaleX != 1)
-                pt.X = pt.X * scaleX;
+                pt.X *= scaleX;
 
             if (scaleY > 0 && scaleY != 1)
-                pt.Y = pt.Y * scaleY;
+                pt.Y *= scaleY;
 
             return pt;
         }

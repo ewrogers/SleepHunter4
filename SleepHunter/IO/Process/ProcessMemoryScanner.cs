@@ -11,25 +11,26 @@ namespace SleepHunter.IO.Process
 {
     internal sealed class ProcessMemoryScanner : IDisposable
     {
-        const int DefaultPageSize = 0x1000; 
-        const uint MinimumVmAddress = 0x0040_0000;
-        const uint MaximumVmAddress = 0xFFFF_FFFF;
+        private const int DefaultPageSize = 0x1000; 
+        private const uint MinimumVmAddress = 0x0040_0000;
+        private const uint MaximumVmAddress = 0xFFFF_FFFF;
 
-        bool isDisposed;
-        IntPtr processHandle;
-        bool leaveOpen;
-        int pageSize;
-        byte[] internalBuffer = new byte[8];
-        byte[] internalStringBuffer = new byte[256];
-        byte[] searchBuffer;
+        private bool isDisposed;
+        private nint processHandle;
+        private readonly bool leaveOpen;
+        private readonly int pageSize;
 
-        public IntPtr ProcessHandle
+        private readonly byte[] internalBuffer = new byte[8];
+        private readonly byte[] searchBuffer;
+        private byte[] internalStringBuffer = new byte[0x100];
+
+        public nint ProcessHandle
         {
-            get { return processHandle; }
-            private set { processHandle = value; }
+            get => processHandle;
+            private set => processHandle = value;
         }
 
-        public ProcessMemoryScanner(IntPtr processHandle, bool leaveOpen = false)
+        public ProcessMemoryScanner(nint processHandle, bool leaveOpen = false)
         {
             this.processHandle = processHandle;
             this.leaveOpen = leaveOpen;
@@ -43,11 +44,7 @@ namespace SleepHunter.IO.Process
             searchBuffer = new byte[pageSize];
         }
 
-        #region IDisposable Methods
-        ~ProcessMemoryScanner()
-        {
-            Dispose(false);
-        }
+        ~ProcessMemoryScanner() => Dispose(false);
 
         public void Dispose()
         {
@@ -62,39 +59,32 @@ namespace SleepHunter.IO.Process
 
             if (isDisposing)
             {
-
+                
             }
 
             if (!leaveOpen)
                 NativeMethods.CloseHandle(processHandle);
 
-            processHandle = IntPtr.Zero;
+            processHandle = 0;
             isDisposed = true;
         }
-        #endregion
 
-        public IntPtr FindByte(byte value, long startingAddress = 0, long endingAddress = 0)
+        public nint FindByte(byte value, long startingAddress = 0, long endingAddress = 0)
         {
             internalBuffer[0] = value;
             return Find(internalBuffer, 1, startingAddress, endingAddress);
         }
 
-        public IntPtr FindInt16(short value, long startingAddress = 0, long endingAddress = 0)
-        {
-            return FindUInt16((ushort)value, startingAddress, endingAddress);
-        }
+        public nint FindInt16(short value, long startingAddress = 0, long endingAddress = 0)
+            => FindUInt16((ushort)value, startingAddress, endingAddress);
 
-        public IntPtr FindInt32(int value, long startingAddress = 0, long endingAddress = 0)
-        {
-            return FindUInt32((uint)value, startingAddress, endingAddress);
-        }
+        public nint FindInt32(int value, long startingAddress = 0, long endingAddress = 0)
+            => FindUInt32((uint)value, startingAddress, endingAddress);
 
-        public IntPtr FindInt64(long value, long startingAddress = 0, long endingAddress = 0)
-        {
-            return FindUInt64((ulong)value, startingAddress, endingAddress);
-        }
+        public nint FindInt64(long value, long startingAddress = 0, long endingAddress = 0)
+            => FindUInt64((ulong)value, startingAddress, endingAddress);
 
-        public IntPtr FindUInt16(ushort value, long startingAddress = 0, long endingAddress = 0)
+        public nint FindUInt16(ushort value, long startingAddress = 0, long endingAddress = 0)
         {
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
@@ -102,7 +92,7 @@ namespace SleepHunter.IO.Process
             return Find(internalBuffer, 2, startingAddress, endingAddress);
         }
 
-        public IntPtr FindUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
+        public nint FindUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
         {
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
@@ -112,7 +102,7 @@ namespace SleepHunter.IO.Process
             return Find(internalBuffer, 4, startingAddress, endingAddress);
         }
 
-        public IntPtr FindUInt64(ulong value, long startingAddress = 0, long endingAddress = 0)
+        public nint FindUInt64(ulong value, long startingAddress = 0, long endingAddress = 0)
         {
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
@@ -126,7 +116,7 @@ namespace SleepHunter.IO.Process
             return Find(internalBuffer, 8, startingAddress, endingAddress);
         }
 
-        public IEnumerable<IntPtr> FindAllUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
+        public IEnumerable<nint> FindAllUInt32(uint value, long startingAddress = 0, long endingAddress = 0)
         {
             internalBuffer[0] = (byte)(value);
             internalBuffer[1] = (byte)(value >> 8);
@@ -136,7 +126,7 @@ namespace SleepHunter.IO.Process
             return FindAll(internalBuffer, 4, startingAddress, endingAddress);
         }
 
-        public IntPtr FindString(string value, long startingAddress = 0, long endingAddress = 0)
+        public nint FindString(string value, long startingAddress = 0, long endingAddress = 0)
         {
             if (value.Length >= internalStringBuffer.Length)
                 internalStringBuffer = new byte[value.Length];
@@ -145,9 +135,9 @@ namespace SleepHunter.IO.Process
             return Find(internalStringBuffer, value.Length, startingAddress, endingAddress);
         }
 
-        public IntPtr Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0) => FindAll(bytes, size, startingAddress, endingAddress).FirstOrDefault();
+        public nint Find(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0) => FindAll(bytes, size, startingAddress, endingAddress).FirstOrDefault();
 
-        public IEnumerable<IntPtr> FindAll(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
+        public IEnumerable<nint> FindAll(byte[] bytes, int size, long startingAddress = 0, long endingAddress = 0)
         {
             var start = startingAddress;
             var end = endingAddress;
@@ -163,14 +153,11 @@ namespace SleepHunter.IO.Process
 
             while (address <= end)
             {
-                var baseAddress = (IntPtr)address;
-                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, baseAddress, out var memoryInfo, sizeofMemoryInfo);
+                var baseAddress = address;
+                var queryResult = (int)NativeMethods.VirtualQueryEx(processHandle, (nint)baseAddress, out var memoryInfo, sizeofMemoryInfo);
 
                 if (queryResult <= 0)
-                {
-                    var lastError = NativeMethods.GetLastError();
-                    throw new Win32Exception(lastError);
-                }
+                    throw new Win32Exception();
 
                 if (memoryInfo.Type == VirtualMemoryType.Private && memoryInfo.State == VirtualMemoryStatus.Commit && memoryInfo.Protect == VirtualMemoryProtection.ReadWrite)
                 {

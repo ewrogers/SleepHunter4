@@ -3,21 +3,20 @@ namespace SleepHunter.Converters
 {
     public static class ByteStringConverter
     {
-        static readonly long KilobyteCount = 1024;
-        static readonly long MegabyteCount = 1024L * 1024;
-        static readonly long GigabyteCount = 1024L * 1024L * 1024L;
-        static readonly long TerabyteCount = 1024L * 1024U * 1024L * 1024L;
+        private const long KilobyteCount = 1024;
+        private const long MegabyteCount = 1024L * 1024;
+        private const long GigabyteCount = 1024L * 1024L * 1024L;
+        private const long TerabyteCount = 1024L * 1024U * 1024L * 1024L;
 
-        static readonly string ByteSuffix = "bytes";
-        static readonly string KilobyteSuffix = "KB";
-        static readonly string MegabyteSuffix = "MB";
-        static readonly string GigabyteSuffix = "GB";
-        static readonly string TerabyteSuffix = "TB";
+        private const string ByteSuffix = "bytes";
+        private const string KilobyteSuffix = "KB";
+        private const string MegabyteSuffix = "MB";
+        private const string GigabyteSuffix = "GB";
+        private const string TerabyteSuffix = "TB";
 
         public static string GetEnglishString(double value, string format = null)
         {
-            string suffix;
-            long divisor = GetDenominator(value, out suffix);
+            long divisor = GetDenominator(value, out var suffix);
             value /= divisor;
 
             if (format == null)
@@ -26,11 +25,7 @@ namespace SleepHunter.Converters
                 return string.Format("{0} {1}", value.ToString(format), suffix);
         }
 
-        public static long GetDenominator(double value)
-        {
-            string suffix;
-            return GetDenominator(value, out suffix);
-        }
+        public static long GetDenominator(double value) => GetDenominator(value, out _);
 
         public static long GetDenominator(double value, out string denominatorString)
         {

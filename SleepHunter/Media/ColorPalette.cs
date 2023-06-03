@@ -8,29 +8,24 @@ namespace SleepHunter.Media
 {
     public sealed class ColorPalette : IEnumerable<Color>
     {
-        public static readonly int ColorCount = 256;
+        public const int ColorCount = 256;
 
-        string name;
-        List<Color> colors;
+        private readonly List<Color> colors;
 
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public string Name { get; set; }
 
-        public int Count { get { return colors.Count; } }
+        public int Count => colors.Count;
 
         public ColorPalette(string filename)
            : this(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), leaveOpen: false)
         {
-            this.name = filename;
+            Name = filename;
         }
 
         public Color this[int index]
         {
-            get { return colors[index]; }
-            set { colors[index] = value; }
+            get => colors[index];
+            set => colors[index] = value;
         }
 
         public ColorPalette(Stream stream, bool leaveOpen = true)
@@ -61,7 +56,7 @@ namespace SleepHunter.Media
 
         public ColorPalette MakeGrayscale(double redWeight = 0.30, double greenWeight = 0.59, double blueWeight = 0.11)
         {
-            var grayColors = new List<Color>(this.Count);
+            var grayColors = new List<Color>(Count);
 
             foreach (var color in this)
             {
@@ -75,17 +70,12 @@ namespace SleepHunter.Media
             return new ColorPalette(grayColors);
         }
 
-        #region IEnumerable Methods
         public IEnumerator<Color> GetEnumerator()
         {
             foreach (var color in colors)
                 yield return color;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

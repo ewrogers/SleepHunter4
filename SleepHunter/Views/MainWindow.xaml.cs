@@ -28,14 +28,12 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace SleepHunter.Views
 {
     public partial class MainWindow : Window, IDisposable
     {
-        private const string DirectDrawPatchFile = "ddraw.dll";
-        private const string DirectDrawConfigFile = "DDrawCompatOverlay-Darkages.ini";
-
         private const int WM_HOTKEY = 0x312;
 
         private enum ClientLoadResult
@@ -102,7 +100,6 @@ namespace SleepHunter.Views
             StartUpdateTimers();
         }
 
-        #region IDisposable Methods
         public void Dispose()
         {
             Dispose(true);
@@ -125,9 +122,7 @@ namespace SleepHunter.Views
 
             isDisposed = true;
         }
-        #endregion
 
-        #region Client Launch Methods
         private void LaunchClient()
         {
             startNewClientButton.IsEnabled = false;
@@ -243,16 +238,6 @@ namespace SleepHunter.Views
         {
             result = ClientLoadResult.Success;
 
-            try
-            {
-                if (UserSettingsManager.Instance.Settings.DirectDrawFix)
-                    ApplyDirectDrawFix(clientPath);
-            }
-            catch (Exception e)
-            {
-                logger.LogError($"Unable to apply direct draw fix: {e.Message}");
-            }
-
             // Create Process
             var startupInfo = new StartupInfo { Size = Marshal.SizeOf(typeof(StartupInfo)) };
 
@@ -269,7 +254,7 @@ namespace SleepHunter.Views
                ref processSecurity, ref threadSecurity,
                false,
                ProcessCreationFlags.Suspended,
-               IntPtr.Zero,
+               nint.Zero,
                null,
                ref startupInfo, out var processInformation);
 
@@ -287,49 +272,6 @@ namespace SleepHunter.Views
             return processInformation;
         }
 
-        private void ApplyDirectDrawFix(string clientPath)
-        {
-            var clientFolder = Path.GetDirectoryName(clientPath);
-            var sourceDllFile = Path.Combine(Environment.CurrentDirectory, DirectDrawPatchFile);
-            var sourceConfigFile = Path.Combine(Environment.CurrentDirectory, DirectDrawConfigFile);
-
-            var destinationDllFile = Path.Combine(clientFolder, DirectDrawPatchFile);
-            var destinationConfigFile = Path.Combine(clientFolder, DirectDrawConfigFile);
-
-            if (!File.Exists(sourceDllFile))
-            {
-                logger.LogInfo($"No {DirectDrawPatchFile} file, not applying compatibility fix");
-                return;
-            }
-
-            if (!File.Exists(destinationDllFile))
-            {
-                logger.LogInfo("Copying direct draw compatibility fix...");
-                File.Copy(sourceDllFile, destinationDllFile);
-            }
-            else
-            {
-                logger.LogInfo("Direct draw compatibility fix already exists, not overriding");
-            }
-
-            if (File.Exists(sourceConfigFile))
-            {
-                if (!File.Exists(destinationConfigFile))
-                {
-                    logger.LogInfo("Copying direct draw compatibility config...");
-                    File.Copy(sourceConfigFile, destinationConfigFile);
-                }
-                else
-                {
-                    logger.LogInfo("Direct draw compatibility config already exists, not overriding");
-                }
-            }
-            else
-            {
-                logger.LogWarn("Direct draw compatibility config not found, unable to copy");
-            }
-        }
-
         private void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
@@ -339,17 +281,12 @@ namespace SleepHunter.Views
             var pid = process.ProcessId;
             logger.LogInfo($"Attempting to patch client process {pid}");
 
-            // Patch Process
-            ProcessMemoryAccessor accessor = null;
-            Stream patchStream = null;
-            BinaryReader reader = null;
-            BinaryWriter writer = null;
             try
             {
-                accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
-                patchStream = accessor.GetStream();
-                reader = new BinaryReader(patchStream);
-                writer = new BinaryWriter(patchStream);
+                // Patch Process
+                using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
+                using var patchStream = accessor.GetWriteableStream();
+                using var writer = new BinaryWriter(patchStream, Encoding.ASCII, leaveOpen: true);
 
                 if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
                 {
@@ -395,11 +332,6 @@ namespace SleepHunter.Views
             }
             finally
             {
-                reader?.Dispose();
-                writer?.Dispose();
-                accessor?.Dispose();
-                patchStream?.Dispose();
-
                 // Resume and close handles.
                 NativeMethods.ResumeThread(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ThreadHandle);
@@ -494,9 +426,6 @@ namespace SleepHunter.Views
                    460, 260);
             }
         }
-        #endregion
-
-        #region Initialize Methods
 
         private void InitializeLogger()
         {
@@ -566,7 +495,7 @@ namespace SleepHunter.Views
 
         private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is Player player))
+            if (sender is not Player player)
                 return;
 
             Dispatcher.InvokeIfRequired(() =>
@@ -623,6 +552,7 @@ namespace SleepHunter.Views
             if (macro != null)
             {
                 macro.StatusChanged += HandleMacroStatusChanged;
+                macro.Client.PlayerUpdated += HandleClientUpdateTick;
             }
 
             try
@@ -706,6 +636,7 @@ namespace SleepHunter.Views
             if (macro != null)
             {
                 macro.StatusChanged -= HandleMacroStatusChanged;
+                macro.Client.PlayerUpdated -= HandleClientUpdateTick;
 
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
@@ -714,7 +645,7 @@ namespace SleepHunter.Views
             if (selectedMacro != null && selectedMacro.Name == player.Name)
                 SelectNextAvailablePlayer();
 
-            if (PlayerManager.Instance.LoggedInPlayers.Count() < 1)
+            if (!PlayerManager.Instance.LoggedInPlayers.Any())
                 ToggleSpellQueue(false);
         }
 
@@ -723,9 +654,29 @@ namespace SleepHunter.Views
             UpdateToolbarState();
         }
 
+        private void HandleClientUpdateTick(object sender, EventArgs e)
+        {
+            if (selectedMacro == null || sender is not Player player)
+                return;
+
+            if (selectedMacro.Client != player)
+                return;
+
+            // Refresh the spell queue levels on tick
+            foreach (var queuedSpell in selectedMacro.QueuedSpells)
+            {
+                var spell = player.Spellbook.GetSpell(queuedSpell.Name);
+                if (spell is null)
+                    continue;
+
+                queuedSpell.MaximumLevel = spell.MaximumLevel;
+                queuedSpell.CurrentLevel = spell.CurrentLevel;
+            }
+        }
+
         private void SelectNextAvailablePlayer()
         {
-            if (PlayerManager.Instance.LoggedInPlayers.Count() <= 0)
+            if (!PlayerManager.Instance.LoggedInPlayers.Any())
             {
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
@@ -1132,9 +1083,7 @@ namespace SleepHunter.Views
                 logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
             }
         }
-        #endregion
 
-        #region Client Add/Remove/Update Methods
         private void UpdateSkillSpellGridWidths()
         {
             var settings = UserSettingsManager.Instance.Settings;
@@ -1225,7 +1174,6 @@ namespace SleepHunter.Views
                     break;
             }
         }
-        #endregion
 
         private void ToggleModalOverlay(bool showHide) => modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
 
@@ -1371,7 +1319,7 @@ namespace SleepHunter.Views
             Application.Current.Shutdown();
         }
 
-        private IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        private nint WindowMessageHook(nint windowHandle, int message, nint wParam, nint lParam, ref bool isHandled)
         {
             if (message == WM_HOTKEY)
             {
@@ -1381,7 +1329,7 @@ namespace SleepHunter.Views
                 ActivateHotkey(key, modifiers);
             }
 
-            return IntPtr.Zero;
+            return nint.Zero;
         }
 
         private void Window_Shown(object sender, EventArgs e)
@@ -1510,7 +1458,7 @@ namespace SleepHunter.Views
         private void SaveMacroState(PlayerMacroState macro)
         {
             if (macro == null)
-                throw new ArgumentNullException("macro");
+                throw new ArgumentNullException(nameof(macro));
 
             var filename = Path.Combine("saves", string.Format("{0}.xml", macro.Client.Name.Trim()));
             var state = new SavedMacroState(macro);
@@ -1522,7 +1470,7 @@ namespace SleepHunter.Views
         private void LoadMacroState(Player player)
         {
             if (player == null)
-                throw new ArgumentNullException("player");
+                throw new ArgumentNullException(nameof(player));
 
             if (!Directory.Exists("saves"))
                 return;
@@ -1594,7 +1542,6 @@ namespace SleepHunter.Views
 
         private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
         private void hideSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(false);
-
         private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
@@ -1605,10 +1552,10 @@ namespace SleepHunter.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem))
+            if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (!(listBoxItem.Content is Player player))
+            if (listBoxItem.Content is not Player player)
                 return;
 
             NativeMethods.SetForegroundWindow(player.Process.WindowHandle);
@@ -1621,10 +1568,10 @@ namespace SleepHunter.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem))
+            if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (!(listBoxItem.Content is SpellQueueItem queueItem))
+            if (listBoxItem.Content is not SpellQueueItem queueItem)
                 return;
 
             if (selectedMacro == null)
@@ -1652,10 +1599,10 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (!(sender is ListBoxItem listBoxItem))
+            if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (!(listBoxItem.Content is SpellQueueItem spell))
+            if (listBoxItem.Content is not SpellQueueItem spell)
                 return;
 
             if (selectedMacro == null)
@@ -1672,7 +1619,7 @@ namespace SleepHunter.Views
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
+            if (e.LeftButton != MouseButtonState.Pressed || sender is not ListBoxItem draggedItem)
                 return;
 
             logger.LogInfo($"Drag spell queue item: {draggedItem}");
@@ -1725,10 +1672,10 @@ namespace SleepHunter.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem))
+            if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (!(listBoxItem.Content is FlowerQueueItem queueItem))
+            if (listBoxItem.Content is not FlowerQueueItem queueItem)
                 return;
 
             if (selectedMacro == null)
@@ -1750,10 +1697,10 @@ namespace SleepHunter.Views
 
         private void flowerQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (!(sender is ListBoxItem listBoxItem))
+            if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (!(listBoxItem.Content is FlowerQueueItem flower))
+            if (listBoxItem.Content is not FlowerQueueItem flower)
                 return;
 
             if (selectedMacro == null)
@@ -1770,7 +1717,7 @@ namespace SleepHunter.Views
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != MouseButtonState.Pressed || !(sender is ListBoxItem draggedItem))
+            if (e.LeftButton != MouseButtonState.Pressed || sender is not ListBoxItem draggedItem)
                 return;
 
             logger.LogInfo($"Drag flower queue item: {draggedItem}");
@@ -1819,7 +1766,7 @@ namespace SleepHunter.Views
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(sender is ListBox listBox) || !(listBox.SelectedItem is Player player))
+            if (sender is not ListBox listBox || listBox.SelectedItem is not Player player)
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
@@ -1908,7 +1855,7 @@ namespace SleepHunter.Views
             if (e.Key == Key.None)
                 return;
 
-            if (!(sender is ListBoxItem listBoxItem) || !(listBoxItem.Content is Player player))
+            if (sender is not ListBoxItem listBoxItem || listBoxItem.Content is not Player player)
                 return;
 
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
@@ -1993,7 +1940,7 @@ namespace SleepHunter.Views
 
         private void selectedMacro_SpellQueueChanged(object sender, SpellQueueItemEventArgs e)
         {
-            if (!(sender is PlayerMacroState macro))
+            if (sender is not PlayerMacroState macro)
                 return;
 
             spellQueueListBox.ItemsSource = macro.QueuedSpells;
@@ -2002,7 +1949,7 @@ namespace SleepHunter.Views
 
         private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
         {
-            if (!(sender is PlayerMacroState macro))
+            if (sender is not PlayerMacroState macro)
                 return;
 
             flowerListBox.ItemsSource = macro.FlowerTargets;
@@ -2011,7 +1958,7 @@ namespace SleepHunter.Views
 
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(sender is TabControl))
+            if (sender is not TabControl)
                 return;
 
             if (selectedMacro == null)
@@ -2054,13 +2001,13 @@ namespace SleepHunter.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            if (!(sender is ListBoxItem item))
+            if (sender is not ListBoxItem item)
                 return;
 
-            if (!(item.Content is Skill skill))
+            if (item.Content is not Skill skill)
                 return;
 
-            if (!(clientListBox.SelectedItem is Player player))
+            if (clientListBox.SelectedItem is not Player player)
                 return;
 
             if (skill.IsEmpty || string.IsNullOrWhiteSpace(skill.Name))
@@ -2076,13 +2023,13 @@ namespace SleepHunter.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            if (!(sender is ListBoxItem item))
+            if (sender is not ListBoxItem item)
                 return;
 
-            if (!(item.Content is Spell spell))
+            if (item.Content is not Spell spell)
                 return;
 
-            if (!(clientListBox.SelectedItem is Player player))
+            if (clientListBox.SelectedItem is not Player player)
                 return;
 
             if (spell.IsEmpty || string.IsNullOrWhiteSpace(spell.Name))
@@ -2139,7 +2086,7 @@ namespace SleepHunter.Views
 
         private void removeSelectedSpellButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMacro == null || !(spellQueueListBox.SelectedItem is SpellQueueItem selectedSpell))
+            if (selectedMacro == null || spellQueueListBox.SelectedItem is not SpellQueueItem selectedSpell)
                 return;
 
             selectedMacro.RemoveFromSpellQueue(selectedSpell);
@@ -2185,7 +2132,7 @@ namespace SleepHunter.Views
 
         private void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMacro == null || !(flowerListBox.SelectedItem is FlowerQueueItem selectedTarget))
+            if (selectedMacro == null || flowerListBox.SelectedItem is not FlowerQueueItem selectedTarget)
                 return;
 
             selectedMacro.RemoveFromFlowerQueue(selectedTarget);
@@ -2207,7 +2154,7 @@ namespace SleepHunter.Views
 
         private void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is UserSettings settings))
+            if (sender is not UserSettings settings)
                 return;
 
             logger.LogInfo($"User setting property changed: {e.PropertyName}");
@@ -2247,7 +2194,7 @@ namespace SleepHunter.Views
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is PlayerMacroState macro))
+            if (sender is not PlayerMacroState macro)
                 return;
 
             if (string.Equals("Status", e.PropertyName, StringComparison.OrdinalIgnoreCase))

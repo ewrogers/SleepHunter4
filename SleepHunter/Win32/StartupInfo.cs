@@ -6,119 +6,119 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct StartupInfo
     {
-        int size;
-        string reserved;
-        string desktop;
-        string title;
-        int x;
-        int y;
-        int width;
-        int height;
-        int consoleWidth;
-        int consoleHeight;
-        int fillAttribute;
-        int flags;
-        short showWindow;
-        short reserved2;
-        IntPtr reserved3;
-        IntPtr standardInput;
-        IntPtr standardOutput;
-        IntPtr standardError;
+        private int size;
+        private readonly string reserved;
+        private string desktop;
+        private string title;
+        private int x;
+        private int y;
+        private int width;
+        private int height;
+        private int consoleWidth;
+        private int consoleHeight;
+        private int fillAttribute;
+        private int flags;
+        private short showWindow;
+        private readonly short reserved2;
+        private readonly nint reserved3;
+        private nint standardInput;
+        private nint standardOutput;
+        private nint standardError;
 
         public int Size
         {
-            get { return size; }
-            set { size = value; }
+            readonly get => size;
+            set => size = value;
         }
 
-        public string Reserved { get { return reserved; } }
+        public readonly string Reserved => reserved;
 
         public string Desktop
         {
-            get { return desktop; }
-            set { desktop = value; }
+            readonly get => desktop;
+            set => desktop = value;
         }
 
         public string Title
         {
-            get { return title; }
-            set { title = value; }
+            readonly get => title;
+            set => title = value;
         }
 
         public int X
         {
-            get { return x; }
-            set { x = value; }
+            readonly get => x;
+            set => x = value;
         }
 
         public int Y
         {
-            get { return y; }
-            set { y = value; }
+            readonly get => y;
+            set => y = value;
         }
 
         public int Width
         {
-            get { return width; }
-            set { width = value; }
+            readonly get => width;
+            set => width = value;
         }
 
         public int Height
         {
-            get { return height; }
-            set { height = value; }
+            readonly get => height;
+            set => height = value;
         }
 
         public int ConsoleWidth
         {
-            get { return consoleWidth; }
-            set { consoleWidth = value; }
+            readonly get => consoleWidth;
+            set => consoleWidth = value;
         }
 
         public int ConsoleHeight
         {
-            get { return consoleHeight; }
-            set { consoleHeight = value; }
+            readonly get => consoleHeight;
+            set => consoleHeight = value;
         }
 
         public int FillAttribute
         {
-            get { return fillAttribute; }
-            set { fillAttribute = value; }
+            readonly get => fillAttribute;
+            set => fillAttribute = value;
         }
 
         public int Flags
         {
-            get { return flags; }
-            set { flags = value; }
+            readonly get => flags;
+            set => flags = value;
         }
 
         public short ShowWindow
         {
-            get { return showWindow; }
-            set { showWindow = value; }
+            readonly get => showWindow;
+            set => showWindow = value;
         }
 
-        public short Reserved2 { get { return reserved2; } }
+        public readonly short Reserved2 => reserved2;
 
-        public IntPtr Reserved3 { get { return reserved3; } }
+        public readonly nint Reserved3 => reserved3;
 
-        public IntPtr StandardInput
+        public nint StandardInput
         {
-            get { return standardInput; }
-            set { standardInput = value; }
+            readonly get => standardInput;
+            set => standardInput = value;
         }
 
-        public IntPtr StandardOutput
+        public nint StandardOutput
         {
-            get { return standardOutput; }
-            set { standardOutput = value; }
+            readonly get => standardOutput;
+            set => standardOutput = value;
         }
 
-        public IntPtr StandardError
+        public nint StandardError
         {
-            get { return standardError; }
-            set { standardError = value; }
+            readonly get => standardError;
+            set => standardError = value;
         }
     }
 }

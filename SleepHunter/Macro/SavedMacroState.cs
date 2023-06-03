@@ -13,76 +13,77 @@ namespace SleepHunter.Macro
     [XmlRoot("MacroState")]
     public sealed class SavedMacroState : ObservableObject
     {
-        string characterName;
-        ModifierKeys hotkeyModifiers;
-        Key hotkeyKey;
-        bool useLyliacVineyard;
-        bool flowerAlternateCharacters;
-        List<SavedSkillState> skills = new List<SavedSkillState>();
-        List<SavedSpellState> spells = new List<SavedSpellState>();
-        List<SavedFlowerState> flowers = new List<SavedFlowerState>();
+        private string characterName;
+        private ModifierKeys hotkeyModifiers;
+        private Key hotkeyKey;
+        private bool useLyliacVineyard;
+        private bool flowerAlternateCharacters;
+
+        private List<SavedSkillState> skills = new();
+        private List<SavedSpellState> spells = new();
+        private List<SavedFlowerState> flowers = new();
 
         [XmlAttribute("Name")]
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         [XmlAttribute("HotkeyModifiers")]
         [DefaultValue(ModifierKeys.None)]
         public ModifierKeys HotkeyModifiers
         {
-            get { return hotkeyModifiers; }
-            set { SetProperty(ref hotkeyModifiers, value); }
+            get => hotkeyModifiers;
+            set => SetProperty(ref hotkeyModifiers, value);
         }
 
         [XmlAttribute("Hotkey")]
         [DefaultValue(Key.None)]
         public Key HotkeyKey
         {
-            get { return hotkeyKey; }
-            set { SetProperty(ref hotkeyKey, value); }
+            get => hotkeyKey;
+            set => SetProperty(ref hotkeyKey, value);
         }
 
         [XmlAttribute("UseLyliacVineyard")]
         [DefaultValue(false)]
         public bool UseLyliacVineyard
         {
-            get { return useLyliacVineyard; }
-            set { SetProperty(ref useLyliacVineyard, value); }
+            get => useLyliacVineyard;
+            set => SetProperty(ref useLyliacVineyard, value);
         }
 
         [XmlAttribute("FlowerAlternateCharacters")]
         [DefaultValue(false)]
         public bool FlowerAlternateCharacters
         {
-            get { return flowerAlternateCharacters; }
-            set { SetProperty(ref flowerAlternateCharacters, value); }
+            get => flowerAlternateCharacters;
+            set => SetProperty(ref flowerAlternateCharacters, value);
         }
 
         [XmlArray("Skills")]
         [XmlArrayItem("Skill")]
         public List<SavedSkillState> Skills
         {
-            get { return skills; }
-            private set { SetProperty(ref skills, value); }
+            get => skills;
+            private set => SetProperty(ref skills, value);
         }
 
         [XmlArray("Spells")]
         [XmlArrayItem("Spell")]
         public List<SavedSpellState> Spells
         {
-            get { return spells; }
-            private set { SetProperty(ref spells, value); }
+            get => spells;
+            private set => SetProperty(ref spells, value);
         }
 
         [XmlArray("Flowers")]
         [XmlArrayItem("Flower")]
         public List<SavedFlowerState> Flowers
         {
-            get { return flowers; }
-            private set { SetProperty(ref flowers, value); }
+            get => flowers;
+            private set => SetProperty(ref flowers, value);
         }
 
         public SavedMacroState() { }
@@ -90,7 +91,7 @@ namespace SleepHunter.Macro
         public SavedMacroState(PlayerMacroState macroState)
         {
             if (macroState == null)
-                throw new ArgumentNullException("macroState");
+                throw new ArgumentNullException(nameof(macroState));
 
             CharacterName = macroState.Client.Name;
 
@@ -115,10 +116,8 @@ namespace SleepHunter.Macro
 
         public static SavedMacroState LoadFromFile(string file)
         {
-            using (var inputStream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                return LoadFromStream(inputStream);
-            }
+            using var inputStream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return LoadFromStream(inputStream);
         }
 
         public static SavedMacroState LoadFromStream(Stream stream)
@@ -131,10 +130,8 @@ namespace SleepHunter.Macro
 
         public void SaveToFile(string file)
         {
-            using (var outputStream = File.Create(file))
-            {
-                SaveToStream(outputStream);
-            }
+            using var outputStream = File.Create(file);
+            SaveToStream(outputStream);
         }
 
         public void SaveToStream(Stream stream)

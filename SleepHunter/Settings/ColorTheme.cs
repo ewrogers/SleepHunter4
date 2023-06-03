@@ -14,7 +14,7 @@ namespace SleepHunter.Settings
         private const string DefaultBackgroundHex = "#1e3a8a";
         private const string DefaultForegroundHex = "#eff6ff";
 
-        public static readonly ColorTheme DefaultTheme = new ColorTheme("Default", DefaultBackgroundHex, DefaultForegroundHex, 0, true);
+        public static readonly ColorTheme DefaultTheme = new("Default", DefaultBackgroundHex, DefaultForegroundHex, 0, true);
 
         private string name;
         private int sortIndex;
@@ -33,112 +33,94 @@ namespace SleepHunter.Settings
         [XmlAttribute("Name")]
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         [XmlAttribute("SortIndex")]
         public int SortIndex
         {
-            get { return sortIndex; }
-            set { SetProperty(ref sortIndex, value); }
+            get => sortIndex;
+            set => SetProperty(ref sortIndex, value);
         }
 
         [XmlIgnore]
         public SolidColorBrush Background
         {
-            get { return background; }
+            get => background;
             set
             {
                 if (value == null)
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
 
                 SetProperty(ref background, value);
-                SetProperty(ref backgroundHsv, new HueSaturationValue(value.Color), "BackgroundHsv");
+                SetProperty(ref backgroundHsv, new HueSaturationValue(value.Color), nameof(BackgroundHsv));
             }
         }
 
         [XmlAttribute("Background")]
         public string BackgroundHexColor
         {
-            get { return background.Color.ToString(); }
+            get => background.Color.ToString();
             set
             {
                 if (value == null)
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
 
                 var color = ColorConverter.ConvertFromString(value);
 
-                if (color is Color)
-                    Background = new SolidColorBrush((Color)color);
+                if (color is Color bgColor)
+                    Background = new SolidColorBrush(bgColor);
                 else
                     throw new FormatException("Invalid hex color format.");
             }
         }
 
         [XmlIgnore]
-        public byte BackgroundColorRed
-        {
-            get { return background.Color.R; }
-        }
+        public byte BackgroundColorRed => background.Color.R;
 
         [XmlIgnore]
-        public byte BackgroundColorGreen
-        {
-            get { return background.Color.G; }
-        }
+        public byte BackgroundColorGreen => background.Color.G;
 
         [XmlIgnore]
-        public byte BackgroundColorBlue
-        {
-            get { return background.Color.B; }
-        }
+        public byte BackgroundColorBlue => background.Color.B;
 
         [XmlIgnore]
-        public HueSaturationValue BackgroundHsv
-        {
-            get { return backgroundHsv; }
-        }
+        public HueSaturationValue BackgroundHsv => backgroundHsv;
 
         [XmlIgnore]
-        public HueSaturationValue ForegroundHsv
-        {
-            get { return foregroundHsv; }
-        }
+        public HueSaturationValue ForegroundHsv => foregroundHsv;
 
         [XmlIgnore]
-        public double BackgroundValue
-        {
-            get { return Math.Max(Math.Max(background.Color.R, background.Color.G), background.Color.B); }
-        }
+        public double BackgroundValue => Math.Max(Math.Max(background.Color.R, background.Color.G), background.Color.B);
 
         [XmlIgnore]
         public SolidColorBrush Foreground
         {
-            get { return foreground; }
+            get => foreground;
             set
             {
                 if (value == null)
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
 
                 SetProperty(ref foreground, value);
-                SetProperty(ref foregroundHsv, new HueSaturationValue(value.Color), "ForegroundHsv");
+                SetProperty(ref foregroundHsv, new HueSaturationValue(value.Color), nameof(ForegroundHsv));
             }
         }
 
         [XmlAttribute("Foreground")]
         public string ForegroundHexColor
         {
-            get { return foreground.Color.ToString(); }
+            get => foreground.Color.ToString();
             set
             {
                 if (value == null)
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
 
-                var colorValue = ColorConverter.ConvertFromString(value);
+                var color = ColorConverter.ConvertFromString(value);
 
-                if (colorValue is Color color)
-                    Foreground = new SolidColorBrush(color);
+                if (color is Color fgColor)
+                    Foreground = new SolidColorBrush(fgColor);
                 else
                     throw new FormatException("Invalid hex color format.");
             }
@@ -148,8 +130,8 @@ namespace SleepHunter.Settings
         [DefaultValue(false)]
         public bool IsDefault
         {
-            get { return isDefault; }
-            set { SetProperty(ref isDefault, value); }
+            get => isDefault;
+            set => SetProperty(ref isDefault, value);
         }
 
         private ColorTheme()
@@ -169,16 +151,13 @@ namespace SleepHunter.Settings
 
         public ColorTheme(string name, SolidColorBrush background, SolidColorBrush foreground, int sortIndex = 100, bool isDefault = false)
         {
-            this.name = name ?? throw new ArgumentNullException("name");
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
             this.sortIndex = sortIndex;
-            this.background = background ?? throw new ArgumentNullException("background");
-            this.foreground = foreground ?? throw new ArgumentNullException("foreground");
+            this.background = background ?? throw new ArgumentNullException(nameof(background));
+            this.foreground = foreground ?? throw new ArgumentNullException(nameof(foreground));
             this.isDefault = isDefault;
         }
 
-        public override string ToString()
-        {
-            return Name ?? string.Empty;
-        }
+        public override string ToString() => Name ?? string.Empty;
     }
 }

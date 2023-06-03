@@ -10,110 +10,110 @@ namespace SleepHunter.Macro
     [Serializable]
     public sealed class SavedFlowerState : ObservableObject
     {
-        TargetCoordinateUnits targetMode;
-        string characterName;
-        double locationX;
-        double locationY;
-        double offsetX;
-        double offsetY;
-        int innerRadius;
-        int outerRadius;
-        bool hasInterval = true;
-        TimeSpan interval;
-        int manaThreshold;
+        private TargetCoordinateUnits targetMode;
+        private string characterName;
+        private double locationX;
+        private double locationY;
+        private double offsetX;
+        private double offsetY;
+        private int innerRadius;
+        private int outerRadius;
+        private bool hasInterval = true;
+        private TimeSpan interval;
+        private int manaThreshold;
 
         [XmlAttribute("Mode")]
         public TargetCoordinateUnits TargetMode
         {
-            get { return targetMode; }
-            set { SetProperty(ref targetMode, value); }
+            get => targetMode;
+            set => SetProperty(ref targetMode, value);
         }
 
         [XmlAttribute("TargetName")]
         [DefaultValue(null)]
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         [XmlAttribute("X")]
         [DefaultValue(0)]
         public double LocationX
         {
-            get { return locationX; }
-            set { SetProperty(ref locationX, value); }
+            get => locationX;
+            set => SetProperty(ref locationX, value);
         }
 
         [XmlAttribute("Y")]
         [DefaultValue(0)]
         public double LocationY
         {
-            get { return locationY; }
-            set { SetProperty(ref locationY, value); }
+            get => locationY;
+            set => SetProperty(ref locationY, value);
         }
 
         [XmlAttribute("OffsetX")]
         [DefaultValue(0)]
         public double OffsetX
         {
-            get { return offsetX; }
-            set { SetProperty(ref offsetX, value); }
+            get => offsetX;
+            set => SetProperty(ref offsetX, value);
         }
 
         [XmlAttribute("OffsetY")]
         [DefaultValue(0)]
         public double OffsetY
         {
-            get { return offsetY; }
-            set { SetProperty(ref offsetY, value); }
+            get => offsetY;
+            set => SetProperty(ref offsetY, value);
         }
 
         [XmlAttribute("InnerRadius")]
         [DefaultValue(0)]
         public int InnerRadius
         {
-            get { return innerRadius; }
-            set { SetProperty(ref innerRadius, value); }
+            get => innerRadius;
+            set => SetProperty(ref innerRadius, value);
         }
 
         [XmlAttribute("OuterRadius")]
         [DefaultValue(0)]
         public int OuterRadius
         {
-            get { return outerRadius; }
-            set { SetProperty(ref outerRadius, value); }
+            get => outerRadius;
+            set => SetProperty(ref outerRadius, value);
         }
 
         [XmlIgnore]
         public TimeSpan Interval
         {
-            get { return interval; }
-            set { SetProperty(ref interval, value, onChanged: (p) => { RaisePropertyChanged("IntervalSeconds"); RaisePropertyChanged("HasInterval"); }); }
+            get => interval;
+            set => SetProperty(ref interval, value, onChanged: (p) => { RaisePropertyChanged(nameof(IntervalSeconds)); RaisePropertyChanged(nameof(HasInterval)); });
         }
 
         [XmlAttribute("HasInterval")]
         [DefaultValue(true)]
         public bool HasInterval
         {
-            get { return hasInterval; }
-            set { SetProperty(ref hasInterval, value); }
+            get => hasInterval;
+            set => SetProperty(ref hasInterval, value);
         }
 
         [XmlAttribute("Interval")]
         [DefaultValue(0.0)]
         public double IntervalSeconds
         {
-            get { return interval.TotalSeconds; }
-            set { this.Interval = TimeSpan.FromSeconds(value); }
+            get => interval.TotalSeconds;
+            set => this.Interval = TimeSpan.FromSeconds(value);
         }
 
         [XmlAttribute("IfManaLessThan")]
         [DefaultValue(0)]
         public int ManaThreshold
         {
-            get { return manaThreshold; }
-            set { SetProperty(ref manaThreshold, value); }
+            get => manaThreshold;
+            set => SetProperty(ref manaThreshold, value);
         }
 
         public SavedFlowerState() { }
@@ -121,7 +121,7 @@ namespace SleepHunter.Macro
         public SavedFlowerState(SpellTarget target, TimeSpan? interval, int? manaThreshold = null)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             TargetMode = target.Units;
             CharacterName = target.CharacterName;

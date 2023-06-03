@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Xml.Serialization;
 
 using SleepHunter.Common;
@@ -44,7 +44,6 @@ namespace SleepHunter.Settings
         private string spellPaletteFile;
 
         private string selectedVersion;
-        private bool directDrawFix = true;
         private bool allowMultipleInstances = true;
         private bool skipintroVideo = true;
         private bool noWalls = false;
@@ -81,134 +80,134 @@ namespace SleepHunter.Settings
         [XmlIgnore]
         public bool IsDebugMode
         {
-            get { return isDebugMode; }
-            set { SetProperty(ref isDebugMode, value); }
+            get => isDebugMode;
+            set => SetProperty(ref isDebugMode, value);
         }
 
         [XmlAttribute("Version")]
         public string Version
         {
-            get { return version; }
-            set { SetProperty(ref version, value); }
+            get => version;
+            set => SetProperty(ref version, value);
         }
 
         [XmlIgnore]
         public TimeSpan ProcessUpdateInterval
         {
-            get { return processUpdateInterval; }
-            set { SetProperty(ref processUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ProcessUpdateIntervalSeconds)); }); }
+            get => processUpdateInterval;
+            set => SetProperty(ref processUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ProcessUpdateIntervalSeconds)); });
         }
 
         [XmlElement("ProcessUpdateInterval")]
         public double ProcessUpdateIntervalSeconds
         {
-            get { return processUpdateInterval.TotalSeconds; }
-            set { ProcessUpdateInterval = TimeSpan.FromSeconds(value); }
+            get => processUpdateInterval.TotalSeconds;
+            set => ProcessUpdateInterval = TimeSpan.FromSeconds(value);
         }
 
         [XmlIgnore]
         public TimeSpan ClientUpdateInterval
         {
-            get { return clientUpdateInterval; }
-            set { SetProperty(ref clientUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ClientUpdateIntervalSeconds)); }); }
+            get => clientUpdateInterval;
+            set => SetProperty(ref clientUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ClientUpdateIntervalSeconds)); });
         }
 
         [XmlElement("ClientUpdateInterval")]
         public double ClientUpdateIntervalSeconds
         {
-            get { return clientUpdateInterval.TotalSeconds; }
-            set { ClientUpdateInterval = TimeSpan.FromSeconds(value); }
+            get => clientUpdateInterval.TotalSeconds;
+            set => ClientUpdateInterval = TimeSpan.FromSeconds(value);
         }
 
         [XmlElement("SaveMacroStates")]
         public bool SaveMacroStates
         {
-            get { return saveMacroStates; }
-            set { SetProperty(ref saveMacroStates, value); }
+            get => saveMacroStates;
+            set => SetProperty(ref saveMacroStates, value);
         }
 
         [XmlElement("SelectedTheme")]
         public string SelectedTheme
         {
-            get { return selectedTheme; }
-            set { SetProperty(ref selectedTheme, value); }
+            get => selectedTheme;
+            set => SetProperty(ref selectedTheme, value);
         }
 
         [XmlElement("ClientSortOrder")]
         public PlayerSortOrder ClientSortOrder
         {
-            get { return clientSortOrder; }
-            set { SetProperty(ref clientSortOrder, value); }
+            get => clientSortOrder;
+            set => SetProperty(ref clientSortOrder, value);
         }
 
         [XmlElement("SkillIconSize")]
         public double SkillIconSize
         {
-            get { return skillIconSize; }
-            set { SetProperty(ref skillIconSize, value); }
+            get => skillIconSize;
+            set => SetProperty(ref skillIconSize, value);
         }
 
         [XmlElement("SkillGridWidth")]
         public int SkillGridWidth
         {
-            get { return skillGridWidth; }
-            set { SetProperty(ref skillGridWidth, value); }
+            get => skillGridWidth;
+            set => SetProperty(ref skillGridWidth, value);
         }
 
         [XmlElement("WorldSkillGridWidth")]
         public int WorldSkillGridWidth
         {
-            get { return worldSkillGridWidth; }
-            set { SetProperty(ref worldSkillGridWidth, value); }
+            get => worldSkillGridWidth;
+            set => SetProperty(ref worldSkillGridWidth, value);
         }
 
         [XmlElement("SpellGridWidth")]
         public int SpellGridWidth
         {
-            get { return spellGridWidth; }
-            set { SetProperty(ref spellGridWidth, value); }
+            get => spellGridWidth;
+            set => SetProperty(ref spellGridWidth, value);
         }
 
         [XmlElement("WorldSpellGridWidth")]
         public int WorldSpellGridWidth
         {
-            get { return worldSpellGridWidth; }
-            set { SetProperty(ref worldSpellGridWidth, value); }
+            get => worldSpellGridWidth;
+            set => SetProperty(ref worldSpellGridWidth, value);
         }
 
         [XmlElement("ShowSkillNames")]
         public bool ShowSkillNames
         {
-            get { return showSkillNames; }
-            set { SetProperty(ref showSkillNames, value); }
+            get => showSkillNames;
+            set => SetProperty(ref showSkillNames, value);
         }
 
         [XmlElement("ShowSkillLevels")]
         public bool ShowSkillLevels
         {
-            get { return showSkillLevels; }
-            set { SetProperty(ref showSkillLevels, value); }
+            get => showSkillLevels;
+            set => SetProperty(ref showSkillLevels, value);
         }
 
         [XmlElement("ShowSpellNames")]
         public bool ShowSpellNames
         {
-            get { return showSpellNames; }
-            set { SetProperty(ref showSpellNames, value); }
+            get => showSpellNames;
+            set => SetProperty(ref showSpellNames, value);
         }
 
         [XmlElement("ShowSpellLevels")]
         public bool ShowSpellLevels
         {
-            get { return showSpellLevels; }
-            set { SetProperty(ref showSpellLevels, value); }
+            get => showSpellLevels;
+            set => SetProperty(ref showSpellLevels, value);
         }
 
         [XmlElement("ClientPath")]
         public string ClientPath
         {
-            get { return clientPath; }
-            set { SetProperty(ref clientPath, value); }
+            get => clientPath;
+            set => SetProperty(ref clientPath, value);
         }
 
         [XmlIgnore]
@@ -229,8 +228,8 @@ namespace SleepHunter.Settings
         [XmlElement("IconDataFile")]
         public string IconDataFile
         {
-            get { return iconDataFile; }
-            set { SetProperty(ref iconDataFile, value, onChanged: (s) => { RaisePropertyChanged("IconDataFilePath"); }); }
+            get => iconDataFile;
+            set => SetProperty(ref iconDataFile, value, onChanged: (s) => { RaisePropertyChanged(nameof(IconDataFilePath)); });
         }
 
         [XmlIgnore]
@@ -251,261 +250,249 @@ namespace SleepHunter.Settings
         [XmlElement("PaletteDataFile")]
         public string PaletteDataFile
         {
-            get { return paletteDataFile; }
-            set { SetProperty(ref paletteDataFile, value, onChanged: (s) => { RaisePropertyChanged("PaletteDataFilePath"); }); }
+            get => paletteDataFile;
+            set => SetProperty(ref paletteDataFile, value, onChanged: (s) => { RaisePropertyChanged(nameof(PaletteDataFilePath)); });
         }
 
         [XmlElement("SkillIconFile")]
         public string SkillIconFile
         {
-            get { return skillIconFile; }
-            set { SetProperty(ref skillIconFile, value); }
+            get => skillIconFile;
+            set => SetProperty(ref skillIconFile, value);
         }
 
         [XmlElement("SkillPaletteFile")]
         public string SkillPaletteFile
         {
-            get { return skillPaletteFile; }
-            set { SetProperty(ref skillPaletteFile, value); }
+            get => skillPaletteFile;
+            set => SetProperty(ref skillPaletteFile, value);
         }
 
         [XmlElement("SpellIconFile")]
         public string SpellIconFile
         {
-            get { return spellIconFile; }
-            set { SetProperty(ref spellIconFile, value); }
+            get => spellIconFile;
+            set => SetProperty(ref spellIconFile, value);
         }
 
         [XmlElement("SpellPaletteFile")]
         public string SpellPaletteFile
         {
-            get { return spellPaletteFile; }
-            set { SetProperty(ref spellPaletteFile, value); }
+            get => spellPaletteFile;
+            set => SetProperty(ref spellPaletteFile, value);
         }
 
         [XmlElement("SelectedVersion")]
         public string SelectedVersion
         {
-            get { return selectedVersion; }
-            set { SetProperty(ref selectedVersion, value); }
-        }
-
-        [XmlElement("DirectDrawFix")]
-        public bool DirectDrawFix
-        {
-            get { return directDrawFix; }
-            set { SetProperty(ref directDrawFix, value); }
+            get => selectedVersion;
+            set => SetProperty(ref selectedVersion, value);
         }
 
         [XmlElement("AllowMultipleInstances")]
         public bool AllowMultipleInstances
         {
-            get { return allowMultipleInstances; }
-            set { SetProperty(ref allowMultipleInstances, value); }
+            get => allowMultipleInstances;
+            set => SetProperty(ref allowMultipleInstances, value);
         }
 
         [XmlElement("SkipIntroVideo")]
         public bool SkipIntroVideo
         {
-            get { return skipintroVideo; }
-            set { SetProperty(ref skipintroVideo, value); }
+            get => skipintroVideo;
+            set => SetProperty(ref skipintroVideo, value);
         }
 
         [XmlElement("NoWalls")]
         public bool NoWalls
         {
-            get { return noWalls; }
-            set { SetProperty(ref noWalls, value); }
+            get => noWalls;
+            set => SetProperty(ref noWalls, value);
         }
 
         [XmlElement("MapChangeAction")]
         public MacroAction MapChangeAction
         {
-            get { return mapChangeAction; }
-            set { SetProperty(ref mapChangeAction, value); }
+            get => mapChangeAction;
+            set => SetProperty(ref mapChangeAction, value);
         }
 
         [XmlElement("CoordsChangeAction")]
         public MacroAction CoordsChangeAction
         {
-            get { return coordsChangeAction; }
-            set { SetProperty(ref coordsChangeAction, value); }
+            get => coordsChangeAction;
+            set => SetProperty(ref coordsChangeAction, value);
         }
 
         [XmlElement("UseShiftForMedeniaPane")]
         public bool UseShiftForMedeniaPane
         {
-            get { return useShiftForMedeniaPane; }
-            set { SetProperty(ref useShiftForMedeniaPane, value); }
+            get => useShiftForMedeniaPane;
+            set => SetProperty(ref useShiftForMedeniaPane, value);
         }
 
         [XmlElement("PreserveUserPanel")]
         public bool PreserveUserPanel
         {
-            get { return preserveUserPanel; }
-            set { SetProperty(ref preserveUserPanel, value); }
+            get => preserveUserPanel;
+            set => SetProperty(ref preserveUserPanel, value);
         }
 
         [XmlElement("UseSpaceForAssail")]
         public bool UseSpaceForAssail
         {
-            get { return useSpaceForAssail; }
-            set { SetProperty(ref useSpaceForAssail, value); }
+            get => useSpaceForAssail;
+            set => SetProperty(ref useSpaceForAssail, value);
         }
 
         [XmlElement("DisarmForAssails")]
         public bool DisarmForAssails
         {
-            get { return disarmForAssails; }
-            set { SetProperty(ref disarmForAssails, value); }
+            get => disarmForAssails;
+            set => SetProperty(ref disarmForAssails, value);
         }
 
         [XmlElement("SpellRotationMode")]
         public SpellRotationMode SpellRotationMode
         {
-            get { return spellRotationMode; }
-            set { SetProperty(ref spellRotationMode, value); }
+            get => spellRotationMode;
+            set => SetProperty(ref spellRotationMode, value);
         }
 
         [XmlIgnore]
         public TimeSpan ZeroLineDelay
         {
-            get { return zeroLineDelay; }
-            set { SetProperty(ref zeroLineDelay, value, onChanged: (s) => { RaisePropertyChanged("ZeroLineDelaySeconds"); }); }
+            get => zeroLineDelay;
+            set => SetProperty(ref zeroLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(ZeroLineDelaySeconds)); });
         }
 
         [XmlElement("ZeroLineDelay")]
         public double ZeroLineDelaySeconds
         {
-            get { return zeroLineDelay.TotalSeconds; }
-            set { ZeroLineDelay = TimeSpan.FromSeconds(value); }
+            get => zeroLineDelay.TotalSeconds;
+            set => ZeroLineDelay = TimeSpan.FromSeconds(value);
         }
 
         [XmlIgnore]
         public TimeSpan SingleLineDelay
         {
-            get { return singleLineDelay; }
-            set { SetProperty(ref singleLineDelay, value, onChanged: (s) => { RaisePropertyChanged("SingleLineDelaySeconds"); }); }
+            get => singleLineDelay;
+            set => SetProperty(ref singleLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(SingleLineDelaySeconds)); });
         }
 
         [XmlElement("SingleLineDelay")]
         public double SingleLineDelaySeconds
         {
-            get { return singleLineDelay.TotalSeconds; }
-            set { SingleLineDelay = TimeSpan.FromSeconds(value); }
+            get => singleLineDelay.TotalSeconds;
+            set => SingleLineDelay = TimeSpan.FromSeconds(value);
         }
 
         [XmlIgnore]
         public TimeSpan MultipleLineDelay
         {
-            get { return multipleLineDelay; }
-            set { SetProperty(ref multipleLineDelay, value, onChanged: (s) => { RaisePropertyChanged("MultipleLineDelaySeconds"); }); }
+            get => multipleLineDelay;
+            set => SetProperty(ref multipleLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(MultipleLineDelaySeconds)); });
         }
 
         [XmlElement("MultipleLineDelay")]
         public double MultipleLineDelaySeconds
         {
-            get { return multipleLineDelay.TotalSeconds; }
-            set { MultipleLineDelay = TimeSpan.FromSeconds(value); }
+            get => multipleLineDelay.TotalSeconds;
+            set => MultipleLineDelay = TimeSpan.FromSeconds(value);
         }
 
         [XmlElement("UseFasSpiorad")]
         public bool UseFasSpiorad
         {
-            get { return useFasSpiorad; }
-            set { SetProperty(ref useFasSpiorad, value); }
+            get => useFasSpiorad;
+            set => SetProperty(ref useFasSpiorad, value);
         }
 
         [XmlElement("UseFasSpioradOnDemand")]
         public bool UseFasSpioradOnDemand
         {
-            get { return useFasSpioradOnDemand; }
-            set { SetProperty(ref useFasSpioradOnDemand, value); }
+            get => useFasSpioradOnDemand;
+            set => SetProperty(ref useFasSpioradOnDemand, value);
         }
 
         [XmlElement("FasSpioradThreshold")]
         public double FasSpioradThreshold
         {
-            get { return fasSpioradThreshold; }
-            set { SetProperty(ref fasSpioradThreshold, value); }
+            get => fasSpioradThreshold;
+            set => SetProperty(ref fasSpioradThreshold, value);
         }
 
         [XmlElement("RequireManaForSpells")]
         public bool RequireManaForSpells
         {
-            get { return requireManaForSpells; }
-            set { SetProperty(ref requireManaForSpells, value); }
+            get => requireManaForSpells;
+            set => SetProperty(ref requireManaForSpells, value);
         }
 
         [XmlElement("AllowStaffSwitching")]
         public bool AllowStaffSwitching
         {
-            get { return allowStaffSwitching; }
-            set { SetProperty(ref allowStaffSwitching, value); }
+            get => allowStaffSwitching;
+            set => SetProperty(ref allowStaffSwitching, value);
         }
 
         [XmlElement("WarnOnDuplicateSpells")]
         public bool WarnOnDuplicateSpells
         {
-            get { return warnOnDuplicateSpells; }
-            set { SetProperty(ref warnOnDuplicateSpells, value); }
+            get => warnOnDuplicateSpells;
+            set => SetProperty(ref warnOnDuplicateSpells, value);
         }
 
         [XmlElement("FlowerAltsFirst")]
         public bool FlowerAltsFirst
         {
-            get { return flowerAltsFirst; }
-            set { SetProperty(ref flowerAltsFirst, value); }
+            get => flowerAltsFirst;
+            set => SetProperty(ref flowerAltsFirst, value);
         }
 
         [XmlElement("FlowerBeforeSpellMacros")]
         public bool FlowerBeforeSpellMacros
         {
-            get { return flowerBeforeSpellMacros; }
-            set { SetProperty(ref flowerBeforeSpellMacros, value); }
+            get => flowerBeforeSpellMacros;
+            set => SetProperty(ref flowerBeforeSpellMacros, value);
         }
 
         [XmlElement("FlowerHasMinimum")]
         public bool FlowerHasMinimum
         {
-            get { return flowerHasMinimum; }
-            set { SetProperty(ref flowerHasMinimum, value); }
+            get => flowerHasMinimum;
+            set => SetProperty(ref flowerHasMinimum, value);
         }
 
         [XmlElement("FlowerMinimumMana")]
         public int FlowerMinimumMana
         {
-            get { return flowerMinimumMana; }
-            set { SetProperty(ref flowerMinimumMana, value); }
+            get => flowerMinimumMana;
+            set => SetProperty(ref flowerMinimumMana, value);
         }
 
         [XmlElement("CheckForUpdates")]
         public bool AutoUpdateEnabled
         {
-            get { return autoUpdateEnabled; }
-            set { SetProperty(ref autoUpdateEnabled, value); }
+            get => autoUpdateEnabled;
+            set => SetProperty(ref autoUpdateEnabled, value);
         }
 
         [XmlElement("LoggingEnabled")]
         public bool LoggingEnabled
         {
-            get { return loggingEnabled; }
-            set { SetProperty(ref loggingEnabled, value); }
+            get => loggingEnabled;
+            set => SetProperty(ref loggingEnabled, value);
         }
 
         [XmlElement("ShowAllProcesses")]
         public bool ShowAllProcesses
         {
-            get { return showAllProcesses; }
-            set { SetProperty(ref showAllProcesses, value); }
+            get => showAllProcesses;
+            set => SetProperty(ref showAllProcesses, value);
         }
 
-        public UserSettings()
-        {
-            // The DirectDraw patch may not work properly on non-x86 operating systems, disable by default for ARM
-            var osArch = RuntimeInformation.OSArchitecture;
-            directDrawFix = osArch == Architecture.X86 || osArch == Architecture.X64;
-        }
+        public UserSettings() { }
 
         public static UserSettings CreateDefaults()
         {
@@ -516,8 +503,6 @@ namespace SleepHunter.Settings
 
         public void ResetDefaults()
         {
-            var osArch = RuntimeInformation.OSArchitecture;
-
             Version = CurrentVersion;
 
             ProcessUpdateInterval = TimeSpan.FromSeconds(1);
@@ -536,7 +521,7 @@ namespace SleepHunter.Settings
             ShowSpellNames = false;
             ShowSpellLevels = true;
 
-            ClientPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "KRU", "Dark Ages", "Darkages.exe");
+            ClientPath = FindExecutablePath();
             IconDataFile = "setoa.dat";
             PaletteDataFile = "setoa.dat";
             SkillIconFile = "skill001.epf";
@@ -545,8 +530,6 @@ namespace SleepHunter.Settings
             SpellPaletteFile = "gui06.pal";
 
             SelectedVersion = "Auto-Detect";
-            // The DirectDraw patch may not work properly on non-x86 operating systems, disable by default for ARM
-            DirectDrawFix = osArch == Architecture.X86 || osArch == Architecture.X64;
             AllowMultipleInstances = true;
             SkipIntroVideo = true;
             NoWalls = false;
@@ -579,6 +562,23 @@ namespace SleepHunter.Settings
             // debug settings
             LoggingEnabled = false;
             ShowAllProcesses = false;
+        }
+
+        private static string FindExecutablePath()
+        {
+            var possiblePaths = new string[] {
+                Path.Combine("C:", "Dark Ages", "DarkAges.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "KRU", "Dark Ages", "Darkages.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "KRU", "Dark Ages", "Darkages.exe")
+            };
+
+            foreach (var possiblePath in possiblePaths)
+            {
+                if (File.Exists(possiblePath))
+                    return possiblePath;
+            }
+
+            return possiblePaths.Last();
         }
     }
 }

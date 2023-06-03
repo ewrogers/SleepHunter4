@@ -7,65 +7,45 @@ namespace SleepHunter.Media
 {
     public sealed class EpfImage
     {
-        string name;
-        int width;
-        int height;
-        List<EpfFrame> frames;
+        private readonly List<EpfFrame> frames = new();
 
-        public string Name
+        public string Name { get; set; }
+
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
+        public int FrameCount => frames.Count;
+        public IEnumerable<EpfFrame> Frames => from f in frames select f;
+
+        public EpfImage(string name, int width, int height, IEnumerable<EpfFrame> frameCollection)
         {
-            get { return name; }
-            set { name = value; }
-        }
+            Name = name;
+            Width = width;
+            Height = height;
 
-        public int Width
-        {
-            get { return width; }
-            set { width = value; }
-        }
-
-        public int Height
-        {
-            get { return height; }
-            set { height = value; }
-        }
-
-        public int FrameCount { get { return frames.Count; } }
-        public IEnumerable<EpfFrame> Frames
-        {
-            get { return from f in frames select f; }
-        }
-
-        public EpfImage(string name, int width, int height, IEnumerable<EpfFrame> frames)
-        {
-            this.name = name;
-            this.width = width;
-            this.height = height;
-
-            if (frames != null)
-                this.frames = new List<EpfFrame>(frames);
-            else
-                this.frames = new List<EpfFrame>();
+            if (frameCollection != null)
+                frames.AddRange(frameCollection);
         }
 
         public EpfImage(string filename)
            : this(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), leaveOpen: false)
         {
-            this.name = filename;
+            Name = filename;
         }
 
         public EpfImage(Stream stream, bool leaveOpen = true)
         {
-            this.frames = new List<EpfFrame>();
+            frames = new List<EpfFrame>();
 
             var reader = new BinaryReader(stream);
 
             var frameCount = reader.ReadUInt16();
 
-            this.width = reader.ReadInt16();
-            this.height = reader.ReadInt16();
+            Width = reader.ReadInt16();
+            Height = reader.ReadInt16();
 
-            var unknown = reader.ReadUInt16();
+            var _ = reader.ReadUInt16();
             var tableOffset = reader.ReadUInt32();
 
             reader.BaseStream.Position += tableOffset;
@@ -104,19 +84,10 @@ namespace SleepHunter.Media
                 stream.Dispose();
         }
 
-        public bool HasFrame(int index)
-        {
-            return frames.Count > index;
-        }
+        public bool HasFrame(int index) => frames.Count > index;
 
-        public EpfFrame GetFrameAt(int index)
-        {
-            return frames[index];
-        }
+        public EpfFrame GetFrameAt(int index) => frames[index];
 
-        public override string ToString()
-        {
-            return name ?? "<Unknown EPF>";
-        }
+        public override string ToString() => Name ?? "<Unknown EPF>";
     }
 }

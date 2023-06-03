@@ -19,18 +19,18 @@ namespace SleepHunter.Views
 
         public FlowerQueueItem FlowerQueueItem
         {
-            get { return flowerQueueItem; }
-            private set { flowerQueueItem = value; }
+            get => flowerQueueItem;
+            private set => flowerQueueItem = value;
         }
 
         public bool IsEditMode
         {
-            get { return (bool)GetValue(IsEditModeProperty); }
-            set { SetValue(IsEditModeProperty, value); }
+            get => (bool)GetValue(IsEditModeProperty);
+            set => SetValue(IsEditModeProperty, value);
         }
 
         public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(FlowerTargetWindow), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(FlowerTargetWindow), new PropertyMetadata(false));
 
         public FlowerTargetWindow(FlowerQueueItem item, bool isEditMode = true)
            : this()
@@ -90,7 +90,7 @@ namespace SleepHunter.Views
 
         private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is Player player))
+            if (sender is not Player player)
                 return;
 
             if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
@@ -110,7 +110,6 @@ namespace SleepHunter.Views
             var selectedMode = GetSelectedMode();
             var interval = TimeSpan.Zero;
 
-            #region Check Target Mode
             if (selectedMode == TargetCoordinateUnits.None)
             {
                 this.ShowMessageBox("Target Required",
@@ -122,7 +121,6 @@ namespace SleepHunter.Views
                 targetModeComboBox.IsDropDownOpen = true;
                 return false;
             }
-            #endregion
 
             var characterName = characterComboBox.SelectedValue as string;
 

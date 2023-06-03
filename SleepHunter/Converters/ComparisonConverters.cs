@@ -8,7 +8,7 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var integer = value is double ? (double)value : (int)value;
+            var integer = value is double doubleValue ? doubleValue : (int)value;
 
             if (!double.TryParse(parameter as string, out var threshold))
                 return false;
@@ -26,7 +26,7 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var integer = value is double ? (double)value : (int)value;
+            var integer = value is double doubleValue ? doubleValue : (int)value;
 
             if (!double.TryParse(parameter as string, out var threshold))
                 return false;
@@ -44,7 +44,7 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var integer = value is double ? (double)value : (int)value;
+            var integer = value is double doubleValue ? doubleValue : (int)value;
 
             if (!double.TryParse(parameter as string, out var threshold))
                 return false;
@@ -62,7 +62,7 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var integer = value is double ? (double)value : (int)value;
+            var integer = value is double doubleValue ? doubleValue : (int)value;
 
             if (!double.TryParse(parameter as string, out var threshold))
                 return false;
@@ -80,7 +80,7 @@ namespace SleepHunter.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var integer = value is double ? (double)value : (int)value;
+            var integer = value is double doubleValue ? doubleValue : (int)value;
 
             return Math.Abs(integer);
         }

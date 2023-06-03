@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,55 +10,28 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public enum EquipmentSlot : byte
-    {
-        Weapon,
-        Armor,
-        Shield,
-        Helmet,
-        Earring,
-        Necklace,
-        LeftRing,
-        RightRing,
-        LeftGauntlet,
-        RightGauntlet,
-        Belt,
-        Greaves,
-        Boots,
-        Accessory1,
-        Overcoat,
-        Hat,
-        Accessory2,
-        Accessory3
-    }
-
+    
     public sealed class EquipmentSet : IEnumerable<InventoryItem>
     {
-        static readonly string EquipmentKey = @"Equipment";
+        private const string EquipmentKey = @"Equipment";
 
-        public static readonly int EquipmentCount = 18;
+        public const int EquipmentCount = 18;
 
-        Player owner;
-        List<InventoryItem> equipment = new List<InventoryItem>(EquipmentCount);
+        private readonly List<InventoryItem> equipment = new(EquipmentCount);
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { owner = value; }
-        }
+        public event EventHandler EquipmentUpdated;
 
-        public int Count { get { return equipment.Count((item) => { return !item.IsEmpty; }); } }
+        public Player Owner { get; }
 
-        public EquipmentSet()
-           : this(null) { }
+        public int Count => equipment.Count((item) => { return !item.IsEmpty; });
 
         public EquipmentSet(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InitializeEquipment();
         }
 
-        void InitializeEquipment()
+        private void InitializeEquipment()
         {
             for (int i = 0; i < EquipmentCount; i++)
             {
@@ -191,7 +163,7 @@ namespace SleepHunter.Models
             return isEmpty;
         }
 
-        bool IsSlotEmpty(EquipmentSlot slot)
+        private bool IsSlotEmpty(EquipmentSlot slot)
         {
             var item = GetSlot(slot);
 
@@ -201,18 +173,16 @@ namespace SleepHunter.Models
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
+            EquipmentUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
-            var version = this.Owner.Version;
+            var version = Owner.Version;
 
             if (version == null)
             {
@@ -228,39 +198,31 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Stream stream = null;
-            try
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+            var equipmentPointer = equipmentVariable.DereferenceValue(reader);
+
+            if (equipmentPointer == 0)
             {
-
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
-                {
-                    stream = null;
-                    var equipmentPointer = equipmentVariable.DereferenceValue(reader);
-
-                    if (equipmentPointer == 0)
-                    {
-                        ResetDefaults();
-                        return;
-                    }
-
-                    reader.BaseStream.Position = equipmentPointer;
-
-                    for (int i = 0; i < equipmentVariable.Count; i++)
-                    {
-                        try
-                        {
-                            string name = reader.ReadFixedString(equipmentVariable.MaxLength);
-
-                            equipment[i].IsEmpty = string.IsNullOrWhiteSpace(name);
-                            equipment[i].IconIndex = 0;
-                            equipment[i].Name = name.StripNumbers();
-                        }
-                        catch { }
-                    }
-                }
+                ResetDefaults();
+                return;
             }
-            finally { stream?.Dispose(); }
+
+            reader.BaseStream.Position = equipmentPointer;
+
+            for (int i = 0; i < equipmentVariable.Count; i++)
+            {
+                try
+                {
+                    string name = reader.ReadFixedString(equipmentVariable.MaxLength);
+
+                    equipment[i].IsEmpty = string.IsNullOrWhiteSpace(name);
+                    equipment[i].IconIndex = 0;
+                    equipment[i].Name = name.StripNumbers();
+                }
+                catch { }
+            }
         }
 
         public void ResetDefaults()
@@ -272,12 +234,8 @@ namespace SleepHunter.Models
             }
         }
 
-        public InventoryItem GetSlot(EquipmentSlot slot)
-        {
-            return equipment[(int)slot];
-        }
+        public InventoryItem GetSlot(EquipmentSlot slot) => equipment[(int)slot];
 
-        #region IEnumerable Methods
         public IEnumerator<InventoryItem> GetEnumerator()
         {
             foreach (var gear in equipment)
@@ -285,10 +243,6 @@ namespace SleepHunter.Models
                     yield return gear;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

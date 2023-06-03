@@ -10,17 +10,17 @@ namespace SleepHunter.Converters
 {
     public sealed class PlayerClassConverter : IValueConverter
     {
-        static readonly Regex WarriorRegex = new Regex(@"\s*Warrior\s*");
-        static readonly Regex WizardRegex = new Regex(@"\s*Wizard\s*");
-        static readonly Regex PriestRegex = new Regex(@"\s*Priest\s*");
-        static readonly Regex RogueRegex = new Regex(@"\s*Rogue\s*");
-        static readonly Regex MonkRegex = new Regex(@"\s*Monk\s*");
-        static readonly Regex GladiatorRegex = new Regex(@"\s*Gladiator\s*");
-        static readonly Regex SummonerRegex = new Regex(@"\s*Summoner\s*");
-        static readonly Regex BardRegex = new Regex(@"\s*Bard\s*");
-        static readonly Regex ArcherRegex = new Regex(@"\s*Archer\s*");
-        static readonly Regex DruidRegex = new Regex(@"\s*Druid\s*");
-        static readonly Regex AllClassRegex = new Regex(@"\s*All\s*");
+        private static readonly Regex WarriorRegex = new(@"\s*Warrior\s*");
+        private static readonly Regex WizardRegex = new(@"\s*Wizard\s*");
+        private static readonly Regex PriestRegex = new(@"\s*Priest\s*");
+        private static readonly Regex RogueRegex = new(@"\s*Rogue\s*");
+        private static readonly Regex MonkRegex = new(@"\s*Monk\s*");
+        private static readonly Regex GladiatorRegex = new(@"\s*Gladiator\s*");
+        private static readonly Regex SummonerRegex = new(@"\s*Summoner\s*");
+        private static readonly Regex BardRegex = new(@"\s*Bard\s*");
+        private static readonly Regex ArcherRegex = new(@"\s*Archer\s*");
+        private static readonly Regex DruidRegex = new(@"\s*Druid\s*");
+        private static readonly Regex AllClassRegex = new(@"\s*All\s*");
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -87,12 +87,9 @@ namespace SleepHunter.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var isMedenia = string.Equals("Medenia", parameter as string, StringComparison.OrdinalIgnoreCase);
-
-            var valueString = value as string;
-
             var playerClass = PlayerClass.Peasant;
 
-            if (valueString == null)
+            if (value is not string valueString)
                 return playerClass;
 
             if (AllClassRegex.IsMatch(valueString))

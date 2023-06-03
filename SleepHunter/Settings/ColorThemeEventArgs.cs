@@ -6,16 +6,11 @@ namespace SleepHunter.Settings
 
     public sealed class ColorThemeEventArgs : EventArgs
     {
-        readonly ColorTheme theme;
-
-        public ColorTheme Theme { get { return theme; } }
+        public ColorTheme Theme { get; }
 
         public ColorThemeEventArgs(ColorTheme theme)
         {
-            if (theme == null)
-                throw new ArgumentNullException("theme");
-
-            this.theme = theme;
+            Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         }
     }
 }
