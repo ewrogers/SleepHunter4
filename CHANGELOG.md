@@ -12,16 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- DirectDraw compatbility fix is now a manual Apply/Revert button in `Game Client` settings
 - Small UI tweaks on character list text spacing
 - Adjusted min size on the character list to accomodate new status icon
 - Will look in a few places for the default DA client path
+
+### Removed
+
+- `DirectDrawCompatibilityFix` option and support (it was causing side effects for some users)
+- **TO REMOVE:** Delete `ddraw.dll` and the `DDrawCompat-Darkages.ini` files from your DA client folder
 
 ### Fixed
 
 - Marked `Assail`, `Assault`, and `Clobber` skills as assail types
 - Clear macro status on stop (fixes "Assailing" being displayed when stopped)
 - `Execute` skill now also waits for < 2% hp
+- Spell queue levels not updating until next cast
 
 ## [4.6.0] - 2023-05-31
 

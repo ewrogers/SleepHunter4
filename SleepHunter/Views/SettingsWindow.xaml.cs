@@ -16,9 +16,6 @@ namespace SleepHunter.Views
 {
     public partial class SettingsWindow : Window
     {
-        private const string DirectDrawPatchFile = "ddraw.dll";
-        private const string DirectDrawConfigFile = "DDrawCompatOverlay-Darkages.ini";
-
         public static readonly int GeneralTabIndex = 0;
         public static readonly int UserInterfaceTabIndex = 1;
         public static readonly int GameClientTabIndex = 2;

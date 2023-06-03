@@ -552,6 +552,7 @@ namespace SleepHunter.Views
             if (macro != null)
             {
                 macro.StatusChanged += HandleMacroStatusChanged;
+                macro.Client.PlayerUpdated += HandleClientUpdateTick;
             }
 
             try
@@ -635,6 +636,7 @@ namespace SleepHunter.Views
             if (macro != null)
             {
                 macro.StatusChanged -= HandleMacroStatusChanged;
+                macro.Client.PlayerUpdated -= HandleClientUpdateTick;
 
                 macro.ClearSpellQueue();
                 macro.ClearFlowerQueue();
@@ -650,6 +652,26 @@ namespace SleepHunter.Views
         private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e)
         {
             UpdateToolbarState();
+        }
+
+        private void HandleClientUpdateTick(object sender, EventArgs e)
+        {
+            if (selectedMacro == null || sender is not Player player)
+                return;
+
+            if (selectedMacro.Client != player)
+                return;
+
+            // Refresh the spell queue levels on tick
+            foreach (var queuedSpell in selectedMacro.QueuedSpells)
+            {
+                var spell = player.Spellbook.GetSpell(queuedSpell.Name);
+                if (spell is null)
+                    continue;
+
+                queuedSpell.MaximumLevel = spell.MaximumLevel;
+                queuedSpell.CurrentLevel = spell.CurrentLevel;
+            }
         }
 
         private void SelectNextAvailablePlayer()
