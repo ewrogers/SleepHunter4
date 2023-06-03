@@ -1,34 +1,27 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace SleepHunter.Media
 {
     public sealed class RenderedBitmap
     {
-        int width;
-        int height;
-        int stride;
-        PixelFormat format;
-        byte[] bits;
-
-        public int Width { get { return width; } }
-        public int Height { get { return height; } }
-        public int Stride { get { return stride; } }
-        public PixelFormat Format { get { return format; } }
-        public byte[] Bits { get { return bits; } }
+        public int Width { get; }
+        public int Height { get; }
+        public int Stride { get; }
+        public PixelFormat Format { get; }
+        public byte[] Bits { get; }
 
         public RenderedBitmap(int width, int height, int stride, PixelFormat format, byte[] bits)
         {
-            this.width = width;
-            this.height = height;
-            this.stride = stride;
-            this.format = format;
-            this.bits = bits;
+            Width = width;
+            Height = height;
+            Stride = stride;
+            Format = format;
+            Bits = bits ?? throw new ArgumentNullException(nameof(bits));
         }
 
         public BitmapSource CreateBitmapSource(double dpiX = 96.0, double dpiY = 96.0)
-        {
-            return BitmapSource.Create(width, height, dpiX, dpiY, format, null, bits, stride);
-        }
+            => BitmapSource.Create(Width, Height, dpiX, dpiY, Format, null, Bits, Stride);
     }
 }

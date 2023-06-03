@@ -12,56 +12,38 @@ namespace SleepHunter.Media
 {
     public sealed class IconManager
     {
-        #region Singleton
-        static readonly IconManager instance = new IconManager();
+        private static readonly IconManager instance = new();
+        public static IconManager Instance => instance;
 
-        public static IconManager Instance { get { return instance; } }
+        private IconManager() { }
 
-        private IconManager()
-        {
-
-        }
-        #endregion
-
-        TaskScheduler context;
-        ConcurrentDictionary<int, BitmapSource> skillIcons = new ConcurrentDictionary<int, BitmapSource>();
-        ConcurrentDictionary<int, BitmapSource> spellIcons = new ConcurrentDictionary<int, BitmapSource>();
-        ColorPalette skillIconPalette;
-        ColorPalette spellIconPalette;
-        EpfImage skillIconImage;
-        EpfImage spellIconImage;
+        private TaskScheduler context;
+        private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new();
+        private readonly ConcurrentDictionary<int, BitmapSource> spellIcons = new();
+        private ColorPalette skillIconPalette;
+        private ColorPalette spellIconPalette;
+        private EpfImage skillIconImage;
+        private EpfImage spellIconImage;
 
         public TaskScheduler Context
         {
-            get { return context; }
-            set { context = value; }
+            get => context;
+            set => context = value;
         }
 
-        public int SkillIconCount { get { return skillIcons.Count; } }
-        public int SpellIconCount { get { return spellIcons.Count; } }
+        public int SkillIconCount => skillIcons.Count;
+        public int SpellIconCount => spellIcons.Count;
 
-        public IEnumerable<BitmapSource> SkillIcons { get { return from s in skillIcons.Values select s; } }
-        public IEnumerable<BitmapSource> SpellIcons { get { return from s in spellIcons.Values select s; } }
+        public IEnumerable<BitmapSource> SkillIcons => from s in skillIcons.Values select s;
+        public IEnumerable<BitmapSource> SpellIcons => from s in spellIcons.Values select s;
 
-        public void AddSkillIcon(int index, BitmapSource source)
-        {
-            skillIcons[index] = source;
-        }
+        public void AddSkillIcon(int index, BitmapSource source) => skillIcons[index] = source;
 
-        public void AddSpellIcon(int index, BitmapSource source)
-        {
-            spellIcons[index] = source;
-        }
+        public void AddSpellIcon(int index, BitmapSource source) => spellIcons[index] = source;
 
-        public bool ContainsSkillIcon(int index)
-        {
-            return skillIcons.ContainsKey(index);
-        }
+        public bool ContainsSkillIcon(int index) => skillIcons.ContainsKey(index);
 
-        public bool ContainsSpellIcon(int index)
-        {
-            return spellIcons.ContainsKey(index);
-        }
+        public bool ContainsSpellIcon(int index) => spellIcons.ContainsKey(index);
 
         public BitmapSource GetSkillIcon(int index)
         {
@@ -104,37 +86,20 @@ namespace SleepHunter.Media
                 return null;
         }
 
-        public bool RemoveSkillIcon(int index)
-        {
-            BitmapSource removedIcon;
-            return skillIcons.TryRemove(index, out removedIcon);
-        }
+        public bool RemoveSkillIcon(int index) => skillIcons.TryRemove(index, out _);
 
-        public bool RemoveSpellIcon(int index)
-        {
-            BitmapSource removedIcon;
-            return spellIcons.TryRemove(index, out removedIcon);
-        }
+        public bool RemoveSpellIcon(int index) => spellIcons.TryRemove(index, out _);
 
-        public void ClearSkillIcons()
-        {
-            skillIcons.Clear();
-        }
+        public void ClearSkillIcons() => skillIcons.Clear();
 
-        public void ClearSpellIcons()
-        {
-            spellIcons.Clear();
-        }
+        public void ClearSpellIcons() => spellIcons.Clear();
 
         RenderedBitmap RenderSkillIcon(int index)
         {
             var settings = UserSettingsManager.Instance.Settings;
 
-            if (skillIconPalette == null)
-                skillIconPalette = GetColorPalette(settings.IconDataFile, settings.SkillPaletteFile);
-
-            if (skillIconImage == null)
-                skillIconImage = GetEpfImage(settings.IconDataFile, settings.SkillIconFile);
+            skillIconPalette ??= GetColorPalette(settings.IconDataFile, settings.SkillPaletteFile);
+            skillIconImage ??= GetEpfImage(settings.IconDataFile, settings.SkillIconFile);
 
             if (skillIconPalette == null || skillIconImage == null)
                 return null;
@@ -143,7 +108,7 @@ namespace SleepHunter.Media
                 return null;
 
             var frame = skillIconImage.GetFrameAt(index);
-            var bitmap = RenderManager.Instance.Render(frame, skillIconPalette);
+            var bitmap = RenderManager.Render(frame, skillIconPalette);
 
             return bitmap;
         }
@@ -152,11 +117,8 @@ namespace SleepHunter.Media
         {
             var settings = UserSettingsManager.Instance.Settings;
 
-            if (spellIconPalette == null)
-                spellIconPalette = GetColorPalette(settings.IconDataFile, settings.SpellPaletteFile);
-
-            if (spellIconImage == null)
-                spellIconImage = GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
+            spellIconPalette ??= GetColorPalette(settings.IconDataFile, settings.SpellPaletteFile);
+            spellIconImage ??= GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
 
             if (spellIconPalette == null || spellIconImage == null)
                 return null;
@@ -165,7 +127,7 @@ namespace SleepHunter.Media
                 return null;
 
             var frame = spellIconImage.GetFrameAt(index);
-            var bitmap = RenderManager.Instance.Render(frame, spellIconPalette);
+            var bitmap = RenderManager.Render(frame, spellIconPalette);
 
             return bitmap;
         }
@@ -202,10 +164,8 @@ namespace SleepHunter.Media
 
             try
             {
-                using (var inputStream = archive.GetStream(paletteFile))
-                {
-                    return new ColorPalette(inputStream);
-                }
+                using var inputStream = archive.GetStream(paletteFile);
+                return new ColorPalette(inputStream);
             }
             catch { return null; }
         }
@@ -220,10 +180,8 @@ namespace SleepHunter.Media
 
             try
             {
-                using (var inputStream = archive.GetStream(epfFile))
-                {
-                    return new EpfImage(inputStream);
-                }
+                using var inputStream = archive.GetStream(epfFile);
+                return new EpfImage(inputStream);
             }
             catch { return null; }
         }
