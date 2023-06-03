@@ -16,31 +16,31 @@ namespace SleepHunter.Views
 {
     public partial class SpellTargetWindow : Window
     {
-        private SpellQueueItem spellQueueItem = new SpellQueueItem();
+        private SpellQueueItem spellQueueItem = new();
 
         public SpellQueueItem SpellQueueItem
         {
-            get { return spellQueueItem; }
-            private set { spellQueueItem = value; }
+            get => spellQueueItem;
+            private set => spellQueueItem = value;
         }
 
         public Spell Spell
         {
-            get { return (Spell)GetValue(SpellProperty); }
-            set { SetValue(SpellProperty, value); }
+            get => (Spell)GetValue(SpellProperty);
+            set => SetValue(SpellProperty, value);
         }
 
         public bool IsEditMode
         {
-            get { return (bool)GetValue(IsEditModeProperty); }
-            set { SetValue(IsEditModeProperty, value); }
+            get => (bool)GetValue(IsEditModeProperty);
+            set => SetValue(IsEditModeProperty, value);
         }
 
         public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
 
         public static readonly DependencyProperty SpellProperty =
-            DependencyProperty.Register("Spell", typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Spell), typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
 
         public SpellTargetWindow(Spell spell, SpellQueueItem item, bool isEditMode = true)
            : this(spell)
@@ -132,7 +132,6 @@ namespace SleepHunter.Views
 
         private bool ValidateSpellTarget()
         {
-            #region Spell Check
             if (Spell == null)
             {
                 this.ShowMessageBox("Invalid Spell",
@@ -143,11 +142,9 @@ namespace SleepHunter.Views
                 Close();
                 return false;
             }
-            #endregion
 
             var selectedMode = GetSelectedMode();
 
-            #region Check Target Mode
             if (Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
             {
                 this.ShowMessageBox("Target Required",
@@ -159,7 +156,6 @@ namespace SleepHunter.Views
                 targetModeComboBox.IsDropDownOpen = true;
                 return false;
             }
-            #endregion
 
             var characterName = characterComboBox.SelectedValue as string;
 

@@ -8,7 +8,7 @@ namespace SleepHunter.Views
 {
     public partial class LineModifiersEditorWindow : Window
     {
-        SpellLineModifiers modifiers = new SpellLineModifiers();
+        private SpellLineModifiers modifiers = new();
 
         public SpellLineModifiers Modifiers
         {
@@ -23,7 +23,7 @@ namespace SleepHunter.Views
         }
 
         public static readonly DependencyProperty IsEditModeProperty =
-            DependencyProperty.Register("IsEditMode", typeof(bool), typeof(LineModifiersEditorWindow), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(LineModifiersEditorWindow), new PropertyMetadata(false));
 
         public LineModifiersEditorWindow(SpellLineModifiers modifiers, bool isEditMode = true)
            : this()
@@ -35,25 +35,25 @@ namespace SleepHunter.Views
             minThresholdUpDown.Value = modifiers.MinThreshold;
             maxThresholdUpDown.Value = modifiers.MaxThreshold;
 
-            this.IsEditMode = isEditMode;
+            IsEditMode = isEditMode;
 
-            if (this.IsEditMode)
-                this.Title = "Edit Modifiers";
+            if (IsEditMode)
+                Title = "Edit Modifiers";
         }
 
         public LineModifiersEditorWindow()
         {
             InitializeComponent();
 
-            this.Title = "Add Modifiers";
+            Title = "Add Modifiers";
         }
 
-        void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             actionComboBox.Focus();
         }
 
-        bool ValidateModifiers()
+        private bool ValidateModifiers()
         {
             var minThreshold = minThresholdUpDown.Value;
             var maxThreshold = maxThresholdUpDown.Value;
@@ -104,22 +104,22 @@ namespace SleepHunter.Views
             return true;
         }
 
-        void okButton_Click(object sender, RoutedEventArgs e)
+        private void okButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateModifiers())
                 return;
 
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
-        void cancelButton_Click(object sender, RoutedEventArgs e)
+        private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
-        void scopeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void scopeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count < 1)
             {

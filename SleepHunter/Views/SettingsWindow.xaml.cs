@@ -39,8 +39,8 @@ namespace SleepHunter.Views
 
         public int SelectedTabIndex
         {
-            get { return (int)GetValue(SelectedTabIndexProperty); }
-            set { SetValue(SelectedTabIndexProperty, value); }
+            get => (int)GetValue(SelectedTabIndexProperty);
+            set => SetValue(SelectedTabIndexProperty, value);
         }
 
         public static readonly DependencyProperty SelectedTabIndexProperty =
@@ -57,7 +57,7 @@ namespace SleepHunter.Views
             ToggleDownloadUpdateButton(false);
         }
 
-        void GetVersion()
+        private void GetVersion()
         {
             currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             versionText.Text = $"Version {currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
@@ -66,9 +66,9 @@ namespace SleepHunter.Views
             frameworkVersionText.Text = $"{RuntimeInformation.FrameworkDescription}";
         }
 
-        void GetComputerInfo()
+        private void GetComputerInfo()
         {
-            var cpuArch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
+            var cpuArch = RuntimeInformation.OSArchitecture.ToString();
             osVersionText.Text = $"{Environment.OSVersion} ({cpuArch})";
 
             var cpuCount = Environment.ProcessorCount;
@@ -100,7 +100,7 @@ namespace SleepHunter.Views
                 memorySizeText.Text = string.Empty;
         }
 
-        async Task CheckForLatestVersion()
+        private async Task CheckForLatestVersion()
         {
             if (isCheckingForVersion)
                 return;
@@ -146,39 +146,13 @@ namespace SleepHunter.Views
             }
         }
 
-        static string GetDayOrdinal(int dayOfMonth)
-        {
-            if (dayOfMonth <= 0)
-                return string.Empty;
-
-            switch (dayOfMonth)
-            {
-                case 11:
-                case 12:
-                case 13:
-                    return "th";
-            }
-
-            switch (dayOfMonth % 10)
-            {
-                case 1:
-                    return "st";
-                case 2:
-                    return "nd";
-                case 3:
-                    return "rd";
-                default:
-                    return "th";
-            }
-        }
-
-        void ToggleDownloadUpdateButton(bool showHide)
+        private void ToggleDownloadUpdateButton(bool showHide)
         {
             downloadUpdateButton.IsEnabled = showHide;
             downloadUpdateButton.Visibility = showHide ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
+        private void resetDefaultsButton_Click(object sender, RoutedEventArgs e)
         {
             bool? isOkToReset = this.ShowMessageBox("Reset Default Settings",
                "This will reset all settings to their default values.\nDo you wish to continue?",
@@ -190,12 +164,12 @@ namespace SleepHunter.Views
                 UserSettingsManager.Instance.Settings.ResetDefaults();
         }
 
-        async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(sender is TabControl tabControl))
+            if (sender is not TabControl tabControl)
                 return;
 
-            if (!(tabControl.SelectedItem is TabItem tabItem))
+            if (tabControl.SelectedItem is not TabItem tabItem)
             {
                 Title = "Settings";
                 return;
@@ -218,28 +192,26 @@ namespace SleepHunter.Views
             }
         }
 
-        void userManualLink_Click(object sender, RoutedEventArgs e)
-        {
+        private void userManualLink_Click(object sender, RoutedEventArgs e) =>
             Process.Start(new ProcessStartInfo(App.USER_MANUAL_URL) { UseShellExecute = true });
-        }
 
-        async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
+        private async void checkForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Owner is MainWindow mainWindow))
+            if (Owner is not MainWindow)
                 return;
 
             await CheckForLatestVersion();
         }
 
-        void releaseNotesLink_Click(object sender, RoutedEventArgs e)
+        private void releaseNotesLink_Click(object sender, RoutedEventArgs e)
         {
             var uri = releaseService.GetLatestReleaseNotesUri();
             Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
         }
 
-        void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
+        private void downloadUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Owner is MainWindow mainWindow))
+            if (Owner is not MainWindow mainWindow)
                 return;
 
             downloadUpdateButton.IsEnabled = false;
