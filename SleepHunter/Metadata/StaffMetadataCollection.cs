@@ -9,24 +9,27 @@ namespace SleepHunter.Metadata
     [XmlRoot("StaffMetadata")]
     public sealed class StaffMetadataCollection
     {
-        string version;
-        List<StaffMetadata> staves;
+        private string version;
+        private List<StaffMetadata> staves;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
         public string Version
         {
-            get { return version; }
-            set { version = value; }
+            get => version;
+            set => version = value;
         }
 
         [XmlArray("Staves")]
         [XmlArrayItem("Staff")]
         public List<StaffMetadata> Staves
         {
-            get { return staves; }
-            private set { staves = value; }
+            get => staves;
+            private set => staves = value;
         }
+
+        [XmlIgnore]
+        public int Count => staves.Count;
 
         public StaffMetadataCollection()
         {
@@ -42,5 +45,7 @@ namespace SleepHunter.Metadata
         {
             staves = new List<StaffMetadata>(collection);
         }
+
+        public override string ToString() => $"Count = {Count}";
     }
 }

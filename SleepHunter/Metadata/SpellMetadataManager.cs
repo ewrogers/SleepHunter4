@@ -11,34 +11,25 @@ namespace SleepHunter.Metadata
     {
         public static readonly string SpellMetadataFile = @"Spells.xml";
 
-        #region Singleton
-        static readonly SpellMetadataManager instance = new SpellMetadataManager();
-
-        public static SpellMetadataManager Instance { get { return instance; } }
+        private static readonly SpellMetadataManager instance = new();
+        public static SpellMetadataManager Instance => instance;
 
         private SpellMetadataManager() { }
-        #endregion
 
-        ConcurrentDictionary<string, SpellMetadata> spells = new ConcurrentDictionary<string, SpellMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SpellMetadata> spells = new (StringComparer.OrdinalIgnoreCase);
 
         public event SpellMetadataEventHandler SpellAdded;
         public event SpellMetadataEventHandler SpellChanged;
         public event SpellMetadataEventHandler SpellRemoved;
 
-        #region Collection Properties
-        public int Count { get { return spells.Count; } }
+        public int Count => spells.Count;
 
-        public IEnumerable<SpellMetadata> Spells
-        {
-            get { return from s in spells.Values orderby s.Name select s; }
-        }
-        #endregion
+        public IEnumerable<SpellMetadata> Spells => from s in spells.Values orderby s.Name select s;
 
-        #region Collection Methods
         public void AddSpell(SpellMetadata spell)
         {
             if (spell == null)
-                throw new ArgumentNullException("spell");
+                throw new ArgumentNullException(nameof(spell));
 
             string spellName = spell.Name.Trim();
             bool wasUpdated = false;
@@ -57,7 +48,6 @@ namespace SleepHunter.Metadata
         public bool ContainsSpell(string spellName)
         {
             spellName = spellName.Trim();
-
             return spells.ContainsKey(spellName);
         }
 
@@ -65,9 +55,7 @@ namespace SleepHunter.Metadata
         {
             spellName = spellName.Trim();
 
-            SpellMetadata spell;
-            spells.TryGetValue(spellName, out spell);
-
+            spells.TryGetValue(spellName, out var spell);
             return spell;
         }
 
@@ -75,9 +63,7 @@ namespace SleepHunter.Metadata
         {
             spellName = spellName.Trim();
 
-            SpellMetadata removedSpell;
-
-            var wasRemoved = spells.TryRemove(spellName, out removedSpell);
+            var wasRemoved = spells.TryRemove(spellName, out var removedSpell);
 
             if (wasRemoved)
                 OnSpellRemoved(removedSpell);
@@ -87,8 +73,7 @@ namespace SleepHunter.Metadata
 
         public bool RenameSpell(string originalName, string newName)
         {
-            SpellMetadata spell = null;
-            var wasFound = spells.TryRemove(originalName, out spell);
+            var wasFound = spells.TryRemove(originalName, out var spell);
 
             if (wasFound)
             {
@@ -107,71 +92,43 @@ namespace SleepHunter.Metadata
 
             spells.Clear();
         }
-        #endregion
 
-        #region File Load/Save Methods
         public void LoadFromFile(string filename)
         {
-            using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                LoadFromStream(inputStream);
-            }
+            using var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            LoadFromStream(inputStream);
         }
 
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
-            var collection = serializer.Deserialize(stream) as SpellMetadataCollection;
 
-            if (collection != null)
-                foreach (var spell in collection.Spells)
-                    AddSpell(spell);
+            if (serializer.Deserialize(stream) is not SpellMetadataCollection collection)
+                return;
+
+            foreach (var spell in collection.Spells)
+                AddSpell(spell);
         }
 
         public void SaveToFile(string filename)
         {
-            using (var outputStream = File.Create(filename))
-            {
-                SaveToStream(outputStream);
-                outputStream.Flush();
-            }
+            using var outputStream = File.Create(filename);
+            SaveToStream(outputStream);
+            outputStream.Flush();
         }
 
         public void SaveToStream(Stream stream)
         {
-            var collection = new SpellMetadataCollection(this.Spells);
+            var collection = new SpellMetadataCollection(Spells);
             var serializer = new XmlSerializer(typeof(SpellMetadataCollection));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add("", "");
 
             serializer.Serialize(stream, collection, namespaces);
         }
-        #endregion
 
-        #region Event Handler Methods
-        void OnSpellAdded(SpellMetadata spell)
-        {
-            var handler = this.SpellAdded;
-
-            if (handler != null)
-                handler(this, new SpellMetadataEventArgs(spell));
-        }
-
-        void OnSpellChanged(SpellMetadata spell)
-        {
-            var handler = this.SpellChanged;
-
-            if (handler != null)
-                handler(this, new SpellMetadataEventArgs(spell));
-        }
-
-        void OnSpellRemoved(SpellMetadata spell)
-        {
-            var handler = this.SpellRemoved;
-
-            if (handler != null)
-                handler(this, new SpellMetadataEventArgs(spell));
-        }
-        #endregion
+        private void OnSpellAdded(SpellMetadata spell) => SpellAdded?.Invoke(this, new SpellMetadataEventArgs(spell));
+        private void OnSpellChanged(SpellMetadata spell) => SpellChanged?.Invoke(this, new SpellMetadataEventArgs(spell));
+        private void OnSpellRemoved(SpellMetadata spell) => SpellRemoved?.Invoke(this, new SpellMetadataEventArgs(spell));
     }
 }

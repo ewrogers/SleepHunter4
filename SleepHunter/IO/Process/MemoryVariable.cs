@@ -18,26 +18,24 @@ namespace SleepHunter.IO.Process
         [XmlAttribute("Key")]
         public string Key
         {
-            get { return key; }
-            set { key = value; }
+            get => key;
+            set => key = value;
         }
 
         [XmlIgnore]
         public long Address
         {
-            get { return address; }
-            set { address = value; }
+            get => address;
+            set => address = value;
         }
 
         [XmlAttribute("Address")]
         public string AddressHex
         {
-            get { return address.ToString("X"); }
+            get => address.ToString("X");
             set
             {
-                long parsedLong;
-
-                if (long.TryParse(value, NumberStyles.HexNumber, null, out parsedLong))
+                if (long.TryParse(value, NumberStyles.HexNumber, null, out var parsedLong))
                     address = parsedLong;
             }
         }
@@ -46,24 +44,24 @@ namespace SleepHunter.IO.Process
         [DefaultValue(0)]
         public int MaxLength
         {
-            get { return maxLength; }
-            set { maxLength = value; }
+            get => maxLength;
+            set => maxLength = value;
         }
 
         [XmlAttribute("Size")]
         [DefaultValue(0)]
         public int Size
         {
-            get { return size; }
-            set { size = value; }
+            get => size;
+            set => size = value;
         }
 
         [XmlAttribute("Count")]
         [DefaultValue(0)]
         public int Count
         {
-            get { return count; }
-            set { count = value; }
+            get => count;
+            set => count = value;
         }
 
         public MemoryVariable()
@@ -78,9 +76,6 @@ namespace SleepHunter.IO.Process
             this.count = count;
         }
 
-        public override string ToString()
-        {
-            return Key ?? string.Empty;
-        }
+        public override string ToString() => Key ?? string.Empty;
     }
 }

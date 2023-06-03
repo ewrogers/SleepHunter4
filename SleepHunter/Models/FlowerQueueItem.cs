@@ -8,28 +8,28 @@ namespace SleepHunter.Models
 {
     public sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
     {
-        int id;
-        SpellTarget target = new SpellTarget();
-        DateTime lastUsedTimestamp = DateTime.Now;
-        TimeSpan? interval;
-        TimeSpan intervalRemaining;
-        int? manaThreshold;
+        private int id;
+        private SpellTarget target = new();
+        private DateTime lastUsedTimestamp = DateTime.Now;
+        private TimeSpan? interval;
+        private TimeSpan intervalRemaining;
+        private int? manaThreshold;
 
         public int Id
         {
-            get { return id; }
-            set { SetProperty(ref id, value); }
+            get => id;
+            set => SetProperty(ref id, value);
         }
 
         public SpellTarget Target
         {
-            get { return target; }
-            set { SetProperty(ref target, value); }
+            get => target;
+            set => SetProperty(ref target, value);
         }
 
         public DateTime LastUsedTimestamp
         {
-            get { return lastUsedTimestamp; }
+            get => lastUsedTimestamp;
             set
             {
                 SetProperty(ref lastUsedTimestamp, value);
@@ -37,22 +37,19 @@ namespace SleepHunter.Models
             }
         }
 
-        public double IntervalSeconds
-        {
-            get { return interval.HasValue ? interval.Value.TotalSeconds : 0; }
-        }
+        public double IntervalSeconds => interval.HasValue ? interval.Value.TotalSeconds : 0;
 
         public TimeSpan? Interval
         {
-            get { return interval; }
+            get => interval;
             set
             {
-                var originalTime = interval.HasValue ? interval.Value : TimeSpan.Zero;
-                var newTime = value.HasValue ? value.Value : TimeSpan.Zero;
+                var originalTime = interval ?? TimeSpan.Zero;
+                var newTime = value ?? TimeSpan.Zero;
 
                 var deltaTime = originalTime - newTime;
 
-                SetProperty(ref interval, value, onChanged: (s) => { RaisePropertyChanged("IntervalSeconds"); Tick(deltaTime); });
+                SetProperty(ref interval, value, onChanged: (s) => { RaisePropertyChanged(nameof(IntervalSeconds)); Tick(deltaTime); });
             }
         }
 
@@ -67,10 +64,7 @@ namespace SleepHunter.Models
             }
         }
 
-        public double ElapsedTimeSeconds
-        {
-            get { return ElapsedTime.TotalSeconds; }
-        }
+        public double ElapsedTimeSeconds => ElapsedTime.TotalSeconds;
 
         public TimeSpan RemainingTime
         {
@@ -89,10 +83,7 @@ namespace SleepHunter.Models
             }
         }
 
-        public double RemainingTimeSeconds
-        {
-            get { return RemainingTime.TotalSeconds; }
-        }
+        public double RemainingTimeSeconds => RemainingTime.TotalSeconds;
 
         public bool IsReady
         {
@@ -107,21 +98,23 @@ namespace SleepHunter.Models
 
         public int? ManaThreshold
         {
-            get { return manaThreshold; }
-            set { SetProperty(ref manaThreshold, value); }
+            get => manaThreshold;
+            set => SetProperty(ref manaThreshold, value);
         }
 
         public FlowerQueueItem() { }
 
         public FlowerQueueItem(SavedFlowerState flower)
         {
-            Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY));
-            Target.CharacterName = flower.CharacterName;
-            Target.OuterRadius = flower.OuterRadius;
-            Target.InnerRadius = flower.InnerRadius;
+            Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY))
+            {
+                CharacterName = flower.CharacterName,
+                OuterRadius = flower.OuterRadius,
+                InnerRadius = flower.InnerRadius
+            };
 
-            Interval = flower.HasInterval ? flower.Interval : (TimeSpan?)null;
-            ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : (int?)null;
+            Interval = flower.HasInterval ? flower.Interval : null;
+            ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : null;
         }
 
         public void ResetTimer()
@@ -132,31 +125,22 @@ namespace SleepHunter.Models
                 intervalRemaining = TimeSpan.Zero;
         }
 
-        public void Tick()
-        {
-            Tick(TimeSpan.Zero);
-        }
+        public void Tick() => Tick(TimeSpan.Zero);
 
         public void Tick(TimeSpan deltaTime)
         {
             intervalRemaining -= deltaTime;
 
-            RaisePropertyChanged("ElapsedTime");
-            RaisePropertyChanged("ElapsedTimeSeconds");
-            RaisePropertyChanged("RemainingTime");
-            RaisePropertyChanged("RemainingTimeSeconds");
-            RaisePropertyChanged("IsReady");
+            RaisePropertyChanged(nameof(ElapsedTime));
+            RaisePropertyChanged(nameof(ElapsedTimeSeconds));
+            RaisePropertyChanged(nameof(RemainingTime));
+            RaisePropertyChanged(nameof(RemainingTimeSeconds));
+            RaisePropertyChanged(nameof(IsReady));
         }
 
-        public void CopyTo(FlowerQueueItem other)
-        {
-            CopyTo(other, true);
-        }
+        public void CopyTo(FlowerQueueItem other) => CopyTo(other, true);
 
-        public void CopyTo(FlowerQueueItem other, bool copyId)
-        {
-            CopyTo(other, copyId, false);
-        }
+        public void CopyTo(FlowerQueueItem other, bool copyId) => CopyTo(other, copyId, false);
 
         public void CopyTo(FlowerQueueItem other, bool copyId = true, bool copyTimestamp = false)
         {
@@ -171,9 +155,6 @@ namespace SleepHunter.Models
                 other.LastUsedTimestamp = LastUsedTimestamp;
         }
 
-        public override string ToString()
-        {
-            return string.Format("Flowering on {0}", target.ToString());
-        }
+        public override string ToString() => string.Format("Flowering on {0}", target.ToString());
     }
 }

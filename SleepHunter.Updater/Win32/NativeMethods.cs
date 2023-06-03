@@ -7,6 +7,6 @@ namespace SleepHunter.Updater.Win32
     {
         [DllImport("user32", EntryPoint = "SetForegroundWindow", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool SetForegroundWindow(IntPtr windowHandle);
+        internal static extern bool SetForegroundWindow(nint windowHandle);
     }
 }

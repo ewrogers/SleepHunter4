@@ -9,34 +9,34 @@ namespace SleepHunter.Settings
     [Serializable]
     public sealed class UserSetting : ObservableObject
     {
-        string key;
-        string displayText;
-        object value;
+        private string key;
+        private string displayText;
+        private object value;
 
         [XmlAttribute("Key")]
         public string Key
         {
-            get { return key; }
-            set { SetProperty(ref key, value); }
+            get => key;
+            set => SetProperty(ref key, value);
         }
 
         [XmlIgnore]
         public string DisplayText
         {
-            get { return displayText; }
-            set { SetProperty(ref displayText, value); }
+            get => displayText;
+            set => SetProperty(ref displayText, value);
         }
 
         [XmlAttribute("Value")]
         [DefaultValue(null)]
         public object Value
         {
-            get { return value; }
-            set { SetProperty(ref this.value, value); }
+            get => value;
+            set => SetProperty(ref this.value, value);
         }
 
-        public UserSetting()
-        { }
+        // Needed for XAML -- Do not remove!
+        public UserSetting() { }
 
         public UserSetting(string key, string displayText, object value = null)
         {
@@ -45,9 +45,6 @@ namespace SleepHunter.Settings
             this.value = value;
         }
 
-        public override string ToString()
-        {
-            return DisplayText ?? this.Key;
-        }
+        public override string ToString() => DisplayText ?? Key;
     }
 }

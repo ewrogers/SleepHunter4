@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
@@ -8,34 +7,27 @@ namespace SleepHunter.Models
 {
     public sealed class PlayerModifiers : ObservableObject
     {
-        Player owner;
+        public event EventHandler ModifiersUpdated;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
-        }
-
-        public PlayerModifiers()
-           : this(null) { }
+        public Player Owner { get; }
 
         public PlayerModifiers(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
+            ModifiersUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
+
+            // Not currently implemented
         }
     }
 }

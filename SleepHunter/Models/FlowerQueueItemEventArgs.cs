@@ -6,13 +6,11 @@ namespace SleepHunter.Models
 
     public sealed class FlowerQueueItemEventArgs : EventArgs
     {
-        readonly FlowerQueueItem flower;
-
-        public FlowerQueueItem Flower { get { return flower; } }
+        public FlowerQueueItem Flower { get; }
 
         public FlowerQueueItemEventArgs(FlowerQueueItem flower)
         {
-            this.flower = flower;
+            Flower = flower ?? throw new ArgumentNullException(nameof(flower));
         }
     }
 }

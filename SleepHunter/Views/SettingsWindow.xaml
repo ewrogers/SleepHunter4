@@ -480,15 +480,6 @@
                                 VerticalAlignment="Top"
                                 Margin="116,8,0,0">
 
-                        <!-- Apply DirectDraw Fix CheckBox -->
-                        <CheckBox Name="applyDirectDrawFixCheckBox"
-                                    Style="{StaticResource ObsidianCheckBox}"
-                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.DirectDrawFix}"
-                                    Margin="8"
-                                    ToolTip="This will fix the flickering mouse cursor issue.">
-                            _DirectDraw Compatibility Fix
-                        </CheckBox>
-                        
                         <!-- Patch Multiple Instance CheckBox -->
                         <CheckBox Name="patchMultipleInstanceCheckBox"
                                     Style="{StaticResource ObsidianCheckBox}"

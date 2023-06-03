@@ -12,97 +12,78 @@ using SleepHunter.IO.Process;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Settings;
-using System.Net;
 using SleepHunter.Win32;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
 
 namespace SleepHunter.Models
 {
     public sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
     {
-        static readonly string SkillbookKey = @"Skillbook";
-        static readonly string SkillCooldownsKey = "SkillCooldowns";
+        private const string SkillbookKey = @"Skillbook";
+        private const string SkillCooldownsKey = "SkillCooldowns";
 
-        public static readonly int TemuairSkillCount = 36;
-        public static readonly int MedeniaSkillCount = 36;
-        public static readonly int WorldSkillCount = 18;
+        public const int TemuairSkillCount = 36;
+        public const int MedeniaSkillCount = 36;
+        public const int WorldSkillCount = 18;
 
-        bool isDisposed;
-        Player owner;
-        List<Skill> skills = new List<Skill>(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
-        ConcurrentDictionary<string, bool> activeSkills = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        private bool isDisposed;
+        private readonly List<Skill> skills = new(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
+        private readonly ConcurrentDictionary<string, bool> activeSkills = new(StringComparer.OrdinalIgnoreCase);
 
-        ProcessMemoryScanner scanner;
-        IntPtr baseCooldownPointer;
+        private readonly ProcessMemoryScanner scanner;
+        nint baseCooldownPointer;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
-        }
+        public event EventHandler SkillbookUpdated;
 
-        public int Count { get { return skills.Count((skill) => { return !skill.IsEmpty; }); } }
+        public Player Owner { get; }
 
-        public IEnumerable<Skill> Skills
-        {
-            get { return from s in skills select s; }
-        }
+        public int Count => skills.Count((skill) => { return !skill.IsEmpty; });
 
-        public IEnumerable<Skill> TemuairSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot < TemuairSkillCount select s; }
-        }
+        public IEnumerable<Skill> Skills => 
+            from s in skills select s;
 
-        public IEnumerable<Skill> MedeniaSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount) select s; }
-        }
+        public IEnumerable<Skill> TemuairSkills => 
+            from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot < TemuairSkillCount select s;
 
-        public IEnumerable<Skill> WorldSkills
-        {
-            get { return from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s; }
-        }
+        public IEnumerable<Skill> MedeniaSkills => 
+            from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount) select s;
 
-        public IEnumerable<string> ActiveSkills
-        {
-            get { return from a in activeSkills where a.Value select a.Key; }
-        }
+        public IEnumerable<Skill> WorldSkills => 
+            from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s;
 
-        public Skillbook()
-           : this(null) { }
+        public IEnumerable<string> ActiveSkills => 
+            from a in activeSkills where a.Value select a.Key;
 
         public Skillbook(Player owner)
         {
-            this.owner = owner;
-            scanner = new ProcessMemoryScanner(owner.ProcessHandle, leaveOpen: true);
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            scanner = new ProcessMemoryScanner(Owner.ProcessHandle, leaveOpen: true);
 
             InitializeSkillbook();
         }
 
-        #region IDisposable Methods
+        ~Skillbook() => Dispose(false);
+
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
             if (isDisposing)
             {
-                if (scanner != null)
-                    scanner.Dispose();
+                scanner?.Dispose();
             }
 
             isDisposed = true;
         }
-        #endregion
 
-        void InitializeSkillbook()
+        private void InitializeSkillbook()
         {
             skills.Clear();
 
@@ -164,22 +145,14 @@ namespace SleepHunter.Models
             return wasActive;
         }
 
-        public void ClearActiveSkills()
-        {
-            activeSkills.Clear();
-        }
+        public void ClearActiveSkills() => activeSkills.Clear();
 
-        public void ResetCooldownPointer()
-        {
-            baseCooldownPointer = IntPtr.Zero;
-        }
+        public void ResetCooldownPointer() => baseCooldownPointer = nint.Zero;
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
+            SkillbookUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
@@ -203,79 +176,71 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Stream stream = null;
-            try
-            {
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
+                using var stream = accessor.GetStream();
+                using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+                var skillbookPointer = skillbookVariable.DereferenceValue(reader);
+
+                if (skillbookPointer == 0)
                 {
-                    stream = null;
-                    var skillbookPointer = skillbookVariable.DereferenceValue(reader);
-
-                    if (skillbookPointer == 0)
-                    {
-                        ResetDefaults();
-                        return;
-                    }
-
-                    reader.BaseStream.Position = skillbookPointer;
-
-                    for (int i = 0; i < skillbookVariable.Count; i++)
-                    {
-                        SkillMetadata metadata = null;
-
-                        try
-                        {
-                            bool hasSkill = reader.ReadInt16() != 0;
-                            ushort iconIndex = reader.ReadUInt16();
-                            string name = reader.ReadFixedString(skillbookVariable.MaxLength);
-
-                            int currentLevel, maximumLevel;
-                            if (!Ability.TryParseLevels(name, out name, out currentLevel, out maximumLevel))
-                            {
-                                if (!string.IsNullOrWhiteSpace(name))
-                                    skills[i].Name = name.Trim();
-                            }
-
-                            skills[i].IsEmpty = !hasSkill;
-                            skills[i].IconIndex = iconIndex;
-                            skills[i].Icon = IconManager.Instance.GetSkillIcon(iconIndex);
-                            skills[i].Name = name;
-                            skills[i].CurrentLevel = currentLevel;
-                            skills[i].MaximumLevel = maximumLevel;
-
-                            if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
-                                metadata = SkillMetadataManager.Instance.GetSkill(name);
-
-                            var isActive = this.IsActive(skills[i].Name);
-                            skills[i].IsActive = isActive.HasValue && isActive.Value;
-
-                            if (metadata != null)
-                            {
-                                skills[i].Cooldown = metadata.Cooldown;
-                                skills[i].ManaCost = metadata.ManaCost;
-                                skills[i].CanImprove = metadata.CanImprove;
-                                skills[i].IsAssail = metadata.IsAssail;
-                                skills[i].OpensDialog = metadata.OpensDialog;
-                                skills[i].RequiresDisarm = metadata.RequiresDisarm;
-                            }
-                            else
-                            {
-                                skills[i].Cooldown = TimeSpan.Zero;
-                                skills[i].ManaCost = 0;
-                                skills[i].CanImprove = true;
-                                skills[i].IsAssail = false;
-                                skills[i].OpensDialog = false;
-                                skills[i].RequiresDisarm = false;
-                            }
-
-                            skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, accessor.ProcessHandle);
-                        }
-                        catch { }
-                    }
+                    ResetDefaults();
+                    return;
                 }
+
+                reader.BaseStream.Position = skillbookPointer;
+
+            for (int i = 0; i < skillbookVariable.Count; i++)
+            {
+                SkillMetadata metadata = null;
+
+                try
+                {
+                    bool hasSkill = reader.ReadInt16() != 0;
+                    ushort iconIndex = reader.ReadUInt16();
+                    string name = reader.ReadFixedString(skillbookVariable.MaxLength);
+
+                    if (!Ability.TryParseLevels(name, out name, out var currentLevel, out var maximumLevel))
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                            skills[i].Name = name.Trim();
+                    }
+
+                    skills[i].IsEmpty = !hasSkill;
+                    skills[i].IconIndex = iconIndex;
+                    skills[i].Icon = IconManager.Instance.GetSkillIcon(iconIndex);
+                    skills[i].Name = name;
+                    skills[i].CurrentLevel = currentLevel;
+                    skills[i].MaximumLevel = maximumLevel;
+
+                    if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
+                        metadata = SkillMetadataManager.Instance.GetSkill(name);
+
+                    var isActive = IsActive(skills[i].Name);
+                    skills[i].IsActive = isActive.HasValue && isActive.Value;
+
+                    if (metadata != null)
+                    {
+                        skills[i].Cooldown = metadata.Cooldown;
+                        skills[i].ManaCost = metadata.ManaCost;
+                        skills[i].CanImprove = metadata.CanImprove;
+                        skills[i].IsAssail = metadata.IsAssail;
+                        skills[i].OpensDialog = metadata.OpensDialog;
+                        skills[i].RequiresDisarm = metadata.RequiresDisarm;
+                    }
+                    else
+                    {
+                        skills[i].Cooldown = TimeSpan.Zero;
+                        skills[i].ManaCost = 0;
+                        skills[i].CanImprove = true;
+                        skills[i].IsAssail = false;
+                        skills[i].OpensDialog = false;
+                        skills[i].RequiresDisarm = false;
+                    }
+
+                    skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, accessor.ProcessHandle);
+                }
+                catch { }
             }
-            finally { stream?.Dispose(); }
         }
 
         public void ResetDefaults()
@@ -289,7 +254,7 @@ namespace SleepHunter.Models
             }
         }
 
-        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, IntPtr processHandle)
+        private bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, nint processHandle)
         {
             if (version == null || !UpdateSkillbookCooldownPointer(version, reader, processHandle))
                 return false;
@@ -301,9 +266,7 @@ namespace SleepHunter.Models
 
             try
             {
-                var cooldownVariable = version.GetVariable(SkillCooldownsKey) as SearchMemoryVariable;
-
-                if (cooldownVariable == null)
+                if (version.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
                     return false;
 
                 var offset = cooldownVariable.Offsets.FirstOrDefault();
@@ -340,7 +303,7 @@ namespace SleepHunter.Models
             finally { reader.BaseStream.Position = position; }
         }
 
-        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, IntPtr processHandle)
+        private bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, nint processHandle)
         {
             if (version == null)
                 return false;
@@ -349,20 +312,19 @@ namespace SleepHunter.Models
 
             try
             {
-                var cooldownVariable = version.GetVariable(SkillCooldownsKey) as SearchMemoryVariable;
-                if (cooldownVariable == null)
+                if (version.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
                     return false;
 
-                if (baseCooldownPointer != IntPtr.Zero)
+                if (baseCooldownPointer != nint.Zero)
                     return true;
 
                 var ptrs = scanner.FindAllUInt32((uint)cooldownVariable.Address)
                     .Select(ptr =>
                     {
                         if (cooldownVariable.Offset.IsNegative)
-                            ptr = (IntPtr)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
+                            ptr = (nint)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
                         else
-                            ptr = (IntPtr)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
+                            ptr = (nint)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
 
                         return ptr;
                     })
@@ -372,7 +334,7 @@ namespace SleepHunter.Models
 
                 foreach (var ptr in ptrs)
                 {
-                    if (ptr == IntPtr.Zero)
+                    if (ptr == nint.Zero)
                         continue;
 
                     reader.BaseStream.Position = ptr;
@@ -381,24 +343,23 @@ namespace SleepHunter.Models
                     if (cooldownPtr == 0 || !IsReadableMemory(processHandle, cooldownPtr))
                         continue;
 
-                    baseCooldownPointer = (IntPtr)cooldownPtr;
-                    Debug.WriteLine($"Found cooldown timers pointer = {cooldownPtr:X}");
+                    baseCooldownPointer = (nint)cooldownPtr;
                     return true;
                 }
 
                 return false;
             }
-            catch { baseCooldownPointer = IntPtr.Zero; return false; }
+            catch { baseCooldownPointer = nint.Zero; return false; }
             finally { reader.BaseStream.Position = position; }
         }
 
-        static bool IsReadableMemory(IntPtr processHandle, long address)
+        private static bool IsReadableMemory(nint processHandle, long address)
         {
             if (address <= 0)
                 return false;
 
             var sizeOfMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
-            var byteCount = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out var memoryInfo, sizeOfMemoryInfo);
+            var byteCount = (int)NativeMethods.VirtualQueryEx(processHandle, (nint)address, out var memoryInfo, sizeOfMemoryInfo);
 
             if (byteCount <= 0)
                 return false;
@@ -412,7 +373,6 @@ namespace SleepHunter.Models
             return true;
         }
 
-        #region IEnumerable Methods
         public IEnumerator<Skill> GetEnumerator()
         {
             foreach (var skill in skills)
@@ -420,10 +380,6 @@ namespace SleepHunter.Models
                     yield return skill;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

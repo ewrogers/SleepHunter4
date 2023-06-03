@@ -6,13 +6,11 @@ namespace SleepHunter.Metadata
 
     public sealed class StaffMetadataEventArgs : EventArgs
     {
-        readonly StaffMetadata staff;
-
-        public StaffMetadata Staff { get { return staff; } }
+        public StaffMetadata Staff { get; }
 
         public StaffMetadataEventArgs(StaffMetadata staff)
         {
-            this.staff = staff;
+            Staff = staff ?? throw new ArgumentNullException(nameof(staff));
         }
     }
 }

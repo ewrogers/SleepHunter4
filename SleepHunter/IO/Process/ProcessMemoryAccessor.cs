@@ -8,50 +8,37 @@ namespace SleepHunter.IO.Process
 {
     public sealed class ProcessMemoryAccessor : IDisposable
     {
-        bool isDisposed;
-        int processId;
-        IntPtr processHandle;
-        ProcessAccess access;
+        private bool isDisposed;
+        private readonly int processId;
+        private nint processHandle;
+        private readonly ProcessAccess access;
 
-        public int ProcessId
-        {
-            get { return processId; }
-        }
-
-        public IntPtr ProcessHandle
-        {
-            get { return processHandle; }
-        }
-
-        public ProcessAccess Access
-        {
-            get { return access; }
-        }
+        public int ProcessId => processId;
+        public nint ProcessHandle => processHandle;
+        public ProcessAccess Access => access;
 
         public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)
         {
             this.processId = processId;
+            this.access = access;
+
             processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
 
-            if (processHandle == IntPtr.Zero)
-            {
-                var error = NativeMethods.GetLastError();
-                throw new Win32Exception(error, "Unable to open process.");
-            }
-
-            this.access = access;
+            if (processHandle == 0)
+                throw new Win32Exception();
         }
 
-        public Stream GetStream()
+        public Stream GetStream() => new ProcessMemoryStream(processHandle, ProcessAccess.Read, leaveOpen: true);
+
+        public Stream GetWriteableStream()
         {
-            return new ProcessMemoryStream(processHandle, access, leaveOpen: true);
+            if (!access.HasFlag(ProcessAccess.Write))
+                throw new InvalidOperationException("Accessor is not writeable");
+
+            return new ProcessMemoryStream(processHandle, ProcessAccess.ReadWrite, leaveOpen: true);
         }
 
-        #region IDisposable Methods
-        ~ProcessMemoryAccessor()
-        {
-            Dispose(false);
-        }
+        ~ProcessMemoryAccessor() => Dispose(false);
 
         public void Dispose()
         {
@@ -66,14 +53,14 @@ namespace SleepHunter.IO.Process
 
             if (isDisposing)
             {
+                // Do any additional cleanup of managed resources here
             }
 
-            if (processHandle != IntPtr.Zero)
+            if (processHandle != 0)
                 NativeMethods.CloseHandle(processHandle);
 
-            processHandle = IntPtr.Zero;
+            processHandle = 0;
             isDisposed = true;
         }
-        #endregion
     }
 }

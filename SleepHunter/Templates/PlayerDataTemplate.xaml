@@ -59,12 +59,41 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Name -->
-                    <TextBlock Name="NameText"
-                           Style="{StaticResource ObsidianText}"
-                           Text="{Binding Name}"
-                           FontSize="20"
-                           VerticalAlignment="Top"
-                           Margin="4,6,4,-2"/>
+                    <StackPanel Orientation="Horizontal" Margin="0">
+                        <!-- Running Status Icon -->
+                        <TextBlock Name="RunningIcon"
+                                   Style="{StaticResource ObsidianSymbolText}"
+                                   Text="&#xE102;"
+                                   Margin="0"
+                                   Visibility="{Binding IsMacroRunning, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}">
+                            <TextBlock.Triggers>
+                                <!-- Pulse Animation -->
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <EventTrigger.Actions>
+                                        <BeginStoryboard>
+                                            <Storyboard Duration="0:0:01" RepeatBehavior="Forever" AutoReverse="True">
+                                                <DoubleAnimation From="1" To="0.25" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="RunningIcon"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger.Actions>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                        
+                        <!-- Paused Status Icon -->
+                        <TextBlock Name="PausedIcon"
+                                   Style="{StaticResource ObsidianSymbolText}"
+                                   Text="&#xE103;"
+                                   Margin="0"
+                                   Visibility="{Binding IsMacroPaused, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}"/>
+
+                        <TextBlock Name="NameText"
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="{Binding Name}"
+                                   FontSize="20"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0"/>
+                    </StackPanel>
 
                     <!-- Hotkey Information -->
                     <Border Name="HotkeyBorder"
@@ -89,17 +118,19 @@
                     </Border>
 
                     <!-- Status -->
-                    <TextBlock Name="StatusText"
-                           Grid.Row="1"
-                           Grid.ColumnSpan="2"
-                           Style="{StaticResource ObsidianText}"
-                           Text="{Binding Status}"
-                           TextWrapping="WrapWithOverflow"
-                           TextAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="14"
-                           Margin="4"
-                           Opacity="0.7"/>
+                    <StackPanel Grid.Row="1"
+                                Grid.ColumnSpan="2" 
+                                Orientation="Horizontal">
+                        <TextBlock Name="StatusText"
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="{Binding Status}"
+                                   TextWrapping="WrapWithOverflow"
+                                   TextAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"
+                                   Margin="4,0"
+                                   Opacity="0.7"/>
+                    </StackPanel>
 
                     <!-- Map Location -->
                     <TextBlock Name="MapText"

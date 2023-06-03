@@ -27,15 +27,13 @@ namespace SleepHunter.Converters
 
             if (isHexadecimal)
             {
-                uint hexValue;
-                if (!uint.TryParse(valueString, NumberStyles.HexNumber, null, out hexValue))
+                if (!uint.TryParse(valueString, NumberStyles.HexNumber, null, out var hexValue))
                     return 0;
                 else
                     return hexValue;
             }
 
-            double decValue;
-            if (!double.TryParse(valueString, out decValue))
+            if (!double.TryParse(valueString, out var decValue))
                 return 0;
             else
                 return decValue;

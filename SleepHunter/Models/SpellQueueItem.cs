@@ -9,82 +9,70 @@ namespace SleepHunter.Models
 {
     public sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
     {
-        int id;
-        ImageSource icon;
-        string name;
-        SpellTarget target = new SpellTarget();
-        DateTime lastUsedTimestamp;
-        int startingLevel;
-        int currentLevel;
-        int maximumLevel;
-        int? targetLevel;
-        bool isUndefined;
-        bool isActive;
+        private int id;
+        private ImageSource icon;
+        private string name;
+        private SpellTarget target = new();
+        private DateTime lastUsedTimestamp;
+        private int startingLevel;
+        private int currentLevel;
+        private int maximumLevel;
+        private int? targetLevel;
+        private bool isUndefined;
+        private bool isActive;
 
         public int Id
         {
-            get { return id; }
-            set { SetProperty(ref id, value); }
+            get => id;
+            set => SetProperty(ref id, value);
         }
 
         public ImageSource Icon
         {
-            get { return icon; }
-            set { SetProperty(ref icon, value); }
+            get => icon;
+            set => SetProperty(ref icon, value);
         }
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public SpellTarget Target
         {
-            get { return target; }
-            set { SetProperty(ref target, value); }
+            get => target;
+            set => SetProperty(ref target, value);
         }
 
         public DateTime LastUsedTimestamp
         {
-            get { return lastUsedTimestamp; }
-            set { SetProperty(ref lastUsedTimestamp, value); }
+            get => lastUsedTimestamp;
+            set => SetProperty(ref lastUsedTimestamp, value);
         }
 
         public int StartingLevel
         {
-            get { return startingLevel; }
-            set
-            {
-                SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged("PercentCompleted"); });
-            }
+            get => startingLevel;
+            set => SetProperty(ref startingLevel, value, onChanged: (s) => { RaisePropertyChanged(nameof(PercentCompleted)); });
         }
 
         public int CurrentLevel
         {
-            get { return currentLevel; }
-            set
-            {
-                SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-            }
+            get => currentLevel;
+            set => SetProperty(ref currentLevel, value, onChanged: (s) => { RaisePropertyChanged(nameof(IsDone)); RaisePropertyChanged(nameof(PercentCompleted)); });
         }
 
         public int MaximumLevel
         {
-            get { return maximumLevel; }
-            set
-            {
-                SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("PercentCompleted"); });
-            }
+            get => maximumLevel;
+            set => SetProperty(ref maximumLevel, value, onChanged: (s) => { RaisePropertyChanged(nameof(IsDone)); RaisePropertyChanged(nameof(PercentCompleted)); });
         }
 
         public int? TargetLevel
         {
-            get { return targetLevel; }
-            set
-            {
-                SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged("IsDone"); RaisePropertyChanged("HasTargetLevel"); RaisePropertyChanged("PercentCompleted"); });
-            }
+            get => targetLevel;
+            set => SetProperty(ref targetLevel, value, onChanged: (s) => { RaisePropertyChanged(nameof(IsDone)); RaisePropertyChanged(nameof(HasTargetLevel)); RaisePropertyChanged(nameof(PercentCompleted)); });
         }
 
         public double PercentCompleted
@@ -98,10 +86,7 @@ namespace SleepHunter.Models
             }
         }
 
-        public bool HasTargetLevel
-        {
-            get { return targetLevel.HasValue; }
-        }
+        public bool HasTargetLevel => targetLevel.HasValue;
 
         public bool IsDone
         {
@@ -116,14 +101,14 @@ namespace SleepHunter.Models
 
         public bool IsUndefined
         {
-            get { return isUndefined; }
-            set { SetProperty(ref isUndefined, value); }
+            get => isUndefined;
+            set => SetProperty(ref isUndefined, value);
         }
 
         public bool IsActive
         {
-            get { return isActive; }
-            set { SetProperty(ref isActive, value); }
+            get => isActive;
+            set => SetProperty(ref isActive, value);
         }
 
         public SpellQueueItem() { }
@@ -132,25 +117,21 @@ namespace SleepHunter.Models
         {
             Icon = spellInfo.Icon;
             Name = spell.SpellName;
-            Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY));
-            Target.CharacterName = spell.CharacterName;
-            Target.OuterRadius = spell.OuterRadius;
-            Target.InnerRadius = spell.InnerRadius;
-            TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : (int?)null;
+            Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY))
+            {
+                CharacterName = spell.CharacterName,
+                OuterRadius = spell.OuterRadius,
+                InnerRadius = spell.InnerRadius
+            };
+            TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : null;
 
             CurrentLevel = spellInfo.CurrentLevel;
             MaximumLevel = spellInfo.MaximumLevel;
         }
 
-        public void CopyTo(SpellQueueItem other)
-        {
-            CopyTo(other, true, false);
-        }
+        public void CopyTo(SpellQueueItem other) => CopyTo(other, true, false);
 
-        public void CopyTo(SpellQueueItem other, bool copyId)
-        {
-            CopyTo(other, copyId, false);
-        }
+        public void CopyTo(SpellQueueItem other, bool copyId) => CopyTo(other, copyId, false);
 
         public void CopyTo(SpellQueueItem other, bool copyId = true, bool copyTimestamp = false)
         {
@@ -168,9 +149,6 @@ namespace SleepHunter.Models
             other.IsActive = IsActive;
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0} on {1}", name, target.ToString());
-        }
+        public override string ToString() => string.Format("{0} on {1}", name, target.ToString());
     }
 }

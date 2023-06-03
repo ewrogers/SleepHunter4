@@ -10,100 +10,97 @@ namespace SleepHunter.Metadata
     [Serializable]
     public sealed class SkillMetadata : ObservableObject
     {
-        string name;
-        PlayerClass playerClass;
-        string groupName;
-        int manaCost;
-        bool isAssail;
-        bool opensDialog;
-        bool canImprove = true;
-        TimeSpan cooldown;
-        bool requiresDisarm;
+        private string name;
+        private PlayerClass playerClass;
+        private string groupName;
+        private int manaCost;
+        private bool isAssail;
+        private bool opensDialog;
+        private bool canImprove = true;
+        private TimeSpan cooldown;
+        private bool requiresDisarm;
 
         [XmlAttribute("Name")]
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         [XmlAttribute("Class")]
         [DefaultValue(PlayerClass.Peasant)]
         public PlayerClass Class
         {
-            get { return playerClass; }
-            set { SetProperty(ref playerClass, value); }
+            get => playerClass;
+            set => SetProperty(ref playerClass, value);
         }
 
         [XmlAttribute("Group")]
         [DefaultValue(null)]
         public string GroupName
         {
-            get { return groupName; }
-            set { SetProperty(ref groupName, value); }
+            get => groupName;
+            set => SetProperty(ref groupName, value);
         }
 
         [XmlAttribute("Mana")]
         [DefaultValue(0)]
         public int ManaCost
         {
-            get { return manaCost; }
-            set { SetProperty(ref manaCost, value); }
+            get => manaCost;
+            set => SetProperty(ref manaCost, value);
         }
 
         [XmlAttribute("IsAssail")]
         [DefaultValue(false)]
         public bool IsAssail
         {
-            get { return isAssail; }
-            set { SetProperty(ref isAssail, value); }
+            get => isAssail;
+            set => SetProperty(ref isAssail, value);
         }
 
         [XmlAttribute("OpensDialog")]
         [DefaultValue(false)]
         public bool OpensDialog
         {
-            get { return opensDialog; }
-            set { SetProperty(ref opensDialog, value); }
+            get => opensDialog;
+            set => SetProperty(ref opensDialog, value);
         }
 
         [XmlAttribute("CanImprove")]
         [DefaultValue(true)]
         public bool CanImprove
         {
-            get { return canImprove; }
-            set { SetProperty(ref canImprove, value); }
+            get => canImprove;
+            set => SetProperty(ref canImprove, value);
         }
 
         [XmlIgnore]
         public TimeSpan Cooldown
         {
-            get { return cooldown; }
-            set { SetProperty(ref cooldown, value, onChanged: (s) => { RaisePropertyChanged("CooldownSeconds"); }); }
+            get => cooldown;
+            set => SetProperty(ref cooldown, value, onChanged: (s) => { RaisePropertyChanged(nameof(CooldownSeconds)); });
         }
 
         [XmlAttribute("Cooldown")]
         [DefaultValue(0.0)]
         public double CooldownSeconds
         {
-            get { return cooldown.TotalSeconds; }
-            set { Cooldown = TimeSpan.FromSeconds(value); }
+            get => cooldown.TotalSeconds;
+            set => Cooldown = TimeSpan.FromSeconds(value);
         }
 
         [XmlAttribute("RequiresDisarm")]
         [DefaultValueAttribute(false)]
         public bool RequiresDisarm
         {
-            get { return requiresDisarm; }
-            set { SetProperty(ref requiresDisarm, value); }
+            get => requiresDisarm;
+            set => SetProperty(ref requiresDisarm, value);
         }
 
         public SkillMetadata() { }
 
-        public override string ToString()
-        {
-            return Name ?? "Unknown Skill";
-        }
+        public override string ToString() => Name ?? "Unknown Skill";
 
         public void CopyTo(SkillMetadata other)
         {

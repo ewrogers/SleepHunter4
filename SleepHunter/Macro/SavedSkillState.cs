@@ -13,8 +13,8 @@ namespace SleepHunter.Macro
         [XmlAttribute("Name")]
         public string SkillName
         {
-            get { return skillName; }
-            set { SetProperty(ref skillName, value); }
+            get => skillName;
+            set => SetProperty(ref skillName, value);
         }
 
         public SavedSkillState() { }

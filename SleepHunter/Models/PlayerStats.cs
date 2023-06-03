@@ -9,72 +9,51 @@ namespace SleepHunter.Models
 {
     public sealed class PlayerStats : ObservableObject
     {
-        static readonly string CurrentHealthKey = @"CurrentHealth";
-        static readonly string MaximumHealthKey = @"MaximumHealth";
-        static readonly string CurrentManaKey = @"CurrentMana";
-        static readonly string MaximumManaKey = @"MaximumMana";
-        static readonly string LevelKey = @"Level";
-        static readonly string AbilityLevelKey = @"AbilityLevel";
+        private const string CurrentHealthKey = @"CurrentHealth";
+        private const string MaximumHealthKey = @"MaximumHealth";
+        private const string CurrentManaKey = @"CurrentMana";
+        private const string MaximumManaKey = @"MaximumMana";
+        private const string LevelKey = @"Level";
+        private const string AbilityLevelKey = @"AbilityLevel";
 
-        Player owner;
-        int currentHealth;
-        int maximumHealth;
-        int currentMana;
-        int maximumMana;
-        int level;
-        int abilityLevel;
+        private int currentHealth;
+        private int maximumHealth;
+        private int currentMana;
+        private int maximumMana;
+        private int level;
+        private int abilityLevel;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
-        }
+        public event EventHandler StatsUpdated;
+
+        public Player Owner { get; }
 
         public int CurrentHealth
         {
-            get { return currentHealth; }
-            set
-            {
-                SetProperty(ref currentHealth, value, onChanged: (s) => { RaisePropertyChanged("HealthPercent"); RaisePropertyChanged("HasFullHealth"); });
-            }
+            get => currentHealth;
+            set => SetProperty(ref currentHealth, value, onChanged: (s) => { RaisePropertyChanged(nameof(HealthPercent)); RaisePropertyChanged(nameof(HasFullHealth)); });
         }
 
         public int MaximumHealth
         {
-            get { return maximumHealth; }
-            set
-            {
-                SetProperty(ref maximumHealth, value, onChanged: (s) => { RaisePropertyChanged("HealthPercent"); RaisePropertyChanged("HasFullHealth"); });
-            }
+            get => maximumHealth;
+            set => SetProperty(ref maximumHealth, value, onChanged: (s) => { RaisePropertyChanged(nameof(HealthPercent)); RaisePropertyChanged(nameof(HasFullHealth)); });
         }
 
-        public bool HasFullHealth
-        {
-            get { return currentHealth >= maximumHealth && currentHealth > 0; }
-        }
+        public bool HasFullHealth => currentHealth >= maximumHealth && currentHealth > 0;
 
         public int CurrentMana
         {
-            get { return currentMana; }
-            set
-            {
-                SetProperty(ref currentMana, value, onChanged: (s) => { RaisePropertyChanged("ManaPercent"); RaisePropertyChanged("HasFullMana"); });
-            }
+            get => currentMana;
+            set => SetProperty(ref currentMana, value, onChanged: (s) => { RaisePropertyChanged(nameof(ManaPercent)); RaisePropertyChanged(nameof(HasFullMana)); });
         }
 
         public int MaximumMana
         {
-            get { return maximumMana; }
-            set
-            {
-                SetProperty(ref maximumMana, value, onChanged: (s) => { RaisePropertyChanged("ManaPercent"); RaisePropertyChanged("HasFullMana"); });
-            }
+            get => maximumMana;
+            set => SetProperty(ref maximumMana, value, onChanged: (s) => { RaisePropertyChanged(nameof(ManaPercent)); RaisePropertyChanged(nameof(HasFullMana)); });
         }
 
-        public bool HasFullMana
-        {
-            get { return currentMana >= maximumMana && currentMana > 0; }
-        }
+        public bool HasFullMana => currentMana >= maximumMana && currentMana > 0;
 
         public double HealthPercent
         {
@@ -106,36 +85,31 @@ namespace SleepHunter.Models
 
         public int Level
         {
-            get { return level; }
-            set { SetProperty(ref level, value); }
+            get => level;
+            set => SetProperty(ref level, value);
         }
 
         public int AbilityLevel
         {
-            get { return abilityLevel; }
-            set { SetProperty(ref abilityLevel, value); }
+            get => abilityLevel;
+            set => SetProperty(ref abilityLevel, value);
         }
-
-        public PlayerStats()
-           : this(null) { }
 
         public PlayerStats(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
+            StatsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
         {
             if (accessor == null)
-                throw new ArgumentNullException("accessor");
+                throw new ArgumentNullException(nameof(accessor));
 
             var version = Owner.Version;
 
@@ -152,56 +126,44 @@ namespace SleepHunter.Models
             var levelVariable = version.GetVariable(LevelKey);
             var abilityLevelVariable = version.GetVariable(AbilityLevelKey);
 
-            long currentHealth, maximumHealth;
-            long currentMana, maximumMana;
-            long level, abilityLevel;
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
-            Stream stream = null;
-            try
-            {
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
-                {
-                    stream = null;
+            // Current Health
+            if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out var currentHealth))
+                CurrentHealth = (int)currentHealth;
+            else
+                CurrentHealth = 0;
 
-                    // Current Health
-                    if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out currentHealth))
-                        CurrentHealth = (int)currentHealth;
-                    else
-                        CurrentHealth = 0;
+            // Max Health
+            if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out var maximumHealth))
+                MaximumHealth = (int)maximumHealth;
+            else
+                MaximumHealth = 0;
 
-                    // Max Health
-                    if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out maximumHealth))
-                        MaximumHealth = (int)maximumHealth;
-                    else
-                        MaximumHealth = 0;
+            // Current Mana
+            if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out var currentMana))
+                CurrentMana = (int)currentMana;
+            else
+                CurrentMana = 0;
 
-                    // Current Mana
-                    if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out currentMana))
-                        CurrentMana = (int)currentMana;
-                    else
-                        CurrentMana = 0;
+            // Max Mana
+            if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out var maximumMana))
+                MaximumMana = (int)maximumMana;
+            else
+                MaximumMana = 0;
 
-                    // Max Mana
-                    if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out maximumMana))
-                        MaximumMana = (int)maximumMana;
-                    else
-                        MaximumMana = 0;
+            // Level
+            if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out var level))
+                Level = (int)level;
+            else
+                Level = 0;
 
-                    // Level
-                    if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out level))
-                        Level = (int)level;
-                    else
-                        Level = 0;
-
-                    // Ability Level
-                    if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out abilityLevel))
-                        AbilityLevel = (int)abilityLevel;
-                    else
-                        AbilityLevel = 0;
-                }
-            }
-            finally { stream?.Dispose(); }
+            // Ability Level
+            if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out var abilityLevel))
+                AbilityLevel = (int)abilityLevel;
+            else
+                AbilityLevel = 0;
         }
 
         public void ResetDefaults()

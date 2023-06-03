@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Common
 {
-    internal class DisplayValue : ObservableObject
+    public class DisplayValue : ObservableObject
     {
         private string displayName = string.Empty;
         private object value;

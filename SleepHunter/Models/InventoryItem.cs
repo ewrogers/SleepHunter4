@@ -4,33 +4,33 @@ namespace SleepHunter.Models
 {
     public sealed class InventoryItem : ObservableObject
     {
-        bool isEmpty;
-        int slot;
-        int iconIndex;
-        string name;
+        private bool isEmpty;
+        private int slot;
+        private int iconIndex;
+        private string name;
 
         public bool IsEmpty
         {
-            get { return isEmpty; }
-            set { SetProperty(ref isEmpty, value); }
+            get => isEmpty;
+            set => SetProperty(ref isEmpty, value);
         }
 
         public int Slot
         {
-            get { return slot; }
-            set { SetProperty(ref slot, value); }
+            get => slot;
+            set => SetProperty(ref slot, value);
         }
 
         public int IconIndex
         {
-            get { return iconIndex; }
-            set { SetProperty(ref iconIndex, value); }
+            get => iconIndex;
+            set => SetProperty(ref iconIndex, value);
         }
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         private InventoryItem() { }
@@ -44,14 +44,8 @@ namespace SleepHunter.Models
             isEmpty = false;
         }
 
-        public override string ToString()
-        {
-            return Name ?? "Unknown Item";
-        }
+        public override string ToString() => Name ?? "Unknown Item";
 
-        public static InventoryItem MakeEmpty(int slot)
-        {
-            return new InventoryItem { Slot = slot, IsEmpty = true };
-        }
+        public static InventoryItem MakeEmpty(int slot) => new() { Slot = slot, IsEmpty = true };
     }
 }

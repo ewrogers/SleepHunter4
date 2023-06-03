@@ -10,13 +10,13 @@ namespace SleepHunter.Controls
 {
     public partial class NumericUpDown : UserControl
     {
-        private static readonly Regex UnsignedIntegerRegex = new Regex(@"^\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex UnsignedDoubleRegex = new Regex(@"^\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex SignedIntegerRegex = new Regex(@"^-?\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex SignedDoubleRegex = new Regex(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex HexadecimalRegex = new Regex(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex UnsignedIntegerRegex = new(@"^\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex UnsignedDoubleRegex = new(@"^\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SignedIntegerRegex = new(@"^-?\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SignedDoubleRegex = new(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex HexadecimalRegex = new(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        new public Brush BorderBrush
+        public new Brush BorderBrush
         {
             get { return base.BorderBrush; }
             set { base.BorderBrush = value; }
@@ -77,31 +77,31 @@ namespace SleepHunter.Controls
         }
 
         public static readonly DependencyProperty DecoratorTextProperty =
-            DependencyProperty.Register("DecoratorText", typeof(string), typeof(NumericUpDown), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register(nameof(DecoratorText), typeof(string), typeof(NumericUpDown), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty AllowTextInputProperty =
-            DependencyProperty.Register("AllowTextInput", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(true));
+            DependencyProperty.Register(nameof(AllowTextInput), typeof(bool), typeof(NumericUpDown), new PropertyMetadata(true));
 
         public static readonly DependencyProperty MaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(100.0));
+            DependencyProperty.Register(nameof(Maximum), typeof(double), typeof(NumericUpDown), new PropertyMetadata(100.0));
 
         public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
+            DependencyProperty.Register(nameof(Minimum), typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
 
         public static readonly DependencyProperty IsHexadecimalProperty =
-            DependencyProperty.Register("IsHexadecimal", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsHexadecimal), typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
 
         public static readonly DependencyProperty DecimalPlacesProperty =
-           DependencyProperty.Register("DecimalPlaces", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0));
+           DependencyProperty.Register(nameof(DecimalPlaces), typeof(int), typeof(NumericUpDown), new PropertyMetadata(0));
 
         public static readonly DependencyProperty LargeIncrementProperty =
-            DependencyProperty.Register("LargeIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(5.0));
+            DependencyProperty.Register(nameof(LargeIncrement), typeof(double), typeof(NumericUpDown), new PropertyMetadata(5.0));
 
         public static readonly DependencyProperty SmallIncrementProperty =
-            DependencyProperty.Register("SmallIncrement", typeof(double), typeof(NumericUpDown), new PropertyMetadata(1.0));
+            DependencyProperty.Register(nameof(SmallIncrement), typeof(double), typeof(NumericUpDown), new PropertyMetadata(1.0));
 
         public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
+            DependencyProperty.Register(nameof(Value), typeof(double), typeof(NumericUpDown), new PropertyMetadata(0.0));
 
         public NumericUpDown()
         {
@@ -126,7 +126,7 @@ namespace SleepHunter.Controls
 
         void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            if (!(sender is TextBox textBox))
+            if (sender is not TextBox textBox)
                 return;
 
             var newText = textBox.Text.Remove(textBox.SelectionStart, textBox.SelectionLength)
@@ -187,7 +187,7 @@ namespace SleepHunter.Controls
 
         void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (!(sender is TextBox textBox))
+            if (sender is not TextBox textBox)
                 return;
 
             if (string.IsNullOrWhiteSpace(textBox.Text) || textBox.Text == "-")

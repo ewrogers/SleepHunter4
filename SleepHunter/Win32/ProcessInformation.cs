@@ -1,38 +1,37 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace SleepHunter.Win32
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct ProcessInformation
     {
-        IntPtr processHandle;
-        IntPtr threadHandle;
-        int processId;
-        int threadId;
+        private nint processHandle;
+        private nint threadHandle;
+        private int processId;
+        private int threadId;
 
-        public IntPtr ProcessHandle
+        public nint ProcessHandle
         {
-            get { return processHandle; }
-            set { processHandle = value; }
+            readonly get => processHandle;
+            set => processHandle = value;
         }
 
-        public IntPtr ThreadHandle
+        public nint ThreadHandle
         {
-            get { return threadHandle; }
-            set { threadHandle = value; }
+            readonly get => threadHandle;
+            set => threadHandle = value;
         }
 
         public int ProcessId
         {
-            get { return processId; }
-            set { processId = value; }
+            readonly get => processId;
+            set => processId = value;
         }
 
         public int ThreadId
         {
-            get { return threadId; }
-            set { threadId = value; }
+            readonly get => threadId;
+            set => threadId = value;
         }
     }
 }

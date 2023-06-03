@@ -31,9 +31,9 @@
     <Skill Name="Arrow Shot 7" Class="Rogue" Group="Arrow Shot" IsAssail="true" />
     <Skill Name="Arrow Shot 8" Class="Rogue" Group="Arrow Shot" IsAssail="true" />
     <Skill Name="Arrow Shot 9" Class="Rogue" Group="Arrow Shot" IsAssail="true" />
-    <Skill Name="Assail" Group="Assail" />
+    <Skill Name="Assail" Group="Assail" IsAssail="true" />
     <Skill Name="Assassin Strike" Class="Rogue" Cooldown="32" />
-    <Skill Name="Assault" Class="Warrior" Group="Assail" />
+    <Skill Name="Assault" Class="Warrior" Group="Assail" IsAssail="true" />
     <Skill Name="Auto Hemloch" Class="Warrior Monk" Cooldown="45" />
     <Skill Name="beag suain" Class="Warrior" Cooldown="15" />
     <Skill Name="Beak Pierce 1" Class="Monk" Group="Beak Pierce" Cooldown="13" />
@@ -60,7 +60,7 @@
     <Skill Name="Claw Slash 7" Class="Monk" Group="Claw Slash" Cooldown="12" />
     <Skill Name="Claw Slash 8" Class="Monk" Group="Claw Slash" Cooldown="12" />
     <Skill Name="Claw Slash 9" Class="Monk" Group="Claw Slash" Cooldown="12" />
-    <Skill Name="Clobber" Class="Warrior" Group="Assail" />
+    <Skill Name="Clobber" Class="Warrior" Group="Assail" IsAssail="true" />
     <Skill Name="Combat Senses" Class="Warrior" Group="Sense User" OpensDialog="true" Cooldown="7" />
     <Skill Name="Crasher" Class="Warrior" Cooldown="28" />
     <Skill Name="Cyclone Blade" Class="Warrior" Cooldown="15" />

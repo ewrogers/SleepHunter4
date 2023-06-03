@@ -6,43 +6,37 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect
     {
-        int left;
-        int top;
-        int right;
-        int bottom;
+        private int left;
+        private int top;
+        private int right;
+        private int bottom;
 
         public int Left
         {
-            get { return left; }
-            set { left = value; }
+            readonly get => left;
+            set => left = value;
         }
 
         public int Top
         {
-            get { return top; }
-            set { top = value; }
+            readonly get => top;
+            set => top = value;
         }
 
         public int Right
         {
-            get { return right; }
-            set { right = value; }
+            readonly get => right;
+            set => right = value;
         }
 
         public int Bottom
         {
-            get { return bottom; }
-            set { bottom = value; }
+            readonly get => bottom;
+            set => bottom = value;
         }
 
-        public int Width
-        {
-            get { return Math.Abs(right - left); }
-        }
+        public readonly int Width => Math.Abs(right - left);
 
-        public int Height
-        {
-            get { return Math.Abs(bottom - top); }
-        }
+        public readonly int Height => Math.Abs(bottom - top);
     }
 }

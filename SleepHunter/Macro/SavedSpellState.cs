@@ -10,93 +10,93 @@ namespace SleepHunter.Macro
     [Serializable]
     public sealed class SavedSpellState : ObservableObject
     {
-        string spellName;
-        TargetCoordinateUnits targetMode;
-        string characterName;
-        double locationX;
-        double locationY;
-        double offsetX;
-        double offsetY;
-        int innerRadius;
-        int outerRadius;
-        int targetLevel;
+        private string spellName;
+        private TargetCoordinateUnits targetMode;
+        private string characterName;
+        private double locationX;
+        private double locationY;
+        private double offsetX;
+        private double offsetY;
+        private int innerRadius;
+        private int outerRadius;
+        private int targetLevel;
 
         [XmlAttribute("Name")]
         public string SpellName
         {
-            get { return spellName; }
-            set { SetProperty(ref spellName, value); }
+            get => spellName;
+            set => SetProperty(ref spellName, value);
         }
 
         [XmlAttribute("Mode")]
         public TargetCoordinateUnits TargetMode
         {
-            get { return targetMode; }
-            set { SetProperty(ref targetMode, value); }
+            get => targetMode;
+            set => SetProperty(ref targetMode, value);
         }
 
         [XmlAttribute("TargetName")]
         [DefaultValue(null)]
         public string CharacterName
         {
-            get { return characterName; }
-            set { SetProperty(ref characterName, value); }
+            get => characterName;
+            set => SetProperty(ref characterName, value);
         }
 
         [XmlAttribute("X")]
         [DefaultValue(0)]
         public double LocationX
         {
-            get { return locationX; }
-            set { SetProperty(ref locationX, value); }
+            get => locationX;
+            set => SetProperty(ref locationX, value);
         }
 
         [XmlAttribute("Y")]
         [DefaultValue(0)]
         public double LocationY
         {
-            get { return locationY; }
-            set { SetProperty(ref locationY, value); }
+            get => locationY;
+            set => SetProperty(ref locationY, value);
         }
 
         [XmlAttribute("OffsetX")]
         [DefaultValue(0)]
         public double OffsetX
         {
-            get { return offsetX; }
-            set { SetProperty(ref offsetX, value); }
+            get => offsetX;
+            set => SetProperty(ref offsetX, value);
         }
 
         [XmlAttribute("OffsetY")]
         [DefaultValue(0)]
         public double OffsetY
         {
-            get { return offsetY; }
-            set { SetProperty(ref offsetY, value); }
+            get => offsetY;
+            set => SetProperty(ref offsetY, value);
         }
 
         [XmlAttribute("InnerRadius")]
         [DefaultValue(0)]
         public int InnerRadius
         {
-            get { return innerRadius; }
-            set { SetProperty(ref innerRadius, value); }
+            get => innerRadius;
+            set => SetProperty(ref innerRadius, value);
         }
 
         [XmlAttribute("OuterRadius")]
         [DefaultValue(0)]
         public int OuterRadius
         {
-            get { return outerRadius; }
-            set { SetProperty(ref outerRadius, value); }
+            get => outerRadius;
+            set => SetProperty(ref outerRadius, value);
         }
 
         [XmlAttribute("TargetLevel")]
         [DefaultValue(0)]
         public int TargetLevel
         {
-            get { return targetLevel; }
-            set { SetProperty(ref targetLevel, value); }
+            get => targetLevel;
+            set => SetProperty(ref targetLevel, value);
         }
 
         public SavedSpellState() { }
@@ -104,7 +104,7 @@ namespace SleepHunter.Macro
         public SavedSpellState(string spellName, SpellTarget target, int? targetLevel = null)
         {
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
 
             SpellName = spellName;
             TargetMode = target.Units;

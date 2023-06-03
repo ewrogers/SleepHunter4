@@ -9,7 +9,7 @@ namespace SleepHunter.Services
         private bool isDisposed;
 
         private readonly Dictionary<Type, ServiceMapping> typeMappings;
-        private readonly Dictionary<Type, object> singletons = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> singletons = new();
 
         public ServiceProvider(Dictionary<Type, ServiceMapping> mappings)
         {
@@ -99,7 +99,7 @@ namespace SleepHunter.Services
         private void CheckIfDisposed()
         {
             if (isDisposed)
-                throw new ObjectDisposedException(GetType().FullName);
+                throw new ObjectDisposedException(GetType().Name);
         }
     }
 }

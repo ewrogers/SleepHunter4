@@ -6,75 +6,75 @@ namespace SleepHunter.Views
     {
         public string MessageText
         {
-            get { return (string)GetValue(MessageTextProperty); }
-            set { SetValue(MessageTextProperty, value); }
+            get => (string)GetValue(MessageTextProperty);
+            set => SetValue(MessageTextProperty, value);
         }
 
         public string SubText
         {
-            get { return (string)GetValue(SubTextProperty); }
-            set { SetValue(SubTextProperty, value); }
+            get => (string)GetValue(SubTextProperty);
+            set => SetValue(SubTextProperty, value);
         }
 
         public string OkButtonText
         {
-            get { return (string)GetValue(OkButtonTextProperty); }
-            set { SetValue(OkButtonTextProperty, value); }
+            get => (string)GetValue(OkButtonTextProperty);
+            set => SetValue(OkButtonTextProperty, value);
         }
 
         public string CancelButtonText
         {
-            get { return (string)GetValue(CancelButtonTextProperty); }
-            set { SetValue(CancelButtonTextProperty, value); }
+            get => (string)GetValue(CancelButtonTextProperty);
+            set => SetValue(CancelButtonTextProperty, value);
         }
 
         public GridLength OkButtonColumnWidth
         {
-            get { return (GridLength)GetValue(OkButtonColumnWidthProperty); }
-            set { SetValue(OkButtonColumnWidthProperty, value); }
+            get => (GridLength)GetValue(OkButtonColumnWidthProperty);
+            set => SetValue(OkButtonColumnWidthProperty, value);
         }
 
         public GridLength CancelButtonColumnWidth
         {
-            get { return (GridLength)GetValue(CancelButtonColumnWidthProperty); }
-            set { SetValue(CancelButtonColumnWidthProperty, value); }
+            get => (GridLength)GetValue(CancelButtonColumnWidthProperty);
+            set => SetValue(CancelButtonColumnWidthProperty, value);
         }
 
         public Visibility OkButtonVisibility
         {
-            get { return (Visibility)GetValue(OkButtonVisibilityProperty); }
-            set { SetValue(OkButtonVisibilityProperty, value); }
+            get => (Visibility)GetValue(OkButtonVisibilityProperty);
+            set => SetValue(OkButtonVisibilityProperty, value);
         }
 
         public Visibility CancelButtonVisibility
         {
-            get { return (Visibility)GetValue(CancelButtonVisibilityProperty); }
-            set { SetValue(CancelButtonVisibilityProperty, value); }
+            get => (Visibility)GetValue(CancelButtonVisibilityProperty);
+            set => SetValue(CancelButtonVisibilityProperty, value);
         }
 
         public static readonly DependencyProperty MessageTextProperty =
-            DependencyProperty.Register("MessageText", typeof(string), typeof(MessageBoxWindow), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register(nameof(MessageText), typeof(string), typeof(MessageBoxWindow), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty SubTextProperty =
-           DependencyProperty.Register("SubText", typeof(string), typeof(MessageBoxWindow), new PropertyMetadata(string.Empty));
+           DependencyProperty.Register(nameof(SubText), typeof(string), typeof(MessageBoxWindow), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty OkButtonTextProperty =
-            DependencyProperty.Register("OkButtonText", typeof(string), typeof(MessageBoxWindow), new PropertyMetadata("_OK"));
+            DependencyProperty.Register(nameof(OkButtonText), typeof(string), typeof(MessageBoxWindow), new PropertyMetadata("_OK"));
 
         public static readonly DependencyProperty CancelButtonTextProperty =
-            DependencyProperty.Register("CancelButtonText", typeof(string), typeof(MessageBoxWindow), new PropertyMetadata("_Cancel"));
+            DependencyProperty.Register(nameof(CancelButtonText), typeof(string), typeof(MessageBoxWindow), new PropertyMetadata("_Cancel"));
 
         public static readonly DependencyProperty CancelButtonColumnWidthProperty =
-           DependencyProperty.Register("CancelButtonColumnWidth", typeof(GridLength), typeof(MessageBoxWindow), new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
+           DependencyProperty.Register(nameof(CancelButtonColumnWidth), typeof(GridLength), typeof(MessageBoxWindow), new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
         public static readonly DependencyProperty OkButtonColumnWidthProperty =
-            DependencyProperty.Register("OkButtonColumnWidth", typeof(GridLength), typeof(MessageBoxWindow), new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
+            DependencyProperty.Register(nameof(OkButtonColumnWidth), typeof(GridLength), typeof(MessageBoxWindow), new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
         public static readonly DependencyProperty CancelButtonVisibilityProperty =
-            DependencyProperty.Register("CancelButtonVisibility", typeof(Visibility), typeof(MessageBoxWindow), new PropertyMetadata(Visibility.Visible));
+            DependencyProperty.Register(nameof(CancelButtonVisibility), typeof(Visibility), typeof(MessageBoxWindow), new PropertyMetadata(Visibility.Visible));
 
         public static readonly DependencyProperty OkButtonVisibilityProperty =
-            DependencyProperty.Register("OkButtonVisibility", typeof(Visibility), typeof(MessageBoxWindow), new PropertyMetadata(Visibility.Visible));
+            DependencyProperty.Register(nameof(OkButtonVisibility), typeof(Visibility), typeof(MessageBoxWindow), new PropertyMetadata(Visibility.Visible));
 
 
         public MessageBoxWindow()
@@ -84,14 +84,14 @@ namespace SleepHunter.Views
 
         void okButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
         void cancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }
