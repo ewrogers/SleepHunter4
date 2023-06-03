@@ -5,55 +5,46 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
-using SleepHunter.IO.Process;
-
 namespace SleepHunter.Settings
 {
     public sealed class ClientVersionManager
     {
-        public static readonly string VersionsFile = @"Versions.xml";
+        public const string VersionsFile = @"Versions.xml";
+        
+        private static readonly ClientVersionManager instance = new();
 
-        #region Singleton
-        static readonly ClientVersionManager instance = new ClientVersionManager();
-
-        public static ClientVersionManager Instance { get { return instance; } }
+        public static ClientVersionManager Instance => instance;
 
         private ClientVersionManager()
         {
             if (!clientVersions.ContainsKey("Auto-Detect"))
                 AddVersion(ClientVersion.AutoDetect);
         }
-        #endregion
 
-        readonly ConcurrentDictionary<string, ClientVersion> clientVersions = new ConcurrentDictionary<string, ClientVersion>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ClientVersion> clientVersions = new(StringComparer.OrdinalIgnoreCase);
 
         public event ClientVersionEventHandler VersionAdded;
         public event ClientVersionEventHandler VersionChanged;
         public event ClientVersionEventHandler VersionRemoved;
 
-        #region Collection Properties
         public ClientVersion this[string key]
         {
-            get { return GetVersion(key); }
-            set { AddVersion(value); }
+            get => GetVersion(key);
+            set => AddVersion(value);
         }
 
-        public int Count { get { return clientVersions.Count; } }
+        public int Count => clientVersions.Count;
 
-        public IEnumerable<ClientVersion> Versions
-        {
-            get { return from v in clientVersions.Values orderby v.Key select v; }
-        }
-        #endregion
+        public IEnumerable<ClientVersion> Versions => 
+            from v in clientVersions.Values orderby v.Key select v;
 
-        #region Collection Methods
         public void AddVersion(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
             if (string.IsNullOrWhiteSpace(version.Key))
-                throw new ArgumentException("Key cannot be null or whitespace.", "version");
+                throw new ArgumentException("Key cannot be null or whitespace.", nameof(version));
 
             bool alreadyExists = clientVersions.ContainsKey(version.Key);
 
@@ -68,7 +59,7 @@ namespace SleepHunter.Settings
         public ClientVersion GetVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return clientVersions[key];
         }
@@ -76,7 +67,7 @@ namespace SleepHunter.Settings
         public bool ContainsVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return clientVersions.ContainsKey(key);
         }
@@ -84,13 +75,12 @@ namespace SleepHunter.Settings
         public bool RemoveVersion(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             if (!clientVersions.ContainsKey(key))
                 return false;
 
-            ClientVersion removedVersion;
-            bool wasRemoved = clientVersions.TryRemove(key, out removedVersion);
+            bool wasRemoved = clientVersions.TryRemove(key, out var removedVersion);
 
             if (wasRemoved)
                 OnVersionRemoved(removedVersion);
@@ -105,46 +95,40 @@ namespace SleepHunter.Settings
 
             clientVersions.Clear();
         }
-        #endregion
 
-        #region Load/Save Methods
         public void LoadFromFile(string filename)
         {
-            using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                LoadFromStream(inputStream);
-            }
+            using var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            LoadFromStream(inputStream);
         }
 
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(ClientVersionCollection));
-            var collection = serializer.Deserialize(stream) as ClientVersionCollection;
 
-            if (collection != null)
-                foreach (var version in collection.Versions)
-                    AddVersion(version);
+            if (serializer.Deserialize(stream) is not ClientVersionCollection collection)
+                return;
+
+            foreach (var version in collection.Versions)
+                AddVersion(version);
         }
 
         public void SaveToFile(string filename)
         {
-            using (var outputStream = File.Create(filename))
-            {
-                SaveToStream(outputStream);
-                outputStream.Flush();
-            }
+            using var outputStream = File.Create(filename);
+            SaveToStream(outputStream);
+            outputStream.Flush();
         }
 
         public void SaveToStream(Stream stream)
         {
-            var collection = new ClientVersionCollection(this.Versions);
+            var collection = new ClientVersionCollection(Versions);
             var serializer = new XmlSerializer(typeof(ClientVersionCollection));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add("", "");
 
             serializer.Serialize(stream, collection, namespaces);
         }
-        #endregion
 
         public string DetectVersion(string hash)
         {
@@ -155,39 +139,28 @@ namespace SleepHunter.Settings
             return null;
         }
 
-        #region Event Handler Methods
         void OnVersionAdded(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionAdded;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionAdded?.Invoke(this, new ClientVersionEventArgs(version));
         }
 
         void OnVersionChanged(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionChanged;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionChanged?.Invoke(this, new ClientVersionEventArgs(version));
         }
 
         void OnVersionRemoved(ClientVersion version)
         {
             if (version == null)
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
 
-            var handler = this.VersionRemoved;
-
-            if (handler != null)
-                handler(this, new ClientVersionEventArgs(version));
+            VersionRemoved?.Invoke(this, new ClientVersionEventArgs(version));
         }
-        #endregion
     }
 }

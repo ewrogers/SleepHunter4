@@ -10,44 +10,38 @@ namespace SleepHunter.Settings
 {
     public sealed class ColorThemeManager
     {
-        public static readonly string ThemesFile = @"Themes.xml";
+        public const string ThemesFile = @"Themes.xml";
 
-        #region Singleton
-        static readonly ColorThemeManager instance = new ColorThemeManager();
-
-        public static ColorThemeManager Instance { get { return instance; } }
-        #endregion
+        private static readonly ColorThemeManager instance = new();
+        public static ColorThemeManager Instance => instance;
 
         private ColorThemeManager() { }
 
-        readonly ConcurrentDictionary<string, ColorTheme> colorThemes = new ConcurrentDictionary<string, ColorTheme>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ColorTheme> colorThemes = new(StringComparer.OrdinalIgnoreCase);
 
         public event ColorThemeEventHandler ThemeAdded;
         public event ColorThemeEventHandler ThemeChanged;
         public event ColorThemeEventHandler ThemeRemoved;
 
-        #region Collection Properties
         public ColorTheme this[string key]
         {
-            get { return GetTheme(key); }
-            set { AddTheme(value); }
+            get => GetTheme(key);
+            set => AddTheme(value);
         }
-        public int Count { get { return colorThemes.Count; } }
+
+        public int Count => colorThemes.Count;
 
         public IEnumerable<ColorTheme> Themes => colorThemes.Values.OrderBy(theme => theme.SortIndex);
 
         public ColorTheme DefaultTheme => Themes.FirstOrDefault(theme => theme.IsDefault) ?? ColorTheme.DefaultTheme;
 
-        #endregion
-
-        #region Collection Methods
         public void AddTheme(ColorTheme theme)
         {
             if (theme == null)
-                throw new ArgumentNullException("theme");
+                throw new ArgumentNullException(nameof(theme));
 
             if (string.IsNullOrWhiteSpace(theme.Name))
-                throw new ArgumentException("Key cannot be null or whitespace.", "version");
+                throw new ArgumentException("Key cannot be null or whitespace.", nameof(theme.Name));
 
             var alreadyExists = colorThemes.ContainsKey(theme.Name);
             colorThemes[theme.Name] = theme;
@@ -61,7 +55,7 @@ namespace SleepHunter.Settings
         public ColorTheme GetTheme(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return colorThemes[key];
         }
@@ -69,7 +63,7 @@ namespace SleepHunter.Settings
         public bool ContainsTheme(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             return colorThemes.ContainsKey(key);
         }
@@ -77,13 +71,12 @@ namespace SleepHunter.Settings
         public bool RemoveTheme(string key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             if (!colorThemes.ContainsKey(key))
                 return false;
 
-            ColorTheme removedTheme;
-            bool wasRemoved = colorThemes.TryRemove(key, out removedTheme);
+            bool wasRemoved = colorThemes.TryRemove(key, out var removedTheme);
 
             if (wasRemoved)
                 OnThemeRemoved(removedTheme);
@@ -98,46 +91,40 @@ namespace SleepHunter.Settings
 
             colorThemes.Clear();
         }
-        #endregion
 
-        #region Load / Save Methods
         public void LoadFromFile(string filename)
         {
-            using (var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                LoadFromStream(inputStream);
-            }
+            using var inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            LoadFromStream(inputStream);
         }
 
         public void LoadFromStream(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(ColorThemeCollection));
-            var collection = serializer.Deserialize(stream) as ColorThemeCollection;
 
-            if (collection != null)
-                foreach (var theme in collection.Themes)
-                    AddTheme(theme);
+            if (serializer.Deserialize(stream) is not ColorThemeCollection collection)
+                return;
+
+            foreach (var theme in collection.Themes)
+                AddTheme(theme);
         }
 
         public void SaveToFile(string filename)
         {
-            using (var outputStream = File.Create(filename))
-            {
-                SaveToStream(outputStream);
-                outputStream.Flush();
-            }
+            using var outputStream = File.Create(filename);
+            SaveToStream(outputStream);
+            outputStream.Flush();
         }
 
         public void SaveToStream(Stream stream)
         {
-            var collection = new ColorThemeCollection(this.Themes);
+            var collection = new ColorThemeCollection(Themes);
             var serializer = new XmlSerializer(typeof(ColorThemeCollection));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add("", "");
 
             serializer.Serialize(stream, collection, namespaces);
         }
-        #endregion
 
         public void ApplyTheme(string themeKey)
         {
@@ -159,39 +146,28 @@ namespace SleepHunter.Settings
             Application.Current.Resources["ObsidianForeground"] = DefaultTheme.Foreground;
         }
 
-        #region Event Handler Methods
-        void OnThemeAdded(ColorTheme theme)
+        private void OnThemeAdded(ColorTheme theme)
         {
             if (theme == null)
-                throw new ArgumentNullException("theme");
+                throw new ArgumentNullException(nameof(theme));
 
-            var handler = this.ThemeAdded;
-
-            if (handler != null)
-                handler(this, new ColorThemeEventArgs(theme));
+            ThemeAdded?.Invoke(this, new ColorThemeEventArgs(theme));
         }
 
-        void OnThemeChanged(ColorTheme theme)
+        private void OnThemeChanged(ColorTheme theme)
         {
             if (theme == null)
-                throw new ArgumentNullException("theme");
+                throw new ArgumentNullException(nameof(theme));
 
-            var handler = this.ThemeChanged;
-
-            if (handler != null)
-                handler(this, new ColorThemeEventArgs(theme));
+            ThemeChanged?.Invoke(this, new ColorThemeEventArgs(theme));
         }
 
-        void OnThemeRemoved(ColorTheme theme)
+        private void OnThemeRemoved(ColorTheme theme)
         {
             if (theme == null)
-                throw new ArgumentNullException("theme");
+                throw new ArgumentNullException(nameof(theme));
 
-            var handler = this.ThemeRemoved;
-
-            if (handler != null)
-                handler(this, new ColorThemeEventArgs(theme));
+            ThemeRemoved?.Invoke(this, new ColorThemeEventArgs(theme));
         }
-        #endregion
     }
 }

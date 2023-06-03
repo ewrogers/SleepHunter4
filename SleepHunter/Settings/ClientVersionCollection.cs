@@ -9,26 +9,26 @@ namespace SleepHunter.Settings
     [XmlRoot("ClientVersions")]
     public sealed class ClientVersionCollection
     {
-        string version;
-        List<ClientVersion> versions;
+        private string version;
+        private List<ClientVersion> versions;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
         public string Version
         {
-            get { return version; }
-            set { version = value; }
+            get => version;
+            set => version = value;
         }
 
         [XmlIgnore]
-        public int Count { get { return versions.Count; } }
+        public int Count => versions.Count;
 
         [XmlArray("Clients")]
         [XmlArrayItem("Client")]
         public List<ClientVersion> Versions
         {
-            get { return versions; }
-            private set { versions = value; }
+            get => versions;
+            private set => versions = value;
         }
 
         public ClientVersionCollection()
@@ -43,7 +43,12 @@ namespace SleepHunter.Settings
 
         public ClientVersionCollection(IEnumerable<ClientVersion> collection)
         {
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
+
             versions = new List<ClientVersion>(collection);
         }
+
+        public override string ToString() => $"Count = {Count}";
     }
 }

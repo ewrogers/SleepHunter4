@@ -4,28 +4,28 @@ using System.Runtime.InteropServices;
 namespace SleepHunter.Win32
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SystemInfo
+    internal readonly struct SystemInfo
     {
-        uint oemId;
-        uint pageSize;
-        nint minimumApplicationAddress;
-        nint maximumApplicationAddress;
-        nint activeProcessorMask;
-        uint processorType;
-        uint allocationGranularity;
-        ushort processorLevel;
-        ushort processorRevision;
+        private readonly uint oemId;
+        private readonly uint pageSize;
+        private readonly nint minimumApplicationAddress;
+        private readonly nint maximumApplicationAddress;
+        private readonly nint activeProcessorMask;
+        private readonly uint processorType;
+        private readonly uint allocationGranularity;
+        private readonly ushort processorLevel;
+        private readonly ushort processorRevision;
 
-        public uint OemId => oemId;
+        public readonly uint OemId => oemId;
 
-        public uint PageSize => pageSize;
-        public nint MinimumApplicationAddress => minimumApplicationAddress;
-        public nint MaximumApplicationAddress => maximumApplicationAddress;
+        public readonly uint PageSize => pageSize;
+        public readonly nint MinimumApplicationAddress => minimumApplicationAddress;
+        public readonly nint MaximumApplicationAddress => maximumApplicationAddress;
 
-        public nint ActiveProcessorMask => activeProcessorMask;
-        public uint ProcessorType => processorType;
-        public uint AllocationGranularity => allocationGranularity;
-        public ushort ProcessorLevel => processorLevel;
-        public ushort ProcessorRevision => processorRevision;
+        public readonly nint ActiveProcessorMask => activeProcessorMask;
+        public readonly uint ProcessorType => processorType;
+        public readonly uint AllocationGranularity => allocationGranularity;
+        public readonly ushort ProcessorLevel => processorLevel;
+        public readonly ushort ProcessorRevision => processorRevision;
     }
 }

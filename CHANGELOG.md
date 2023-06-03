@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.6.1] - 2023-06-02
+## [4.6.1] - 2023-06-03
 
 ### Added
 
@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DirectDraw compatbility fix is now a manual Apply/Revert button in `Game Client` settings
 - Small UI tweaks on character list text spacing
 - Adjusted min size on the character list to accomodate new status icon
+- Will look in a few places for the default DA client path
 
 ### Fixed
 
 - Marked `Assail`, `Assault`, and `Clobber` skills as assail types
-- Clear macro status on stop (fixes "Assailing" being displayed)
+- Clear macro status on stop (fixes "Assailing" being displayed when stopped)
 - `Execute` skill now also waits for < 2% hp
 
 ## [4.6.0] - 2023-05-31

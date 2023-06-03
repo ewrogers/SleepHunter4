@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,6 +16,9 @@ namespace SleepHunter.Views
 {
     public partial class SettingsWindow : Window
     {
+        private const string DirectDrawPatchFile = "ddraw.dll";
+        private const string DirectDrawConfigFile = "DDrawCompatOverlay-Darkages.ini";
+
         public static readonly int GeneralTabIndex = 0;
         public static readonly int UserInterfaceTabIndex = 1;
         public static readonly int GameClientTabIndex = 2;
@@ -42,7 +44,7 @@ namespace SleepHunter.Views
         }
 
         public static readonly DependencyProperty SelectedTabIndexProperty =
-            DependencyProperty.Register("SelectedTabIndex", typeof(int), typeof(SettingsWindow), new PropertyMetadata(0));
+            DependencyProperty.Register(nameof(SelectedTabIndex), typeof(int), typeof(SettingsWindow), new PropertyMetadata(0));
 
         public SettingsWindow()
         {
@@ -50,6 +52,7 @@ namespace SleepHunter.Views
             releaseService = App.Current.Services.GetService<IReleaseService>();
 
             InitializeComponent();
+
             GetVersion();
             ToggleDownloadUpdateButton(false);
         }

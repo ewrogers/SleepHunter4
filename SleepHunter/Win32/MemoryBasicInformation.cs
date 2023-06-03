@@ -1,59 +1,58 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace SleepHunter.Win32
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct MemoryBasicInformation
     {
-        nint baseAddress;
-        nint allocationBase;
-        VirtualMemoryProtection allocationProtect;
-        nint regionSize;
-        VirtualMemoryStatus state;
-        VirtualMemoryProtection protect;
-        VirtualMemoryType type;
+        private nint baseAddress;
+        private nint allocationBase;
+        private VirtualMemoryProtection allocationProtect;
+        private nint regionSize;
+        private VirtualMemoryStatus state;
+        private VirtualMemoryProtection protect;
+        private VirtualMemoryType type;
 
         public nint BaseAddress
         {
-            get { return baseAddress; }
-            set { baseAddress = value; }
+            readonly get => baseAddress;
+            set => baseAddress = value;
         }
 
         public nint AllocationBase
         {
-            get { return allocationBase; }
-            set { allocationBase = value; }
+            readonly get => allocationBase;
+            set => allocationBase = value;
         }
 
         public VirtualMemoryProtection AllocationProtect
         {
-            get { return allocationProtect; }
-            set { allocationProtect = value; }
+            readonly get => allocationProtect;
+            set => allocationProtect = value;
         }
 
         public nint RegionSize
         {
-            get { return regionSize; }
-            set { regionSize = value; }
+            readonly get => regionSize;
+            set => regionSize = value;
         }
 
         public VirtualMemoryStatus State
         {
-            get { return state; }
-            set { state = value; }
+            readonly get => state;
+            set => state = value;
         }
 
         public VirtualMemoryProtection Protect
         {
-            get { return protect; }
-            set { protect = value; }
+            readonly get => protect;
+            set => protect = value;
         }
 
         public VirtualMemoryType Type
         {
-            get { return type; }
-            set { type = value; }
+            readonly get => type;
+            set => type = value;
         }
     }
 }
