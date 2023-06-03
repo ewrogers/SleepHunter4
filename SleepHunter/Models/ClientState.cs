@@ -9,87 +9,76 @@ namespace SleepHunter.Models
 {
     public sealed class ClientState : ObservableObject
     {
-        const string ActivePanelKey = @"ActivePanel";
-        const string InventoryExpandedKey = @"InventoryExpanded";
-        const string MinimizedModeKey = @"MinimizedMode";
-        const string DialogOpenKey = @"DialogOpen";
-        const string SenseOpenKey = @"SenseOpen";
-        const string UserChattingKey = @"UserChatting";
+        private const string ActivePanelKey = @"ActivePanel";
+        private const string InventoryExpandedKey = @"InventoryExpanded";
+        private const string MinimizedModeKey = @"MinimizedMode";
+        private const string DialogOpenKey = @"DialogOpen";
+        private const string SenseOpenKey = @"SenseOpen";
+        private const string UserChattingKey = @"UserChatting";
 
-        Player owner;
-        string versionKey;
-        InterfacePanel activePanel;
-        bool isInventoryExpanded;
-        bool isMinimizedMode;
-        bool isDialogOpen;
-        bool isSenseOpen;
-        bool isUserChatting;
+        private string versionKey;
+        private InterfacePanel activePanel;
+        private bool isInventoryExpanded;
+        private bool isMinimizedMode;
+        private bool isDialogOpen;
+        private bool isSenseOpen;
+        private bool isUserChatting;
 
-        public event EventHandler DidUpdate;
+        public event EventHandler ClientUpdated;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
-        }
+        public Player Owner { get; }
 
         public string VersionKey
         {
-            get { return versionKey; }
-            set { SetProperty(ref versionKey, value); }
+            get => versionKey;
+            set => SetProperty(ref versionKey, value);
         }
 
         public InterfacePanel ActivePanel
         {
-            get { return activePanel; }
-            set { SetProperty(ref activePanel, value); }
+            get => activePanel;
+            set => SetProperty(ref activePanel, value);
         }
 
         public bool IsInventoryExpanded
         {
-            get { return isInventoryExpanded; }
-            set { SetProperty(ref isInventoryExpanded, value); }
+            get => isInventoryExpanded;
+            set => SetProperty(ref isInventoryExpanded, value);
         }
 
         public bool IsMinimizedMode
         {
-            get { return isMinimizedMode; }
-            set { SetProperty(ref isMinimizedMode, value); }
+            get => isMinimizedMode;
+            set => SetProperty(ref isMinimizedMode, value);
         }
 
         public bool IsDialogOpen
         {
-            get { return isDialogOpen; }
-            set { SetProperty(ref isDialogOpen, value); }
+            get => isDialogOpen;
+            set => SetProperty(ref isDialogOpen, value);
         }
 
         public bool IsSenseOpen
         {
-            get { return isSenseOpen; }
-            set { SetProperty(ref isSenseOpen, value); }
+            get => isSenseOpen;
+            set => SetProperty(ref isSenseOpen, value);
         }
 
         public bool IsUserChatting
         {
-            get { return isUserChatting; }
-            set { SetProperty(ref isUserChatting, value); }
+            get => isUserChatting;
+            set => SetProperty(ref isUserChatting, value);
         }
-
-        public ClientState()
-           : this(null) { }
 
         public ClientState(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
-            DidUpdate?.Invoke(this, EventArgs.Empty);
+            Update(Owner.Accessor);
+            ClientUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(ProcessMemoryAccessor accessor)
@@ -112,52 +101,38 @@ namespace SleepHunter.Models
             var senseOpenVariable = version.GetVariable(SenseOpenKey);
             var userChattingVariable = version.GetVariable(UserChattingKey);
 
-            byte activePanelByte;
-            bool isInventoryExpanded;
-            bool isMinimizedMode;
-            bool isDialogOpen;
-            bool isUserChatting;
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
-            Stream stream = null;
-            try
-            {
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
-                {
-                    stream = null;
+            if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out var activePanelByte))
+                ActivePanel = (InterfacePanel)activePanelByte;
+            else
+                ActivePanel = InterfacePanel.Unknown;
 
-                    if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out activePanelByte))
-                        ActivePanel = (InterfacePanel)activePanelByte;
-                    else
-                        ActivePanel = InterfacePanel.Unknown;
+            if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out var isInventoryExpanded))
+                IsInventoryExpanded = isInventoryExpanded;
+            else
+                IsInventoryExpanded = false;
 
-                    if (inventoryExpandedVariable != null && inventoryExpandedVariable.TryReadBoolean(reader, out isInventoryExpanded))
-                        IsInventoryExpanded = isInventoryExpanded;
-                    else
-                        IsInventoryExpanded = false;
+            if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out var isMinimizedMode))
+                IsMinimizedMode = isMinimizedMode;
+            else
+                IsMinimizedMode = false;
 
-                    if (minimizedModeVariable != null && minimizedModeVariable.TryReadBoolean(reader, out isMinimizedMode))
-                        IsMinimizedMode = isMinimizedMode;
-                    else
-                        IsMinimizedMode = false;
+            if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out var isDialogOpen))
+                IsDialogOpen = isDialogOpen;
+            else
+                IsDialogOpen = false;
 
-                    if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out isDialogOpen))
-                        IsDialogOpen = isDialogOpen;
-                    else
-                        IsDialogOpen = false;
+            if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
+                IsSenseOpen = isSenseOpen;
+            else
+                IsSenseOpen = false;
 
-                    if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
-                        IsSenseOpen = isSenseOpen;
-                    else
-                        IsSenseOpen = false;
-
-                    if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
-                        IsUserChatting = isUserChatting;
-                    else
-                        IsUserChatting = false;
-                }
-            }
-            finally { stream?.Dispose(); }
+            if (userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out var isUserChatting))
+                IsUserChatting = isUserChatting;
+            else
+                IsUserChatting = false;
         }
 
         public void ResetDefaults()

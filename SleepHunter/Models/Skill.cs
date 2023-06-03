@@ -3,29 +3,26 @@ namespace SleepHunter.Models
 {
     public sealed class Skill : Ability
     {
-        public Skill()
-           : base() { }
-
-        bool isAssail;
-        bool opensDialog;
-        bool requiresDisarm;
+        private bool isAssail;
+        private bool opensDialog;
+        private bool requiresDisarm;
 
         public bool IsAssail
         {
             get { return isAssail; }
-            set { SetProperty(ref isAssail, value, "IsAssail"); }
+            set { SetProperty(ref isAssail, value); }
         }
 
         public bool OpensDialog
         {
             get { return opensDialog; }
-            set { SetProperty(ref opensDialog, value, "OpensDialog"); }
+            set { SetProperty(ref opensDialog, value); }
         }
 
         public bool RequiresDisarm
         {
             get { return requiresDisarm; }
-            set { SetProperty(ref requiresDisarm, value, "RequiresDisarm"); }
+            set { SetProperty(ref requiresDisarm, value); }
         }
 
         public static Skill MakeEmpty(int slot)
@@ -33,15 +30,12 @@ namespace SleepHunter.Models
             return new Skill
             {
                 Slot = slot,
-                Panel = Ability.GetSkillPanelForSlot(slot),
+                Panel = GetSkillPanelForSlot(slot),
                 IsEmpty = true
             };
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0}", this.Name ?? "Unknown Skill");
-        }
+        public override string ToString() => Name ?? "Unknown Skill";
     }
 
 }

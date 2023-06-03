@@ -12,38 +12,28 @@ namespace SleepHunter.Models
 {
     public sealed class Inventory : IEnumerable<InventoryItem>
     {
-        static readonly string InventoryKey = @"Inventory";
+        private const string InventoryKey = @"Inventory";
 
         public static readonly int InventoryCount = 60;
 
-        Player owner;
-        List<InventoryItem> inventory = new List<InventoryItem>(InventoryCount);
+        private readonly List<InventoryItem> inventory = new(InventoryCount);
 
         public event EventHandler InventoryUpdated;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { owner = value; }
-        }
+        public Player Owner { get; }
 
-        public int Count { get { return inventory.Count((item) => { return !item.IsEmpty; }); } }
+        public int Count => inventory.Count((item) => { return !item.IsEmpty; });
 
-        public IEnumerable<string> ItemNames
-        {
-            get { return from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name; }
-        }
-
-        public Inventory()
-           : this(null) { }
+        public IEnumerable<string> ItemNames => 
+            from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name;
 
         public Inventory(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InitializeInventory();
         }
 
-        void InitializeInventory()
+        private void InitializeInventory()
         {
             inventory.Clear();
 
@@ -75,10 +65,7 @@ namespace SleepHunter.Models
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
             InventoryUpdated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -103,42 +90,34 @@ namespace SleepHunter.Models
                 return;
             }
 
-            Stream stream = null;
-            try
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+            var inventoryPointer = inventoryVariable.DereferenceValue(reader);
+
+            if (inventoryPointer == 0)
             {
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
-                {
-                    stream = null;
-                    var inventoryPointer = inventoryVariable.DereferenceValue(reader);
-
-                    if (inventoryPointer == 0)
-                    {
-                        ResetDefaults();
-                        return;
-                    }
-
-                    reader.BaseStream.Position = inventoryPointer;
-
-                    for (int i = 0; i < inventoryVariable.Count; i++)
-                    {
-                        try
-                        {
-                            bool hasItem = reader.ReadInt16() != 0;
-                            ushort iconIndex = reader.ReadUInt16();
-                            reader.ReadByte();
-                            string name = reader.ReadFixedString(inventoryVariable.MaxLength);
-                            reader.ReadByte();
-
-                            inventory[i].IsEmpty = !hasItem;
-                            inventory[i].IconIndex = iconIndex;
-                            inventory[i].Name = name.StripNumbers();
-                        }
-                        catch { }
-                    }
-                }
+                ResetDefaults();
+                return;
             }
-            finally { stream?.Dispose(); }
+
+            reader.BaseStream.Position = inventoryPointer;
+
+            for (int i = 0; i < inventoryVariable.Count; i++)
+            {
+                try
+                {
+                    bool hasItem = reader.ReadInt16() != 0;
+                    ushort iconIndex = reader.ReadUInt16();
+                    reader.ReadByte();
+                    string name = reader.ReadFixedString(inventoryVariable.MaxLength);
+                    reader.ReadByte();
+
+                    inventory[i].IsEmpty = !hasItem;
+                    inventory[i].IconIndex = iconIndex;
+                    inventory[i].Name = name.StripNumbers();
+                }
+                catch { }
+            }
         }
 
         public void ResetDefaults()
@@ -150,7 +129,6 @@ namespace SleepHunter.Models
             }
         }
 
-        #region IEnumerable Methods
         public IEnumerator<InventoryItem> GetEnumerator()
         {
             foreach (var item in inventory)
@@ -158,10 +136,6 @@ namespace SleepHunter.Models
                     yield return item;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-        #endregion
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

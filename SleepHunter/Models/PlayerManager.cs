@@ -11,18 +11,13 @@ namespace SleepHunter.Models
 {
     public sealed class PlayerManager : INotifyPropertyChanged
     {
-        #region Singleton
-        static readonly PlayerManager instance = new PlayerManager();
+        private static readonly PlayerManager instance = new();
 
-        public static PlayerManager Instance
-        {
-            get { return instance; }
-        }
+        public static PlayerManager Instance => instance;
 
         private PlayerManager() { }
-        #endregion
 
-        private readonly ConcurrentDictionary<int, Player> players = new ConcurrentDictionary<int, Player>();
+        private readonly ConcurrentDictionary<int, Player> players = new();
         private PlayerSortOrder sortOrder = PlayerSortOrder.LoginTime;
         private bool showAllClients;
 
@@ -33,7 +28,7 @@ namespace SleepHunter.Models
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int Count { get { return players.Count; } }
+        public int Count => players.Count;
 
         public PlayerSortOrder SortOrder
         {
@@ -47,15 +42,11 @@ namespace SleepHunter.Models
             set => showAllClients = value;
         }
 
-        public IEnumerable<Player> AllClients
-        {
-            get { return from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p; }
-        }
+        public IEnumerable<Player> AllClients => 
+            from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p;
 
-        public IEnumerable<Player> LoggedInPlayers
-        {
-            get { return from p in players.Values orderby p.Name where p.IsLoggedIn select p; }
-        }
+        public IEnumerable<Player> LoggedInPlayers => 
+            from p in players.Values orderby p.Name where p.IsLoggedIn select p;
 
         public IEnumerable<Player> VisiblePlayers
         {
@@ -90,10 +81,7 @@ namespace SleepHunter.Models
             var player = new Player(process) { Version = version };
             player.PropertyChanged += Player_PropertyChanged;
 
-            if (player.Version == null)
-            {
-                player.Version = ClientVersionManager.Instance.Versions.FirstOrDefault(v => v.Key != "Auto-Detect");
-            }
+            player.Version ??= ClientVersionManager.Instance.Versions.FirstOrDefault(v => v.Key != "Auto-Detect");
 
             AddPlayer(player);
             player.Update();
@@ -114,15 +102,11 @@ namespace SleepHunter.Models
                 OnPlayerAdded(player);
         }
 
-        public bool ContainsPlayer(int processId)
-        {
-            return players.ContainsKey(processId);
-        }
+        public bool ContainsPlayer(int processId) => players.ContainsKey(processId);
 
         public Player GetPlayer(int processId)
         {
             players.TryGetValue(processId, out var player);
-
             return player;
         }
 
@@ -197,7 +181,7 @@ namespace SleepHunter.Models
 
         private void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is Player player))
+            if (sender is not Player player)
                 return;
 
             OnPlayerPropertyChanged(player, e.PropertyName);

@@ -6,18 +6,13 @@ namespace SleepHunter.Models
 
     public sealed class PlayerEventArgs : EventArgs
     {
-        readonly Player player;
-
-        public Player Player { get { return player; } }
+        public Player Player { get; }
 
         public PlayerEventArgs(Player player)
         {
-            this.player = player;
+            Player = player ?? throw new ArgumentNullException(nameof(player));
         }
 
-        public override string ToString()
-        {
-            return player.Name;
-        }
+        public override string ToString() => Player.Name;
     }
 }

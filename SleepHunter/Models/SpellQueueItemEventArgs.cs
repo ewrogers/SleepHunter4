@@ -6,13 +6,11 @@ namespace SleepHunter.Models
 
     public sealed class SpellQueueItemEventArgs : EventArgs
     {
-        readonly SpellQueueItem spell;
-
-        public SpellQueueItem Spell { get { return spell; } }
+        public SpellQueueItem Spell { get; }
 
         public SpellQueueItemEventArgs(SpellQueueItem spell)
         {
-            this.spell = spell;
+            Spell = spell ?? throw new ArgumentNullException(nameof(spell));
         }
     }
 }

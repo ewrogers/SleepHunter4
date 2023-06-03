@@ -9,68 +9,58 @@ namespace SleepHunter.Models
 {
     public sealed class MapLocation : ObservableObject
     {
-        static readonly string MapNumberKey = @"MapNumber";
-        static readonly string MapNameKey = @"MapName";
-        static readonly string MapXKey = @"MapX";
-        static readonly string MapYKey = @"MapY";
+        private const string MapNumberKey = @"MapNumber";
+        private const string MapNameKey = @"MapName";
+        private const string MapXKey = @"MapX";
+        private const string MapYKey = @"MapY";
 
-        Player owner;
-        int mapNumber;
-        int x;
-        int y;
-        string mapName;
-        string mapHash;
+        private int mapNumber;
+        private int x;
+        private int y;
+        private string mapName;
+        private string mapHash;
 
         public event EventHandler LocationUpdated;
 
-        public Player Owner
-        {
-            get { return owner; }
-            set { SetProperty(ref owner, value); }
-        }
+        public Player Owner { get; }
 
         public int MapNumber
         {
-            get { return mapNumber; }
-            set { SetProperty(ref mapNumber, value); }
+            get => mapNumber;
+            set => SetProperty(ref mapNumber, value);
         }
 
         public int X
         {
-            get { return x; }
-            set { SetProperty(ref x, value); }
+            get => x;
+            set => SetProperty(ref x, value);
         }
 
         public int Y
         {
-            get { return y; }
-            set { SetProperty(ref y, value); }
+            get => y;
+            set => SetProperty(ref y, value);
         }
 
         public string MapName
         {
-            get { return mapName; }
-            set { SetProperty(ref mapName, value); }
+            get => mapName;
+            set => SetProperty(ref mapName, value);
         }
 
         public string MapHash
         {
-            get { return mapHash; }
-            set { SetProperty(ref mapHash, value); }
+            get => mapHash;
+            set => SetProperty(ref mapHash, value);
         }
-
-        public MapLocation()
-           : this(null) { }
 
         public MapLocation(Player owner)
         {
-            this.owner = owner;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
-        public bool IsSameMap(MapLocation other)
-        {
-            return MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
-        }
+        public bool IsSameMap(MapLocation other) 
+            => MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
 
         public bool IsWithinRange(MapLocation other, int maxX = 10, int maxY = 10)
         {
@@ -85,10 +75,7 @@ namespace SleepHunter.Models
 
         public void Update()
         {
-            if (owner == null)
-                throw new InvalidOperationException("Player owner is null, cannot update.");
-
-            Update(owner.Accessor);
+            Update(Owner.Accessor);
             LocationUpdated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -110,40 +97,28 @@ namespace SleepHunter.Models
             var mapYVariable = version.GetVariable(MapYKey);
             var mapNameVariable = version.GetVariable(MapNameKey);
 
-            int mapNumber;
-            int mapX, mapY;
-            string mapName;
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
-            Stream stream = null;
-            try
-            {
-                stream = accessor.GetStream();
-                using (var reader = new BinaryReader(stream, Encoding.ASCII))
-                {
-                    stream = null;
+            if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out var mapNumber))
+                MapNumber = mapNumber;
+            else
+                MapNumber = 0;
 
-                    if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out mapNumber))
-                        MapNumber = mapNumber;
-                    else
-                        MapNumber = 0;
+            if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out var mapX))
+                X = mapX;
+            else
+                X = 0;
 
-                    if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out mapX))
-                        X = mapX;
-                    else
-                        X = 0;
+            if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out var mapY))
+                Y = mapY;
+            else
+                Y = 0;
 
-                    if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out mapY))
-                        Y = mapY;
-                    else
-                        Y = 0;
-
-                    if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out mapName))
-                        MapName = mapName;
-                    else
-                        MapName = null;
-                }
-            }
-            finally { stream?.Dispose(); }
+            if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out var mapName))
+                MapName = mapName;
+            else
+                MapName = null;
         }
 
         public void ResetDefaults()

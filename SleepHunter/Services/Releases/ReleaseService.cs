@@ -15,10 +15,10 @@ namespace SleepHunter.Services.Releases
         private const string RELEASE_NOTES_URL = @"https://github.com/ewrogers/SleepHunter4/blob/main/CHANGELOG.md";
         private const int DOWNLOAD_BUFFER_SIZE = 16 * 1024;
 
-        public static readonly Regex IdRegex = new Regex(@"""id"":\s*(\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public static readonly Regex TagNameRegex = new Regex(@"""tag_name"":\s*""v(\d+)\.(\d+)\.(\d+)""", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public static readonly Regex DownloadUrlRegex = new Regex(@"""browser_download_url"":\s*""(.*)"".*}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public static readonly Regex ContentSizeRegex = new Regex(@"""size"":\s*(\d+).*}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex IdRegex = new(@"""id"":\s*(\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex TagNameRegex = new(@"""tag_name"":\s*""v(\d+)\.(\d+)\.(\d+)""", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex DownloadUrlRegex = new(@"""browser_download_url"":\s*""(.*)"".*}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex ContentSizeRegex = new(@"""size"":\s*(\d+).*}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private readonly HttpClient client;
 
@@ -102,10 +102,10 @@ namespace SleepHunter.Services.Releases
             {
                 while (downloadStream.CanRead)
                 {
-                    var bytesRead = await downloadStream.ReadAsync(buffer, 0, buffer.Length);
+                    var bytesRead = await downloadStream.ReadAsync(buffer);
                     if (bytesRead > 0)
                     {
-                        await outputStream.WriteAsync(buffer, 0, bytesRead);
+                        await outputStream.WriteAsync(buffer.AsMemory(0, bytesRead));
                         totalBytesRead += bytesRead;
 
                         progress?.Report(totalBytesRead);
