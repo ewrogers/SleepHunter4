@@ -19,7 +19,7 @@ namespace SleepHunter.Macro
 
     public abstract class MacroState : ObservableObject, IDisposable
     {
-        bool isDisposed;
+        private bool isDisposed;
         protected string name;
         protected Player client;
         protected MacroStatus status;
@@ -34,31 +34,29 @@ namespace SleepHunter.Macro
 
         public string Name
         {
-            get { return name; }
-            set { SetProperty(ref name, value); }
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public Player Client
         {
-            get { return client; }
-            set { SetProperty(ref client, value); }
+            get => client;
+            set => SetProperty(ref client, value);
         }
 
         public MacroStatus Status
         {
-            get { return status; }
-            set { SetProperty(ref status, value); }
+            get => status;
+            set => SetProperty(ref status, value);
         }
 
         public MacroState(Player client)
         {
-            if (client == null)
-                throw new ArgumentNullException("client");
-
-            this.client = client;
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        #region IDisposable Methods
+        ~MacroState() => Dispose(false);
+
         public void Dispose()
         {
             Dispose(true);
@@ -78,7 +76,6 @@ namespace SleepHunter.Macro
 
             isDisposed = true;
         }
-        #endregion
 
         public void Start()
         {

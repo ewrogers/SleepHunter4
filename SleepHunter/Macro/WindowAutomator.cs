@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 
 using SleepHunter.Win32;
@@ -19,7 +18,7 @@ namespace SleepHunter.Macro
         public static readonly uint MK_XBUTTON1 = 0x20;
         public static readonly uint MK_XUBTTON2 = 0x40;
 
-        enum KeyboardCommand : uint
+        private enum KeyboardCommand : uint
         {
             HotKey = 0x312,
             KeyDown = 0x100,
@@ -31,7 +30,7 @@ namespace SleepHunter.Macro
             SysDeadChar = 0x107
         }
 
-        enum MouseCommand : uint
+        private enum MouseCommand : uint
         {
             MouseMove = 0x200,
             LeftButtonDown = 0x201,
@@ -45,28 +44,28 @@ namespace SleepHunter.Macro
             MiddleButtonDoubleClick = 0x209
         }
 
-        enum ControlCommand : uint
+        private enum ControlCommand : uint
         {
             WM_CLOSE = 0x10
         }
 
-        sealed class KeyParameter
+        private sealed class KeyParameter
         {
-            short repeatCount;
-            byte scanCode;
-            bool isExtendedKey;
-            bool contextCode;
-            bool previousState;
-            bool transitionState;
+            private readonly short repeatCount;
+            private readonly byte scanCode;
+            private readonly bool isExtendedKey;
+            private readonly bool contextCode;
+            private readonly bool previousState;
+            private readonly bool transitionState;
 
             public KeyParameter(uint lParam)
             {
-                this.repeatCount = (short)(lParam & 0xFFFF);
-                this.scanCode = (byte)((lParam >> 16) & 0xFF);
-                this.isExtendedKey = (lParam & (1 << 24)) != 0;
-                this.contextCode = (lParam & (1 << 29)) != 0;
-                this.previousState = (lParam & (1 << 30)) != 0;
-                this.transitionState = (lParam & (1 << 31)) != 0;
+                repeatCount = (short)(lParam & 0xFFFF);
+                scanCode = (byte)((lParam >> 16) & 0xFF);
+                isExtendedKey = (lParam & (1 << 24)) != 0;
+                contextCode = (lParam & (1 << 29)) != 0;
+                previousState = (lParam & (1 << 30)) != 0;
+                transitionState = (lParam & (1 << 31)) != 0;
             }
 
             public KeyParameter(short repeatCount, byte scanCode, bool isExtendedKey = false, bool contextCode = false, bool previousState = false, bool transitionState = true)
@@ -79,93 +78,77 @@ namespace SleepHunter.Macro
                 this.transitionState = transitionState;
             }
 
-            public UIntPtr ToLParam()
+            public nuint ToLParam()
             {
                 long lParam = repeatCount;
 
-                lParam |= ((uint)scanCode << 16);
+                lParam |= (uint)scanCode << 16;
 
                 if (isExtendedKey)
-                    lParam |= (1u << 24);
+                    lParam |= 1u << 24;
 
                 if (contextCode)
-                    lParam |= (1u << 29);
+                    lParam |= 1u << 29;
 
                 if (previousState)
-                    lParam |= (1u << 30);
+                    lParam |= 1u << 30;
 
                 if (transitionState)
-                    lParam |= (1u << 31);
+                    lParam |= 1u << 31;
 
-                return new UIntPtr((uint)lParam);
+                return (uint)lParam;
             }
         }
 
-        #region Keyboard Actions
-        public static void SendKeyDown(IntPtr windowHandle, char key)
-        {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
+        public static void SendKeyDown(nint windowHandle, char key)
+            => SendKeyDown(windowHandle, GetVirtualKey(key, out _));
 
-            SendKeyDown(windowHandle, virtualKey);
-        }
+        public static void SendKeyChar(nint windowHandle, char key)
+            => SendKeyChar(windowHandle, GetVirtualKey(key, out _));
 
-        public static void SendKeyChar(IntPtr windowHandle, char key)
-        {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
+        public static void SendKeyUp(nint windowHandle, char key)
+            => SendKeyUp(windowHandle, GetVirtualKey(key, out _));
 
-            SendKeyChar(windowHandle, virtualKey);
-        }
-
-        public static void SendKeyUp(IntPtr windowHandle, char key)
-        {
-            ModifierKeys modifiers;
-            var virtualKey = GetVirtualKey(key, out modifiers);
-
-            SendKeyUp(windowHandle, virtualKey);
-        }
-
-        public static void SendKeyDown(IntPtr windowHandle, byte virtualKey)
+        public static void SendKeyDown(nint windowHandle, byte virtualKey)
         {
             var scanCode = GetScanCode(virtualKey);
             var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, new UIntPtr(virtualKey), keyParameter.ToLParam());
+            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, virtualKey, keyParameter.ToLParam());
         }
 
-        public static void SendKeyChar(IntPtr windowHandle, byte virtualKey)
+        public static void SendKeyChar(nint windowHandle, byte virtualKey)
         {
-
+            // Not necessary for Dark Ages
         }
 
-        public static void SendKeyUp(IntPtr windowHandle, byte virtualKey)
+        public static void SendKeyUp(nint windowHandle, byte virtualKey)
         {
             var scanCode = GetScanCode(virtualKey);
             var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, new UIntPtr(virtualKey), keyParameter.ToLParam());
+            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, virtualKey, keyParameter.ToLParam());
         }
 
-        public static void SendShiftKeyDown(IntPtr windowHandle)
+        public static void SendShiftKeyDown(nint windowHandle)
         {
             var virtualKey = VK_SHIFT;
             var scanCode = GetScanCode(virtualKey);
             var keyParameter = new KeyParameter(1, scanCode, false, false, false, false);
 
-            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, new UIntPtr(virtualKey), keyParameter.ToLParam());
+            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyDown, virtualKey, keyParameter.ToLParam());
         }
 
-        public static void SendShiftKeyUp(IntPtr windowHandle)
+        public static void SendShiftKeyUp(nint windowHandle)
         {
             var virtualKey = VK_SHIFT;
             var scanCode = GetScanCode(virtualKey);
             var keyParameter = new KeyParameter(1, scanCode, false, false, true, true);
 
-            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, new UIntPtr(virtualKey), keyParameter.ToLParam());
+            NativeMethods.PostMessage(windowHandle, (uint)KeyboardCommand.KeyUp, virtualKey, keyParameter.ToLParam());
         }
 
-        public static void SendKeystroke(IntPtr windowHandle, char key, bool includeCharMessage = false)
+        public static void SendKeystroke(nint windowHandle, char key, bool includeCharMessage = false)
         {
             SendKeyDown(windowHandle, key);
 
@@ -175,7 +158,7 @@ namespace SleepHunter.Macro
             SendKeyUp(windowHandle, key);
         }
 
-        public static void SendKeystroke(IntPtr windowHandle, byte virtualKey, bool includeCharMessage = false)
+        public static void SendKeystroke(nint windowHandle, byte virtualKey, bool includeCharMessage = false)
         {
             SendKeyDown(windowHandle, virtualKey);
 
@@ -184,43 +167,39 @@ namespace SleepHunter.Macro
 
             SendKeyUp(windowHandle, virtualKey);
         }
-        #endregion
 
-        #region Mouse Actions
-        public static void SendMouseMove(IntPtr windowHandle, int x, int y)
-        {
-            NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, UIntPtr.Zero, new UIntPtr(MakeXYParameter(new Point(x, y))));
-        }
+        public static void SendMouseMove(nint windowHandle, int x, int y)
+            => NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MouseMove, 0, MakeXYParameter(new Point(x, y)));
 
-        public static void SendMouseDown(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
+        public static void SendMouseDown(nint windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
         {
             var xyParam = MakeXYParameter(new Point(x, y));
 
             if (mouseButton.HasFlag(MouseButton.Left))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, new UIntPtr(MK_LBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonDown, MK_LBUTTON, xyParam);
 
             if (mouseButton.HasFlag(MouseButton.Middle))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, new UIntPtr(MK_MBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonDown, MK_MBUTTON, xyParam);
 
             if (mouseButton.HasFlag(MouseButton.Right))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, new UIntPtr(MK_RBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonDown, MK_RBUTTON, xyParam);
         }
 
-        public static void SendMouseUp(IntPtr windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
+        public static void SendMouseUp(nint windowHandle, MouseButton mouseButton, int x = 0, int y = 0)
         {
             var xyParam = MakeXYParameter(new Point(x, y));
 
             if (mouseButton.HasFlag(MouseButton.Left))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, new UIntPtr(MK_LBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.LeftButtonUp, MK_LBUTTON, xyParam);
 
             if (mouseButton.HasFlag(MouseButton.Middle))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, new UIntPtr(MK_MBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.MiddleButtonUp, MK_MBUTTON, xyParam);
 
             if (mouseButton.HasFlag(MouseButton.Right))
-                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, new UIntPtr(MK_RBUTTON), new UIntPtr(xyParam));
+                NativeMethods.PostMessage(windowHandle, (uint)MouseCommand.RightButtonUp, MK_RBUTTON, xyParam);
         }
 
-        public static void SendMouseClick(IntPtr windowHandle, MouseButton mouseButton, int x, int y, bool moveFirst = true)
+        public static void SendMouseClick(nint windowHandle, MouseButton mouseButton, int x, int y, bool moveFirst = true)
         {
             if (moveFirst)
                 SendMouseMove(windowHandle, x, y);
@@ -228,25 +207,19 @@ namespace SleepHunter.Macro
             SendMouseDown(windowHandle, mouseButton, x, y);
             SendMouseUp(windowHandle, mouseButton, x, y);
         }
-        #endregion
 
-        #region Control Actions
-        public static void SendCloseWindow(IntPtr windowHandle)
-        {
-            NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, UIntPtr.Zero, UIntPtr.Zero);
-        }
-        #endregion
+        public static void SendCloseWindow(nint windowHandle)
+            => NativeMethods.PostMessage(windowHandle, (uint)ControlCommand.WM_CLOSE, 0, 0);
 
-        #region Helper Methods
-        static uint MakeXYParameter(Point pt)
+        private static uint MakeXYParameter(Point pt)
         {
             uint parameter = (uint)pt.X;
-            parameter |= ((uint)pt.Y << 16);
+            parameter |= (uint)pt.Y << 16;
 
             return parameter;
         }
 
-        static byte GetScanCode(char c)
+        private static byte GetScanCode(char c)
         {
             var vkey = GetVirtualKey(c);
             var scanCode = NativeMethods.MapVirtualKey(vkey, VirtualKeyMapMode.VirtualToScanCode);
@@ -254,20 +227,12 @@ namespace SleepHunter.Macro
             return (byte)scanCode;
         }
 
-        static byte GetScanCode(byte virtualKey)
-        {
-            var scanCode = NativeMethods.MapVirtualKey(virtualKey, VirtualKeyMapMode.VirtualToScanCode);
+        private static byte GetScanCode(byte virtualKey) 
+            => (byte)NativeMethods.MapVirtualKey(virtualKey, VirtualKeyMapMode.VirtualToScanCode);
 
-            return (byte)scanCode;
-        }
+        private static byte GetVirtualKey(char c) => GetVirtualKey(c, out _);
 
-        static byte GetVirtualKey(char c)
-        {
-            ModifierKeys modifiers;
-            return GetVirtualKey(c, out modifiers);
-        }
-
-        static byte GetVirtualKey(char c, out ModifierKeys modifiers)
+        private static byte GetVirtualKey(char c, out ModifierKeys modifiers)
         {
             modifiers = ModifierKeys.None;
             var keyScan = NativeMethods.VkKeyScan(c);
@@ -278,6 +243,5 @@ namespace SleepHunter.Macro
             modifiers = (ModifierKeys)modifierScan;
             return vkey;
         }
-        #endregion
     }
 }

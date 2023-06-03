@@ -14,12 +14,13 @@ namespace SleepHunter.Macro
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly string[] CrasherSkillNames = new[] { "Crasher", "Animal Feast", "Execute" };
 
-        private readonly ReaderWriterLockSlim spellQueueLock = new ReaderWriterLockSlim();
-        private readonly ReaderWriterLockSlim flowerQueueLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim spellQueueLock = new();
+        private readonly ReaderWriterLockSlim flowerQueueLock = new();
 
-        private List<SpellQueueItem> spellQueue = new List<SpellQueueItem>();
-        private List<FlowerQueueItem> flowerQueue = new List<FlowerQueueItem>();
+        private List<SpellQueueItem> spellQueue = new();
+        private List<FlowerQueueItem> flowerQueue = new();
         private PlayerMacroStatus playerStatus;
 
         private int spellQueueIndex;
@@ -44,68 +45,50 @@ namespace SleepHunter.Macro
 
         public PlayerMacroStatus PlayerStatus
         {
-            get { return playerStatus; }
-            set { SetProperty(ref playerStatus, value, nameof(PlayerStatus)); }
+            get => playerStatus;
+            set => SetProperty(ref playerStatus, value, nameof(PlayerStatus));
         }
 
-        public IReadOnlyList<SpellQueueItem> QueuedSpells
-        {
-            get { return spellQueue; }
-        }
+        public IReadOnlyList<SpellQueueItem> QueuedSpells => spellQueue;
 
-        public IReadOnlyList<FlowerQueueItem> FlowerTargets
-        {
-            get { return flowerQueue; }
-        }
+        public IReadOnlyList<FlowerQueueItem> FlowerTargets => flowerQueue;
 
-        public int ActiveSpellsCount
-        {
-            get { return spellQueue.Count((spell) => { return !spell.IsDone; }); }
-        }
+        public int ActiveSpellsCount => spellQueue.Count((spell) => { return !spell.IsDone; });
 
-        public int CompletedSpellsCount
-        {
-            get { return spellQueue.Count((spell) => { return spell.IsDone; }); }
-        }
+        public int CompletedSpellsCount => spellQueue.Count((spell) => { return spell.IsDone; });
 
-        public int TotalSpellsCount
-        {
-            get { return spellQueue.Count; }
-        }
+        public int TotalSpellsCount => spellQueue.Count;
 
-        public int FlowerQueueCount
-        {
-            get { return flowerQueue.Count; }
-        }
+        public int FlowerQueueCount => flowerQueue.Count;
 
         public bool IsWaitingOnMana
         {
-            get { return isWaitingOnMana; }
-            set { SetProperty(ref isWaitingOnMana, value, nameof(IsWaitingOnMana)); }
+            get => isWaitingOnMana;
+            set => SetProperty(ref isWaitingOnMana, value, nameof(IsWaitingOnMana));
         }
 
         public bool UseLyliacVineyard
         {
-            get { return useLyliacVineyard; }
-            set { SetProperty(ref useLyliacVineyard, value, nameof(UseLyliacVineyard)); }
+            get => useLyliacVineyard;
+            set => SetProperty(ref useLyliacVineyard, value, nameof(UseLyliacVineyard));
         }
 
         public bool FlowerAlternateCharacters
         {
-            get { return flowerAlternateCharacters; }
-            set { SetProperty(ref flowerAlternateCharacters, value, nameof(FlowerAlternateCharacters)); }
+            get => flowerAlternateCharacters;
+            set => SetProperty(ref flowerAlternateCharacters, value, nameof(FlowerAlternateCharacters));
         }
 
         public DateTime SpellCastTimestamp
         {
-            get { return spellCastTimestamp; }
-            private set { spellCastTimestamp = value; }
+            get => spellCastTimestamp;
+            private set => spellCastTimestamp = value;
         }
 
         public TimeSpan SpellCastDuration
         {
-            get { return spellCastDuration; }
-            private set { spellCastDuration = value; }
+            get => spellCastDuration;
+            private set => spellCastDuration = value;
         }
 
         public bool IsSpellCasting
@@ -339,7 +322,7 @@ namespace SleepHunter.Macro
             return hasChanges;
         }
 
-        private bool MoveListItemUp<T>(IList<T> list, T item)
+        private static bool MoveListItemUp<T>(IList<T> list, T item)
         {
             var currentIndex = list.IndexOf(item);
             var newIndex = currentIndex - 1;
@@ -355,7 +338,7 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        private bool MoveListItemDown<T>(IList<T> list, T item)
+        private static bool MoveListItemDown<T>(IList<T> list, T item)
         {
             var currentIndex = list.IndexOf(item);
             var newIndex = currentIndex + 1;
@@ -508,12 +491,16 @@ namespace SleepHunter.Macro
                     }
                 }
 
-                if (string.Equals("Crasher", skill.Name, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals("Animal Feast", skill.Name, StringComparison.OrdinalIgnoreCase))
+                // Crasher skill (requires < 2% HP)
+                if (CrasherSkillNames.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     client.Update(PlayerFieldFlags.Stats);
-                    if (client.Stats.HealthPercent > 2)
+                    if (client.Stats.HealthPercent >= 2)
                         continue;
+
+                    // TODO: Add Mad Soul + Sacrifice support!
+
+                    // TODO: Add auto-hemloch + hemloch deum support!
                 }
 
                 if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out var didRequireSwitch, useShiftKey))
@@ -526,12 +513,12 @@ namespace SleepHunter.Macro
                 }
             }
 
-            if (expectDialog/* || client.GameClient.IsDialogOpen*/)
+            if (expectDialog)
                 client.CancelDialog();
 
             if (useSpaceForAssail && isAssailQueued)
             {
-                if (expectDialog/* || client.GameClient.IsDialogOpen*/)
+                if (expectDialog)
                     client.CancelDialog();
 
                 SetPlayerStatus(PlayerMacroStatus.Assailing);
@@ -817,13 +804,10 @@ namespace SleepHunter.Macro
 
         private SpellQueueItem GetLyliacPlant(SpellTarget target)
         {
-            if (lyliacPlantQueueItem == null)
+            lyliacPlantQueueItem ??= new SpellQueueItem
             {
-                lyliacPlantQueueItem = new SpellQueueItem
-                {
-                    Name = Spell.LyliacPlantKey
-                };
-            }
+                Name = Spell.LyliacPlantKey
+            };
 
             lyliacPlantQueueItem.Target = target;
             return lyliacPlantQueueItem;
@@ -1189,7 +1173,7 @@ namespace SleepHunter.Macro
             return pt;
         }
 
-        private Point GetRelativeTilePoint(int deltaX, int deltaY)
+        private static Point GetRelativeTilePoint(int deltaX, int deltaY)
         {
             Point pt = new Point(315, 160);
 
@@ -1211,7 +1195,7 @@ namespace SleepHunter.Macro
                 return GetRelativeTilePoint(deltaX, deltaY);
         }
 
-        private TimeSpan CalculateLineDuration(int numberOfLines)
+        private static TimeSpan CalculateLineDuration(int numberOfLines)
         {
             if (numberOfLines == 0)
                 return UserSettingsManager.Instance.Settings.ZeroLineDelay;

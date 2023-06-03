@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
 using System.Windows.Input;
 
 using SleepHunter.Win32;
@@ -11,27 +10,22 @@ namespace SleepHunter.Macro
 {
     public sealed class HotkeyManager
     {
-        #region Singleton
-        static readonly HotkeyManager instance = new HotkeyManager();
-
-        public static HotkeyManager Instance { get { return instance; } }
+        private static readonly HotkeyManager instance = new();
+        public static HotkeyManager Instance => instance;
 
         private HotkeyManager() { }
-        #endregion
 
-        ConcurrentDictionary<int, Hotkey> hotkeys = new ConcurrentDictionary<int, Hotkey>();
 
-        public int Count { get { return hotkeys.Count; } }
+        private readonly ConcurrentDictionary<int, Hotkey> hotkeys = new();
 
-        public IEnumerable<Hotkey> Hotkeys
-        {
-            get { return from h in hotkeys.Values select h; }
-        }
+        public int Count => hotkeys.Count;
 
-        public bool RegisterHotkey(IntPtr windowHandle, Hotkey hotkey)
+        public IEnumerable<Hotkey> Hotkeys => from h in hotkeys.Values select h;
+
+        public bool RegisterHotkey(nint windowHandle, Hotkey hotkey)
         {
             if (hotkey == null)
-                throw new ArgumentNullException("hotkey");
+                throw new ArgumentNullException(nameof(hotkey));
 
             hotkey.AtomName = GetHotkeyUniqueName(hotkey);
             hotkey.Id = NativeMethods.GlobalAddAtom(hotkey.AtomName);
@@ -48,10 +42,7 @@ namespace SleepHunter.Macro
             return success;
         }
 
-        public bool ContainsHotkey(Key key, ModifierKeys modifiers)
-        {
-            return GetHotkey(key, modifiers) != null;
-        }
+        public bool ContainsHotkey(Key key, ModifierKeys modifiers) => GetHotkey(key, modifiers) != null;
 
         public Hotkey GetHotkey(Key key, ModifierKeys modifiers)
         {
@@ -62,15 +53,14 @@ namespace SleepHunter.Macro
             return null;
         }
 
-        public bool UnregisterHotkey(IntPtr windowHandle, Hotkey hotkey)
+        public bool UnregisterHotkey(nint windowHandle, Hotkey hotkey)
         {
             if (hotkey == null)
-                throw new ArgumentNullException("hotkey");
+                throw new ArgumentNullException(nameof(hotkey));
 
-            var success = NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
+            NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
 
-            Hotkey removedHotkey;
-            var wasRemoved = hotkeys.TryRemove(hotkey.Id, out removedHotkey);
+            var wasRemoved = hotkeys.TryRemove(hotkey.Id, out var removedHotkey);
 
             if (wasRemoved && hotkey.Id > 0)
                 NativeMethods.GlobalDeleteAtom((ushort)hotkey.Id);
@@ -78,7 +68,7 @@ namespace SleepHunter.Macro
             return removedHotkey != null;
         }
 
-        public void UnregisterAllHotkeys(IntPtr windowHandle)
+        public void UnregisterAllHotkeys(nint windowHandle)
         {
             foreach (var hotkey in hotkeys.Values)
                 UnregisterHotkey(windowHandle, hotkey);
@@ -89,7 +79,7 @@ namespace SleepHunter.Macro
         static string GetHotkeyUniqueName(Hotkey hotkey)
         {
             var hotkeyName = string.Format("{0}_{1}_{2}",
-               Thread.CurrentThread.ManagedThreadId.ToString("X8"),
+               Environment.CurrentManagedThreadId.ToString("X8"),
                hotkey.GetType().FullName,
                hotkey.ToString());
 

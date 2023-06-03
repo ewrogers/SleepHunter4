@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Marked `Assail`, `Assault`, and `Clobber` skills as assail types
 - Clear macro status on stop (fixes "Assailing" being displayed)
+- `Execute` skill now also waits for < 2% hp
 
 ## [4.6.0] - 2023-05-31
 
