@@ -28,6 +28,7 @@ using SleepHunter.Services.Releases;
 using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace SleepHunter.Views
 {
@@ -280,18 +281,12 @@ namespace SleepHunter.Views
             var pid = process.ProcessId;
             logger.LogInfo($"Attempting to patch client process {pid}");
 
-            // Patch Process
-            ProcessMemoryAccessor accessor = null;
-            Stream patchStream = null;
-            BinaryReader reader = null;
-            BinaryWriter writer = null;
-
             try
             {
-                accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
-                patchStream = accessor.GetStream();
-                reader = new BinaryReader(patchStream);
-                writer = new BinaryWriter(patchStream);
+                // Patch Process
+                using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
+                using var patchStream = accessor.GetWriteableStream();
+                using var writer = new BinaryWriter(patchStream, Encoding.ASCII, leaveOpen: true);
 
                 if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
                 {
@@ -337,11 +332,6 @@ namespace SleepHunter.Views
             }
             finally
             {
-                reader?.Dispose();
-                writer?.Dispose();
-                accessor?.Dispose();
-                patchStream?.Dispose();
-
                 // Resume and close handles.
                 NativeMethods.ResumeThread(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ThreadHandle);

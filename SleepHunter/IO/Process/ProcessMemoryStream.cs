@@ -16,8 +16,8 @@ namespace SleepHunter.IO.Process
         private readonly bool leaveOpen;
 
         public override bool CanRead => processHandle != 0 && access.HasFlag(ProcessAccess.Read);
-        public override bool CanSeek => processHandle== 0;
-        public override bool CanWrite => processHandle == 0 && access.HasFlag(ProcessAccess.Write);
+        public override bool CanSeek => processHandle != 0;
+        public override bool CanWrite => processHandle != 0 && access.HasFlag(ProcessAccess.Write);
         public override bool CanTimeout => false;
 
         public nint ProcessHandle

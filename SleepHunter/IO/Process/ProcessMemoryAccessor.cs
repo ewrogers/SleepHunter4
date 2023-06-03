@@ -20,15 +20,23 @@ namespace SleepHunter.IO.Process
         public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)
         {
             this.processId = processId;
+            this.access = access;
+
             processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
 
             if (processHandle == 0)
                 throw new Win32Exception();
-
-            this.access = access;
         }
 
-        public Stream GetStream() => new ProcessMemoryStream(processHandle, access, leaveOpen: true);
+        public Stream GetStream() => new ProcessMemoryStream(processHandle, ProcessAccess.Read, leaveOpen: true);
+
+        public Stream GetWriteableStream()
+        {
+            if (!access.HasFlag(ProcessAccess.Write))
+                throw new InvalidOperationException("Accessor is not writeable");
+
+            return new ProcessMemoryStream(processHandle, ProcessAccess.ReadWrite, leaveOpen: true);
+        }
 
         ~ProcessMemoryAccessor() => Dispose(false);
 
