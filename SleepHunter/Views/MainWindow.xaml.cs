@@ -269,7 +269,7 @@ namespace SleepHunter.Views
                ref processSecurity, ref threadSecurity,
                false,
                ProcessCreationFlags.Suspended,
-               IntPtr.Zero,
+               nint.Zero,
                null,
                ref startupInfo, out var processInformation);
 
@@ -344,6 +344,7 @@ namespace SleepHunter.Views
             Stream patchStream = null;
             BinaryReader reader = null;
             BinaryWriter writer = null;
+
             try
             {
                 accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
@@ -1371,7 +1372,7 @@ namespace SleepHunter.Views
             Application.Current.Shutdown();
         }
 
-        private IntPtr WindowMessageHook(IntPtr windowHandle, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        private nint WindowMessageHook(nint windowHandle, int message, nint wParam, nint lParam, ref bool isHandled)
         {
             if (message == WM_HOTKEY)
             {
@@ -1381,7 +1382,7 @@ namespace SleepHunter.Views
                 ActivateHotkey(key, modifiers);
             }
 
-            return IntPtr.Zero;
+            return nint.Zero;
         }
 
         private void Window_Shown(object sender, EventArgs e)

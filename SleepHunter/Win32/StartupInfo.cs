@@ -20,10 +20,10 @@ namespace SleepHunter.Win32
         int flags;
         short showWindow;
         short reserved2;
-        IntPtr reserved3;
-        IntPtr standardInput;
-        IntPtr standardOutput;
-        IntPtr standardError;
+        nint reserved3;
+        nint standardInput;
+        nint standardOutput;
+        nint standardError;
 
         public int Size
         {
@@ -101,21 +101,21 @@ namespace SleepHunter.Win32
 
         public short Reserved2 { get { return reserved2; } }
 
-        public IntPtr Reserved3 { get { return reserved3; } }
+        public nint Reserved3 { get { return reserved3; } }
 
-        public IntPtr StandardInput
+        public nint StandardInput
         {
             get { return standardInput; }
             set { standardInput = value; }
         }
 
-        public IntPtr StandardOutput
+        public nint StandardOutput
         {
             get { return standardOutput; }
             set { standardOutput = value; }
         }
 
-        public IntPtr StandardError
+        public nint StandardError
         {
             get { return standardError; }
             set { standardError = value; }

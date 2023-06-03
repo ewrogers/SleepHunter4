@@ -8,9 +8,9 @@ namespace SleepHunter.Win32
     {
         uint oemId;
         uint pageSize;
-        IntPtr minimumApplicationAddress;
-        IntPtr maximumApplicationAddress;
-        IntPtr activeProcessorMask;
+        nint minimumApplicationAddress;
+        nint maximumApplicationAddress;
+        nint activeProcessorMask;
         uint processorType;
         uint allocationGranularity;
         ushort processorLevel;
@@ -19,10 +19,10 @@ namespace SleepHunter.Win32
         public uint OemId => oemId;
 
         public uint PageSize => pageSize;
-        public IntPtr MinimumApplicationAddress => minimumApplicationAddress;
-        public IntPtr MaximumApplicationAddress => maximumApplicationAddress;
+        public nint MinimumApplicationAddress => minimumApplicationAddress;
+        public nint MaximumApplicationAddress => maximumApplicationAddress;
 
-        public IntPtr ActiveProcessorMask => activeProcessorMask;
+        public nint ActiveProcessorMask => activeProcessorMask;
         public uint ProcessorType => processorType;
         public uint AllocationGranularity => allocationGranularity;
         public ushort ProcessorLevel => processorLevel;

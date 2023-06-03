@@ -27,56 +27,56 @@ namespace SleepHunter.Metadata
     [Serializable]
     public sealed class SpellLineModifiers : ObservableObject
     {
-        ModifierAction action;
-        ModifierScope scope;
-        string scopeName;
-        int value;
-        int minThreshold;
-        int maxThreshold;
+        private ModifierAction action;
+        private ModifierScope scope;
+        private string scopeName;
+        private int value;
+        private int minThreshold;
+        private int maxThreshold;
 
         [XmlAttribute("Action")]
         public ModifierAction Action
         {
-            get { return action; }
-            set { SetProperty(ref action, value); }
+            get => action;
+            set => SetProperty(ref action, value);
         }
 
         [XmlAttribute("Scope")]
         public ModifierScope Scope
         {
-            get { return scope; }
-            set { SetProperty(ref scope, value); }
+            get => scope;
+            set => SetProperty(ref scope, value);
         }
 
         [XmlAttribute("Name")]
         [DefaultValue(null)]
         public string ScopeName
         {
-            get { return scopeName; }
-            set { SetProperty(ref scopeName, value); }
+            get => scopeName;
+            set => SetProperty(ref scopeName, value);
         }
 
         [XmlAttribute("Value")]
         public int Value
         {
-            get { return value; }
-            set { SetProperty(ref this.value, value); }
+            get => value;
+            set => SetProperty(ref this.value, value);
         }
 
         [XmlAttribute("MinThreshold")]
         [DefaultValue(0)]
         public int MinThreshold
         {
-            get { return minThreshold; }
-            set { SetProperty(ref minThreshold, value); }
+            get => minThreshold;
+            set => SetProperty(ref minThreshold, value);
         }
 
         [XmlAttribute("MaxThreshold")]
         [DefaultValue(0)]
         public int MaxThreshold
         {
-            get { return maxThreshold; }
-            set { SetProperty(ref maxThreshold, value); }
+            get => maxThreshold;
+            set => SetProperty(ref maxThreshold, value);
         }
 
         public SpellLineModifiers() { }
@@ -133,7 +133,7 @@ namespace SleepHunter.Metadata
                     sb.AppendFormat(" when {0} and under", MaxThreshold.ToPluralString(" lines", " line"));
             }
 
-            sb.Append(".");
+            sb.Append('.');
             return sb.ToString();
         }
 

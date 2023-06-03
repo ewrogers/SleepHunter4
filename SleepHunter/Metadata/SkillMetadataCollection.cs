@@ -9,26 +9,26 @@ namespace SleepHunter.Metadata
     [XmlRoot("SkillMetadata")]
     public sealed class SkillMetadataCollection
     {
-        string version;
-        List<SkillMetadata> skills;
+        private string version;
+        private List<SkillMetadata> skills;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
         public string Version
         {
-            get { return version; }
-            set { version = value; }
+            get => version;
+            set => version = value;
         }
 
         [XmlIgnore]
-        public int Count { get { return skills.Count; } }
+        public int Count => skills.Count;
 
         [XmlArray("Skills")]
         [XmlArrayItem("Skill")]
         public List<SkillMetadata> Skills
         {
-            get { return skills; }
-            private set { skills = value; }
+            get => skills;
+            private set => skills = value;
         }
 
         public SkillMetadataCollection()
@@ -47,5 +47,7 @@ namespace SleepHunter.Metadata
             if (collection != null)
                 skills.AddRange(collection);
         }
+
+        public override string ToString() => $"Count = {Count}";
     }
 }

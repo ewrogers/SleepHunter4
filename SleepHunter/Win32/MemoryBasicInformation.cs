@@ -6,21 +6,21 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct MemoryBasicInformation
     {
-        IntPtr baseAddress;
-        IntPtr allocationBase;
+        nint baseAddress;
+        nint allocationBase;
         VirtualMemoryProtection allocationProtect;
-        IntPtr regionSize;
+        nint regionSize;
         VirtualMemoryStatus state;
         VirtualMemoryProtection protect;
         VirtualMemoryType type;
 
-        public IntPtr BaseAddress
+        public nint BaseAddress
         {
             get { return baseAddress; }
             set { baseAddress = value; }
         }
 
-        public IntPtr AllocationBase
+        public nint AllocationBase
         {
             get { return allocationBase; }
             set { allocationBase = value; }
@@ -32,7 +32,7 @@ namespace SleepHunter.Win32
             set { allocationProtect = value; }
         }
 
-        public IntPtr RegionSize
+        public nint RegionSize
         {
             get { return regionSize; }
             set { regionSize = value; }

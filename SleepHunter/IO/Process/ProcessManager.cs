@@ -118,7 +118,7 @@ namespace SleepHunter.IO.Process
 
                 return true;
 
-            }, IntPtr.Zero);
+            }, 0);
 
             // Find Dead Clients
             foreach (var client in clientProcesses.Values.ToArray())

@@ -9,26 +9,26 @@ namespace SleepHunter.Metadata
     [XmlRoot("SpellMetadata")]
     public sealed class SpellMetadataCollection
     {
-        string version;
-        List<SpellMetadata> spells;
+        private string version;
+        private List<SpellMetadata> spells;
 
         [XmlAttribute("FileVersion")]
         [DefaultValue(null)]
         public string Version
         {
-            get { return version; }
-            set { version = value; }
+            get => version;
+            set => version = value;
         }
 
         [XmlIgnore]
-        public int Count { get { return spells.Count; } }
+        public int Count => spells.Count;
 
         [XmlArray("Spells")]
         [XmlArrayItem("Spell")]
         public List<SpellMetadata> Spells
         {
-            get { return spells; }
-            private set { spells = value; }
+            get => spells;
+            private set => spells = value;
         }
 
         public SpellMetadataCollection()
@@ -47,5 +47,7 @@ namespace SleepHunter.Metadata
             if (collection != null)
                 spells.AddRange(collection);
         }
+
+        public override string ToString() => $"Count = {Count}";
     }
 }

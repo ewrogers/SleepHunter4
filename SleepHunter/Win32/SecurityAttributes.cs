@@ -7,7 +7,7 @@ namespace SleepHunter.Win32
     internal struct SecurityAttributes
     {
         int size;
-        IntPtr securityDescriptor;
+        nint securityDescriptor;
         bool inheritHandle;
 
         public int Size
@@ -16,7 +16,7 @@ namespace SleepHunter.Win32
             set { size = value; }
         }
 
-        public IntPtr SecurityDescriptor
+        public nint SecurityDescriptor
         {
             get { return securityDescriptor; }
             set { securityDescriptor = value; }

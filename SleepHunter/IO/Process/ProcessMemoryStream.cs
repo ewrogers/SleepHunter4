@@ -20,7 +20,7 @@ namespace SleepHunter.IO.Process
         public override bool CanWrite => processHandle == 0 && access.HasFlag(ProcessAccess.Write);
         public override bool CanTimeout => false;
 
-        public IntPtr ProcessHandle
+        public nint ProcessHandle
         {
             get => processHandle;
             private set => processHandle = value;
@@ -36,7 +36,7 @@ namespace SleepHunter.IO.Process
 
         ~ProcessMemoryStream() => Dispose(false);
 
-        public ProcessMemoryStream(IntPtr processHandle, ProcessAccess access = ProcessAccess.ReadWrite, bool leaveOpen = true)
+        public ProcessMemoryStream(nint processHandle, ProcessAccess access = ProcessAccess.ReadWrite, bool leaveOpen = true)
         {
             this.access = access;
             this.processHandle = processHandle;
@@ -62,7 +62,7 @@ namespace SleepHunter.IO.Process
             CheckIfDisposed();
             CheckBufferSize(count);
 
-            bool success = NativeMethods.ReadProcessMemory(processHandle, (IntPtr)position, internalBuffer, (IntPtr)count, out var numberOfBytesRead);
+            bool success = NativeMethods.ReadProcessMemory(processHandle, (nint)position, internalBuffer, (nint)count, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != count)
                 throw new Win32Exception();

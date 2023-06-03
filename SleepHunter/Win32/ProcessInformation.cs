@@ -6,18 +6,18 @@ namespace SleepHunter.Win32
     [StructLayout(LayoutKind.Sequential)]
     internal struct ProcessInformation
     {
-        IntPtr processHandle;
-        IntPtr threadHandle;
+        nint processHandle;
+        nint threadHandle;
         int processId;
         int threadId;
 
-        public IntPtr ProcessHandle
+        public nint ProcessHandle
         {
             get { return processHandle; }
             set { processHandle = value; }
         }
 
-        public IntPtr ThreadHandle
+        public nint ThreadHandle
         {
             get { return threadHandle; }
             set { threadHandle = value; }

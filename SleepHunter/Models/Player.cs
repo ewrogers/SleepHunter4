@@ -86,7 +86,7 @@ namespace SleepHunter.Models
             set { SetProperty(ref version, value); }
         }
 
-        public IntPtr ProcessHandle
+        public nint ProcessHandle
         {
             get { return accessor.ProcessHandle; }
         }

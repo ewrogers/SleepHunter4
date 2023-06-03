@@ -33,7 +33,7 @@ namespace SleepHunter.Models
         ConcurrentDictionary<string, bool> activeSkills = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
         ProcessMemoryScanner scanner;
-        IntPtr baseCooldownPointer;
+        nint baseCooldownPointer;
 
         public event EventHandler SkillbookUpdated;
 
@@ -172,7 +172,7 @@ namespace SleepHunter.Models
 
         public void ResetCooldownPointer()
         {
-            baseCooldownPointer = IntPtr.Zero;
+            baseCooldownPointer = nint.Zero;
         }
 
         public void Update()
@@ -291,7 +291,7 @@ namespace SleepHunter.Models
             }
         }
 
-        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, IntPtr processHandle)
+        bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, nint processHandle)
         {
             if (version == null || !UpdateSkillbookCooldownPointer(version, reader, processHandle))
                 return false;
@@ -342,7 +342,7 @@ namespace SleepHunter.Models
             finally { reader.BaseStream.Position = position; }
         }
 
-        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, IntPtr processHandle)
+        bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, nint processHandle)
         {
             if (version == null)
                 return false;
@@ -355,16 +355,16 @@ namespace SleepHunter.Models
                 if (cooldownVariable == null)
                     return false;
 
-                if (baseCooldownPointer != IntPtr.Zero)
+                if (baseCooldownPointer != nint.Zero)
                     return true;
 
                 var ptrs = scanner.FindAllUInt32((uint)cooldownVariable.Address)
                     .Select(ptr =>
                     {
                         if (cooldownVariable.Offset.IsNegative)
-                            ptr = (IntPtr)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
+                            ptr = (nint)((uint)ptr - (uint)cooldownVariable.Offset.Offset);
                         else
-                            ptr = (IntPtr)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
+                            ptr = (nint)((uint)ptr + (uint)cooldownVariable.Offset.Offset);
 
                         return ptr;
                     })
@@ -374,7 +374,7 @@ namespace SleepHunter.Models
 
                 foreach (var ptr in ptrs)
                 {
-                    if (ptr == IntPtr.Zero)
+                    if (ptr == nint.Zero)
                         continue;
 
                     reader.BaseStream.Position = ptr;
@@ -383,24 +383,24 @@ namespace SleepHunter.Models
                     if (cooldownPtr == 0 || !IsReadableMemory(processHandle, cooldownPtr))
                         continue;
 
-                    baseCooldownPointer = (IntPtr)cooldownPtr;
+                    baseCooldownPointer = (nint)cooldownPtr;
                     Debug.WriteLine($"Found cooldown timers pointer = {cooldownPtr:X}");
                     return true;
                 }
 
                 return false;
             }
-            catch { baseCooldownPointer = IntPtr.Zero; return false; }
+            catch { baseCooldownPointer = nint.Zero; return false; }
             finally { reader.BaseStream.Position = position; }
         }
 
-        static bool IsReadableMemory(IntPtr processHandle, long address)
+        static bool IsReadableMemory(nint processHandle, long address)
         {
             if (address <= 0)
                 return false;
 
             var sizeOfMemoryInfo = Marshal.SizeOf(typeof(MemoryBasicInformation));
-            var byteCount = (int)NativeMethods.VirtualQueryEx(processHandle, (IntPtr)address, out var memoryInfo, sizeOfMemoryInfo);
+            var byteCount = (int)NativeMethods.VirtualQueryEx(processHandle, (nint)address, out var memoryInfo, sizeOfMemoryInfo);
 
             if (byteCount <= 0)
                 return false;
