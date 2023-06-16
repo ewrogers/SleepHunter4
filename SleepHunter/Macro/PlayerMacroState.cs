@@ -846,8 +846,8 @@ namespace SleepHunter.Macro
         {
             client.Update(PlayerFieldFlags.Spellbook);
 
-            var shouldRotate = UserSettingsManager.Instance.Settings.SpellRotationMode != SpellRotationMode.None;
-            var isRoundRobin = UserSettingsManager.Instance.Settings.SpellRotationMode == SpellRotationMode.RoundRobin;
+            var shouldRotate = SpellQueueRotation != SpellRotationMode.None;
+            var isRoundRobin = SpellQueueRotation == SpellRotationMode.RoundRobin;
 
             if (spellQueueIndex >= spellQueue.Count)
                 spellQueueIndex = 0;

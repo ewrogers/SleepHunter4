@@ -553,10 +553,9 @@ namespace SleepHunter.Views
             {
                 macro.StatusChanged += HandleMacroStatusChanged;
                 macro.Client.PlayerUpdated += HandleClientUpdateTick;
-
-                // Set default spell queue rotation mode
-                macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
             }
+
+            var didLoadFromState = false;
 
             try
             {
@@ -564,6 +563,11 @@ namespace SleepHunter.Views
                 {
                     logger.LogInfo($"Attempting to load previous macro state for character: {player.Name}");
                     LoadMacroState(player);
+
+                    if (macro.SpellQueueRotation == SpellRotationMode.Default)
+                        macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
+
+                    didLoadFromState = true;
                 }
             }
             catch (Exception ex)
@@ -579,10 +583,15 @@ namespace SleepHunter.Views
                    MessageBoxButton.OK, 460, 260);
 
                 }, DispatcherPriority.Normal, null);
+
             }
             finally
             {
                 UpdateWindowTitle();
+
+                // Set default spell queue rotation mode
+                if (!didLoadFromState)
+                    macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
             }
         }
 
