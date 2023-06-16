@@ -32,6 +32,23 @@
                                        Source="{Binding Icon}"
                                        Opacity="0.5"
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+
+                                <Border x:Name="CooldownBorder"
+                                        Background="{DynamicResource ObsidianBackground}"
+                                        BorderThickness="0"
+                                        CornerRadius="4"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Bottom"
+                                        Margin="0"
+                                        ToolTip="This spell is on cooldown."
+                                        Visibility="{Binding Path=IsOnCooldown, Converter={StaticResource VisibilityConverter}}">
+                                    <TextBlock Name="CooldownIcon"
+                                           Style="{StaticResource ObsidianSymbolText}"
+                                           Text="&#xE121;"
+                                           FontSize="12"
+                                           Margin="2"/>
+                                </Border>
+                                
                             </Grid>
                         </Border>
 
@@ -159,7 +176,7 @@
                 <Setter TargetName="TargetText" Property="Text" Value="No Target"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                <Setter TargetName="Icon" Property="Opacity" Value="1"/>
+                <Setter TargetName="Icon" Property="Opacity" Value="0.8"/>
                 <Setter TargetName="IconBorder" Property="BorderThickness" Value="3"/>
                 <Setter TargetName="IconBorder" Property="Margin" Value="5,2"/>
             </DataTrigger>

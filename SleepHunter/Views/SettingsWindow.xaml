@@ -677,16 +677,17 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Spell Rotation Mode:"
+                        <TextBlock Text="Default Spell Queue Rotation:"
                                    TextAlignment="Right"
                                    Style="{StaticResource ObsidianText}"
-                                   ToolTip="This is the way the spell queue will rotate while casting."/>
+                                   ToolTip="This is the way the spell queue will rotate while casting, by default."/>
 
                         <ComboBox Name="spellRotationComboBox"
                                   Grid.Column="1"
@@ -795,11 +796,12 @@
                         <CheckBox Name="fasSpioradCheckBox"
                                   Grid.Row="6"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  Margin="32,8"
+                                  Margin="32,8,16,8"
                                   VerticalAlignment="Center"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
-                                  Content="Auto Fas Spiorad"
-                                  ToolTip="This will cast fas spiorad any time mana is less than the specified value."/>
+                                  ToolTip="This will cast fas spiorad any time mana is less than the specified value.">
+                            _Auto Fas Spiorad when
+                        </CheckBox>
 
                         <!-- Fas Spiorad Threshold -->
                         <ctl:NumericUpDown x:Name="fasSpioradUpDown"
@@ -825,8 +827,9 @@
                                   Margin="32,8"
                                   VerticalAlignment="Center"
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
-                                  Content="Use Fas Spiorad when Insufficient Mana"
-                                  ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell."/>
+                                  ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell.">
+                            Use _Fas Spiorad when Insufficient Mana
+                        </CheckBox>
 
                         <Separator Grid.Row="8"
                                    Grid.ColumnSpan="2"
@@ -842,7 +845,7 @@
                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
                                   Margin="32,8"
                                   ToolTip="This will allow spells only to be cast when you have the required mana.">
-                            Require Mana for Casting Spells
+                            _Require Mana for Casting Spells
                         </CheckBox>
 
                         <!-- Staff Switching CheckBox -->
@@ -865,6 +868,17 @@
                                   Margin="32,8"
                                   ToolTip="Show warnings when the same spell is added to the spell queue again.">
                             _Warn on Duplicate Spells in Casting Queue
+                        </CheckBox>
+
+                        <!-- Warn on Duplicate Spell Queue CheckBox -->
+                        <CheckBox Name="skipSpellsOnCooldownCheckBox"
+                                  Grid.Row="12"
+                                  Grid.ColumnSpan="2"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipSpellsOnCooldown}"
+                                  Margin="32,8"
+                                  ToolTip="Show warnings when the same spell is added to the spell queue again.">
+                            S_kip Spells on Cooldown
                         </CheckBox>
                     </Grid>
                 </ScrollViewer>

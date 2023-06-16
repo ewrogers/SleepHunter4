@@ -7,6 +7,11 @@ Shows the queued targets for casting spells.
 The user-selected spell in the queue will have a left-side highlight indicator.
 While being cast, the spell will be highlighted white and a thick border will be displayed around the spell.
 
+## Spell Rotation
+
+Each character can have their own spell queue rotation mode set in the `Spell Queue`.
+This setting is preserved with their macro state when saved.
+
 ## Progress Display
 
 If set to only cast to a maximum level, the progress bar will be displayed.

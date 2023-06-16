@@ -13,7 +13,7 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.4";
+        public static readonly string CurrentVersion = "1.5";
 
         private bool isDebugMode;
         private string version;
@@ -66,6 +66,7 @@ namespace SleepHunter.Settings
         private bool requireManaForSpells;
         private bool allowStaffSwitching;
         private bool warnOnDuplicateSpells;
+        private bool skipSpellsOnCooldown = true;
 
         private bool flowerAltsFirst;
         private bool flowerBeforeSpellMacros;
@@ -443,6 +444,13 @@ namespace SleepHunter.Settings
             set => SetProperty(ref warnOnDuplicateSpells, value);
         }
 
+        [XmlElement("SkipSpellsOnCooldown")]
+        public bool SkipSpellsOnCooldown
+        {
+            get => skipSpellsOnCooldown;
+            set => SetProperty(ref skipSpellsOnCooldown, value);
+        }
+
         [XmlElement("FlowerAltsFirst")]
         public bool FlowerAltsFirst
         {
@@ -552,6 +560,8 @@ namespace SleepHunter.Settings
             RequireManaForSpells = true;
             AllowStaffSwitching = true;
             WarnOnDuplicateSpells = true;
+            SkipSpellsOnCooldown = true;
+
             FlowerAltsFirst = true;
             FlowerBeforeSpellMacros = true;
             FlowerHasMinimum = true;

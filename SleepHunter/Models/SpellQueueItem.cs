@@ -20,6 +20,7 @@ namespace SleepHunter.Models
         private int? targetLevel;
         private bool isUndefined;
         private bool isActive;
+        private bool isOnCooldown;
 
         public int Id
         {
@@ -109,6 +110,12 @@ namespace SleepHunter.Models
         {
             get => isActive;
             set => SetProperty(ref isActive, value);
+        }
+
+        public bool IsOnCooldown
+        {
+            get => isOnCooldown;
+            set => SetProperty(ref isOnCooldown, value);
         }
 
         public SpellQueueItem() { }

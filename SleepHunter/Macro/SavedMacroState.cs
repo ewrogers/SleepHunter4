@@ -16,6 +16,7 @@ namespace SleepHunter.Macro
         private string characterName;
         private ModifierKeys hotkeyModifiers;
         private Key hotkeyKey;
+        private SpellRotationMode spellRotation;
         private bool useLyliacVineyard;
         private bool flowerAlternateCharacters;
 
@@ -44,6 +45,14 @@ namespace SleepHunter.Macro
         {
             get => hotkeyKey;
             set => SetProperty(ref hotkeyKey, value);
+        }
+
+        [XmlAttribute("SpellRotation")]
+        [DefaultValue(SpellRotationMode.Default)]
+        public SpellRotationMode SpellRotation
+        {
+            get => spellRotation;
+            set => SetProperty(ref spellRotation, value);
         }
 
         [XmlAttribute("UseLyliacVineyard")]
@@ -101,6 +110,7 @@ namespace SleepHunter.Macro
                 HotkeyKey = macroState.Client.Hotkey.Key;
             }
 
+            SpellRotation = macroState.SpellQueueRotation;
             UseLyliacVineyard = macroState.UseLyliacVineyard;
             FlowerAlternateCharacters = macroState.FlowerAlternateCharacters;
 

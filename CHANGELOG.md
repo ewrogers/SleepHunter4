@@ -4,6 +4,28 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] - 2023-06-16
+
+### Added
+
+- Spell rotation combo box in Spell Queue for per-character setting
+- Spell rotation character setting is preserved in saved state
+- Spell cooldown indicator in Spell Queue
+- New option for `Skip Spells on Cooldown` for `Spell Macros` (default is `Enabled`)
+- Spells on cooldown will be skipped, even in no rotation/singular order (when enabled)
+- More accessibility key for checkboxes in `Spell Macro` settings
+
+### Changed
+
+- `Spell Rotation Mode` renamed `Default Spell Queue Rotation` to better describe it can be overriden
+- `UserSettings` are now version `1.5`
+- Now format health/mana using `k` and `m` suffixes for thousands/millions (ex: `256k`, `1.2m`)
+
+### Fixed
+
+- Some staff line changes
+- Better spell queue rotation handling
+
 ## [4.6.1] - 2023-06-03
 
 ### Added
