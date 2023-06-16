@@ -168,8 +168,8 @@
                                Visibility="{Binding ElementName=HealthBar, Path=Visibility}">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="Stats.CurrentHealth"/>
-                                    <Binding Path="Stats.MaximumHealth"/>
+                                    <Binding Path="Stats.CurrentHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="Stats.MaximumHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
@@ -200,8 +200,8 @@
                                Visibility="{Binding ElementName=ManaBar, Path=Visibility}">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="Stats.CurrentMana"/>
-                                    <Binding Path="Stats.MaximumMana"/>
+                                    <Binding Path="Stats.CurrentMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="Stats.MaximumMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>

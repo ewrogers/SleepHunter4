@@ -1100,7 +1100,7 @@ namespace SleepHunter.Macro
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
 
-            client.Update(PlayerFieldFlags.Inventory | PlayerFieldFlags.Equipment | PlayerFieldFlags.Stats);
+            client.Update( PlayerFieldFlags.Inventory | PlayerFieldFlags.Equipment | PlayerFieldFlags.Stats | PlayerFieldFlags.Spellbook);
 
             var equippedStaff = client.Equipment.GetSlot(EquipmentSlot.Weapon);
             var availableList = new List<string>(client.Inventory.ItemNames);

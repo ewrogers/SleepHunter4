@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.7.0] - Unreleased
+## [4.7.0] - 2023-06-16
 
 ### Added
 
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Spell Rotation Mode` renamed `Default Spell Queue Rotation` to better describe it can be overriden
 - `UserSettings` are now version `1.5`
+- Now format health/mana using `k` and `m` suffixes for thousands/millions (ex: `256k`, `1.2m`)
 
 ### Fixed
 
