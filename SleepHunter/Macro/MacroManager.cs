@@ -79,6 +79,8 @@ namespace SleepHunter.Macro
             macro.ClearFlowerQueue();
 
             player.Update(PlayerFieldFlags.Spellbook);
+            
+            macro.SpellQueueRotation = state.SpellRotation;
             macro.UseLyliacVineyard = player.HasLyliacVineyard && state.UseLyliacVineyard;
             macro.FlowerAlternateCharacters = player.HasLyliacPlant && state.FlowerAlternateCharacters;
 

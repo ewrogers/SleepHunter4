@@ -58,7 +58,7 @@
     </Staff>
     <Staff Name="Empowered Holy Gnarl" Level="99" Class="Priest">
       <LineModifiers>
-        <Lines Action="Set" Scope="Single" Name="ard cradh" Value="0" />
+        <Lines Action="Set" Scope="Group" Name="cradh" Value="0" />
       </LineModifiers>
     </Staff>
     <Staff Name="Empowered Magus Orb" Level="99" Class="Wizard">

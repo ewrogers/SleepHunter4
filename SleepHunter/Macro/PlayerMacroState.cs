@@ -25,11 +25,16 @@ namespace SleepHunter.Macro
 
         private int spellQueueIndex;
         private int flowerQueueIndex;
+
+        private SpellRotationMode spellQueueRotation;
         private bool isWaitingOnMana;
         private bool useLyliacVineyard;
         private bool flowerAlternateCharacters;
+        private bool skipSpellsOnCooldown;
+
         private DateTime spellCastTimestamp;
         private TimeSpan spellCastDuration;
+
         private SpellQueueItem lastUsedSpellItem;
         private SpellQueueItem fasSpioradQueueItem;
         private SpellQueueItem lyliacPlantQueueItem;
@@ -61,22 +66,34 @@ namespace SleepHunter.Macro
 
         public int FlowerQueueCount => flowerQueue.Count;
 
+        public SpellRotationMode SpellQueueRotation
+        {
+            get => spellQueueRotation;
+            set => SetProperty(ref spellQueueRotation, value);
+        }
+
         public bool IsWaitingOnMana
         {
             get => isWaitingOnMana;
-            set => SetProperty(ref isWaitingOnMana, value, nameof(IsWaitingOnMana));
+            set => SetProperty(ref isWaitingOnMana, value);
         }
 
         public bool UseLyliacVineyard
         {
             get => useLyliacVineyard;
-            set => SetProperty(ref useLyliacVineyard, value, nameof(UseLyliacVineyard));
+            set => SetProperty(ref useLyliacVineyard, value);
         }
 
         public bool FlowerAlternateCharacters
         {
             get => flowerAlternateCharacters;
-            set => SetProperty(ref flowerAlternateCharacters, value, nameof(FlowerAlternateCharacters));
+            set => SetProperty(ref flowerAlternateCharacters, value);
+        }
+
+        public bool SkipSpellsOnCooldown
+        {
+            get => skipSpellsOnCooldown;
+            set => SetProperty(ref skipSpellsOnCooldown, value);
         }
 
         public DateTime SpellCastTimestamp
@@ -437,7 +454,7 @@ namespace SleepHunter.Macro
                 {
                     if (flowerQueue.Count > 0)
                         SetPlayerStatus(PlayerMacroStatus.ReadyToFlower);
-                    else if (client.Skillbook.ActiveSkills.Count() > 0)
+                    else if (client.Skillbook.ActiveSkills.Any())
                         SetPlayerStatus(PlayerMacroStatus.Waiting);
                     else
                         SetPlayerStatus(PlayerMacroStatus.Idle);

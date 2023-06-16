@@ -553,6 +553,9 @@ namespace SleepHunter.Views
             {
                 macro.StatusChanged += HandleMacroStatusChanged;
                 macro.Client.PlayerUpdated += HandleClientUpdateTick;
+
+                // Set default spell queue rotation mode
+                macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
             }
 
             try
@@ -1804,6 +1807,8 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
             {
+                spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
+
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
                 RefreshSpellQueue();
 
@@ -2159,33 +2164,33 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"User setting property changed: {e.PropertyName}");
 
-            if (string.Equals("SelectedTheme", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.SelectedTheme), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 ApplyTheme();
 
-            if (string.Equals("ClientSortOrder", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.ClientSortOrder), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
                 PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
                 UpdateClientList();
             }
 
-            if (string.Equals("SkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.SkillGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSkillGridWidth(settings.SkillGridWidth);
 
-            if (string.Equals("WorldSkillGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.WorldSkillGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetWorldSkillGridWidth(settings.WorldSkillGridWidth);
 
-            if (string.Equals("SpellGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.SpellGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSpellGridWidth(settings.SpellGridWidth);
 
-            if (string.Equals("WorldSpellGridWidth", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.WorldSpellGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetWorldSpellGridWidth(settings.WorldSpellGridWidth);
 
-            if (string.Equals("SkillIconSize", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.SkillIconSize), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 UpdateSkillSpellGridWidths();
 
             // Debug settings
 
-            if (string.Equals("ShowAllProcesses", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(settings.ShowAllProcesses), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
                 PlayerManager.Instance.ShowAllClients = settings.ShowAllProcesses;
                 UpdateClientList();
@@ -2197,8 +2202,26 @@ namespace SleepHunter.Views
             if (sender is not PlayerMacroState macro)
                 return;
 
-            if (string.Equals("Status", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(nameof(macro.Status), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 UpdateUIForMacroStatus(macro.Status);
+
+            // Update Spell Queue Rotation
+            if (string.Equals(nameof(macro.SpellQueueRotation), e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                spellQueueRotationComboBox.SelectedValue = macro.SpellQueueRotation;
+        }
+
+        private void spellQueueRotationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (selectedMacro == null || e.AddedItems.Count < 1)
+                return;
+
+            if (e.AddedItems[0] is not UserSetting selection)
+                return;
+
+            if (!Enum.TryParse<SpellRotationMode>(selection.Value as string, out var newRotationMode))
+                return;
+
+            selectedMacro.SpellQueueRotation = newRotationMode;
         }
 
         private void flowerVineyardCheckBox_Checked(object sender, RoutedEventArgs e)
