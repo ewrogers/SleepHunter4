@@ -197,13 +197,6 @@ namespace SleepHunter.Models
                         spells[i].ManaCost = metadata.ManaCost;
                         spells[i].Cooldown = metadata.Cooldown;
                         spells[i].CanImprove = metadata.CanImprove;
-
-                        DateTime timestamp = DateTime.MinValue;
-                        if (spells[i].Cooldown > TimeSpan.Zero && spellCooldownTimestamps.TryGetValue(name, out timestamp))
-                        {
-                            var elapsed = DateTime.Now - timestamp;
-                            spells[i].IsOnCooldown = elapsed < (spells[i].Cooldown + TimeSpan.FromMilliseconds(500));
-                        }
                     }
                     else
                     {
@@ -211,7 +204,17 @@ namespace SleepHunter.Models
                         spells[i].ManaCost = 0;
                         spells[i].Cooldown = TimeSpan.Zero;
                         spells[i].CanImprove = true;
-                        spells[i].IsOnCooldown = false;
+                    }
+
+                    spells[i].IsOnCooldown = false;
+
+                    // NOTE: Spell cooldowns are not read from the client, instead they are internal timers
+                    // Probably not ideal, but haven't taken the time to see if memory laid out the same as skills
+                    DateTime timestamp = DateTime.MinValue;
+                    if (spells[i].Cooldown > TimeSpan.Zero && spellCooldownTimestamps.TryGetValue(name, out timestamp))
+                    {
+                        var elapsed = DateTime.Now - timestamp;
+                        spells[i].IsOnCooldown = elapsed < (spells[i].Cooldown + TimeSpan.FromMilliseconds(500));
                     }
                 }
                 catch { }

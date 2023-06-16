@@ -844,34 +844,22 @@ namespace SleepHunter.Macro
 
         private SpellQueueItem GetNextSpell()
         {
-            client.Update(PlayerFieldFlags.Spellbook);
-
-            var shouldRotate = SpellQueueRotation != SpellRotationMode.None;
-            var isRoundRobin = SpellQueueRotation == SpellRotationMode.RoundRobin;
-
-            if (spellQueueIndex >= spellQueue.Count)
-                spellQueueIndex = 0;
-
             if (spellQueue.Count < 1)
                 return null;
 
-            var currentSpell = spellQueue.ElementAt(spellQueueIndex);
-            var currentId = currentSpell.Id;
+            client.Update(PlayerFieldFlags.Spellbook);
 
-            while (currentSpell.IsDone && shouldRotate)
+            var skipOnCooldown = UserSettingsManager.Instance.Settings.SkipSpellsOnCooldown;
+
+            var currentSpell = SpellQueueRotation switch
             {
-                if (++spellQueueIndex >= spellQueue.Count)
-                    spellQueueIndex = 0;
+                SpellRotationMode.None => GetNextSpell_NoRotation(skipOnCooldown),
+                SpellRotationMode.Singular => GetNextSpell_SingularOrder(skipOnCooldown),
+                SpellRotationMode.RoundRobin => GetNextSpell_RoundRobin(skipOnCooldown),
+                _ => null,
+            };
 
-                currentSpell = spellQueue.ElementAt(spellQueueIndex);
-
-                if (currentSpell.Id == currentId)
-                {
-                    IsWaitingOnMana = false;
-                    return null;
-                }
-            }
-
+            // Determine if we need to fas spiorad instead
             if (currentSpell != null)
             {
                 var currentSpellData = SpellMetadataManager.Instance.GetSpell(currentSpell.Name);
@@ -880,10 +868,52 @@ namespace SleepHunter.Macro
                     return GetFasSpiorad();
             }
 
-            if (isRoundRobin && shouldRotate)
-                spellQueueIndex++;
+            if (currentSpell.IsOnCooldown)
+                return null;
 
             return !currentSpell.IsDone ? currentSpell : null;
+        }
+
+        private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
+        {
+            if (skipOnCooldown)
+                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown);
+            else
+                return spellQueue.FirstOrDefault();
+        }
+
+        private SpellQueueItem GetNextSpell_SingularOrder(bool skipOnCooldown = true)
+        {
+            if (skipOnCooldown)
+                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown && !spell.IsDone);
+            else
+                return spellQueue.FirstOrDefault(spell => !spell.IsDone);
+        }
+
+        private SpellQueueItem GetNextSpell_RoundRobin(bool skipOnCooldown = true)
+        {
+            // All spells are done, nothing to cast
+            if (spellQueue.All(spell => spell.IsDone))
+                return null;
+
+            // All spells are on cooldown, and skipping so nothing to do
+            if (spellQueue.All(spell => spell.IsOnCooldown) && skipOnCooldown)
+                return null;
+
+            var currentSpell = spellQueue.ElementAt(spellQueueIndex);
+
+            while (currentSpell.IsDone || (skipOnCooldown && currentSpell.IsOnCooldown))
+                currentSpell = AdvanceToNextSpell();
+
+            // Round robin rotation for next time
+            AdvanceToNextSpell();
+            return currentSpell;
+        }
+
+        private SpellQueueItem AdvanceToNextSpell()
+        {
+            spellQueueIndex = (spellQueueIndex + 1) % spellQueue.Count;
+            return spellQueue.Count > 0 ? spellQueue[spellQueueIndex] : null;
         }
 
         private FlowerQueueItem GetNextFlowerTarget()

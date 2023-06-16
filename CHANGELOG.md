@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Spell rotation combo box in Spell Queue for per-character setting
 - Spell rotation character setting is preserved in saved state
+- Spell cooldown indicator in Spell Queue
 - New option for `Skip Spells on Cooldown` for `Spell Macros` (default is `Enabled`)
+- Spells on cooldown will be skipped, even in no rotation/singular order (when enabled)
 - More accessibility key for checkboxes in `Spell Macro` settings
 
 ### Changed
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Some staff line changes
+- Better spell queue rotation handling
 
 ## [4.6.1] - 2023-06-03
 

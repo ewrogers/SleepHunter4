@@ -683,6 +683,7 @@ namespace SleepHunter.Views
 
                 queuedSpell.MaximumLevel = spell.MaximumLevel;
                 queuedSpell.CurrentLevel = spell.CurrentLevel;
+                queuedSpell.IsOnCooldown = spell.IsOnCooldown;
             }
         }
 
@@ -1515,7 +1516,7 @@ namespace SleepHunter.Views
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
 
-            selectedMacro.Client.Update(PlayerFieldFlags.All);
+            selectedMacro.Client.Update();
             selectedMacro.Start();
             UpdateToolbarState();
 
