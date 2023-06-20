@@ -119,36 +119,36 @@ namespace SleepHunter.Models
                 return;
             }
 
-            var currentHealthVariable = version.GetVariable(CurrentHealthKey);
-            var maximumHealthVariable = version.GetVariable(MaximumHealthKey);
-            var currentManaVariable = version.GetVariable(CurrentManaKey);
-            var maximumManaVariable = version.GetVariable(MaximumManaKey);
+            var hpVariable = version.GetVariable(CurrentHealthKey);
+            var maxHpVariable = version.GetVariable(MaximumHealthKey);
+            var mpVariable = version.GetVariable(CurrentManaKey);
+            var maxMpVariable = version.GetVariable(MaximumManaKey);
             var levelVariable = version.GetVariable(LevelKey);
-            var abilityLevelVariable = version.GetVariable(AbilityLevelKey);
+            var abVariable = version.GetVariable(AbilityLevelKey);
 
             using var stream = accessor.GetStream();
             using var reader = new BinaryReader(stream, Encoding.ASCII);
 
             // Current Health
-            if (currentHealthVariable != null && currentHealthVariable.TryReadIntegerString(reader, out var currentHealth))
+            if (hpVariable != null && hpVariable.TryReadIntegerString(reader, out var currentHealth))
                 CurrentHealth = (int)currentHealth;
             else
                 CurrentHealth = 0;
 
             // Max Health
-            if (maximumHealthVariable != null && maximumHealthVariable.TryReadIntegerString(reader, out var maximumHealth))
+            if (maxHpVariable != null && maxHpVariable.TryReadIntegerString(reader, out var maximumHealth))
                 MaximumHealth = (int)maximumHealth;
             else
                 MaximumHealth = 0;
 
             // Current Mana
-            if (currentManaVariable != null && currentManaVariable.TryReadIntegerString(reader, out var currentMana))
+            if (mpVariable != null && mpVariable.TryReadIntegerString(reader, out var currentMana))
                 CurrentMana = (int)currentMana;
             else
                 CurrentMana = 0;
 
             // Max Mana
-            if (maximumManaVariable != null && maximumManaVariable.TryReadIntegerString(reader, out var maximumMana))
+            if (maxMpVariable != null && maxMpVariable.TryReadIntegerString(reader, out var maximumMana))
                 MaximumMana = (int)maximumMana;
             else
                 MaximumMana = 0;
@@ -160,7 +160,7 @@ namespace SleepHunter.Models
                 Level = 0;
 
             // Ability Level
-            if (abilityLevelVariable != null && abilityLevelVariable.TryReadIntegerString(reader, out var abilityLevel))
+            if (abVariable != null && abVariable.TryReadIntegerString(reader, out var abilityLevel))
                 AbilityLevel = (int)abilityLevel;
             else
                 AbilityLevel = 0;

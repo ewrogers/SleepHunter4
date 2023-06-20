@@ -101,6 +101,7 @@ namespace SleepHunter.Models
             }
 
             reader.BaseStream.Position = inventoryPointer;
+            
 
             for (int i = 0; i < inventoryVariable.Count; i++)
             {

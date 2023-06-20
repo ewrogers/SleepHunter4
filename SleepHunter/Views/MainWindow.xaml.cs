@@ -129,7 +129,7 @@ namespace SleepHunter.Views
 
                 var processInformation = StartClientProcess(clientPath);
                 
-                if (!TryDetectClientVersion(processInformation, out var detectedVersion))
+                if (!ClientVersionManager.TryDetectClientVersion(processInformation.ProcessId, out var detectedVersion))
                 {
                     logger.LogWarn("Unable to determine client version, using default version");
                     detectedVersion = ClientVersionManager.Instance.DefaultVersion;
@@ -198,36 +198,6 @@ namespace SleepHunter.Views
             }
 
             return processInformation;
-        }
-
-        private static bool TryDetectClientVersion(ProcessInformation process, out ClientVersion detectedVersion)
-        {
-            detectedVersion = null;
-
-            using var stream = new ProcessMemoryStream(process.ProcessHandle, ProcessAccess.Read, true);
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
-
-            foreach (var version in ClientVersionManager.Instance.Versions)
-            {
-                // Skip with invalid or missing signatures
-                if (version.Signature == null || string.IsNullOrWhiteSpace(version.Signature.Value))
-                    continue;
-
-                var signatureLength = version.Signature.Value.Length;
-
-                // Read the signature from the process
-                stream.Position = version.Signature.Address;
-                var readValue = reader.ReadFixedString(signatureLength);
-
-                // If signature matches the expected value, assume this client version
-                if (string.Equals(readValue, version.Signature.Value))
-                {
-                    detectedVersion = version;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void PatchClient(ProcessInformation process, ClientVersion version)

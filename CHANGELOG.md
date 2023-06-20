@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Value` in `ClientVersion`, as it was never used
 - `Hash` in `ClientVersion`, now using signature-based detection instead 
 
+### Fixed
+
+- Parsing of skills/spell names with no level text
+
 ## [4.7.0] - 2023-06-16
 
 ### Added

@@ -127,6 +127,136 @@
         </Dynamic>
       </Variables>
     </Client>
+    <Client Key="Zolian 9.1.1">
+        <Signature Address="8A87A0" Value="9D1Z--1B" />
+        <ExecutableName>Zolian 9.1.1.exe</ExecutableName>
+        <WindowClassName>DarkAges</WindowClassName>
+        <MultipleInstanceAddress>58D559</MultipleInstanceAddress>
+        <IntroVideoAddress>42F455</IntroVideoAddress>
+        <Variables>
+            <Static Key="VersionNumber" Address="772288" />
+            <Static Key="CharacterName" Address="75F6E0" MaxLength="13" />
+            <Dynamic Key="CurrentHealth" Address="777774" MaxLength="10">
+                <Offsets>
+                    <Offset Value="4C6" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MaximumHealth" Address="777774" MaxLength="10">
+                <Offsets>
+                    <Offset Value="546" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="CurrentMana" Address="777774" MaxLength="10">
+                <Offsets>
+                    <Offset Value="5C6" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MaximumMana" Address="777774" MaxLength="10">
+                <Offsets>
+                    <Offset Value="646" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Level" Address="777774" MaxLength="3">
+                <Offsets>
+                    <Offset Value="8C6" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="AbilityLevel" Address="777774" MaxLength="3">
+                <Offsets>
+                    <Offset Value="9C6" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MapName" Address="761F38" MaxLength="32">
+                <Offsets>
+                    <Offset Value="4C0" />
+                    <Offset Value="70" />
+                    <Offset Value="1C" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MapNumber" Address="8A3AE8">
+                <Offsets>
+                    <Offset Value="26C" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MapY" Address="8A3AE8">
+                <Offsets>
+                    <Offset Value="1B8" />
+                    <Offset Value="2B8" />
+                    <Offset Value="100" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MapX" Address="8A3AE8">
+                <Offsets>
+                    <Offset Value="20C" />
+                    <Offset Value="2B0" />
+                    <Offset Value="104" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Inventory" Address="8A3AE8" MaxLength="256" Size="261" Count="60">
+                <Offsets>
+                    <Offset Value="2CC" />
+                    <Offset Value="1092" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Equipment" Address="761A48" MaxLength="128" Size="261" Count="18">
+                <Offsets>
+                    <Offset Value="14" />
+                    <Offset Value="4" />
+                    <Offset Value="FC" />
+                    <Offset Value="0" />
+                    <Offset Value="2C0" />
+                    <Offset Value="46C" />
+                    <Offset Value="670" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Skillbook" Address="8A3AE8" MaxLength="256" Size="260" Count="90">
+                <Offsets>
+                    <Offset Value="2CC" />
+                    <Offset Value="10210" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Spellbook" Address="8A3AE8" MaxLength="256" Size="518" Count="90">
+                <Offsets>
+                    <Offset Value="2CC" />
+                    <Offset Value="4DFA" />
+                </Offsets>
+            </Dynamic>
+            <Search Key="SkillCooldowns" Address="69942C" Size="4" Offset="194">
+                <Offsets>
+                    <Offset Value="322" />
+                </Offsets>
+            </Search>
+            <Dynamic Key="ActivePanel" Address="84C3EC">
+                <Offsets>
+                    <Offset Value="4FA8" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="InventoryExpanded" Address="84C3EC">
+                <Offsets>
+                    <Offset Value="4FB0" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="MinimizedMode" Address="84C3EC">
+                <Offsets>
+                    <Offset Value="4DF0" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="DialogOpen" Address="85118C">
+                <Offsets>
+                    <Offset Value="59C" />
+                    <Offset Value="594" />
+                    <Offset Value="18" />
+                    <Offset Value="24" />
+                    <Offset Value="A20" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="UserChatting" Address="70CF18">
+                <Offsets>
+                    <Offset Value="438" />
+                </Offsets>
+            </Dynamic>
+        </Variables>
+    </Client>
     <Client Key="Auto-Detect" Value="0">
       <Variables />
     </Client>
