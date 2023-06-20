@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <ClientVersions>
   <Clients>
-    <Client Key="7.41" Hash="3244DC0E68CD26F4FB1626DA3673FDA8" Value="741">
+    <Client Key="7.41" Value="741" IsDefault="true">
+      <Signature Address="685B08" Value="7D4E--1K" />
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>

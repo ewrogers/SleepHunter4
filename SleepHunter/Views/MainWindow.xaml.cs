@@ -134,15 +134,15 @@ namespace SleepHunter.Views
                     logger.LogWarn("Unable to determine client version, using default version");
                     detectedVersion = ClientVersionManager.Instance.DefaultVersion;
                 }
-
-                if (detectedVersion != null)
-                {
-                    PatchClient(processInformation, detectedVersion);
-                }
                 else
                 {
-                    logger.LogWarn("No client version, unable to apply patches");
+                    logger.LogInfo($"Detected client pid {processInformation.ProcessId} version as {detectedVersion.Key}");
                 }
+
+                if (detectedVersion != null)
+                    PatchClient(processInformation, detectedVersion);
+                else
+                    logger.LogWarn($"No client version, unable to apply patches to pid {processInformation.ProcessId}");
             }
             catch (Exception ex)
             {
@@ -596,7 +596,7 @@ namespace SleepHunter.Views
 
         private void LoadVersions()
         {
-            var versionsFile = ClientVersionManager.VersionsFile;
+            var versionsFile = Path.Combine(Environment.CurrentDirectory, ClientVersionManager.VersionsFile);
             logger.LogInfo($"Attempting to load client versions from file: {versionsFile}");
 
             try

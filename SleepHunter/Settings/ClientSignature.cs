@@ -31,6 +31,8 @@ namespace SleepHunter.Settings
             }
         }
 
+        [XmlAttribute]
+        [DefaultValue("")]
         public string Value
         {
             get => value;
