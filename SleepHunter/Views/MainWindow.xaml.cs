@@ -605,6 +605,16 @@ namespace SleepHunter.Views
                 {
                     ClientVersionManager.Instance.LoadFromFile(versionsFile);
                     logger.LogInfo("Client versions successfully loaded");
+
+                    // Register all window class names so they can be detected
+                    foreach (var version in ClientVersionManager.Instance.Versions)
+                    {
+                        if (string.IsNullOrWhiteSpace(version.WindowClassName))
+                            continue;
+
+                        ProcessManager.Instance.RegisterWindowClassName(version.WindowClassName);
+                        logger.LogInfo($"Registered window class name: {version.WindowClassName} (version = {version.Key})");
+                    }
                 }
                 else
                 {

@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <ClientVersions>
   <Clients>
-    <Client Key="7.41" Value="741" IsDefault="true">
+    <Client Key="7.41" IsDefault="true">
       <Signature Address="685B08" Value="7D4E--1K" />
+      <ExecutableName>Darkages.exe</ExecutableName>
+      <WindowClassName>DarkAges</WindowClassName>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>
