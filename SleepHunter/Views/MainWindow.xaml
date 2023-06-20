@@ -229,6 +229,11 @@
                     SelectionChanged="tabControl_SelectionChanged"
                     Margin="-1,-1,0,0"
                     Padding="0">
+            
+            <!-- Inventory Tab -->
+            <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
+                
+            </TabItem>
 
             <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">

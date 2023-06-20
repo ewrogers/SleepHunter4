@@ -78,6 +78,7 @@ namespace SleepHunter.Views
             LoadStaves();
             CalculateLines();
 
+            ToggleInventory(false);
             ToggleSkills(false);
             ToggleSpells(false);
             ToggleSpellQueue(false);
@@ -347,12 +348,14 @@ namespace SleepHunter.Views
                 {
                     if (selectedPlayer == null)
                     {
+                        ToggleInventory(false);
                         ToggleSkills(false);
                         ToggleSpells(false);
                         ToggleFlower(false);
                     }
                     else
                     {
+                        ToggleInventory(true);
                         ToggleSkills(true);
                         ToggleSpells(true);
                         ToggleFlower(selectedPlayer.HasLyliacPlant, selectedPlayer.HasLyliacVineyard);
@@ -1627,6 +1630,7 @@ namespace SleepHunter.Views
 
                 selectedMacro = null;
                 UpdateWindowTitle();
+                ToggleInventory(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
@@ -1652,6 +1656,7 @@ namespace SleepHunter.Views
             if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
                 ToggleSpellQueue(true);
 
+            ToggleInventory(player.IsLoggedIn);
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
@@ -2117,6 +2122,11 @@ namespace SleepHunter.Views
                 else
                     UpdateUIForMacroStatus(selectedMacro.Status);
             }, DispatcherPriority.Normal);
+        }
+
+        private void ToggleInventory(bool show = true)
+        {
+            inventoryTab.IsEnabled = show;
         }
 
         private void ToggleSkills(bool show = true)
