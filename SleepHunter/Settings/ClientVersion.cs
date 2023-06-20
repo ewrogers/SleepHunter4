@@ -15,7 +15,8 @@ namespace SleepHunter.Settings
         public static readonly ClientVersion AutoDetect = new("Auto-Detect");
 
         private string key;
-        private string hash;
+        private bool isDefault;
+        private ClientSignature signature;
         private int versionNumber;
         private long multipleInstanceAddress;
         private long introVideoAddress;
@@ -29,11 +30,18 @@ namespace SleepHunter.Settings
             set => SetProperty(ref key, value);
         }
 
-        [XmlAttribute("Hash")]
-        public string Hash
+        [XmlAttribute("IsDefault")]
+        public bool IsDefault
         {
-            get => hash;
-            set => SetProperty(ref hash, value);
+            get => isDefault;
+            set => SetProperty(ref isDefault, value);
+        }
+
+        [XmlElement("Signature")]
+        public ClientSignature Signature
+        {
+            get => signature;
+            set => SetProperty(ref signature, value);
         }
 
         [XmlAttribute("Value")]

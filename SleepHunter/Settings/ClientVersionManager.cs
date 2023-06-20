@@ -38,6 +38,8 @@ namespace SleepHunter.Settings
         public IEnumerable<ClientVersion> Versions => 
             from v in clientVersions.Values orderby v.Key select v;
 
+        public ClientVersion DefaultVersion => clientVersions.Values.FirstOrDefault(version => version.IsDefault);
+
         public void AddVersion(ClientVersion version)
         {
             if (version == null)
@@ -128,15 +130,6 @@ namespace SleepHunter.Settings
             namespaces.Add("", "");
 
             serializer.Serialize(stream, collection, namespaces);
-        }
-
-        public string DetectVersion(string hash)
-        {
-            foreach (var version in clientVersions.Values)
-                if (string.Equals(version.Hash, hash, StringComparison.OrdinalIgnoreCase))
-                    return version.Key;
-
-            return null;
         }
 
         void OnVersionAdded(ClientVersion version)

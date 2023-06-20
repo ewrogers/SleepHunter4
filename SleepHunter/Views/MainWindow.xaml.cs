@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,17 +34,6 @@ namespace SleepHunter.Views
     public partial class MainWindow : Window, IDisposable
     {
         private const int WM_HOTKEY = 0x312;
-
-        private enum ClientLoadResult
-        {
-            Success = 0,
-            ClientPathInvalid,
-            HashError,
-            AutoDetectFailed,
-            BadVersion,
-            CreateProcessFailed,
-            PatchingFailed
-        }
 
         private static readonly int IconPadding = 14;
 
@@ -128,31 +116,33 @@ namespace SleepHunter.Views
             startNewClientButton.IsEnabled = false;
 
             var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
-            var result = ClientLoadResult.Success;
 
             logger.LogInfo($"Attempting to launch client executable: {clientPath}");
 
             try
             {
-                // Ensure Client Path Exists
                 if (!File.Exists(clientPath))
                 {
-                    result = ClientLoadResult.ClientPathInvalid;
                     logger.LogError("Client executable not found, unable to launch");
                     return;
                 }
 
-                var clientVersion = DetectClientVersion(clientPath, out result);
+                var processInformation = StartClientProcess(clientPath);
+                
+                if (!TryDetectClientVersion(processInformation, out var detectedVersion))
+                {
+                    logger.LogWarn("Unable to determine client version, using default version");
+                    detectedVersion = ClientVersionManager.Instance.DefaultVersion;
+                }
 
-                if (result != ClientLoadResult.Success)
-                    return;
-
-                var processInformation = StartClientProcess(clientPath, out result);
-
-                if (result != ClientLoadResult.Success)
-                    return;
-
-                PatchClient(processInformation, clientVersion, out result);
+                if (detectedVersion != null)
+                {
+                    PatchClient(processInformation, detectedVersion);
+                }
+                else
+                {
+                    logger.LogWarn("No client version, unable to apply patches");
+                }
             }
             catch (Exception ex)
             {
@@ -167,77 +157,12 @@ namespace SleepHunter.Views
             }
             finally
             {
-                HandleClientLoadResult(result);
                 startNewClientButton.IsEnabled = true;
             }
         }
 
-        private ClientVersion DetectClientVersion(string clientPath, out ClientLoadResult result)
+        private ProcessInformation StartClientProcess(string clientPath)
         {
-            ClientVersion clientVersion = null;
-            var clientHash = string.Empty;
-            var clientKey = UserSettingsManager.Instance.Settings.SelectedVersion;
-
-            result = ClientLoadResult.Success;
-            Stream inputStream = null;
-
-            // Get MD5 Hash and Detect Version
-            try
-            {
-                if (string.Equals("Auto-Detect", clientKey, StringComparison.OrdinalIgnoreCase))
-                {
-                    logger.LogInfo($"Attempting to auto-detect client version for executable: {clientPath}");
-
-                    inputStream = File.Open(clientPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    using (var md5 = MD5.Create())
-                    {
-                        md5.ComputeHash(inputStream);
-                        inputStream.Close();
-
-                        clientHash = BitConverter.ToString(md5.Hash).Replace("-", string.Empty);
-                    }
-
-                    clientKey = ClientVersionManager.Instance.DetectVersion(clientHash);
-
-                    if (clientKey == null)
-                    {
-                        result = ClientLoadResult.AutoDetectFailed;
-                        logger.LogError($"No client version known for hash: {clientHash.ToLowerInvariant()}");
-
-                        return null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Failed to calculate client hash");
-                logger.LogException(ex);
-
-                result = ClientLoadResult.HashError;
-                return clientVersion;
-            }
-            finally { inputStream?.Dispose(); }
-
-            // Get Version from Manager
-            clientVersion = ClientVersionManager.Instance.GetVersion(clientKey);
-
-            if (clientVersion == null)
-            {
-                result = ClientLoadResult.BadVersion;
-                logger.LogWarn($"Unknown client version, key = {clientKey}");
-            }
-            else
-            {
-                logger.LogInfo($"Client executable was detected as version: {clientVersion.Key} (md5 = {clientVersion.Hash.ToLowerInvariant()})");
-            }
-
-            return clientVersion;
-        }
-
-        private ProcessInformation StartClientProcess(string clientPath, out ClientLoadResult result)
-        {
-            result = ClientLoadResult.Success;
-
             // Create Process
             var startupInfo = new StartupInfo { Size = Marshal.SizeOf(typeof(StartupInfo)) };
 
@@ -261,8 +186,11 @@ namespace SleepHunter.Views
             // Ensure the process was actually created
             if (!wasCreated || processInformation.ProcessId == 0)
             {
-                result = ClientLoadResult.CreateProcessFailed;
-                logger.LogError("Failed to create client process");
+                var errorCode = Marshal.GetLastPInvokeError();
+                var errorMessage = Marshal.GetLastPInvokeErrorMessage();
+                logger.LogError($"Failed to create client process, code = {errorCode}, message = {errorMessage}");
+
+                throw new Win32Exception(errorCode, "Unable to create client process");
             }
             else
             {
@@ -272,14 +200,44 @@ namespace SleepHunter.Views
             return processInformation;
         }
 
-        private void PatchClient(ProcessInformation process, ClientVersion version, out ClientLoadResult result)
+        private static bool TryDetectClientVersion(ProcessInformation process, out ClientVersion detectedVersion)
+        {
+            detectedVersion = null;
+
+            using var stream = new ProcessMemoryStream(process.ProcessHandle, ProcessAccess.Read, true);
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+            foreach (var version in ClientVersionManager.Instance.Versions)
+            {
+                // Skip with invalid or missing signatures
+                if (version.Signature == null || string.IsNullOrWhiteSpace(version.Signature.Value))
+                    continue;
+
+                var signatureLength = version.Signature.Value.Length;
+
+                // Read the signature from the process
+                stream.Position = version.Signature.Address;
+                var readValue = reader.ReadFixedString(signatureLength);
+
+                // If signature matches the expected value, assume this client version
+                if (string.Equals(readValue, version.Signature.Value))
+                {
+                    detectedVersion = version;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void PatchClient(ProcessInformation process, ClientVersion version)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
             var pid = process.ProcessId;
-            logger.LogInfo($"Attempting to patch client process {pid}");
+            logger.LogInfo($"Attempting to patch client process {pid}, version = {version.Key}");
 
             try
             {
@@ -320,15 +278,6 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x17);        // +0x17
                     writer.Write((byte)0x90);        // NOP
                 }
-
-                result = ClientLoadResult.Success;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Failed to patch client process {pid}");
-                logger.LogException(ex);
-
-                result = ClientLoadResult.PatchingFailed;
             }
             finally
             {
@@ -336,94 +285,6 @@ namespace SleepHunter.Views
                 NativeMethods.ResumeThread(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ProcessHandle);
-            }
-        }
-
-        private void HandleClientLoadResult(ClientLoadResult result)
-        {
-            // Client Path Invalid
-            if (result == ClientLoadResult.ClientPathInvalid)
-            {
-                var showClientPathSetting = this.ShowMessageBox("Invalid Client Path",
-                   "The client path specified in the settings does not exist.\nDo you wish to set it now?",
-                   "New clients cannot be started until this value is set to a valid path.",
-                   MessageBoxButton.YesNo,
-                   460, 260);
-
-                if (showClientPathSetting.Value)
-                    ShowSettingsWindow(SettingsWindow.GameClientTabIndex);
-            }
-
-            // Hash IO Error
-            if (result == ClientLoadResult.HashError)
-            {
-                this.ShowMessageBox("IO Error",
-                   "An I/O error occured when trying to read the client executable.",
-                   "You must have read permissions for the file.",
-                   MessageBoxButton.OK,
-                   460, 240);
-            }
-
-            // Auto-Detect Error
-            if (result == ClientLoadResult.AutoDetectFailed)
-            {
-                var showClientVersionSetting = this.ShowMessageBox("Auto-Detect Failed",
-                   "The client version could not be detected from the file.\nDo you want to set it manually?",
-                   "New clients cannot be started unless version detection is successful.\nYou may manually select a client version instead.",
-                   MessageBoxButton.YesNo,
-                   460, 260);
-
-                if (showClientVersionSetting.Value)
-                    ShowSettingsWindow(SettingsWindow.GameClientTabIndex);
-            }
-
-            // Bad- Version Error
-            if (result == ClientLoadResult.BadVersion)
-            {
-                var showClientVersionSetting = this.ShowMessageBox("Invalid Client Version",
-                   "The client version selected is invalid.\nWould you like to select another one?",
-                   "New clients cannot be started until a valid client version is selected.\nAuto-detection may also be selected.",
-                   MessageBoxButton.YesNo,
-                   460, 240);
-
-                if (showClientVersionSetting.Value)
-                    ShowSettingsWindow(SettingsWindow.GameClientTabIndex);
-            }
-
-            // Bad- Version Error
-            if (result == ClientLoadResult.BadVersion)
-            {
-                var showClientVersionSetting = this.ShowMessageBox("Invalid Client Version",
-                   "The client version selected is invalid.\nWould you like to select another one?",
-                   "New clients cannot be started until a valid client version is selected.\nAuto-detection may also be selected.",
-                   MessageBoxButton.YesNo,
-                   460, 240);
-
-                if (showClientVersionSetting.Value)
-                    ShowSettingsWindow(SettingsWindow.GameClientTabIndex);
-            }
-
-            // Create Process
-            if (result == ClientLoadResult.CreateProcessFailed)
-            {
-                var showClientVersionSetting = this.ShowMessageBox("Failed to Launch Client",
-                   "An error occured trying to launch the game client.\nDo you want to check the client settings?",
-                   "Check that the client path is correct.\nAnti-virus or other security software may be preventing this.",
-                   MessageBoxButton.YesNo,
-                   420, 240);
-
-                if (showClientVersionSetting.Value)
-                    ShowSettingsWindow(SettingsWindow.GameClientTabIndex);
-            }
-
-            // Patching
-            if (result == ClientLoadResult.PatchingFailed)
-            {
-                this.ShowMessageBox("Patching Error",
-                   "An error occured trying to patch the game client.",
-                   "The client should continue to work but features such as multiple instances or skipping the intro video may not be patched properly.\n\nIn some cases the client may crash immediately.",
-                   MessageBoxButton.OK,
-                   460, 260);
             }
         }
 
