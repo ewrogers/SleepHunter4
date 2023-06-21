@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Launched clients now detect version based on the new signature definitions
 - Process manager can detect other clients based on version definitions
+- HP/MP formatting threshold increased to 10k for "thousands" shorthand
 
 ### Removed
 
