@@ -3,7 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
+using SleepHunter.Extensions;
+using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings
 {
@@ -37,6 +40,8 @@ namespace SleepHunter.Settings
 
         public IEnumerable<ClientVersion> Versions => 
             from v in clientVersions.Values orderby v.Key select v;
+
+        public ClientVersion DefaultVersion => clientVersions.Values.FirstOrDefault(version => version.IsDefault);
 
         public void AddVersion(ClientVersion version)
         {
@@ -130,13 +135,35 @@ namespace SleepHunter.Settings
             serializer.Serialize(stream, collection, namespaces);
         }
 
-        public string DetectVersion(string hash)
+        public static bool TryDetectClientVersion(int processId, out ClientVersion detectedVersion)
         {
-            foreach (var version in clientVersions.Values)
-                if (string.Equals(version.Hash, hash, StringComparison.OrdinalIgnoreCase))
-                    return version.Key;
+            detectedVersion = null;
 
-            return null;
+            using var accessor = new ProcessMemoryAccessor(processId, ProcessAccess.Read);
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII, leaveOpen: true);
+
+            foreach (var version in Instance.Versions)
+            {
+                // Skip with invalid or missing signatures
+                if (version.Signature == null || string.IsNullOrWhiteSpace(version.Signature.Value))
+                    continue;
+
+                var signatureLength = version.Signature.Value.Length;
+
+                // Read the signature from the process
+                stream.Position = version.Signature.Address;
+                var readValue = reader.ReadFixedString(signatureLength);
+
+                // If signature matches the expected value, assume this client version
+                if (string.Equals(readValue, version.Signature.Value))
+                {
+                    detectedVersion = version;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void OnVersionAdded(ClientVersion version)

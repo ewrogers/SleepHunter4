@@ -150,6 +150,7 @@ namespace SleepHunter.Models
             }
 
             reader.BaseStream.Position = spellbookPointer;
+
             bool foundFasSpiorad = false;
             bool foundLyliacVineyard = false;
             bool foundLyliacPlant = false;

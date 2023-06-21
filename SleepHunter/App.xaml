@@ -36,6 +36,7 @@
                 <ResourceDictionary Source="Templates\ClientVersionDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\ColorThemeDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\FlowerQueueDataTemplate.xaml"/>
+                <ResourceDictionary Source="Templates\InventoryItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\MetadataDataTemplates.xaml"/>
                 <ResourceDictionary Source="Templates\PlayerDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\SpellQueueDataTemplate.xaml"/>

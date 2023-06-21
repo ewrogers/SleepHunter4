@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 
 using SleepHunter.Win32;
 
@@ -11,8 +12,8 @@ namespace SleepHunter.IO.Process
         private bool isDisposed;
         private nint processHandle;
         private readonly ProcessAccess access;
-        private long position = 0x400000;
-        private byte[] internalBuffer = new byte[0x100];
+        private long position = 0x40_0000;
+        private byte[] internalBuffer = new byte[256];
         private readonly bool leaveOpen;
 
         public override bool CanRead => processHandle != 0 && access.HasFlag(ProcessAccess.Read);
@@ -62,25 +63,27 @@ namespace SleepHunter.IO.Process
             CheckIfDisposed();
             CheckBufferSize(count);
 
-            bool success = NativeMethods.ReadProcessMemory(processHandle, (nint)position, internalBuffer, (nint)count, out var numberOfBytesRead);
+            var readPosition = position;
+            bool success = NativeMethods.ReadProcessMemory(processHandle, (nint)position, internalBuffer, count, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != count)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to read process memory at 0x{readPosition:X}: {Marshal.GetLastPInvokeErrorMessage()}");
 
             position += numberOfBytesRead;
 
             Buffer.BlockCopy(internalBuffer, 0, buffer, offset, count);
-            return numberOfBytesRead;
+            return (int)numberOfBytesRead;
         }
 
         public override int ReadByte()
         {
             CheckIfDisposed();
 
+            var readPosition = position;
             bool success = NativeMethods.ReadProcessMemory(processHandle, (nint)position, internalBuffer, 1, out var numberOfBytesRead);
 
             if (!success || numberOfBytesRead != 1)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to read process memory at 0x{readPosition:X}: {Marshal.GetLastPInvokeErrorMessage()}");
 
             position += numberOfBytesRead;
 
@@ -123,10 +126,11 @@ namespace SleepHunter.IO.Process
 
             Buffer.BlockCopy(buffer, offset, internalBuffer, 0, count);
 
+            var writePosition = position;
             bool success = NativeMethods.WriteProcessMemory(processHandle, (nint)position, internalBuffer, count, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != count)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to write process memory at 0x{writePosition:X}: {Marshal.GetLastPInvokeErrorMessage()}");
 
             position += numberOfBytesWritten;
         }
@@ -137,10 +141,11 @@ namespace SleepHunter.IO.Process
 
             internalBuffer[0] = value;
 
+            var writePosition = position;
             bool success = NativeMethods.WriteProcessMemory(processHandle, (nint)position, internalBuffer, 1, out var numberOfBytesWritten);
 
             if (!success || numberOfBytesWritten != 1)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to write process memory at 0x{writePosition:X}: {Marshal.GetLastPInvokeErrorMessage()}");
 
             position += numberOfBytesWritten;
         }
@@ -164,13 +169,13 @@ namespace SleepHunter.IO.Process
             isDisposed = true;
         }
 
-        void CheckIfDisposed()
+        private void CheckIfDisposed()
         {
             if (isDisposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
 
-        void CheckBufferSize(int count, bool copyContents = false)
+        private void CheckBufferSize(int count, bool copyContents = false)
         {
             if (internalBuffer.Length >= count)
                 return;

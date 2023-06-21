@@ -10,7 +10,8 @@ namespace SleepHunter.Models
 
     public abstract class Ability : ObservableObject
     {
-        private static readonly Regex TrimLevelRegex = new(@"^(?<name>.*)\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$");
+        private static readonly Regex AbilityWithoutLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex AbilityWithLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)\s*\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.IgnoreCase| RegexOptions.Compiled);
 
         private bool isEmpty;
         private int slot;
@@ -144,16 +145,26 @@ namespace SleepHunter.Models
             currentLevel = 0;
             maximumLevel = 0;
 
-            var match = TrimLevelRegex.Match(skillSpellText);
+            var match = AbilityWithLevelRegex.Match(skillSpellText);
 
-            if (!match.Success)
-                return false;
+            if (match.Success)
+            {
+                name = match.Groups["name"].Value.Trim();
+                _ = int.TryParse(match.Groups["current"].Value, out currentLevel);
+                _ = int.TryParse(match.Groups["max"].Value, out maximumLevel);
+                return true;
+            }
 
-            name = match.Groups["name"].Value.Trim();
-            _ = int.TryParse(match.Groups["current"].Value, out currentLevel);
-            _ = int.TryParse(match.Groups["max"].Value, out maximumLevel);
+            match = AbilityWithoutLevelRegex.Match(skillSpellText);
+            if (match.Success)
+            {
+                name = match.Groups["name"].Value.Trim();
+                currentLevel = 0;
+                maximumLevel = 0;
+                return true;
+            }
 
-            return true;
+            return false;
         }
     }
 }

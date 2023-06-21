@@ -4,6 +4,33 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.0] - 2023-06-21
+
+### Added
+
+- `Inventory` tab to view items (names only for now)
+- Inventory grid display options under `User Interface` settings
+- `Signature` definition for `ClientVersion`, which allows version to be detected by signature bytes instead of hash
+- `ExecutableName` and `WindowClassName` properties for `ClientVersion` to support other clients
+- Client version for `Zolian 9.1.1` memory offsets ([Zolian Server](https://www.thebucknetwork.com/Zolian))
+
+### Changed
+
+- `UserSettings` is now version `1.6`
+- Launched clients now detect version based on the new signature definitions
+- Process manager can detect other clients based on version definitions
+- HP/MP formatting threshold increased to 10k for "thousands" shorthand
+- `User Settings` dialog is now larger
+
+### Removed
+
+- `Value` in `ClientVersion`, as it was never used
+- `Hash` in `ClientVersion`, now using signature-based detection instead 
+
+### Fixed
+
+- Parsing of skills/spell names with no level text
+
 ## [4.7.0] - 2023-06-16
 
 ### Added

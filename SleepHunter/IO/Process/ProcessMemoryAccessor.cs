@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 
 using SleepHunter.Win32;
 
@@ -25,13 +26,19 @@ namespace SleepHunter.IO.Process
             processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
 
             if (processHandle == 0)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to open process {processId}: {Marshal.GetLastPInvokeErrorMessage()}");
         }
 
-        public Stream GetStream() => new ProcessMemoryStream(processHandle, ProcessAccess.Read, leaveOpen: true);
+        public Stream GetStream()
+        {
+            CheckIfDisposed();
+            return new ProcessMemoryStream(processHandle, ProcessAccess.Read, leaveOpen: true);
+        }
 
         public Stream GetWriteableStream()
         {
+            CheckIfDisposed();
+
             if (!access.HasFlag(ProcessAccess.Write))
                 throw new InvalidOperationException("Accessor is not writeable");
 
@@ -46,7 +53,7 @@ namespace SleepHunter.IO.Process
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
@@ -61,6 +68,12 @@ namespace SleepHunter.IO.Process
 
             processHandle = 0;
             isDisposed = true;
+        }
+
+        private void CheckIfDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
         }
     }
 }

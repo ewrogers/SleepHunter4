@@ -6,7 +6,7 @@ namespace SleepHunter.Converters
 {
     public sealed class NumericConverter : IValueConverter
     {
-        private const int ThousandsThreshold = 1_000;
+        private const int ThousandsThreshold = 10_000;
         private const int MillionsThreshold = 1_000_000;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

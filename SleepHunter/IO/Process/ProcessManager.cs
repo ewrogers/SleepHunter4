@@ -10,13 +10,12 @@ namespace SleepHunter.IO.Process
 {
     public sealed class ProcessManager
     {
-        private const string WindowClassName = "DarkAges";
-
         private static readonly ProcessManager instance = new();
         public static ProcessManager Instance => instance;
 
         private ProcessManager() { }
 
+        private readonly ConcurrentDictionary<string, string> windowClassNames = new();
         private readonly ConcurrentDictionary<int, ClientProcess> clientProcesses = new();
         private readonly ConcurrentQueue<ClientProcess> deadClients = new();
         private readonly ConcurrentQueue<ClientProcess> newClients = new();
@@ -71,11 +70,19 @@ namespace SleepHunter.IO.Process
         public void ClearDeadClients() => deadClients.Clear();
         public void ClearNewClients() => newClients.Clear();
 
+        public void RegisterWindowClassName(string className)
+            => windowClassNames.TryAdd(className, className);
+
+        public bool UnregisterWindowClassName(string className)
+            => windowClassNames.TryRemove(className, out _);
+
         public void ScanForProcesses(Action<ClientProcess> enumProcessCallback = null)
         {
             var foundClients = new Dictionary<int, ClientProcess>();
             var deadClients = new Dictionary<int, ClientProcess>();
             var newClients = new Dictionary<int, ClientProcess>();
+
+            var registeredClassNames = windowClassNames.Keys.ToList();
 
             NativeMethods.EnumWindows((windowHandle, lParam) =>
             {
@@ -87,8 +94,8 @@ namespace SleepHunter.IO.Process
                 var classNameLength = NativeMethods.GetClassName(windowHandle, classNameBuffer, classNameBuffer.Capacity);
                 var className = classNameBuffer.ToString();
 
-                // Check Class Name (DA)
-                if (!string.Equals(WindowClassName, className, StringComparison.OrdinalIgnoreCase))
+                // Check Class Name from Registered Values
+                if (!registeredClassNames.Contains(className, StringComparer.OrdinalIgnoreCase))
                     return true;
 
                 // Get Window Title

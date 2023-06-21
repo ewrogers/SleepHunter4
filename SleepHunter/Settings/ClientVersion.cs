@@ -12,11 +12,16 @@ namespace SleepHunter.Settings
     [Serializable]
     public sealed class ClientVersion : ObservableObject
     {
+        private const string DefaultExecutableName = "Darkages.exe";
+        private const string DefaultWindowClassName = "DarkAges";
+
         public static readonly ClientVersion AutoDetect = new("Auto-Detect");
 
         private string key;
-        private string hash;
-        private int versionNumber;
+        private bool isDefault;
+        private ClientSignature signature;
+        private string executableName = DefaultExecutableName;
+        private string windowClassName = DefaultWindowClassName;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -29,18 +34,32 @@ namespace SleepHunter.Settings
             set => SetProperty(ref key, value);
         }
 
-        [XmlAttribute("Hash")]
-        public string Hash
+        [XmlAttribute("IsDefault")]
+        public bool IsDefault
         {
-            get => hash;
-            set => SetProperty(ref hash, value);
+            get => isDefault;
+            set => SetProperty(ref isDefault, value);
         }
 
-        [XmlAttribute("Value")]
-        public int VersionNumber
+        [XmlElement("Signature")]
+        public ClientSignature Signature
         {
-            get => versionNumber;
-            set => SetProperty(ref versionNumber, value);
+            get => signature;
+            set => SetProperty(ref signature, value);
+        }
+
+        [XmlElement]
+        public string ExecutableName
+        {
+            get => executableName;
+            set => SetProperty(ref executableName, value);
+        }
+
+        [XmlElement]
+        public string WindowClassName
+        {
+            get => windowClassName;
+            set => SetProperty(ref windowClassName, value);
         }
 
         [XmlIgnore]

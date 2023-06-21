@@ -81,7 +81,10 @@ namespace SleepHunter.Models
             var player = new Player(process) { Version = version };
             player.PropertyChanged += Player_PropertyChanged;
 
-            player.Version ??= ClientVersionManager.Instance.Versions.FirstOrDefault(v => v.Key != "Auto-Detect");
+            if (ClientVersionManager.TryDetectClientVersion(process.ProcessId, out var clientVersion))
+                player.Version = clientVersion;
+            else
+                player.Version = ClientVersionManager.Instance.DefaultVersion;
 
             AddPlayer(player);
             player.Update();

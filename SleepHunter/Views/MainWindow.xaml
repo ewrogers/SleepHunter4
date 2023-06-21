@@ -229,6 +229,21 @@
                     SelectionChanged="tabControl_SelectionChanged"
                     Margin="-1,-1,0,0"
                     Padding="0">
+            
+            <!-- Inventory Tab -->
+            <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
+                <ListBox Name="inventoryListBox" 
+                                 Style="{StaticResource ObsidianInventoryListBox}"
+                                 ItemTemplate="{StaticResource InventoryItemDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.AllItems}"
+                                 VerticalContentAlignment="Top">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
+                            <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </TabItem>
 
             <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">

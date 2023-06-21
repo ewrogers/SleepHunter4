@@ -176,18 +176,18 @@ namespace SleepHunter.Models
                 return;
             }
 
-                using var stream = accessor.GetStream();
-                using var reader = new BinaryReader(stream, Encoding.ASCII);
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
-                var skillbookPointer = skillbookVariable.DereferenceValue(reader);
+            var skillbookPointer = skillbookVariable.DereferenceValue(reader);
 
-                if (skillbookPointer == 0)
-                {
-                    ResetDefaults();
-                    return;
-                }
+            if (skillbookPointer == 0)
+            {
+                ResetDefaults();
+                return;
+            }
 
-                reader.BaseStream.Position = skillbookPointer;
+            reader.BaseStream.Position = skillbookPointer;
 
             for (int i = 0; i < skillbookVariable.Count; i++)
             {

@@ -12,16 +12,9 @@ It is also used to determine the path to the Dark Ages game client data files fo
 ## Client Version
 
 This setting determines the version of the Dark Ages game client and how any runtime patches should be applied.
-The default is `Auto-Detect` and will automatically detect the version of the Dark Ages game client based on the executable MD5 hash.
+The default is `Auto-Detect` and will automatically detect the version of the Dark Ages game client based on the client signature.
 
 You should not change this unless you are using a custom Dark Ages game client.
-
-## DirectDraw Compatibility Fix
-
-This setting will copy a patched `ddraw.dll` from the [DDrawCompat](https://github.com/narzoul/DDrawCompat) repo into the client folder.
-By default this is `Enabled` for x86/x64 operating systems.
-
-This fixes the flickering mouse cursor issue on modern computers.
 
 ## Allow Multiple Instances
 
