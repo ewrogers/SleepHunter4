@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -13,7 +14,7 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.5";
+        public static readonly string CurrentVersion = "1.6";
 
         private bool isDebugMode;
         private string version;
@@ -25,11 +26,13 @@ namespace SleepHunter.Settings
         private string selectedTheme;
 
         private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
-        private double skillIconSize;
-        private int skillGridWidth;
-        private int worldSkillGridWidth;
-        private int spellGridWidth;
-        private int worldSpellGridWidth;
+        private double inventoryIconSize = 46;
+        private double skillIconSize = 46;
+        private int inventoryGridWidth = 12;
+        private int skillGridWidth = 12;
+        private int worldSkillGridWidth = 6;
+        private int spellGridWidth = 12;
+        private int worldSpellGridWidth = 6;
         private bool showSkillNames;
         private bool showSkillLevels;
         private bool showSpellNames;
@@ -141,11 +144,25 @@ namespace SleepHunter.Settings
             set => SetProperty(ref clientSortOrder, value);
         }
 
+        [XmlElement("InventoryIconSize")]
+        public double InventoryIconSize
+        {
+            get => inventoryIconSize;
+            set => SetProperty(ref inventoryIconSize, value);
+        }
+
         [XmlElement("SkillIconSize")]
         public double SkillIconSize
         {
             get => skillIconSize;
             set => SetProperty(ref skillIconSize, value);
+        }
+
+        [XmlElement("InventoryGridWidth")]
+        public int InventoryGridWidth
+        {
+            get => inventoryGridWidth;
+            set => SetProperty(ref inventoryGridWidth, value);
         }
 
         [XmlElement("SkillGridWidth")]
@@ -519,7 +536,9 @@ namespace SleepHunter.Settings
 
             SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
             clientSortOrder = PlayerSortOrder.LoginTime;
+            InventoryIconSize = 46;
             SkillIconSize = 46;
+            InventoryGridWidth = 12;
             SkillGridWidth = 12;
             WorldSkillGridWidth = 6;
             SpellGridWidth = 12;

@@ -24,6 +24,8 @@ namespace SleepHunter.Models
 
         public int Count => inventory.Count((item) => { return !item.IsEmpty; });
 
+        public IEnumerable<InventoryItem> AllItems => inventory;
+
         public IEnumerable<string> ItemNames => 
             from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name;
 

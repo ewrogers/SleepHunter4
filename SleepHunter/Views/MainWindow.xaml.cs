@@ -66,7 +66,7 @@ namespace SleepHunter.Views
             LoadThemes();
             LoadSettings();
             ApplyTheme();
-            UpdateSkillSpellGridWidths();
+            UpdateListBoxGridWidths();
 
             LoadVersions();
 
@@ -533,6 +533,15 @@ namespace SleepHunter.Views
             }
         }
 
+        private void RefreshInventory()
+        {
+            if (!CheckAccess())
+            {
+                Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
+                return;
+            }
+        }
+
         private void RefreshSpellQueue()
         {
             if (!CheckAccess())
@@ -941,14 +950,27 @@ namespace SleepHunter.Views
             }
         }
 
-        private void UpdateSkillSpellGridWidths()
+        private void UpdateListBoxGridWidths()
         {
             var settings = UserSettingsManager.Instance.Settings;
 
+            SetInventoryGridWidth(settings.InventoryGridWidth);
             SetSkillGridWidth(settings.SkillGridWidth);
             SetWorldSkillGridWidth(settings.WorldSkillGridWidth);
             SetSpellGridWidth(settings.SpellGridWidth);
             SetWorldSpellGridWidth(settings.WorldSpellGridWidth);
+        }
+
+        private void SetInventoryGridWidth(int units)
+        {
+            if (units < 1)
+            {
+                inventoryListBox.MaxWidth = double.PositiveInfinity;
+                return;
+            }
+
+            var iconSize = UserSettingsManager.Instance.Settings.InventoryIconSize;
+            inventoryListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
         private void SetSkillGridWidth(int units)
@@ -1663,6 +1685,8 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
             {
+                RefreshInventory();
+
                 spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
 
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
@@ -1856,6 +1880,15 @@ namespace SleepHunter.Views
             ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
+        private void inventoryListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
+            // Do nothing for now
+        }
+
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Only handle left-click
@@ -2029,6 +2062,9 @@ namespace SleepHunter.Views
                 UpdateClientList();
             }
 
+            if (string.Equals(nameof(settings.InventoryGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                SetInventoryGridWidth(settings.InventoryGridWidth);
+
             if (string.Equals(nameof(settings.SkillGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetSkillGridWidth(settings.SkillGridWidth);
 
@@ -2041,8 +2077,11 @@ namespace SleepHunter.Views
             if (string.Equals(nameof(settings.WorldSpellGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetWorldSpellGridWidth(settings.WorldSpellGridWidth);
 
+            if (string.Equals(nameof(settings.InventoryIconSize), e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                UpdateListBoxGridWidths();
+
             if (string.Equals(nameof(settings.SkillIconSize), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                UpdateSkillSpellGridWidths();
+                UpdateListBoxGridWidths();
 
             // Debug settings
 

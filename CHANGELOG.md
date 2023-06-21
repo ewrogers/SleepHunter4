@@ -8,12 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Inventory` tab to view items
+- `Inventory` tab to view items (just text for now)
 - `Signature` definition for `ClientVersion`, which allows version to be detected by signature bytes instead of hash
 - `ExecutableName` and `WindowClassName` properties for `ClientVersion` to support other clients
 
 ### Changed
 
+- `UserSettings` is now version `1.6`
 - Launched clients now detect version based on the new signature definitions
 - Process manager can detect other clients based on version definitions
 - HP/MP formatting threshold increased to 10k for "thousands" shorthand
