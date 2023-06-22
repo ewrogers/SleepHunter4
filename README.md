@@ -24,6 +24,17 @@ Dark Ages Automation Tool + Updater
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
 
+## Zolian Support 🔴
+
+As of version 4.8.0 and newer, SleepHunter now supports the [Zolian 9.1.1+ client](https://www.thebucknetwork.com/Zolian) out of the box.
+
+You will need to configure the `Settings->Game Client` path to point to your Zolian installation.
+For example `C:\Zolian\Zolian 9.1.1.exe`.
+
+Restart SleepHunter once and you should see the proper skill/spell icons displayed.
+
+**NOTE:** While the client is supported, you will need custom metadata files for skills, spells, and staves.
+
 ## Documentation 📚
 
 The documentation for SleepHunter is located in the [docs](./docs) folder.
