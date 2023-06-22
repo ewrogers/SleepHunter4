@@ -229,7 +229,7 @@
                     SelectionChanged="tabControl_SelectionChanged"
                     Margin="-1,-1,0,0"
                     Padding="0">
-            
+
             <!-- Inventory Tab -->
             <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
                 <ListBox Name="inventoryListBox" 
@@ -445,8 +445,12 @@
                     </Border>
                 </Grid>
             </TabItem>
-        </TabControl>
 
+            <!-- Features which can vary by Client Version -->
+            <TabItem Name="featuresTab" Header="F_eatures" Visibility="Collapsed">
+                
+            </TabItem>
+        </TabControl>
 
         <!-- Spell Queue Placeholder -->
         <Border Grid.Row="1"

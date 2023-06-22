@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ClientVersions>
   <Clients>
-    <Client Key="7.41" IsDefault="true">
+    <Client Key="USDA 7.41" IsDefault="true">
       <Signature Address="685B08" Value="7D4E--1K" />
       <ExecutableName>Darkages.exe</ExecutableName>
       <WindowClassName>DarkAges</WindowClassName>
@@ -203,17 +203,6 @@
             <Dynamic Key="Gold" Address="977774">
                 <Offsets>
                     <Offset Value="198" />
-                </Offsets>
-            </Dynamic>
-            <Dynamic Key="Equipment" Address="961A48" MaxLength="128" Size="261" Count="18">
-                <Offsets>
-                    <Offset Value="14" />
-                    <Offset Value="4" />
-                    <Offset Value="FC" />
-                    <Offset Value="0" />
-                    <Offset Value="2C0" />
-                    <Offset Value="46C" />
-                    <Offset Value="670" />
                 </Offsets>
             </Dynamic>
             <Dynamic Key="Skillbook" Address="AA3AE8" MaxLength="256" Size="260" Count="90">

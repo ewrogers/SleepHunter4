@@ -29,6 +29,12 @@ namespace SleepHunter.Settings
         private List<FeatureFlag> features = new();
         private List<MemoryVariable> variables = new();
 
+        [XmlIgnore]
+        public IEnumerable<FeatureFlag> EnabledFeatures => Features.Where(feature => feature.IsEnabled);
+
+        [XmlIgnore]
+        public bool HasFeaturesAvailable => Features.Any(feature => feature.IsEnabled);
+
         [XmlAttribute("Key")]
         public string Key
         {

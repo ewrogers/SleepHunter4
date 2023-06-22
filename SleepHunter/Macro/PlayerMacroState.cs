@@ -765,16 +765,15 @@ namespace SleepHunter.Macro
 
         private bool ShouldFasSpiorad(int? manaRequirement = null)
         {
-            client.Update(PlayerFieldFlags.Spellbook);
-            var useFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
+            client.Update(PlayerFieldFlags.Spellbook | PlayerFieldFlags.Stats);
+            var autoFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
 
             if (!client.HasFasSpiorad)
                 return false;
 
-            if (useFasSpiorad || manaRequirement.HasValue)
+            // If auto-fas spiorad is enabled, check the threshold
+            if (autoFasSpiorad)
             {
-                client.Update(PlayerFieldFlags.Stats);
-
                 if (client.Stats.HasFullMana)
                     return false;
 
@@ -782,6 +781,7 @@ namespace SleepHunter.Macro
                     return true;
             }
 
+            // If the spell being cast has a mana requirement, check if fas-spiorad on demand
             if (manaRequirement.HasValue)
             {
                 if (UserSettingsManager.Instance.Settings.UseFasSpioradOnDemand && client.Stats.CurrentMana < manaRequirement.Value)
@@ -859,14 +859,14 @@ namespace SleepHunter.Macro
                 _ => null,
             };
 
-            // Determine if we need to fas spiorad instead
-            if (currentSpell != null)
-            {
-                var currentSpellData = SpellMetadataManager.Instance.GetSpell(currentSpell.Name);
+            if (currentSpell == null)
+                return null;
 
-                if (currentSpellData != null && ShouldFasSpiorad(currentSpellData.ManaCost))
-                    return GetFasSpiorad();
-            }
+            // Determine if we need to fas spiorad instead
+            var currentSpellData = SpellMetadataManager.Instance.GetSpell(currentSpell.Name);
+
+            if (currentSpellData != null && ShouldFasSpiorad(currentSpellData.ManaCost))
+                return GetFasSpiorad();
 
             if (currentSpell.IsOnCooldown)
                 return null;
