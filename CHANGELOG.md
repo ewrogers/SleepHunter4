@@ -4,6 +4,12 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.2] - Unreleased
+
+### Changed
+
+- `Flowering` tab is now a feature flag, only shown in USDA clients
+
 ## [4.8.1] - 2023-06-22
 
 ### Added
