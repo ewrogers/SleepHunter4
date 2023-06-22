@@ -346,20 +346,11 @@ namespace SleepHunter.Views
 
                 if (player == selectedPlayer)
                 {
-                    if (selectedPlayer == null)
-                    {
-                        ToggleInventory(false);
-                        ToggleSkills(false);
-                        ToggleSpells(false);
-                        ToggleFlower(false);
-                    }
-                    else
-                    {
-                        ToggleInventory(true);
-                        ToggleSkills(true);
-                        ToggleSpells(true);
-                        ToggleFlower(selectedPlayer.HasLyliacPlant, selectedPlayer.HasLyliacVineyard);
-                    }
+                    ToggleInventory(selectedPlayer != null);
+                    ToggleSkills(selectedPlayer != null);
+                    ToggleSpells(selectedPlayer != null);
+                    ToggleFlower(selectedPlayer?.HasLyliacPlant ?? false, selectedPlayer?.HasLyliacVineyard ?? false);
+                    ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
                 }
 
             }, DispatcherPriority.DataBind);
@@ -1656,6 +1647,7 @@ namespace SleepHunter.Views
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower();
+                ToggleFeatures(false);
                 UpdateToolbarState();
                 return;
             }
@@ -1682,6 +1674,7 @@ namespace SleepHunter.Views
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
+            ToggleFeatures(player.Version?.HasFeaturesAvailable ?? false);
 
             if (selectedMacro != null)
             {
@@ -2198,6 +2191,11 @@ namespace SleepHunter.Views
 
             if (!hasLyliacVineyard)
                 flowerVineyardCheckBox.IsChecked = false;
+        }
+
+        private void ToggleFeatures(bool show = true)
+        {
+            featuresTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void UpdateClientList()

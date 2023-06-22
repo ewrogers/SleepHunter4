@@ -4,6 +4,23 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.1] - 2023-06-22
+
+### Added
+
+- Gold display to inventory (last slot)
+- `Features` tab for client-specific feature options (per-character)
+- Feature flag support for client-specific functionality in `ClientVersion` definitions
+
+### Changed
+
+- Client version `7.41` is now renamed `USDA 7.41` for clarity
+
+### Fixed
+
+- Fas spiorad bugs (needlessly cast at low mana)
+- Better spellbook cooldown updates
+
 ## [4.8.0] - 2023-06-21
 
 ### Added

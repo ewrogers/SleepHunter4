@@ -127,6 +127,7 @@ namespace SleepHunter.Models
             if (version == null)
             {
                 ResetDefaults();
+                UpdateCooldowns();
                 return;
             }
 
@@ -135,6 +136,7 @@ namespace SleepHunter.Models
             if (spellbookVariable == null)
             {
                 ResetDefaults();
+                UpdateCooldowns();
                 return;
             }
 
@@ -146,6 +148,7 @@ namespace SleepHunter.Models
             if (spellbookPointer == 0)
             {
                 ResetDefaults();
+                UpdateCooldowns();
                 return;
             }
 
@@ -206,17 +209,6 @@ namespace SleepHunter.Models
                         spells[i].Cooldown = TimeSpan.Zero;
                         spells[i].CanImprove = true;
                     }
-
-                    spells[i].IsOnCooldown = false;
-
-                    // NOTE: Spell cooldowns are not read from the client, instead they are internal timers
-                    // Probably not ideal, but haven't taken the time to see if memory laid out the same as skills
-                    DateTime timestamp = DateTime.MinValue;
-                    if (spells[i].Cooldown > TimeSpan.Zero && spellCooldownTimestamps.TryGetValue(name, out timestamp))
-                    {
-                        var elapsed = DateTime.Now - timestamp;
-                        spells[i].IsOnCooldown = elapsed < (spells[i].Cooldown + TimeSpan.FromMilliseconds(500));
-                    }
                 }
                 catch { }
             }
@@ -224,6 +216,8 @@ namespace SleepHunter.Models
             Owner.HasFasSpiorad = foundFasSpiorad;
             Owner.HasLyliacPlant = foundLyliacPlant;
             Owner.HasLyliacVineyard = foundLyliacVineyard;
+
+            UpdateCooldowns();
         }
 
         public void ResetDefaults()
@@ -234,6 +228,7 @@ namespace SleepHunter.Models
             {
                 spells[i].IsEmpty = true;
                 spells[i].Name = null;
+                spells[i].IsOnCooldown = false;
             }
         }
 
@@ -245,5 +240,30 @@ namespace SleepHunter.Models
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void UpdateCooldowns()
+        {
+            for (var i = 0; i < spells.Capacity; i++)
+            {
+                var spellName = spells[i].Name;
+
+                if (spells[i].IsEmpty || string.IsNullOrWhiteSpace(spellName))
+                {
+                    spells[i].IsOnCooldown = false;
+                    continue;
+                }
+
+                if (!spellCooldownTimestamps.TryGetValue(spells[i].Name, out var lastUsedTimestamp))
+                {
+                    spells[i].IsOnCooldown = false;
+                    continue;
+                }
+
+                var cooldownTicks = spells[i].Cooldown.TotalSeconds * TimeSpan.TicksPerSecond;
+                var readyAtTicks = lastUsedTimestamp.Ticks + cooldownTicks;
+
+                spells[i].IsOnCooldown = readyAtTicks > DateTime.Now.Ticks;
+            }
+        }
     }
 }

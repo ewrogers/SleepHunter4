@@ -1,30 +1,46 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using SleepHunter.Common;
 using SleepHunter.Extensions;
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class Inventory : IEnumerable<InventoryItem>
+    public sealed class Inventory : ObservableObject, IEnumerable<InventoryItem>
     {
         private const string InventoryKey = @"Inventory";
+        private const string GoldKey = @"Gold";
 
         public static readonly int InventoryCount = 60;
 
         private readonly List<InventoryItem> inventory = new(InventoryCount);
+        private int gold;
 
         public event EventHandler InventoryUpdated;
+        public event EventHandler GoldChanged;
 
         public Player Owner { get; }
 
+
         public int Count => inventory.Count((item) => { return !item.IsEmpty; });
 
-        public IEnumerable<InventoryItem> AllItems => inventory;
+        public IEnumerable<InventoryItem> ItemsAndGold => inventory;
+
+        public int Gold
+        {
+            get => gold;
+            set => SetProperty(ref gold, value, nameof(Gold), (_) =>
+            {
+                UpdateGoldInventoryItem();
+                GoldChanged?.Invoke(this, EventArgs.Empty);
+                RaisePropertyChanged(nameof(ItemsAndGold));
+            });
+        }
 
         public IEnumerable<string> ItemNames => 
             from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name;
@@ -41,6 +57,8 @@ namespace SleepHunter.Models
 
             for (int i = 0; i < inventory.Capacity; i++)
                 inventory.Add(InventoryItem.MakeEmpty(i + 1));
+
+            UpdateGoldInventoryItem();
         }
 
         public InventoryItem GetItem(string itemName)
@@ -76,7 +94,7 @@ namespace SleepHunter.Models
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
 
-            var version = this.Owner.Version;
+            var version = Owner.Version;
 
             if (version == null)
             {
@@ -103,9 +121,9 @@ namespace SleepHunter.Models
             }
 
             reader.BaseStream.Position = inventoryPointer;
-            
-
-            for (int i = 0; i < inventoryVariable.Count; i++)
+           
+            // Gold is the last item, skip it
+            for (int i = 0; i < inventoryVariable.Count - 1; i++)
             {
                 try
                 {
@@ -121,6 +139,44 @@ namespace SleepHunter.Models
                 }
                 catch { }
             }
+
+            UpdateGold(accessor);
+        }
+
+        private void UpdateGold(ProcessMemoryAccessor accessor)
+        {
+            if (accessor == null)
+                throw new ArgumentNullException(nameof(accessor));
+
+            var version = Owner.Version;
+
+            if (version == null)
+            {
+                ResetDefaults();
+                return;
+            }
+
+            if (!version.TryGetVariable(GoldKey, out var goldVariable))
+            {
+                Gold = 0;
+                return;
+            }
+
+            using var stream = accessor.GetStream();
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+            if (goldVariable.TryReadUInt32(reader, out var goldValue))
+                Gold = (int)goldValue;
+            else
+                Gold = 0;
+
+            UpdateGoldInventoryItem();
+        }
+
+        private void UpdateGoldInventoryItem()
+        {
+            inventory[InventoryCount - 1].IsEmpty = false;
+            inventory[InventoryCount - 1].Name = $"Gold ({Gold:n0})";
         }
 
         public void ResetDefaults()
@@ -130,6 +186,8 @@ namespace SleepHunter.Models
                 inventory[i].IsEmpty = true;
                 inventory[i].Name = null;
             }
+
+            Gold = 0;
         }
 
         public IEnumerator<InventoryItem> GetEnumerator()

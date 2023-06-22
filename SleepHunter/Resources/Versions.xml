@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ClientVersions>
   <Clients>
-    <Client Key="7.41" IsDefault="true">
+    <Client Key="USDA 7.41" IsDefault="true">
       <Signature Address="685B08" Value="7D4E--1K" />
       <ExecutableName>Darkages.exe</ExecutableName>
       <WindowClassName>DarkAges</WindowClassName>
@@ -65,6 +65,11 @@
             <Offset Value="2CC" />
             <Offset Value="1092" />
           </Offsets>
+        </Dynamic>
+        <Dynamic Key="Gold" Address="755AA4">
+            <Offsets>
+                <Offset Value="198" />
+            </Offsets>
         </Dynamic>
         <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="261" Count="18">
           <Offsets>
@@ -133,6 +138,9 @@
         <WindowClassName>DarkAges</WindowClassName>
         <MultipleInstanceAddress>78D559</MultipleInstanceAddress>
         <IntroVideoAddress>62F455</IntroVideoAddress>
+        <Features>
+            <FeatureFlag Key="UseWaterAndBeds" Enabled="true" />
+        </Features>
         <Variables>
             <Static Key="VersionNumber" Address="972288" />
             <Static Key="CharacterName" Address="95F6E0" MaxLength="13" />
@@ -192,15 +200,9 @@
                     <Offset Value="1092" />
                 </Offsets>
             </Dynamic>
-            <Dynamic Key="Equipment" Address="961A48" MaxLength="128" Size="261" Count="18">
+            <Dynamic Key="Gold" Address="977774">
                 <Offsets>
-                    <Offset Value="14" />
-                    <Offset Value="4" />
-                    <Offset Value="FC" />
-                    <Offset Value="0" />
-                    <Offset Value="2C0" />
-                    <Offset Value="46C" />
-                    <Offset Value="670" />
+                    <Offset Value="198" />
                 </Offsets>
             </Dynamic>
             <Dynamic Key="Skillbook" Address="AA3AE8" MaxLength="256" Size="260" Count="90">

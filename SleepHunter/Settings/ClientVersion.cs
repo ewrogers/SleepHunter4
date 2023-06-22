@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Serialization;
 
 using SleepHunter.Common;
@@ -25,7 +26,14 @@ namespace SleepHunter.Settings
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
+        private List<FeatureFlag> features = new();
         private List<MemoryVariable> variables = new();
+
+        [XmlIgnore]
+        public IEnumerable<FeatureFlag> EnabledFeatures => Features.Where(feature => feature.IsEnabled);
+
+        [XmlIgnore]
+        public bool HasFeaturesAvailable => Features.Any(feature => feature.IsEnabled);
 
         [XmlAttribute("Key")]
         public string Key
@@ -119,6 +127,14 @@ namespace SleepHunter.Settings
             }
         }
 
+        [XmlArray("Features")]
+        [XmlArrayItem("FeatureFlag", typeof(FeatureFlag))]
+        public List<FeatureFlag> Features
+        {
+            get => features;
+            set => SetProperty(ref features, value);
+        }
+
         [XmlArray("Variables")]
         [XmlArrayItem("Static", typeof(MemoryVariable))]
         [XmlArrayItem("Dynamic", typeof(DynamicMemoryVariable))]
@@ -136,6 +152,20 @@ namespace SleepHunter.Settings
         public ClientVersion(string key)
         {
             this.key = key ?? throw new ArgumentNullException(nameof(key));
+        }
+
+        public bool TryGetFeature(string key, out FeatureFlag feature)
+        {
+            feature = null;
+            feature = features.FirstOrDefault(feature => string.Equals(feature.Key, key, StringComparison.OrdinalIgnoreCase));
+
+            return feature != null;
+        }
+
+        public bool TryGetVariable(string key, out MemoryVariable variable)
+        {
+            variable = GetVariable(key);
+            return variable != null;
         }
 
         public MemoryVariable GetVariable(string key)

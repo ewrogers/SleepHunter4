@@ -1,7 +1,5 @@
 # Inventory Tab
 
-![image](../screenshots/skills-tab.png)
-
 Inventory items are arranged as a grid of icon buttons similar to the game client, displaying the name of the item.
 
 ## Grid Layout
