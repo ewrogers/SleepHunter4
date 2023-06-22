@@ -235,7 +235,7 @@
                 <ListBox Name="inventoryListBox" 
                                  Style="{StaticResource ObsidianInventoryListBox}"
                                  ItemTemplate="{StaticResource InventoryItemDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.AllItems}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
                                  VerticalContentAlignment="Top">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">

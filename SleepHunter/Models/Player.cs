@@ -13,7 +13,7 @@ namespace SleepHunter.Models
     public sealed class Player : ObservableObject, IDisposable
     {
         private const string CharacterNameKey = @"CharacterName";
-
+        
         private bool isDisposed;
         private ClientVersion version;
         private readonly ProcessMemoryAccessor accessor;

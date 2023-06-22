@@ -39,7 +39,7 @@ namespace SleepHunter.Models
             set => SetProperty(ref name, value, nameof(Name), (_) => RaisePropertyChanged(nameof(DisplayName)));
         }
 
-        public string DisplayName => ColorTextRegex.Replace(Name, string.Empty);
+        public string DisplayName => ColorTextRegex.Replace(Name ?? string.Empty, string.Empty);
 
         public int Quantity
         {

@@ -138,6 +138,12 @@ namespace SleepHunter.Settings
             this.key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
+        public bool TryGetVariable(string key, out MemoryVariable variable)
+        {
+            variable = GetVariable(key);
+            return variable != null;
+        }
+
         public MemoryVariable GetVariable(string key)
         {
             foreach (var variable in variables)

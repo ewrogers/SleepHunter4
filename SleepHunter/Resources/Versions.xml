@@ -66,6 +66,11 @@
             <Offset Value="1092" />
           </Offsets>
         </Dynamic>
+        <Dynamic Key="Gold" Address="755AA4">
+            <Offsets>
+                <Offset Value="198" />
+            </Offsets>
+        </Dynamic>
         <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="261" Count="18">
           <Offsets>
             <Offset Value="1152" />
@@ -190,6 +195,11 @@
                 <Offsets>
                     <Offset Value="2CC" />
                     <Offset Value="1092" />
+                </Offsets>
+            </Dynamic>
+            <Dynamic Key="Gold" Address="977774">
+                <Offsets>
+                    <Offset Value="198" />
                 </Offsets>
             </Dynamic>
             <Dynamic Key="Equipment" Address="961A48" MaxLength="128" Size="261" Count="18">
