@@ -14,10 +14,11 @@
 
 - [Toolbar](./main-window/toolbar.md)
 - [Character List](./main-window/character-list.md)
-- [Inventory Tab](./main-window/inventory.md)
+- [Inventory Tab](./main-window/inventory-tab.md)
 - [Skills Tab](./main-window/skills-tab.md)
 - [Spells Tab](./main-window/spells-tab.md)
 - [Flowering Tab](./main-window/flowering-tab.md)
+- [Features Tab](./main-window/features-tab.md)
 - [Spell Queue](./main-window/spell-queue.md)
 
 # Spell Targets

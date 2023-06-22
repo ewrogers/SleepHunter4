@@ -16,6 +16,8 @@ No errant mouse clicks or keyboard presses in other applications will occur whil
 SleepHunter scans all running processes to find Dark Ages game clients automatically.
 It can detect multiple game clients running on the same computer at the same time.
 
+Uses client signature to differentiate between varying client versions (including modified clients).
+
 ### Runtime Patching
 
 SleepHunter can launch new game client instances and patch them at runtime, allowing tweaks such as multiple instances
