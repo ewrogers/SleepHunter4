@@ -138,6 +138,9 @@
         <WindowClassName>DarkAges</WindowClassName>
         <MultipleInstanceAddress>78D559</MultipleInstanceAddress>
         <IntroVideoAddress>62F455</IntroVideoAddress>
+        <Features>
+            <FeatureFlag Key="UseWaterAndBeds" Enabled="true" />
+        </Features>
         <Variables>
             <Static Key="VersionNumber" Address="972288" />
             <Static Key="CharacterName" Address="95F6E0" MaxLength="13" />
