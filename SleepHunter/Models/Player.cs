@@ -16,7 +16,7 @@ namespace SleepHunter.Models
         private const string CharacterNameKey = @"CharacterName";
 
         private readonly ConcurrentDictionary<string, object> featureKeyValues = new();
-        
+
         private bool isDisposed;
         private ClientVersion version;
         private readonly ProcessMemoryAccessor accessor;
@@ -272,7 +272,21 @@ namespace SleepHunter.Models
             GC.SuppressFinalize(this);
         }
 
-        public bool TryGetFeatureKeyValue<T>(string key, out T value)
+        public T GetFeatureValueOrDefault<T>(string key, T defaultValue = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (!featureKeyValues.TryGetValue(key , out var value))
+                return defaultValue;
+
+            if (value is not T typedValue)
+                throw new InvalidCastException($"Value is not a {typeof(T).Name}");
+
+            return typedValue;
+        }
+
+        public bool TryGetFeatureValue<T>(string key, out T value)
         {
             value = default;
 
@@ -283,13 +297,13 @@ namespace SleepHunter.Models
                 return false;
 
             if (existingValue is not T typedValue)
-                throw new InvalidCastException($"Value is not a {typeof(T).Name}");
+                return false;
 
             value = typedValue;
             return true;
         }
 
-        public void SetFeatureKeyValue<T>(string key, T value)
+        public void SetFeatureValue<T>(string key, T value)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
@@ -297,7 +311,7 @@ namespace SleepHunter.Models
             featureKeyValues[key] = value;
         }
 
-        public bool RemoveFeatureKeyValue(string key)
+        public bool RemoveFeatureValue(string key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));

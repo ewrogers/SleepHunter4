@@ -449,10 +449,12 @@
 
             <!-- Features which can vary by Client Version -->
             <TabItem Name="featuresTab" Header="F_eatures">
-                <StackPanel Orientation="Vertical" Margin="40,16">
+                <StackPanel Orientation="Vertical" Margin="16">
                     <!-- Use Water & Beds (Zolian) -->
-                    <Grid Visibility="{Binding ElementName=clientListBox, Path=SelectedItem.Version, Converter={StaticResource FeatureVisibilityConverter}, ConverterParameter=UseWaterAndBeds,  Mode=OneWay}">
+                    <Grid HorizontalAlignment="Center"
+                          Visibility="{Binding ElementName=clientListBox, Path=SelectedItem.Version, Converter={StaticResource FeatureVisibilityConverter}, ConverterParameter=UseWaterAndBeds,  Mode=OneWay}">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
