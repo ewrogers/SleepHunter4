@@ -596,7 +596,7 @@ namespace SleepHunter.Views
             useWaterAndBedsTileXUpDown.Value = player.GetFeatureValueOrDefault(tileXKey, 5);
 
             var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
-            useWaterAndBedsTileYUpDown.Value = player.GetFeatureValueOrDefault(tileYKey, 5);
+            useWaterAndBedsTileYUpDown.Value = player.GetFeatureValueOrDefault(tileYKey, 1);
         }
 
         private void LoadVersions()
@@ -2305,6 +2305,18 @@ namespace SleepHunter.Views
             var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
 
             player.SetFeatureValue(isEnabledKey, checkBox.IsChecked);
+
+            if (checkBox.IsChecked != true)
+                return;
+
+            // Ensure these values are in sync with the key/value store when ENABLED
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+
+            player.SetFeatureValue(manaThresholdKey, (int)useWaterAndBedsThresholdUpDown.Value);
+            player.SetFeatureValue(tileXKey, (int)useWaterAndBedsTileXUpDown.Value);
+            player.SetFeatureValue(tileYKey, (int)useWaterAndBedsTileYUpDown.Value);
         }
 
         private void useWaterAndBedsThresholdUpDown_ValueChanged(object sender, RoutedEventArgs e)

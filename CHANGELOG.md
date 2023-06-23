@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- "Use Water & Beds" for MP recovery feature (Zolian only)
 - "Browse" button for selecting client path with open file dialog
 
 ### Changed

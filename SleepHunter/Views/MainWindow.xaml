@@ -524,7 +524,7 @@
                                            LargeIncrement="10"
                                            FontSize="16"
                                            DecoratorText="Y"
-                                           Value="5"
+                                           Value="1"
                                            HorizontalAlignment="Stretch"
                                            IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
                                            Margin="4"
