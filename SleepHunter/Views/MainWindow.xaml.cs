@@ -346,10 +346,14 @@ namespace SleepHunter.Views
 
                 if (player == selectedPlayer)
                 {
+                    var supportsFlowering = selectedPlayer?.Version?.SupportsFlowering ?? false;
+                    var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
+                    var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
+
                     ToggleInventory(selectedPlayer != null);
                     ToggleSkills(selectedPlayer != null);
                     ToggleSpells(selectedPlayer != null);
-                    ToggleFlower(selectedPlayer?.HasLyliacPlant ?? false, selectedPlayer?.HasLyliacVineyard ?? false);
+                    ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
                     ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
                 }
 
@@ -1646,7 +1650,7 @@ namespace SleepHunter.Views
                 ToggleInventory(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
-                ToggleFlower();
+                ToggleFlower(false);
                 ToggleFeatures(false);
                 UpdateToolbarState();
                 return;
@@ -1670,10 +1674,12 @@ namespace SleepHunter.Views
             if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
                 ToggleSpellQueue(true);
 
+            var supportsFlowering = player.Version?.SupportsFlowering ?? false;
+
             ToggleInventory(player.IsLoggedIn);
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
-            ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
+            ToggleFlower(supportsFlowering, player.HasLyliacPlant, player.HasLyliacVineyard);
             ToggleFeatures(player.Version?.HasFeaturesAvailable ?? false);
 
             if (selectedMacro != null)
@@ -1870,7 +1876,9 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-            ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
+
+            var supportsFlowering = selectedMacro.Client.Version?.SupportsFlowering ?? false;
+            ToggleFlower(supportsFlowering, selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
         private void inventoryListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -2179,8 +2187,9 @@ namespace SleepHunter.Views
                 spellsTab.TabIndex = -1;
         }
 
-        private void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
+        private void ToggleFlower(bool show = false, bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
         {
+            flowerTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
             flowerTab.IsEnabled = hasLyliacPlant || hasLyliacVineyard;
 
             flowerAlternateCharactersCheckBox.IsEnabled = hasLyliacPlant;

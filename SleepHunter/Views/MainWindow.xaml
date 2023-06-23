@@ -338,7 +338,7 @@
             </TabItem>
 
             <!-- Flowering Tab -->
-            <TabItem Name="flowerTab" Header="_Flowering" IsEnabled="False">
+            <TabItem Name="flowerTab" Header="_Flowering" IsEnabled="False" Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

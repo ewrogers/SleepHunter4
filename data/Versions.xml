@@ -5,12 +5,10 @@
       <Signature Address="685B08" Value="7D4E--1K" />
       <ExecutableName>Darkages.exe</ExecutableName>
       <WindowClassName>DarkAges</WindowClassName>
+      <SupportsFlowering>true</SupportsFlowering>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>
-      <Features>
-          <FeatureFlag Key="Flowering" Enabled="true" />
-      </Features>
       <Variables>
         <Static Key="CharacterName" Address="73D910" MaxLength="13" />
         <Dynamic Key="CurrentHealth" Address="755AA4" MaxLength="10">

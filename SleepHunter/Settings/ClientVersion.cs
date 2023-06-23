@@ -23,6 +23,7 @@ namespace SleepHunter.Settings
         private ClientSignature signature;
         private string executableName = DefaultExecutableName;
         private string windowClassName = DefaultWindowClassName;
+        private bool supportsFlowering;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -68,6 +69,13 @@ namespace SleepHunter.Settings
         {
             get => windowClassName;
             set => SetProperty(ref windowClassName, value);
+        }
+
+        [XmlElement]
+        public bool SupportsFlowering
+        {
+            get => supportsFlowering;
+            set => SetProperty(ref supportsFlowering, value);
         }
 
         [XmlIgnore]
