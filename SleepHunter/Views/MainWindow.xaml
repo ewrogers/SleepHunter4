@@ -448,7 +448,14 @@
 
             <!-- Features which can vary by Client Version -->
             <TabItem Name="featuresTab" Header="F_eatures" Visibility="Collapsed">
-                
+                <StackPanel Orientation="Vertical" Margin="32,16">
+                    <!-- Use Water and Beds (Zolian) -->
+                    <Grid Visibility="{Binding ElementName=clientListBox, Path=SelectedItem.Version, Converter={StaticResource FeatureVisibilityConverter}, ConverterParameter=UseWaterAndBeds,  Mode=OneWay}">
+                        <CheckBox Name="useWaterAndBedsCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  Content="Use _Water &amp; Beds when"/>
+                    </Grid>
+                </StackPanel>
             </TabItem>
         </TabControl>
 

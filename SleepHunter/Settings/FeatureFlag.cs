@@ -7,6 +7,10 @@ namespace SleepHunter.Settings
     {
         private string key;
         private bool enabled = true;
+        private object state;
+
+        [XmlIgnore]
+        public bool HasState => state != null;
 
         [XmlAttribute("Key")]
         public string Key
@@ -30,6 +34,27 @@ namespace SleepHunter.Settings
         {
             Key = key;
             IsEnabled = enabled;
+        }
+
+        public object GetState() => state;
+
+        public T GetState<T>() => (T)state;
+
+        public bool TryGetState<T>(out T state)
+        {
+            state = default;
+
+            if (this.state is not T typedState)
+                return false;
+
+            state = typedState;
+            return true;
+        }
+
+        public void SetState(object newState)
+        {
+            state = newState;
+            RaisePropertyChanged("State");
         }
 
         public override string ToString() => $"{Key} = {IsEnabled}";
