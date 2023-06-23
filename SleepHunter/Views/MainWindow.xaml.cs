@@ -81,6 +81,7 @@ namespace SleepHunter.Views
             ToggleSkills(false);
             ToggleSpells(false);
             ToggleSpellQueue(false);
+            ToggleFeatures(false);
 
             RefreshSpellQueue();
             RefreshFlowerQueue();

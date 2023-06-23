@@ -448,7 +448,7 @@
             </TabItem>
 
             <!-- Features which can vary by Client Version -->
-            <TabItem Name="featuresTab" Header="F_eatures">
+            <TabItem Name="featuresTab" Header="F_eatures" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Margin="16">
                     <!-- Use Water & Beds (Zolian) -->
                     <Grid HorizontalAlignment="Center"
