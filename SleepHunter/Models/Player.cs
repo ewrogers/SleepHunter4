@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 
 using SleepHunter.Common;
-using SleepHunter.Features;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Settings;
@@ -16,8 +15,8 @@ namespace SleepHunter.Models
     {
         private const string CharacterNameKey = @"CharacterName";
 
-        private readonly ConcurrentDictionary<string, FeatureState> featureStates = new();
-
+        private readonly ConcurrentDictionary<string, object> featureKeyValues = new();
+        
         private bool isDisposed;
         private ClientVersion version;
         private readonly ProcessMemoryAccessor accessor;
@@ -273,7 +272,40 @@ namespace SleepHunter.Models
             GC.SuppressFinalize(this);
         }
 
-        void Dispose(bool isDisposing)
+        public bool TryGetFeatureKeyValue<T>(string key, out T value)
+        {
+            value = default;
+
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (!featureKeyValues.TryGetValue(key, out var existingValue))
+                return false;
+
+            if (existingValue is not T typedValue)
+                throw new InvalidCastException($"Value is not a {typeof(T).Name}");
+
+            value = typedValue;
+            return true;
+        }
+
+        public void SetFeatureKeyValue<T>(string key, T value)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            featureKeyValues[key] = value;
+        }
+
+        public bool RemoveFeatureKeyValue(string key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            return featureKeyValues.TryRemove(key, out _);
+        }
+
+        private void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
@@ -285,40 +317,6 @@ namespace SleepHunter.Models
             }
 
             isDisposed = true;
-        }
-
-        public FeatureState GetFeatureState(string featureName)
-        {
-            if (featureName == null)
-                throw new ArgumentNullException(nameof(featureName));
-
-            return featureStates.TryGetValue(featureName, out var state) ? state : null;
-        }
-
-        public T GetFeatureState<T> (string featureName) where T : FeatureState
-        {
-            var state = GetFeatureState(featureName);
-            return (T)state;
-        }
-
-        public bool TryGetFeatureState<T>(string featureName, out T state) where T : FeatureState
-        {
-            state = default;
-
-            var actualState = GetFeatureState(featureName);
-            if (actualState is not T typedState)
-                return false;
-
-            state = typedState;
-            return true;
-        }
-
-        public void SetFeatureState<T>(string featureName, T state) where T : FeatureState
-        {
-            if (featureName == null)
-                throw new ArgumentNullException(nameof(featureName));
-
-            featureStates[featureName] = state;
         }
 
         public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)

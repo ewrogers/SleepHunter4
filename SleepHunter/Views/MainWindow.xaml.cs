@@ -28,6 +28,7 @@ using System.Reflection;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using SleepHunter.Controls;
 
 namespace SleepHunter.Views
 {
@@ -2262,5 +2263,59 @@ namespace SleepHunter.Views
                 return;
             }
         }
+
+        #region Use Water & Beds Feature (Zolian)
+        private void useWaterAndBedsCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox checkBox)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
+
+            player.SetFeatureKeyValue(isEnabledKey, checkBox.IsChecked);
+        }
+
+        private void useWaterAndBedsThresholdUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+
+            player.SetFeatureKeyValue(manaThresholdKey, (int)numericUpDown.Value);
+        }
+
+        private void useWaterAndBedsTileXUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+
+            player.SetFeatureKeyValue(tileXKey, (int)numericUpDown.Value);
+        }
+
+        private void useWaterAndBedsTileYUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+
+            player.SetFeatureKeyValue(tileYKey, (int)numericUpDown.Value);
+        }
+        #endregion
     }
 }

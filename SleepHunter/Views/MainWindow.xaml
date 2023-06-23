@@ -466,7 +466,9 @@
                         <CheckBox Name="useWaterAndBedsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
                                   Content="Use _Water &amp; Beds when"
-                                  Margin="4,4,8,4"/>
+                                  Margin="4,4,8,4"
+                                  Click="useWaterAndBedsCheckBox_Click"/>
+
 
                         <!-- MP Threshold -->
                         <ctl:NumericUpDown x:Name="useWaterAndBedsThresholdUpDown"
@@ -482,7 +484,8 @@
                                            Value="1000"
                                            HorizontalAlignment="Stretch"
                                            IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
-                                           Margin="4"/>
+                                           Margin="4"
+                                           ValueChanged="useWaterAndBedsThresholdUpDown_ValueChanged"/>
 
                         <TextBlock Grid.Row="1"
                                    Style="{StaticResource ObsidianText}"
@@ -505,7 +508,8 @@
                                            Value="5"
                                            HorizontalAlignment="Stretch"
                                            IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
-                                           Margin="4"/>
+                                           Margin="4"
+                                           ValueChanged="useWaterAndBedsTileXUpDown_ValueChanged"/>
 
                         <!-- Tile Y -->
                         <ctl:NumericUpDown x:Name="useWaterAndBedsTileYUpDown"
@@ -521,7 +525,8 @@
                                            Value="5"
                                            HorizontalAlignment="Stretch"
                                            IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
-                                           Margin="4"/>
+                                           Margin="4"
+                                           ValueChanged="useWaterAndBedsTileYUpDown_ValueChanged"/>
                     </Grid>
                 </StackPanel>
             </TabItem>
