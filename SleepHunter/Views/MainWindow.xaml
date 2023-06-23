@@ -1,6 +1,7 @@
 ﻿<Window x:Class="SleepHunter.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctl="clr-namespace:SleepHunter.Controls"
         xmlns:models="clr-namespace:SleepHunter.Models"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="SleepHunter" 
@@ -447,13 +448,80 @@
             </TabItem>
 
             <!-- Features which can vary by Client Version -->
-            <TabItem Name="featuresTab" Header="F_eatures" Visibility="Collapsed">
-                <StackPanel Orientation="Vertical" Margin="32,16">
-                    <!-- Use Water and Beds (Zolian) -->
+            <TabItem Name="featuresTab" Header="F_eatures">
+                <StackPanel Orientation="Vertical" Margin="40,16">
+                    <!-- Use Water & Beds (Zolian) -->
                     <Grid Visibility="{Binding ElementName=clientListBox, Path=SelectedItem.Version, Converter={StaticResource FeatureVisibilityConverter}, ConverterParameter=UseWaterAndBeds,  Mode=OneWay}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*" MinWidth="110" MaxWidth="140"/>
+                            <ColumnDefinition Width="*" MinWidth="110" MaxWidth="140"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Toggle Use Water & Beds -->
                         <CheckBox Name="useWaterAndBedsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  Content="Use _Water &amp; Beds when"/>
+                                  Content="Use _Water &amp; Beds when"
+                                  Margin="4,4,8,4"/>
+
+                        <!-- MP Threshold -->
+                        <ctl:NumericUpDown x:Name="useWaterAndBedsThresholdUpDown"
+                                           Grid.Column="1"
+                                           Grid.ColumnSpan="2"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Minimum="1"
+                                           Maximum="1000000"
+                                           SmallIncrement="100"
+                                           LargeIncrement="1000"
+                                           FontSize="16"
+                                           DecoratorText="MP &lt;"
+                                           Value="1000"
+                                           HorizontalAlignment="Stretch"
+                                           IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="Click Map Tile:"
+                                   Foreground="{StaticResource ObsidianInactive}"
+                                   HorizontalAlignment="Right"
+                                   Margin="8,4,16,4"/>
+
+                        <!-- Tile X -->
+                        <ctl:NumericUpDown x:Name="useWaterAndBedsTileXUpDown"
+                                           Grid.Row="1"
+                                           Grid.Column="1"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Minimum="1"
+                                           Maximum="200"
+                                           SmallIncrement="1"
+                                           LargeIncrement="10"
+                                           FontSize="16"
+                                           DecoratorText="X"
+                                           Value="5"
+                                           HorizontalAlignment="Stretch"
+                                           IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
+
+                        <!-- Tile Y -->
+                        <ctl:NumericUpDown x:Name="useWaterAndBedsTileYUpDown"
+                                           Grid.Row="1"
+                                           Grid.Column="2"
+                                           Style="{StaticResource ObsidianNumericUpDown}"
+                                           Minimum="1"
+                                           Maximum="200"
+                                           SmallIncrement="1"
+                                           LargeIncrement="10"
+                                           FontSize="16"
+                                           DecoratorText="Y"
+                                           Value="5"
+                                           HorizontalAlignment="Stretch"
+                                           IsEnabled="{Binding ElementName=useWaterAndBedsCheckBox, Path=IsChecked}"
+                                           Margin="4"/>
                     </Grid>
                 </StackPanel>
             </TabItem>

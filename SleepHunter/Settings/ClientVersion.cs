@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml.Serialization;
 
 using SleepHunter.Common;
+using SleepHunter.Features;
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings

@@ -21,6 +21,7 @@
                     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
                     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
                     <converters:VisibilityInverter x:Key="VisibilityInverter"/>
+                    <converters:FeatureStateConverter x:Key="FeatureStateConverter"/>
                     <converters:FeatureVisibilityConverter x:Key="FeatureVisibilityConverter"/>
                 </ResourceDictionary>
 

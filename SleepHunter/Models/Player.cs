@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 
 using SleepHunter.Common;
+using SleepHunter.Features;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Settings;
@@ -13,7 +15,9 @@ namespace SleepHunter.Models
     public sealed class Player : ObservableObject, IDisposable
     {
         private const string CharacterNameKey = @"CharacterName";
-        
+
+        private readonly ConcurrentDictionary<string, FeatureState> featureStates = new();
+
         private bool isDisposed;
         private ClientVersion version;
         private readonly ProcessMemoryAccessor accessor;
@@ -281,6 +285,40 @@ namespace SleepHunter.Models
             }
 
             isDisposed = true;
+        }
+
+        public FeatureState GetFeatureState(string featureName)
+        {
+            if (featureName == null)
+                throw new ArgumentNullException(nameof(featureName));
+
+            return featureStates.TryGetValue(featureName, out var state) ? state : null;
+        }
+
+        public T GetFeatureState<T> (string featureName) where T : FeatureState
+        {
+            var state = GetFeatureState(featureName);
+            return (T)state;
+        }
+
+        public bool TryGetFeatureState<T>(string featureName, out T state) where T : FeatureState
+        {
+            state = default;
+
+            var actualState = GetFeatureState(featureName);
+            if (actualState is not T typedState)
+                return false;
+
+            state = typedState;
+            return true;
+        }
+
+        public void SetFeatureState<T>(string featureName, T state) where T : FeatureState
+        {
+            if (featureName == null)
+                throw new ArgumentNullException(nameof(featureName));
+
+            featureStates[featureName] = state;
         }
 
         public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
