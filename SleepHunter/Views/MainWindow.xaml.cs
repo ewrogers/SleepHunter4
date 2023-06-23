@@ -1691,6 +1691,9 @@ namespace SleepHunter.Views
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
                 RefreshSpellQueue();
 
+                if (selectedMacro.QueuedSpells.Count > 0)
+                    ToggleSpellQueue(true);
+
                 flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
                 RefreshFlowerQueue();
 
@@ -1699,6 +1702,10 @@ namespace SleepHunter.Views
 
                 foreach (var spell in selectedMacro.QueuedSpells)
                     spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
+            }
+            else
+            {
+                ToggleSpellQueue(false);
             }
         }
 

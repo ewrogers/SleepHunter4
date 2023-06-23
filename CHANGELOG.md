@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Flowering` tab is now only shown in USDA clients
 - Tweak the color theme dropdown layout
+- Spell queue automatically opens when selected a character with queued spells
 
 ## [4.8.1] - 2023-06-22
 
