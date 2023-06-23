@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 using SleepHunter.Extensions;
 using SleepHunter.Models;
 using SleepHunter.Services.Logging;
@@ -215,6 +217,28 @@ namespace SleepHunter.Views
 
             Close();
             mainWindow.DownloadAndInstallUpdate();
+        }
+
+        private void locateClientButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog()
+            {
+                Title = "Locate Game Client",
+                Filter = "Executable Files (*.exe)|*.exe",
+                CheckFileExists = true,
+                CheckPathExists = true
+            };
+
+            var currentPath = UserSettingsManager.Instance.Settings.ClientPath;
+            if (!string.IsNullOrWhiteSpace(currentPath))
+            {
+                dialog.InitialDirectory = currentPath;
+            }
+
+            if (!dialog.ShowDialog().GetValueOrDefault())
+                return;
+
+            UserSettingsManager.Instance.Settings.ClientPath = dialog.FileName;
         }
     }
 }

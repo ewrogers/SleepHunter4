@@ -169,25 +169,24 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-                            <!-- Color Theme Text -->
-                            <TextBlock Text="Color Theme:"
-                                       Style="{StaticResource ObsidianText}"
-                                       TextAlignment="Right"
-                                       ToolTip="This is the color theme to use for the user interface."/>
+     
+                        <!-- Color Theme Text -->
+                        <TextBlock Text="Color Theme:"
+                                   Style="{StaticResource ObsidianText}"
+                                   TextAlignment="Right"
+                                   ToolTip="This is the color theme to use for the user interface."/>
 
                             <!-- Color Themes -->
-                            <ComboBox Name="themeColorComboBox"
-                                      Width="340" Height="40"
-                                      Style="{StaticResource ObsidianComboBox}"
-                                      ItemTemplate="{StaticResource ColorThemeDataTemplate}"
-                                      ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
-                                      SelectedValuePath="Name"
-                                      SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
-                                      Margin="4,6"/>
-                        </StackPanel>
+                        <ComboBox Name="themeColorComboBox"
+                                  Grid.Column="1"
+                                  Width="200"
+                                  Height="36"
+                                  Style="{StaticResource ObsidianComboBox}"
+                                  ItemTemplate="{StaticResource ColorThemeDataTemplate}"
+                                  ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
+                                  SelectedValuePath="Name"
+                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
+                                  Margin="4,6"/>
 
                         <Separator Grid.Row="2"
                                    Grid.ColumnSpan="2"
@@ -487,19 +486,39 @@
 
                     <!-- Client Executable Path -->
                     <StackPanel Orientation="Vertical"
-                                Margin="8,4">
+                                Margin="32,16,32,4">
                         <TextBlock Text="Client Path:"
                                    Margin="2,2"
                                    TextAlignment="Left"
                                    Style="{StaticResource ObsidianText}"
                                    ToolTip="This is the folder path to the game client executable."/>
 
-                        <!-- Client Path TextBox -->
-                        <TextBox Name="clientPathTextBox"
-                                 Height="40"
-                                 Style="{StaticResource ObsidianTextBox}"
-                                 Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
-                                 Margin="0,4"/>
+                        <!-- Client Path TextBox & Locate Button -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Name="clientPathTextBox"
+                                     Height="36"
+                                     Style="{StaticResource ObsidianNonEraseTextBox}"
+                                     Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
+                                     Margin="0,4"/>
+
+                            <Button Name="locateClientButton"
+                                    Grid.Column="1"
+                                    Width="36"
+                                    Height="36"
+                                    Style="{StaticResource ObsidianButton}"
+                                    FontFamily="{StaticResource ObsidianSymbolFontFamily}"
+                                    FontSize="20"
+                                    Content="&#xE188;"
+                                    Padding="0,1,0,0"
+                                    ToolTip="Locate the client executable..."
+                                    Click="locateClientButton_Click">
+                            </Button>
+                        </Grid>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
@@ -515,7 +534,7 @@
 
                         <!-- Client Version ComboBox -->
                         <ComboBox Name="clientVersionComboBox"
-                                  Width="180" Height="32"
+                                  Width="180" Height="36"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ClientVersionDataTemplate}"
                                   ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"

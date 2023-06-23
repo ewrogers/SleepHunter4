@@ -6,9 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.8.2] - Unreleased
 
+### Added
+
+- "Browse" button for selecting client path with open file dialog
+
 ### Changed
 
-- `Flowering` tab is now a feature flag, only shown in USDA clients
+- `Flowering` tab is now only shown in USDA clients
+- Tweak the color theme dropdown layout
 
 ## [4.8.1] - 2023-06-22
 
