@@ -2,7 +2,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,9 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-
-using Path = System.IO.Path;
-
+using SleepHunter.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.IO;
 using SleepHunter.IO.Process;
@@ -20,15 +22,11 @@ using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
-using SleepHunter.Settings;
-using SleepHunter.Win32;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
-using System.Reflection;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using SleepHunter.Controls;
+using SleepHunter.Settings;
+using SleepHunter.Win32;
+using Path = System.IO.Path;
 
 namespace SleepHunter.Views
 {
