@@ -4,6 +4,19 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.2] - Unreleased
+
+### Added
+
+- "Use Water & Beds" for MP recovery feature (Zolian only)
+- "Browse" button for selecting client path with open file dialog
+
+### Changed
+
+- `Flowering` tab is now only shown in USDA clients
+- Tweak the color theme dropdown layout
+- Spell queue automatically opens when selected a character with queued spells
+
 ## [4.8.1] - 2023-06-22
 
 ### Added

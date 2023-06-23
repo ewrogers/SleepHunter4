@@ -5,6 +5,7 @@
       <Signature Address="685B08" Value="7D4E--1K" />
       <ExecutableName>Darkages.exe</ExecutableName>
       <WindowClassName>DarkAges</WindowClassName>
+      <SupportsFlowering>true</SupportsFlowering>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>

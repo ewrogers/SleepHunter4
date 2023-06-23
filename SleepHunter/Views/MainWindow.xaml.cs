@@ -2,7 +2,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,9 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-
-using Path = System.IO.Path;
-
+using SleepHunter.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.IO;
 using SleepHunter.IO.Process;
@@ -20,14 +22,11 @@ using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
-using SleepHunter.Settings;
-using SleepHunter.Win32;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
-using System.Reflection;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
+using SleepHunter.Settings;
+using SleepHunter.Win32;
+using Path = System.IO.Path;
 
 namespace SleepHunter.Views
 {
@@ -346,10 +345,14 @@ namespace SleepHunter.Views
 
                 if (player == selectedPlayer)
                 {
+                    var supportsFlowering = selectedPlayer?.Version?.SupportsFlowering ?? false;
+                    var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
+                    var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
+
                     ToggleInventory(selectedPlayer != null);
                     ToggleSkills(selectedPlayer != null);
                     ToggleSpells(selectedPlayer != null);
-                    ToggleFlower(selectedPlayer?.HasLyliacPlant ?? false, selectedPlayer?.HasLyliacVineyard ?? false);
+                    ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
                     ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
                 }
 
@@ -528,7 +531,7 @@ namespace SleepHunter.Views
         {
             if (!CheckAccess())
             {
-                Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
+                Dispatcher.InvokeIfRequired(RefreshInventory, DispatcherPriority.DataBind);
                 return;
             }
         }
@@ -565,6 +568,35 @@ namespace SleepHunter.Views
 
             flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
             flowerListBox.Items.Refresh();
+        }
+
+        private void RefreshFeatures()
+        {
+            if (!CheckAccess())
+            {
+                Dispatcher.InvokeIfRequired(RefreshFeatures, DispatcherPriority.DataBind);
+                return;
+            }
+
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            RefreshUseWaterAndBedsFeature(state.Client);
+        }
+
+        private void RefreshUseWaterAndBedsFeature(Player player)
+        {
+            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
+            useWaterAndBedsCheckBox.IsChecked = player.GetFeatureValueOrDefault(isEnabledKey, false);
+
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+            useWaterAndBedsThresholdUpDown.Value = player.GetFeatureValueOrDefault(manaThresholdKey, 1000);
+
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+            useWaterAndBedsTileXUpDown.Value = player.GetFeatureValueOrDefault(tileXKey, 5);
+
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+            useWaterAndBedsTileYUpDown.Value = player.GetFeatureValueOrDefault(tileYKey, 1);
         }
 
         private void LoadVersions()
@@ -1646,7 +1678,7 @@ namespace SleepHunter.Views
                 ToggleInventory(false);
                 ToggleSkills(false);
                 ToggleSpells(false);
-                ToggleFlower();
+                ToggleFlower(false);
                 ToggleFeatures(false);
                 UpdateToolbarState();
                 return;
@@ -1670,10 +1702,12 @@ namespace SleepHunter.Views
             if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
                 ToggleSpellQueue(true);
 
+            var supportsFlowering = player.Version?.SupportsFlowering ?? false;
+
             ToggleInventory(player.IsLoggedIn);
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
-            ToggleFlower(player.HasLyliacPlant, player.HasLyliacVineyard);
+            ToggleFlower(supportsFlowering, player.HasLyliacPlant, player.HasLyliacVineyard);
             ToggleFeatures(player.Version?.HasFeaturesAvailable ?? false);
 
             if (selectedMacro != null)
@@ -1685,6 +1719,9 @@ namespace SleepHunter.Views
                 spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
                 RefreshSpellQueue();
 
+                if (selectedMacro.QueuedSpells.Count > 0)
+                    ToggleSpellQueue(true);
+
                 flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
                 RefreshFlowerQueue();
 
@@ -1693,6 +1730,12 @@ namespace SleepHunter.Views
 
                 foreach (var spell in selectedMacro.QueuedSpells)
                     spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
+
+                RefreshFeatures();
+            }
+            else
+            {
+                ToggleSpellQueue(false);
             }
         }
 
@@ -1870,7 +1913,9 @@ namespace SleepHunter.Views
                 return;
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-            ToggleFlower(selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
+
+            var supportsFlowering = selectedMacro.Client.Version?.SupportsFlowering ?? false;
+            ToggleFlower(supportsFlowering, selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
         private void inventoryListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -2179,8 +2224,9 @@ namespace SleepHunter.Views
                 spellsTab.TabIndex = -1;
         }
 
-        private void ToggleFlower(bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
+        private void ToggleFlower(bool show = false, bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
         {
+            flowerTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
             flowerTab.IsEnabled = hasLyliacPlant || hasLyliacVineyard;
 
             flowerAlternateCharactersCheckBox.IsEnabled = hasLyliacPlant;
@@ -2246,5 +2292,71 @@ namespace SleepHunter.Views
                 return;
             }
         }
+
+        #region Use Water & Beds Feature (Zolian)
+        private void useWaterAndBedsCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox checkBox)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
+
+            player.SetFeatureValue(isEnabledKey, checkBox.IsChecked);
+
+            if (checkBox.IsChecked != true)
+                return;
+
+            // Ensure these values are in sync with the key/value store when ENABLED
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+
+            player.SetFeatureValue(manaThresholdKey, (int)useWaterAndBedsThresholdUpDown.Value);
+            player.SetFeatureValue(tileXKey, (int)useWaterAndBedsTileXUpDown.Value);
+            player.SetFeatureValue(tileYKey, (int)useWaterAndBedsTileYUpDown.Value);
+        }
+
+        private void useWaterAndBedsThresholdUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+
+            player.SetFeatureValue(manaThresholdKey, (int)numericUpDown.Value);
+        }
+
+        private void useWaterAndBedsTileXUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+
+            player.SetFeatureValue(tileXKey, (int)numericUpDown.Value);
+        }
+
+        private void useWaterAndBedsTileYUpDown_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is not NumericUpDown numericUpDown)
+                return;
+            if (selectedMacro is not PlayerMacroState state)
+                return;
+
+            var player = state.Client;
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+
+            player.SetFeatureValue(tileYKey, (int)numericUpDown.Value);
+        }
+        #endregion
     }
 }

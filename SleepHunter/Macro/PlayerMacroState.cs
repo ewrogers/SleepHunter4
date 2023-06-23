@@ -32,6 +32,7 @@ namespace SleepHunter.Macro
         private bool flowerAlternateCharacters;
         private bool skipSpellsOnCooldown;
 
+        private DateTime waterAndBedsTimestamp;
         private DateTime spellCastTimestamp;
         private TimeSpan spellCastDuration;
 
@@ -419,6 +420,8 @@ namespace SleepHunter.Macro
 
             var didUseSkill = DoSkillMacro(out var didAssail);
 
+            DoClickWaterAndBedsIfNeeded();
+
             if (!IsSpellCasting)
                 client.Spellbook.ActiveSpell = null;
 
@@ -460,6 +463,38 @@ namespace SleepHunter.Macro
                         SetPlayerStatus(PlayerMacroStatus.Idle);
                 }
             }
+        }
+
+        // Zolian feature!
+        private bool DoClickWaterAndBedsIfNeeded()
+        {
+            var timeSinceLastAttempt = DateTime.Now - waterAndBedsTimestamp;
+            if (timeSinceLastAttempt.TotalSeconds < 0.5)
+                return false;
+
+            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
+            if (!client.GetFeatureValueOrDefault(isEnabledKey, false))
+                return false;
+
+            client.Update(PlayerFieldFlags.Stats);
+
+            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
+            var manaThreshold = client.GetFeatureValueOrDefault(manaThresholdKey, 1000);
+
+            if (client.Stats.CurrentMana >= manaThreshold)
+                return false;
+
+            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
+            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
+            var tileX = client.GetFeatureValueOrDefault(tileXKey, 5);
+            var tileY = client.GetFeatureValueOrDefault(tileYKey, 1);
+
+            var location = new Point(tileX, tileY);
+            var target = new SpellTarget(TargetCoordinateUnits.AbsoluteTile, location);
+
+            ClickTarget(target);
+            waterAndBedsTimestamp = DateTime.Now;
+            return true;
         }
 
         private bool DoSkillMacro(out bool didAssail)

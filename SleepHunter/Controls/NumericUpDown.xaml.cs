@@ -16,6 +16,8 @@ namespace SleepHunter.Controls
         private static readonly Regex SignedDoubleRegex = new(@"^-?\d+(\.\d+)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex HexadecimalRegex = new(@"^(0x)?[0-9a-f]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        public event RoutedEventHandler ValueChanged;
+
         public new Brush BorderBrush
         {
             get { return base.BorderBrush; }
@@ -25,7 +27,14 @@ namespace SleepHunter.Controls
         public double Value
         {
             get { return (double)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
+            set
+            {
+                var existingValue = (double)GetValue(ValueProperty);
+                SetValue(ValueProperty, value);
+
+                if (existingValue != value)
+                    ValueChanged?.Invoke(this, new RoutedEventArgs());
+            }
         }
 
         public double SmallIncrement
@@ -114,17 +123,17 @@ namespace SleepHunter.Controls
             PART_Value.SelectAll();
         }
 
-        void incrementButton_Click(object sender, RoutedEventArgs e)
+        private void incrementButton_Click(object sender, RoutedEventArgs e)
         {
             Value = Math.Min(Maximum, Value + SmallIncrement);
         }
 
-        void decrementButton_Click(object sender, RoutedEventArgs e)
+        private void decrementButton_Click(object sender, RoutedEventArgs e)
         {
             Value = Math.Max(Minimum, Value - SmallIncrement);
         }
 
-        void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             if (sender is not TextBox textBox)
                 return;
@@ -173,7 +182,7 @@ namespace SleepHunter.Controls
             }
         }
 
-        void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             var delta = e.Delta;
 
@@ -185,7 +194,7 @@ namespace SleepHunter.Controls
             UpdateValue();
         }
 
-        void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is not TextBox textBox)
                 return;
@@ -196,7 +205,7 @@ namespace SleepHunter.Controls
             UpdateValue();
         }
 
-        void UpdateValue()
+        private void UpdateValue()
         {
             var binding = BindingOperations.GetBindingExpression(PART_Value, TextBox.TextProperty);
             binding?.UpdateSource();
