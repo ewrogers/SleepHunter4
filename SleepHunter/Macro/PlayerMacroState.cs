@@ -489,10 +489,15 @@ namespace SleepHunter.Macro
             var tileX = client.GetFeatureValueOrDefault(tileXKey, 5);
             var tileY = client.GetFeatureValueOrDefault(tileYKey, 1);
 
-            var location = new Point(tileX, tileY);
-            var target = new SpellTarget(TargetCoordinateUnits.AbsoluteTile, location);
+            var user = new Point(client.Location.X, client.Location.Y);
+            var targetLocation = new Point(tileX, tileY);
 
+            if (!IsWithinRange(user, targetLocation))
+                return false;
+
+            var target = new SpellTarget(TargetCoordinateUnits.AbsoluteTile, targetLocation);
             ClickTarget(target);
+
             waterAndBedsTimestamp = DateTime.Now;
             return true;
         }
@@ -1275,6 +1280,14 @@ namespace SleepHunter.Macro
                 return new Point(0, 0);
             else
                 return GetRelativeTilePoint(deltaX, deltaY);
+        }
+
+        private static bool IsWithinRange(Point a, Point b, int maxX = 10, int maxY = 10)
+        {
+            var deltaX = Math.Abs(a.X - b.X);
+            var deltaY = Math.Abs(b.Y - b.Y);
+
+            return deltaX <= maxX && deltaY <= maxY;
         }
 
         private static TimeSpan CalculateLineDuration(int numberOfLines)
