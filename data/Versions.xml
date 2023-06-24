@@ -206,7 +206,7 @@
                     <Offset Value="198" />
                 </Offsets>
             </Dynamic>
-            <Dynamic Key="Equipment" Address="91E714">
+            <Dynamic Key="Equipment" Address="91E714" MaxLength="256" Size="261" Count="18">
                 <Offsets>
                     <Offset Value="110B" />
                 </Offsets>
