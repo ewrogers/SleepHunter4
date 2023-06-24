@@ -1317,7 +1317,9 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianInventoryListBoxItem}"/>
-        <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -1331,10 +1333,16 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Margin="{TemplateBinding Margin}">
-                        <WrapPanel IsItemsHost="True"
-                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                   Margin="{TemplateBinding Padding}"/>
+                        <ScrollViewer Margin="0"
+                                      Focusable="False"
+                                      Style="{StaticResource ObsidianScrollViewer}"
+                                      Padding="{TemplateBinding Padding}">
+                            <ItemsControl>
+                                <WrapPanel IsItemsHost="True"
+                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -1385,10 +1393,16 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Margin="{TemplateBinding Margin}">
-                        <WrapPanel IsItemsHost="True"
-                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                   Margin="{TemplateBinding Padding}"/>
+                        <ScrollViewer Margin="0"
+                                      Focusable="False"
+                                      Style="{StaticResource ObsidianScrollViewer}"
+                                      Padding="{TemplateBinding Padding}">
+                            <ItemsControl>
+                                <WrapPanel IsItemsHost="True"
+                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

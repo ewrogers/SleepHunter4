@@ -233,11 +233,11 @@
 
             <!-- Inventory Tab -->
             <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
-                <ListBox Name="inventoryListBox" 
-                                 Style="{StaticResource ObsidianInventoryListBox}"
-                                 ItemTemplate="{StaticResource InventoryItemDataTemplate}"
-                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
-                                 VerticalContentAlignment="Top">
+                <ListBox Name="inventoryListBox"
+                         Style="{StaticResource ObsidianInventoryListBox}"
+                         ItemTemplate="{StaticResource InventoryItemDataTemplate}"
+                         ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
+                         VerticalContentAlignment="Top">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
                             <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
