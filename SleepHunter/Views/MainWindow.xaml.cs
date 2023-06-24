@@ -1928,6 +1928,15 @@ namespace SleepHunter.Views
             // Do nothing for now
         }
 
+        private void equipmentListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Only handle left-click
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
+            // Do nothing for now
+        }
+
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Only handle left-click
@@ -2205,6 +2214,7 @@ namespace SleepHunter.Views
         private void ToggleInventory(bool show = true)
         {
             inventoryTab.IsEnabled = show;
+            inventoryEquipmentToggleGroup.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ToggleSkills(bool show = true)

@@ -232,21 +232,47 @@
                     Padding="0">
 
             <!-- Inventory Tab -->
-            <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
+            <TabItem Name="inventoryTab" Header="_Items" IsEnabled="False">
                 <DockPanel>
+
                     <!-- Toggle Inventory/Equipment Views -->
-                    <Border DockPanel.Dock="Top">
-                        <StackPanel  Orientation="Horizontal">
-                            <RadioButton x:Name="inventoryRadioButton"
-                                         GroupName="Inventory"
-                                         Style="{StaticResource ObsidianRadioButton}"
-                                         Content="_Inventory"
-                                         IsChecked="True"/>
-                            <RadioButton x:Name="equipmentRadioButton"
-                                         GroupName="Inventory"
-                                         Style="{StaticResource ObsidianRadioButton}"
-                                         Content="_Equipment"/>
-                        </StackPanel>
+                    <Border Name="inventoryEquipmentToggleGroup" 
+                            DockPanel.Dock="Top"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            HorizontalAlignment="Center"
+                            Margin="8,16,8,8"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Border Name="MaskBorder"
+                                    Background="{StaticResource ObsidianControlBackground}"
+                                    CornerRadius="{Binding Path=CornerRadius, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <StackPanel.OpacityMask>
+                                    <VisualBrush Visual="{Binding ElementName=MaskBorder}"/>
+                                </StackPanel.OpacityMask>
+                                <RadioButton x:Name="inventoryRadioButton"
+                                             GroupName="Inventory"
+                                             Style="{StaticResource ObsidianRadioButton}"
+                                             BorderThickness="0"
+                                             MinWidth="120"
+                                             Content="_Inventory"
+                                             IsChecked="True"
+                                             Margin="0"
+                                             Padding="16,4,8,4"
+                                             ToolTip="Displays the character's inventory."/>
+                                <RadioButton x:Name="equipmentRadioButton"
+                                             GroupName="Inventory"
+                                             Style="{StaticResource ObsidianRadioButton}"
+                                             BorderThickness="0"
+                                             MinWidth="120"
+                                             Content="_Equipment"
+                                             Margin="0"
+                                             Padding="8,4,16,4"
+                                             ToolTip="Displays the character's equipment and accessories."/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                     
                     <!-- Inventory View -->
@@ -260,6 +286,20 @@
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
                                 <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <ListBox Name="equipmentListBox"
+                             DockPanel.Dock="Top"
+                             Style="{StaticResource ObsidianEquipmentListBox}"
+                             ItemTemplate="{StaticResource EquipmentItemDataTemplate}"
+                             ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Equipment.SortedBySlot}"
+                             VerticalContentAlignment="Top"
+                             Visibility="{Binding ElementName=equipmentRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianEquipmentListBoxItem}">
+                                <EventSetter Event="MouseDoubleClick" Handler="equipmentListBox_ItemDoubleClick"/>
                             </Style>
                         </ListBox.ItemContainerStyle>
                     </ListBox>

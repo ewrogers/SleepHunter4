@@ -25,6 +25,8 @@ namespace SleepHunter.Models
 
         public int Count => equipment.Count((item) => { return !item.IsEmpty; });
 
+        public IEnumerable<InventoryItem> SortedBySlot => equipment.OrderBy(item => item.Slot);
+
         public EquipmentSet(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -36,6 +38,7 @@ namespace SleepHunter.Models
             for (int i = 0; i < EquipmentCount; i++)
             {
                 var item = InventoryItem.MakeEmpty(i);
+                item.Slot = i;
                 equipment.Add(item);
             }
         }
