@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Items` tab now features an `Inventory` / `Equipment` toggle for viewing each
+- `Equipment` view to see all equipped items in a list (by slot)
 
 ### Changed
 
