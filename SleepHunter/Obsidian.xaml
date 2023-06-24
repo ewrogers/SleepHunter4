@@ -741,6 +741,61 @@
         </Setter>
     </Style>
 
+    <!-- Radio Button Style -->
+    <Style x:Key="ObsidianRadioButton" TargetType="RadioButton">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource ObsidianControlBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="4,2"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0"
+                            Margin="{TemplateBinding Margin}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6"/>
+                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ComboBox Item Style -->
     <Style x:Key="ObsidianComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="True"/>

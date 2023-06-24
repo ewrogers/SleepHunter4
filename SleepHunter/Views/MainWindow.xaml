@@ -233,17 +233,37 @@
 
             <!-- Inventory Tab -->
             <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
-                <ListBox Name="inventoryListBox"
-                         Style="{StaticResource ObsidianInventoryListBox}"
-                         ItemTemplate="{StaticResource InventoryItemDataTemplate}"
-                         ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
-                         VerticalContentAlignment="Top">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
-                            <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+                <DockPanel>
+                    <!-- Toggle Inventory/Equipment Views -->
+                    <Border DockPanel.Dock="Top">
+                        <StackPanel  Orientation="Horizontal">
+                            <RadioButton x:Name="inventoryRadioButton"
+                                         GroupName="Inventory"
+                                         Style="{StaticResource ObsidianRadioButton}"
+                                         Content="_Inventory"
+                                         IsChecked="True"/>
+                            <RadioButton x:Name="equipmentRadioButton"
+                                         GroupName="Inventory"
+                                         Style="{StaticResource ObsidianRadioButton}"
+                                         Content="_Equipment"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Inventory View -->
+                    <ListBox Name="inventoryListBox"
+                             DockPanel.Dock="Top"
+                             Style="{StaticResource ObsidianInventoryListBox}"
+                             ItemTemplate="{StaticResource InventoryItemDataTemplate}"
+                             ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
+                             VerticalContentAlignment="Top"
+                             Visibility="{Binding ElementName=inventoryRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
+                                <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </DockPanel>
             </TabItem>
 
             <!-- Skills Tabs-->
