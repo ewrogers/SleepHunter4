@@ -6,7 +6,7 @@
         <Border Name="Border" Margin="16,2" HorizontalAlignment="Center">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="140"/>
                     <ColumnDefinition Width="320"/>
                 </Grid.ColumnDefinitions>
 
