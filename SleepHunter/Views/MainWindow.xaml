@@ -282,7 +282,7 @@
                              ItemTemplate="{StaticResource InventoryItemDataTemplate}"
                              ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
                              VerticalContentAlignment="Top"
-                             Visibility="{Binding ElementName=inventoryRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}}">
+                             Visibility="{Binding ElementName=inventoryRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
                                 <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
@@ -296,7 +296,7 @@
                              ItemTemplate="{StaticResource EquipmentItemDataTemplate}"
                              ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Equipment.SortedBySlot}"
                              VerticalContentAlignment="Top"
-                             Visibility="{Binding ElementName=equipmentRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}}">
+                             Visibility="{Binding ElementName=equipmentRadioButton, Path=IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianEquipmentListBoxItem}">
                                 <EventSetter Event="MouseDoubleClick" Handler="equipmentListBox_ItemDoubleClick"/>
