@@ -1,0 +1,54 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+    <!-- Equipment Item Data Template-->
+    <DataTemplate x:Key="EquipmentItemDataTemplate">
+        <Border Name="Border" Margin="16,2" HorizontalAlignment="Center">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="320"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Name="SlotBorder"
+                        Background="{DynamicResource ObsidianBackground}"
+                        BorderThickness="0">
+                    <TextBlock Name="SlotText"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               FontWeight="Normal"
+                               TextAlignment="Right"
+                               Text="{Binding Slot, Converter={StaticResource EquipmentSlotConverter}}"/>
+
+                </Border>
+
+                <Border Name="NameBorder"
+                        Grid.Column="1"
+                        Background="{DynamicResource ObsidianControlBackground}"
+                        BorderBrush="{DynamicResource ObsidianSeparatorColor}"
+                        BorderThickness="0,1,1,1">
+                    <TextBlock Name="NameText"
+                               Style="{StaticResource ObsidianText}"
+                               Text="{Binding Name}"
+                               FontSize="16"
+                               FontWeight="Light"
+                               TextWrapping="WrapWithOverflow"/>
+                </Border>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True">
+                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                <Setter TargetName="SlotBorder" Property="Background" Value="{StaticResource ObsidianDisabled}"/>
+                <Setter TargetName="SlotText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                <Setter TargetName="NameBorder" Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
+                <Setter TargetName="NameBorder" Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                <Setter TargetName="NameText" Property="Text" Value="--"/>
+                <Setter TargetName="NameText" Property="Opacity" Value="0.5"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+</ResourceDictionary>

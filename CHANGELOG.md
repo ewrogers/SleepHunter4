@@ -4,6 +4,23 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.0] - 2023-06-24
+
+### Added
+
+- `Items` tab now features an `Inventory` / `Equipment` toggle for viewing each
+
+### Changed
+
+- `Inventory` tab has been renamed to `Items`
+- `Inventory` will now scroll vertically (when necessary)
+- `Skills` will now scroll vertically (when necessary)
+- `Spells` will now scroll vertically (when necessary)
+
+### Fixed
+
+- Equipment memory offsets for Zolian (staff-switching now works)
+
 ## [4.8.2] - 2023-06-23
 
 ### Added

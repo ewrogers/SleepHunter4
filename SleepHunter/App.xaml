@@ -17,6 +17,7 @@
                     <converters:LessThanConverter x:Key="LessThanConverter"/>
                     <converters:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
                     <converters:NumericConverter x:Key="NumericConverter"/>
+                    <converters:EquipmentSlotConverter x:Key="EquipmentSlotConverter"/>
                     <converters:PlayerClassConverter x:Key="PlayerClassConverter"/>
                     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
                     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
@@ -36,6 +37,7 @@
                 <ResourceDictionary Source="Templates\AbilityDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\ClientVersionDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\ColorThemeDataTemplate.xaml"/>
+                <ResourceDictionary Source="Templates\EquipmentItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\FlowerQueueDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\InventoryItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\MetadataDataTemplates.xaml"/>

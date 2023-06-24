@@ -14,7 +14,7 @@
 
 - [Toolbar](./main-window/toolbar.md)
 - [Character List](./main-window/character-list.md)
-- [Inventory Tab](./main-window/inventory-tab.md)
+- [Items Tab](./main-window/items-tab.md)
 - [Skills Tab](./main-window/skills-tab.md)
 - [Spells Tab](./main-window/spells-tab.md)
 - [Flowering Tab](./main-window/flowering-tab.md)

@@ -25,6 +25,8 @@ namespace SleepHunter.Models
 
         public int Count => equipment.Count((item) => { return !item.IsEmpty; });
 
+        public IEnumerable<InventoryItem> SortedBySlot => equipment.OrderBy(item => item.Slot);
+
         public EquipmentSet(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -36,6 +38,8 @@ namespace SleepHunter.Models
             for (int i = 0; i < EquipmentCount; i++)
             {
                 var item = InventoryItem.MakeEmpty(i);
+                item.Slot = i + 1;
+
                 equipment.Add(item);
             }
         }
@@ -215,11 +219,13 @@ namespace SleepHunter.Models
             {
                 try
                 {
-                    string name = reader.ReadFixedString(equipmentVariable.MaxLength);
+                    var name = reader.ReadFixedString(equipmentVariable.MaxLength);
+                    var isEmpty = string.IsNullOrWhiteSpace(name);
 
-                    equipment[i].IsEmpty = string.IsNullOrWhiteSpace(name);
+                    equipment[i].IsEmpty = isEmpty;
                     equipment[i].IconIndex = 0;
                     equipment[i].Name = name.StripNumbers();
+                    equipment[i].Quantity = isEmpty ? 0 : 1;
                 }
                 catch { }
             }
@@ -231,6 +237,7 @@ namespace SleepHunter.Models
             {
                 equipment[i].IsEmpty = true;
                 equipment[i].Name = null;
+                equipment[i].Quantity = 0;
             }
         }
 
