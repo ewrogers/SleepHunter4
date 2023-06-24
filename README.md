@@ -24,7 +24,7 @@ Dark Ages Automation Tool + Updater
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
 
-## Zolian Support 🔴
+## Zolian Support ⭕
 
 As of version 4.8.0 and newer, SleepHunter now supports the [Zolian 9.1.1+ client](https://www.thebucknetwork.com/Zolian) out of the box.
 
@@ -53,6 +53,54 @@ This means you can update from within the SleepHunter application itself by goin
 If there is a new version available, you can update to it which will download, install, and restart SleepHunter.
 
 **NOTE**: Your user settings **will be preserved**, but all other existing data files will be overwritten.
+
+## Finding Memory Pointers 🔎
+
+SleepHunter relies on reverse-engineered memory addresses that point to game data within the client.
+These are read at runtime which allow the application to be aware of character location, stats, inventory, skills, spells, and UI state.
+
+These are likely to change each client version and must be re-located with new offsets to continue functioning properly.
+
+These are defined in the `Versions.xml` file, and are mostly either `StaticVariable` or `DynamicVariable` types.
+
+### Static Variables
+
+You can think of a `StaticVariable` as one that is always located in the same spot in memory.
+These do **not** change each time the client is opened or switching characters in the same client instance.
+
+These are the most basic, but unfortunately not very common.
+
+### Dynamic Variables
+
+In the case where memory pointers change each client instance, a `DynamicVariable` must be used.
+You can think of these as one or more pointers that can be followed in to get the data value.
+
+Eventually, the pointer chain should end with a static base address that can be used.
+
+These are the most common types of variables you will encounter, though they may have a single offset or multiple pointers in a chain.
+
+### Search Variables
+
+A less common type, a `SearchVariable` scans a region of memory looking for a certain pattern.
+These are more resilient to change but also require a bit of tweaking to get working properly.
+
+It is not recommended you use these unless absolutely necessary.
+
+### Reverse Engineering Tools
+
+You will need a program like [CheatEngine 7.5+](https://github.com/cheat-engine/cheat-engine).
+This program is not very pretty, but it *is* very powerful.
+
+It is recommended that you follow the tutorial and complete the first few activities to get familiar with the concepts.
+You will be using many of them when working to get memory offsets from the Dark Ages client.
+
+### Why would I need to do this?
+
+If you are using a custom client or a client version that is not currently supported, you will need to do this to retain SleepHunter functionality.
+
+Some examples may be getting this to work with the Korean Legends of Darkness (LoD) client or a previous client version like 7.18 or older.
+
+Or if in the random event that a new client version is released after years of no updates, who knows!
 
 ## Contributing 👨🏻‍💻
 
