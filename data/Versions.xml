@@ -206,6 +206,11 @@
                     <Offset Value="198" />
                 </Offsets>
             </Dynamic>
+            <Dynamic Key="Equipment" Address="91E714">
+                <Offsets>
+                    <Offset Value="110B" />
+                </Offsets>
+            </Dynamic>
             <Dynamic Key="Skillbook" Address="AA3AE8" MaxLength="256" Size="260" Count="90">
                 <Offsets>
                     <Offset Value="2CC" />
