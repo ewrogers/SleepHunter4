@@ -290,6 +290,7 @@
                         </ListBox.ItemContainerStyle>
                     </ListBox>
 
+                    <!-- Equipment View -->
                     <ListBox Name="equipmentListBox"
                              DockPanel.Dock="Top"
                              Style="{StaticResource ObsidianEquipmentListBox}"
