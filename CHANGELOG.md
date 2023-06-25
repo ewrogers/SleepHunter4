@@ -4,6 +4,22 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.1] - Unreleased
+
+### Added
+
+- `Save Macro` toolbar button
+- `Load Macro` toolbar button
+
+### Changed
+
+- Renamed `Start New Client` button to `Launch` to fit new `Load` and `Save` buttons
+- Updated min width to accomodate new toolbar buttons
+
+### Fixed 
+
+- Refactor save/load logic to be more stable
+
 ## [4.9.0] - 2023-06-24
 
 ### Added

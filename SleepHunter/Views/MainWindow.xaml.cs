@@ -114,7 +114,7 @@ namespace SleepHunter.Views
 
         private void LaunchClient()
         {
-            startNewClientButton.IsEnabled = false;
+            launchClientButton.IsEnabled = false;
 
             var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
 
@@ -158,7 +158,7 @@ namespace SleepHunter.Views
             }
             finally
             {
-                startNewClientButton.IsEnabled = true;
+                launchClientButton.IsEnabled = true;
             }
         }
 
@@ -1399,7 +1399,19 @@ namespace SleepHunter.Views
         }
 
         #region Toolbar Button Click Methods
-        private void startNewClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
+        private void launchClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
+
+        private void loadStateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
+                return;
+        }
+
+        private void saveStateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
+                return;
+        }
 
         private void startMacroButton_Click(object sender, RoutedEventArgs e)
         {
@@ -2200,7 +2212,7 @@ namespace SleepHunter.Views
         {
             Dispatcher.InvokeIfRequired(() =>
             {
-                startNewClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
+                launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
 
                 stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
 

@@ -4,7 +4,9 @@
 
 The toolbar has the following buttons:
 
-- [Start New Client](#start-new-client)
+- [Launch Client](#launch-client)
+- [Load State](#load-state)
+- [Save State](#save-state)
 - [Start Macro](#start-macro)
 - [Pause Macro](#pause-macro)
 - [Stop Macro](#stop-macro)
@@ -12,11 +14,21 @@ The toolbar has the following buttons:
 - [Metadata Editor](#metadata-editor)
 - [App Settings](#app-settings).
 
-## Start New Client
+## Launch Client
 
 This button will launch a new game client, applying any tweaks that are enabled in the [Settings](./settings.md#game-client) window.
 
 By default, game clients that are not actively "logged in" will **not** be displayed in the list.
+
+## Load State
+
+This button will open a dialog to manually open the current character's state from a file.
+
+**NOTE:** Any skills/spells that are not available on the character will be ignored and not added to the queue.
+
+## Save State
+
+This button will open a dialog to manually save the current character's state to a file.
 
 ## Start Macro
 
