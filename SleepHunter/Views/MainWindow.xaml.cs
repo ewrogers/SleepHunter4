@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -437,15 +438,12 @@ namespace SleepHunter.Views
             NativeMethods.SetWindowText(player.Process.WindowHandle, "Darkages");
 
             var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
-            var macro = MacroManager.Instance.GetMacroState(player);
+            var state = MacroManager.Instance.GetMacroState(player);
 
             try
             {
-                if (shouldSaveMacroStates && macro != null)
-                {
-                    logger.LogInfo($"Attempting to save macro state for character: {player.Name}");
-                    SaveMacroState(macro);
-                }
+                if (shouldSaveMacroStates && state != null)
+                    OnSerializePlayerState(player, state);
             }
             catch (Exception ex)
             {
@@ -474,20 +472,43 @@ namespace SleepHunter.Views
                 UpdateWindowTitle();
             }
 
-            if (macro != null)
+            if (state != null)
             {
-                macro.StatusChanged -= HandleMacroStatusChanged;
-                macro.Client.PlayerUpdated -= HandleClientUpdateTick;
+                state.StatusChanged -= HandleMacroStatusChanged;
+                state.Client.PlayerUpdated -= HandleClientUpdateTick;
 
-                macro.ClearSpellQueue();
-                macro.ClearFlowerQueue();
+                state.ClearSpellQueue();
+                state.ClearFlowerQueue();
             }
 
-            if (selectedMacro != null && selectedMacro.Name == player.Name)
+            UpdateUIForSelectedClient(player.Name);
+        }
+
+        private void UpdateUIForSelectedClient(string lastSelectedName = "")
+        {
+            UpdateToolbarState();
+
+            if (selectedMacro != null && selectedMacro.Name == lastSelectedName)
                 SelectNextAvailablePlayer();
 
             if (!PlayerManager.Instance.LoggedInPlayers.Any())
                 ToggleSpellQueue(false);
+        }
+
+        private void OnDeserializePlayerState(Player player, PlayerMacroState state)
+        {
+            if (player == null)
+                throw new ArgumentNullException(nameof(player));
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
+        }
+
+        private void OnSerializePlayerState(Player player, PlayerMacroState state)
+        {
+            if (player == null)
+                throw new ArgumentNullException(nameof(player));
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
         }
 
         private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e)
@@ -2212,7 +2233,8 @@ namespace SleepHunter.Views
         {
             Dispatcher.InvokeIfRequired(() =>
             {
-                launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Count(v => v.Key != "Auto-Detect") > 0;
+                launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
+                loadStateButton.IsEnabled = saveStateButton.IsEnabled = selectedMacro != null && selectedMacro.Client.IsLoggedIn;
 
                 stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
 
