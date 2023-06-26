@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using SleepHunter.Services;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
+using SleepHunter.Services.Serialization;
 using SleepHunter.Views;
 
 namespace SleepHunter
@@ -57,6 +58,8 @@ namespace SleepHunter
             // Services
             services.AddSingleton<ILogger, Logger>();
             services.AddSingleton<IReleaseService, ReleaseService>();
+
+            services.AddTransient<IMacroStateSerializer, MacroStateSerializer>();
 
             // ViewModels
 

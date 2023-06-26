@@ -785,7 +785,7 @@ namespace SleepHunter.Macro
                 return false;
 
             var lyliacMetadata = SpellMetadataManager.Instance.GetSpell(Spell.LyliacPlantKey);
-            var spell = GetLyliacPlant(new SpellTarget { Units = SpellTargetMode.Character, CharacterName = waitingAlt.Name });
+            var spell = GetLyliacPlant(new SpellTarget { Mode = SpellTargetMode.Character, CharacterName = waitingAlt.Name });
             var isFasSpiorading = false;
 
             if (lyliacMetadata != null)
@@ -852,7 +852,7 @@ namespace SleepHunter.Macro
             if (fasSpioradQueueItem == null)
             {
                 fasSpioradQueueItem = new SpellQueueItem();
-                fasSpioradQueueItem.Target.Units = SpellTargetMode.None;
+                fasSpioradQueueItem.Target.Mode = SpellTargetMode.None;
                 fasSpioradQueueItem.Name = Spell.FasSpioradKey;
             }
 
@@ -875,7 +875,7 @@ namespace SleepHunter.Macro
             if (lyliacVineyardQueueItem == null)
             {
                 lyliacVineyardQueueItem = new SpellQueueItem();
-                lyliacVineyardQueueItem.Target.Units = SpellTargetMode.None;
+                lyliacVineyardQueueItem.Target.Mode = SpellTargetMode.None;
                 lyliacVineyardQueueItem.Name = Spell.LyliacVineyardKey;
             }
 
@@ -982,7 +982,7 @@ namespace SleepHunter.Macro
                 {
                     foreach (var altTarget in flowerQueue)
                     {
-                        if (altTarget.Target.Units != SpellTargetMode.Character)
+                        if (altTarget.Target.Mode != SpellTargetMode.Character)
                             continue;
 
                         var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
@@ -1017,7 +1017,7 @@ namespace SleepHunter.Macro
 
                 currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
 
-                if (currentTarget.Target.Units == SpellTargetMode.Character && currentTarget.ManaThreshold.HasValue)
+                if (currentTarget.Target.Mode == SpellTargetMode.Character && currentTarget.ManaThreshold.HasValue)
                 {
                     var altClient = PlayerManager.Instance.GetPlayerByName(currentTarget.Target.CharacterName);
                     if (altClient != null)
@@ -1080,7 +1080,7 @@ namespace SleepHunter.Macro
                     Thread.Sleep(SwitchDelay);
             }
 
-            if (item.Target.Units == SpellTargetMode.Character)
+            if (item.Target.Mode == SpellTargetMode.Character)
             {
                 var alt = PlayerManager.Instance.GetPlayerByName(item.Target.CharacterName);
 
@@ -1184,12 +1184,12 @@ namespace SleepHunter.Macro
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
 
-            if (target.Units == SpellTargetMode.None)
+            if (target.Mode == SpellTargetMode.None)
                 return;
 
             var pt = new Point();
 
-            switch (target.Units)
+            switch (target.Mode)
             {
                 case SpellTargetMode.AbsoluteXY:
                     pt = target.Location;

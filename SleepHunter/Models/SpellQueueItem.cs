@@ -118,24 +118,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref isOnCooldown, value);
         }
 
-        public SpellQueueItem() { }
-
-        public SpellQueueItem(Spell spellInfo, SavedSpellState spell)
-        {
-            Icon = spellInfo.Icon;
-            Name = spell.SpellName;
-            Target = new SpellTarget(spell.TargetMode, new Point(spell.LocationX, spell.LocationY), new Point(spell.OffsetX, spell.OffsetY))
-            {
-                CharacterName = spell.CharacterName,
-                OuterRadius = spell.OuterRadius,
-                InnerRadius = spell.InnerRadius
-            };
-            TargetLevel = spell.TargetLevel > 0 ? spell.TargetLevel : null;
-
-            CurrentLevel = spellInfo.CurrentLevel;
-            MaximumLevel = spellInfo.MaximumLevel;
-        }
-
         public void CopyTo(SpellQueueItem other) => CopyTo(other, true, false);
 
         public void CopyTo(SpellQueueItem other, bool copyId) => CopyTo(other, copyId, false);

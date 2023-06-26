@@ -20,7 +20,7 @@ namespace SleepHunter.Models
         private List<Point> radiusPoints;
         private int radiusIndex;
 
-        public SpellTargetMode Units
+        public SpellTargetMode Mode
         {
             get => unitType;
             set => SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); });

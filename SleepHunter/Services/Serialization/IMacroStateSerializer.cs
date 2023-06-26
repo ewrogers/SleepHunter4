@@ -1,13 +1,16 @@
 ﻿using System.IO;
-using System.Xml;
 using SleepHunter.Macro;
 
 namespace SleepHunter.Services.Serialization
 {
     public interface IMacroStateSerializer
     {
-        void Serialize(PlayerMacroState state, XmlWriter writer, bool leaveOpen = true);
-        void Serialize(PlayerMacroState state, Stream stream, bool leaveOpen = true);
-        void Serialize(PlayerMacroState state, string file);
+        void SaveState(PlayerMacroState state, TextWriter writer);
+        void SaveState(PlayerMacroState state, Stream stream, bool leaveOpen = true);
+        void SaveState(PlayerMacroState state, string file);
+
+        void LoadState(PlayerMacroState state, TextReader reader);
+        void LoadState(PlayerMacroState state, Stream stream, bool leaveOpen = true);
+        void LoadState(PlayerMacroState state, string file);
     }
 }

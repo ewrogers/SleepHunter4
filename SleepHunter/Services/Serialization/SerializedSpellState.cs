@@ -11,10 +11,10 @@ namespace SleepHunter.Services.Serialization
         [XmlAttribute("Name")]
         public string SpellName { get; set; }
 
-        [XmlAttribute("TargetMode")]
+        [XmlAttribute("Mode")]
         public SpellTargetMode TargetMode { get; set; }
 
-        [XmlAttribute("TargetName")]
+        [XmlAttribute("Target")]
         [DefaultValue(null)]
         public string CharacterName { get; set; }
 

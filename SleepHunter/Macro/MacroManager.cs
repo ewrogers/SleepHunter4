@@ -52,6 +52,7 @@ namespace SleepHunter.Macro
             clientMacros.Clear();
         }
 
+        /*
         public void ImportMacroState(Player player, SavedMacroState state)
         {
             if (player == null)
@@ -126,6 +127,7 @@ namespace SleepHunter.Macro
                     player.Hotkey = hotkey;
             }
         }
+        */
 
         public void StartAll()
         {

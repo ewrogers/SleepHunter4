@@ -190,7 +190,7 @@ namespace SleepHunter.Views
             if (!IsEditMode)
                 spellQueueItem.StartingLevel = Spell.CurrentLevel;
 
-            spellQueueItem.Target.Units = selectedMode;
+            spellQueueItem.Target.Mode = selectedMode;
 
             if (selectedMode == SpellTargetMode.Character)
                 spellQueueItem.Target.CharacterName = characterName;
@@ -262,9 +262,9 @@ namespace SleepHunter.Views
             if (target == null)
                 return;
 
-            targetModeComboBox.SelectedValue = target.Units.ToString();
+            targetModeComboBox.SelectedValue = target.Mode.ToString();
 
-            switch (target.Units)
+            switch (target.Mode)
             {
                 case SpellTargetMode.Character:
                     characterComboBox.SelectedValue = target.CharacterName;

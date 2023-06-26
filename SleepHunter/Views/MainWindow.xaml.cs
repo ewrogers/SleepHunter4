@@ -1385,10 +1385,10 @@ namespace SleepHunter.Views
                 throw new ArgumentNullException(nameof(macro));
 
             var filename = Path.Combine("saves", string.Format("{0}.xml", macro.Client.Name.Trim()));
-            var state = new SavedMacroState(macro);
+            // var state = new SavedMacroState(macro);
 
             logger.LogInfo($"Saving macro state to file: {filename}");
-            state.SaveToFile(filename);
+            // state.SaveToFile(filename);
         }
 
         private void LoadMacroState(Player player)
@@ -1405,12 +1405,8 @@ namespace SleepHunter.Views
                 return;
 
             logger.LogInfo($"Loading macro state from file: {filename}");
-            var macroState = SavedMacroState.LoadFromFile(filename);
-
-            if (macroState == null)
-                return;
-
-            MacroManager.Instance.ImportMacroState(player, macroState);
+            // var macroState = SavedMacroState.LoadFromFile(filename);
+            // MacroManager.Instance.ImportMacroState(player, macroState);
 
             if (File.Exists(filename))
                 File.Delete(filename);
