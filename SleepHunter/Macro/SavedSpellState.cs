@@ -11,7 +11,7 @@ namespace SleepHunter.Macro
     public sealed class SavedSpellState : ObservableObject
     {
         private string spellName;
-        private TargetCoordinateUnits targetMode;
+        private SpellTargetMode targetMode;
         private string characterName;
         private double locationX;
         private double locationY;
@@ -29,7 +29,7 @@ namespace SleepHunter.Macro
         }
 
         [XmlAttribute("Mode")]
-        public TargetCoordinateUnits TargetMode
+        public SpellTargetMode TargetMode
         {
             get => targetMode;
             set => SetProperty(ref targetMode, value);

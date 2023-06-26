@@ -11,7 +11,7 @@ namespace SleepHunter.Models
 {
     public sealed class SpellTarget : ObservableObject
     {
-        private TargetCoordinateUnits unitType;
+        private SpellTargetMode unitType;
         private string characterName;
         private Point location = new();
         private Point offset = new();
@@ -20,7 +20,7 @@ namespace SleepHunter.Models
         private List<Point> radiusPoints;
         private int radiusIndex;
 
-        public TargetCoordinateUnits Units
+        public SpellTargetMode Units
         {
             get => unitType;
             set => SetProperty(ref unitType, value, onChanged: (p) => { RecalculatePoints(); });
@@ -65,12 +65,12 @@ namespace SleepHunter.Models
         }
 
         public SpellTarget()
-           : this(TargetCoordinateUnits.None, new Point(), new Point()) { }
+           : this(SpellTargetMode.None, new Point(), new Point()) { }
 
-        public SpellTarget(TargetCoordinateUnits units, Point location)
+        public SpellTarget(SpellTargetMode units, Point location)
            : this(units, location, new Point()) { }
 
-        public SpellTarget(TargetCoordinateUnits units, Point location, Point offset)
+        public SpellTarget(SpellTargetMode units, Point location, Point offset)
         {
             unitType = units;
             this.location = location;
@@ -81,7 +81,7 @@ namespace SleepHunter.Models
 
         public void RecalculatePoints()
         {
-            if (unitType == TargetCoordinateUnits.RelativeRadius || unitType == TargetCoordinateUnits.AbsoluteRadius)
+            if (unitType == SpellTargetMode.RelativeRadius || unitType == SpellTargetMode.AbsoluteRadius)
             {
                 radiusPoints = GetRadiusPoints(location, innerRadius, outerRadius).ToList();
                 radiusPoints.Sort(ComparePolarAscending);
@@ -252,16 +252,16 @@ namespace SleepHunter.Models
         {
             return unitType switch
             {
-                TargetCoordinateUnits.None => null,
-                TargetCoordinateUnits.Character => string.Format("{0}", characterName),
-                TargetCoordinateUnits.AbsoluteTile => string.Format("Tile {0}, {1}", location.X.ToString(), location.Y.ToString()),
-                TargetCoordinateUnits.AbsoluteXY => string.Format("Screen {0}, {1}", location.X.ToString(), location.Y.ToString()),
-                TargetCoordinateUnits.RelativeTile => string.Format("{0}", ToRelativeString(location)),
-                TargetCoordinateUnits.Self => string.Format("Self"),
-                TargetCoordinateUnits.RelativeRadius => string.Format("{0} Tile Radius from {1}",
+                SpellTargetMode.None => null,
+                SpellTargetMode.Character => string.Format("{0}", characterName),
+                SpellTargetMode.AbsoluteTile => string.Format("Tile {0}, {1}", location.X.ToString(), location.Y.ToString()),
+                SpellTargetMode.AbsoluteXY => string.Format("Screen {0}, {1}", location.X.ToString(), location.Y.ToString()),
+                SpellTargetMode.RelativeTile => string.Format("{0}", ToRelativeString(location)),
+                SpellTargetMode.Self => string.Format("Self"),
+                SpellTargetMode.RelativeRadius => string.Format("{0} Tile Radius from {1}",
                                        (OuterRadius - InnerRadius + 1).ToString(),
                                        ToRelativeString(Location)),
-                TargetCoordinateUnits.AbsoluteRadius => string.Format("{0} Tile Radius from {1}, {2}",
+                SpellTargetMode.AbsoluteRadius => string.Format("{0} Tile Radius from {1}, {2}",
                                        (OuterRadius - InnerRadius + 1).ToString(),
                                        Location.X.ToString(), Location.Y.ToString()),
                 _ => string.Empty,

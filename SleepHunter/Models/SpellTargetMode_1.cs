@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum TargetCoordinateUnits
+    public enum SpellTargetMode
     {
         None = 0,
         Self,

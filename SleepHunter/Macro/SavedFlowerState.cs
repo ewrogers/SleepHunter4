@@ -10,7 +10,7 @@ namespace SleepHunter.Macro
     [Serializable]
     public sealed class SavedFlowerState : ObservableObject
     {
-        private TargetCoordinateUnits targetMode;
+        private SpellTargetMode targetMode;
         private string characterName;
         private double locationX;
         private double locationY;
@@ -23,7 +23,7 @@ namespace SleepHunter.Macro
         private int manaThreshold;
 
         [XmlAttribute("Mode")]
-        public TargetCoordinateUnits TargetMode
+        public SpellTargetMode TargetMode
         {
             get => targetMode;
             set => SetProperty(ref targetMode, value);

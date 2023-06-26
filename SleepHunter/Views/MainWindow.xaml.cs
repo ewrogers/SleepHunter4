@@ -2010,7 +2010,7 @@ namespace SleepHunter.Views
             if (spell.IsEmpty || string.IsNullOrWhiteSpace(spell.Name))
                 return;
 
-            if (spell.TargetMode == SpellTargetMode.TextInput)
+            if (spell.TargetType == AbilityTargetType.TextInput)
             {
                 this.ShowMessageBox("Not Supported",
                    "This spell requires a user text input and cannot be macroed.",

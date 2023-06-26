@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum SpellTargetMode : byte
+    public enum AbilityTargetType : byte
     {
         None = 5,
         Target = 2,

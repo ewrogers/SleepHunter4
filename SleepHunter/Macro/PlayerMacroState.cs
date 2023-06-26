@@ -495,7 +495,7 @@ namespace SleepHunter.Macro
             if (!IsWithinRange(user, targetLocation))
                 return false;
 
-            var target = new SpellTarget(TargetCoordinateUnits.AbsoluteTile, targetLocation);
+            var target = new SpellTarget(SpellTargetMode.AbsoluteTile, targetLocation);
             ClickTarget(target);
 
             waterAndBedsTimestamp = DateTime.Now;
@@ -785,7 +785,7 @@ namespace SleepHunter.Macro
                 return false;
 
             var lyliacMetadata = SpellMetadataManager.Instance.GetSpell(Spell.LyliacPlantKey);
-            var spell = GetLyliacPlant(new SpellTarget { Units = TargetCoordinateUnits.Character, CharacterName = waitingAlt.Name });
+            var spell = GetLyliacPlant(new SpellTarget { Units = SpellTargetMode.Character, CharacterName = waitingAlt.Name });
             var isFasSpiorading = false;
 
             if (lyliacMetadata != null)
@@ -852,7 +852,7 @@ namespace SleepHunter.Macro
             if (fasSpioradQueueItem == null)
             {
                 fasSpioradQueueItem = new SpellQueueItem();
-                fasSpioradQueueItem.Target.Units = TargetCoordinateUnits.None;
+                fasSpioradQueueItem.Target.Units = SpellTargetMode.None;
                 fasSpioradQueueItem.Name = Spell.FasSpioradKey;
             }
 
@@ -875,7 +875,7 @@ namespace SleepHunter.Macro
             if (lyliacVineyardQueueItem == null)
             {
                 lyliacVineyardQueueItem = new SpellQueueItem();
-                lyliacVineyardQueueItem.Target.Units = TargetCoordinateUnits.None;
+                lyliacVineyardQueueItem.Target.Units = SpellTargetMode.None;
                 lyliacVineyardQueueItem.Name = Spell.LyliacVineyardKey;
             }
 
@@ -982,7 +982,7 @@ namespace SleepHunter.Macro
                 {
                     foreach (var altTarget in flowerQueue)
                     {
-                        if (altTarget.Target.Units != TargetCoordinateUnits.Character)
+                        if (altTarget.Target.Units != SpellTargetMode.Character)
                             continue;
 
                         var altClient = PlayerManager.Instance.GetPlayerByName(altTarget.Target.CharacterName);
@@ -1017,7 +1017,7 @@ namespace SleepHunter.Macro
 
                 currentTarget = flowerQueue.ElementAt(flowerQueueIndex);
 
-                if (currentTarget.Target.Units == TargetCoordinateUnits.Character && currentTarget.ManaThreshold.HasValue)
+                if (currentTarget.Target.Units == SpellTargetMode.Character && currentTarget.ManaThreshold.HasValue)
                 {
                     var altClient = PlayerManager.Instance.GetPlayerByName(currentTarget.Target.CharacterName);
                     if (altClient != null)
@@ -1080,7 +1080,7 @@ namespace SleepHunter.Macro
                     Thread.Sleep(SwitchDelay);
             }
 
-            if (item.Target.Units == TargetCoordinateUnits.Character)
+            if (item.Target.Units == SpellTargetMode.Character)
             {
                 var alt = PlayerManager.Instance.GetPlayerByName(item.Target.CharacterName);
 
@@ -1184,39 +1184,39 @@ namespace SleepHunter.Macro
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
 
-            if (target.Units == TargetCoordinateUnits.None)
+            if (target.Units == SpellTargetMode.None)
                 return;
 
             var pt = new Point();
 
             switch (target.Units)
             {
-                case TargetCoordinateUnits.AbsoluteXY:
+                case SpellTargetMode.AbsoluteXY:
                     pt = target.Location;
                     break;
 
-                case TargetCoordinateUnits.AbsoluteTile:
+                case SpellTargetMode.AbsoluteTile:
                     pt = GetAbsoluteTilePoint((int)target.Location.X, (int)target.Location.Y);
                     break;
 
-                case TargetCoordinateUnits.Character:
+                case SpellTargetMode.Character:
                     pt = GetCharacterPoint(target.CharacterName);
                     break;
 
-                case TargetCoordinateUnits.RelativeTile:
+                case SpellTargetMode.RelativeTile:
                     pt = GetRelativeTilePoint((int)target.Location.X, (int)target.Location.Y);
                     break;
 
-                case TargetCoordinateUnits.Self:
+                case SpellTargetMode.Self:
                     pt = new Point(315, 160);
                     break;
 
-                case TargetCoordinateUnits.AbsoluteRadius:
+                case SpellTargetMode.AbsoluteRadius:
                     var absRadiusPoint = target.GetNextRadiusPoint();
                     pt = GetAbsoluteTilePoint((int)absRadiusPoint.X, (int)absRadiusPoint.Y);
                     break;
 
-                case TargetCoordinateUnits.RelativeRadius:
+                case SpellTargetMode.RelativeRadius:
                     var relRadiusPoint = target.GetNextRadiusPoint();
                     pt = GetRelativeTilePoint((int)relRadiusPoint.X, (int)relRadiusPoint.Y);
                     break;

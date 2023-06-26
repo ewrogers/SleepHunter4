@@ -109,7 +109,7 @@ namespace SleepHunter.Macro
             if (player.HasLyliacPlant)
                 foreach (var flower in state.Flowers)
                 {
-                    if (flower.TargetMode == TargetCoordinateUnits.None)
+                    if (flower.TargetMode == SpellTargetMode.None)
                         continue;
 
                     var queueItem = new FlowerQueueItem(flower);
