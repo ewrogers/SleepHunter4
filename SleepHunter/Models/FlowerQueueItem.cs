@@ -102,21 +102,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref manaThreshold, value);
         }
 
-        public FlowerQueueItem() { }
-
-        public FlowerQueueItem(SavedFlowerState flower)
-        {
-            Target = new SpellTarget(flower.TargetMode, new Point(flower.LocationX, flower.LocationY), new Point(flower.OffsetX, flower.OffsetY))
-            {
-                CharacterName = flower.CharacterName,
-                OuterRadius = flower.OuterRadius,
-                InnerRadius = flower.InnerRadius
-            };
-
-            Interval = flower.HasInterval ? flower.Interval : null;
-            ManaThreshold = flower.ManaThreshold > 0 ? flower.ManaThreshold : null;
-        }
-
         public void ResetTimer()
         {
             if (interval.HasValue)

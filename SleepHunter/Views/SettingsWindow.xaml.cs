@@ -235,7 +235,7 @@ namespace SleepHunter.Views
                 dialog.InitialDirectory = currentPath;
             }
 
-            if (!dialog.ShowDialog().GetValueOrDefault())
+            if (!dialog.ShowDialog(this).GetValueOrDefault())
                 return;
 
             UserSettingsManager.Instance.Settings.ClientPath = dialog.FileName;

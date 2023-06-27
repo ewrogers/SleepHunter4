@@ -164,11 +164,11 @@ namespace SleepHunter.Models
 
                 try
                 {
-                    bool hasSpell = reader.ReadInt16() != 0;
-                    ushort iconIndex = reader.ReadUInt16();
-                    SpellTargetMode targetMode = (SpellTargetMode)reader.ReadByte();
-                    string name = reader.ReadFixedString(spellbookVariable.MaxLength);
-                    string prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
+                    var hasSpell = reader.ReadInt16() != 0;
+                    var iconIndex = reader.ReadUInt16();
+                    var targetType = (AbilityTargetType)reader.ReadByte();
+                    var name = reader.ReadFixedString(spellbookVariable.MaxLength);
+                    var prompt = reader.ReadFixedString(spellbookVariable.MaxLength);
                     reader.ReadByte();
 
                     if (!Ability.TryParseLevels(name, out name, out var currentLevel, out var maximumLevel))
@@ -180,7 +180,7 @@ namespace SleepHunter.Models
                     spells[i].IsEmpty = !hasSpell;
                     spells[i].IconIndex = iconIndex;
                     spells[i].Icon = IconManager.Instance.GetSpellIcon(iconIndex);
-                    spells[i].TargetMode = targetMode;
+                    spells[i].TargetType = targetType;
                     spells[i].Name = name;
                     spells[i].Prompt = prompt;
                     spells[i].CurrentLevel = currentLevel;

@@ -7,13 +7,13 @@ namespace SleepHunter.Models
         public const string LyliacVineyardKey = @"Lyliac Vineyard";
         public const string FasSpioradKey = @"Fas Spiorad";
 
-        private SpellTargetMode targetMode;
+        private AbilityTargetType targetType;
         private string prompt;
 
-        public SpellTargetMode TargetMode
+        public AbilityTargetType TargetType
         {
-            get { return targetMode; }
-            set { SetProperty(ref targetMode, value); }
+            get { return targetType; }
+            set { SetProperty(ref targetType, value); }
         }
 
         public string Prompt

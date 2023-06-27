@@ -70,7 +70,7 @@ namespace SleepHunter.Views
             maxLevelUpDown.Value = spell.MaximumLevel;
             maxLevelCheckBox.IsChecked = spell.CurrentLevel < spell.MaximumLevel;
 
-            if (spell.TargetMode == SpellTargetMode.None)
+            if (spell.TargetType == AbilityTargetType.None)
             {
                 targetModeComboBox.SelectedValue = "None";
                 targetModeComboBox.IsEnabled = false;
@@ -92,7 +92,7 @@ namespace SleepHunter.Views
             InitializeComponent();
             InitializeViews();
 
-            ToggleTargetMode(TargetCoordinateUnits.None);
+            ToggleTargetMode(SpellTargetMode.None);
         }
 
         private void InitializeViews()
@@ -145,7 +145,7 @@ namespace SleepHunter.Views
 
             var selectedMode = GetSelectedMode();
 
-            if (Spell.TargetMode == SpellTargetMode.Target && selectedMode == TargetCoordinateUnits.None)
+            if (Spell.TargetType == AbilityTargetType.Target && selectedMode == SpellTargetMode.None)
             {
                 this.ShowMessageBox("Target Required",
                    "This spell requires a target.",
@@ -159,7 +159,7 @@ namespace SleepHunter.Views
 
             var characterName = characterComboBox.SelectedValue as string;
 
-            if (selectedMode == TargetCoordinateUnits.Character && string.IsNullOrWhiteSpace(characterName))
+            if (selectedMode == SpellTargetMode.Character && string.IsNullOrWhiteSpace(characterName))
             {
                 this.ShowMessageBox("Invalid Character",
                    "Alternate character cannot be empty.",
@@ -170,7 +170,7 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            if ((selectedMode == TargetCoordinateUnits.RelativeRadius || selectedMode == TargetCoordinateUnits.AbsoluteRadius) &&
+            if ((selectedMode == SpellTargetMode.RelativeRadius || selectedMode == SpellTargetMode.AbsoluteRadius) &&
                innerRadiusUpDown.Value > outerRadiusUpDown.Value)
             {
                 this.ShowMessageBox("Invalid Radius",
@@ -190,9 +190,9 @@ namespace SleepHunter.Views
             if (!IsEditMode)
                 spellQueueItem.StartingLevel = Spell.CurrentLevel;
 
-            spellQueueItem.Target.Units = selectedMode;
+            spellQueueItem.Target.Mode = selectedMode;
 
-            if (selectedMode == TargetCoordinateUnits.Character)
+            if (selectedMode == SpellTargetMode.Character)
                 spellQueueItem.Target.CharacterName = characterName;
             else
                 spellQueueItem.Target.CharacterName = null;
@@ -200,7 +200,7 @@ namespace SleepHunter.Views
             spellQueueItem.Target.Location = GetLocationForMode(selectedMode);
             spellQueueItem.Target.Offset = new Point(offsetXUpDown.Value, offsetYUpDown.Value);
 
-            if (selectedMode == TargetCoordinateUnits.AbsoluteRadius || selectedMode == TargetCoordinateUnits.RelativeRadius)
+            if (selectedMode == SpellTargetMode.AbsoluteRadius || selectedMode == SpellTargetMode.RelativeRadius)
             {
                 spellQueueItem.Target.InnerRadius = (int)innerRadiusUpDown.Value;
                 spellQueueItem.Target.OuterRadius = (int)outerRadiusUpDown.Value;
@@ -219,9 +219,9 @@ namespace SleepHunter.Views
             return true;
         }
 
-        private TargetCoordinateUnits GetSelectedMode()
+        private SpellTargetMode GetSelectedMode()
         {
-            TargetCoordinateUnits mode = TargetCoordinateUnits.None;
+            SpellTargetMode mode = SpellTargetMode.None;
 
             if (targetModeComboBox == null)
                 return mode;
@@ -233,24 +233,24 @@ namespace SleepHunter.Views
             return mode;
         }
 
-        private Point GetLocationForMode(TargetCoordinateUnits units)
+        private Point GetLocationForMode(SpellTargetMode units)
         {
             switch (units)
             {
-                case TargetCoordinateUnits.AbsoluteTile:
+                case SpellTargetMode.AbsoluteTile:
                     return new Point(absoluteTileXUpDown.Value, absoluteTileYUpDown.Value);
 
-                case TargetCoordinateUnits.AbsoluteXY:
+                case SpellTargetMode.AbsoluteXY:
                     return new Point(absoluteXUpDown.Value, absoluteYUpDown.Value);
 
-                case TargetCoordinateUnits.RelativeTile:
+                case SpellTargetMode.RelativeTile:
                     return new Point((int)relativeTileXComboBox.SelectedValue, (int)relativeTileYComboBox.SelectedValue);
 
-                case TargetCoordinateUnits.RelativeRadius:
-                    goto case TargetCoordinateUnits.RelativeTile;
+                case SpellTargetMode.RelativeRadius:
+                    goto case SpellTargetMode.RelativeTile;
 
-                case TargetCoordinateUnits.AbsoluteRadius:
-                    goto case TargetCoordinateUnits.AbsoluteTile;
+                case SpellTargetMode.AbsoluteRadius:
+                    goto case SpellTargetMode.AbsoluteTile;
 
                 default:
                     return new Point(0, 0);
@@ -262,62 +262,62 @@ namespace SleepHunter.Views
             if (target == null)
                 return;
 
-            targetModeComboBox.SelectedValue = target.Units.ToString();
+            targetModeComboBox.SelectedValue = target.Mode.ToString();
 
-            switch (target.Units)
+            switch (target.Mode)
             {
-                case TargetCoordinateUnits.Character:
+                case SpellTargetMode.Character:
                     characterComboBox.SelectedValue = target.CharacterName;
                     break;
 
-                case TargetCoordinateUnits.AbsoluteTile:
+                case SpellTargetMode.AbsoluteTile:
                     absoluteTileXUpDown.Value = target.Location.X;
                     absoluteTileYUpDown.Value = target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.AbsoluteXY:
+                case SpellTargetMode.AbsoluteXY:
                     absoluteXUpDown.Value = target.Location.X;
                     absoluteYUpDown.Value = target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.RelativeTile:
+                case SpellTargetMode.RelativeTile:
                     relativeTileXComboBox.SelectedItem = (int)target.Location.X;
                     relativeTileYComboBox.SelectedItem = (int)target.Location.Y;
                     break;
 
-                case TargetCoordinateUnits.RelativeRadius:
+                case SpellTargetMode.RelativeRadius:
                     innerRadiusUpDown.Value = target.InnerRadius;
                     outerRadiusUpDown.Value = target.OuterRadius;
-                    goto case TargetCoordinateUnits.RelativeTile;
+                    goto case SpellTargetMode.RelativeTile;
 
-                case TargetCoordinateUnits.AbsoluteRadius:
+                case SpellTargetMode.AbsoluteRadius:
                     innerRadiusUpDown.Value = target.InnerRadius;
                     outerRadiusUpDown.Value = target.OuterRadius;
-                    goto case TargetCoordinateUnits.AbsoluteTile;
+                    goto case SpellTargetMode.AbsoluteTile;
             }
 
             offsetXUpDown.Value = target.Offset.X;
             offsetYUpDown.Value = target.Offset.Y;
         }
 
-        private void ToggleTargetMode(TargetCoordinateUnits units)
+        private void ToggleTargetMode(SpellTargetMode units)
         {
-            var isRadius = units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius;
+            var isRadius = units == SpellTargetMode.AbsoluteRadius || units == SpellTargetMode.RelativeRadius;
 
             if (characterComboBox != null)
-                characterComboBox.Visibility = (units == TargetCoordinateUnits.Character) ? Visibility.Visible : Visibility.Collapsed;
+                characterComboBox.Visibility = (units == SpellTargetMode.Character) ? Visibility.Visible : Visibility.Collapsed;
 
             if (relativeTileXComboBox != null)
-                relativeTileXComboBox.Visibility = (units == TargetCoordinateUnits.RelativeTile || units == TargetCoordinateUnits.RelativeRadius) ? Visibility.Visible : Visibility.Collapsed;
+                relativeTileXComboBox.Visibility = (units == SpellTargetMode.RelativeTile || units == SpellTargetMode.RelativeRadius) ? Visibility.Visible : Visibility.Collapsed;
 
             if (absoluteTileXUpDown != null)
-                absoluteTileXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.AbsoluteRadius) ? Visibility.Visible : Visibility.Collapsed;
+                absoluteTileXUpDown.Visibility = (units == SpellTargetMode.AbsoluteTile || units == SpellTargetMode.AbsoluteRadius) ? Visibility.Visible : Visibility.Collapsed;
 
             if (absoluteXUpDown != null)
-                absoluteXUpDown.Visibility = (units == TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
+                absoluteXUpDown.Visibility = (units == SpellTargetMode.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (offsetXUpDown != null)
-                offsetXUpDown.Visibility = (units != TargetCoordinateUnits.None && units != TargetCoordinateUnits.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
+                offsetXUpDown.Visibility = (units != SpellTargetMode.None && units != SpellTargetMode.AbsoluteXY) ? Visibility.Visible : Visibility.Collapsed;
 
             if (innerRadiusUpDown != null)
                 innerRadiusUpDown.Visibility = isRadius ? Visibility.Visible : Visibility.Collapsed;
@@ -328,17 +328,17 @@ namespace SleepHunter.Views
             SizeToFit(units, IsLoaded);
         }
 
-        private void SizeToFit(TargetCoordinateUnits units, bool animate = true)
+        private void SizeToFit(SpellTargetMode units, bool animate = true)
         {
             var measuredHeight = 380;
 
-            if (units == TargetCoordinateUnits.Character)
+            if (units == SpellTargetMode.Character)
                 measuredHeight += 42;
-            else if (units == TargetCoordinateUnits.AbsoluteTile || units == TargetCoordinateUnits.RelativeTile)
+            else if (units == SpellTargetMode.AbsoluteTile || units == SpellTargetMode.RelativeTile)
                 measuredHeight += 42;
-            else if (units == TargetCoordinateUnits.AbsoluteRadius || units == TargetCoordinateUnits.RelativeRadius)
+            else if (units == SpellTargetMode.AbsoluteRadius || units == SpellTargetMode.RelativeRadius)
                 measuredHeight += 84;
-            else if (units == TargetCoordinateUnits.None)
+            else if (units == SpellTargetMode.None)
                 measuredHeight -= 42;
 
             if (!animate)
@@ -355,18 +355,18 @@ namespace SleepHunter.Views
         {
             if (e.AddedItems.Count < 1)
             {
-                ToggleTargetMode(TargetCoordinateUnits.None);
+                ToggleTargetMode(SpellTargetMode.None);
                 return;
             }
 
-            if (!(e.AddedItems[0] is UserSetting item))
+            if (e.AddedItems[0] is not UserSetting item)
             {
-                ToggleTargetMode(TargetCoordinateUnits.None);
+                ToggleTargetMode(SpellTargetMode.None);
                 return;
             }
 
-            if (!Enum.TryParse<TargetCoordinateUnits>(item.Value as string, out var mode))
-                mode = TargetCoordinateUnits.None;
+            if (!Enum.TryParse<SpellTargetMode>(item.Value as string, out var mode))
+                mode = SpellTargetMode.None;
 
             ToggleTargetMode(mode);
         }

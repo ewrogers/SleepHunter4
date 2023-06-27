@@ -1,10 +1,15 @@
 ﻿
 namespace SleepHunter.Models
 {
-    public enum SpellTargetMode : byte
+    public enum SpellTargetMode
     {
-        None = 5,
-        Target = 2,
-        TextInput = 1
+        None = 0,
+        Self,
+        Character,
+        RelativeTile,
+        AbsoluteTile,
+        AbsoluteXY,
+        RelativeRadius,
+        AbsoluteRadius
     }
 }

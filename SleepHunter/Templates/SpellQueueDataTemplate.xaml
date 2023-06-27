@@ -170,7 +170,7 @@
             <DataTrigger Binding="{Binding HasTargetLevel}" Value="False">
                 <Setter TargetName="ProgressBar" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Target.Units}" Value="None">
+            <DataTrigger Binding="{Binding Target.Mode}" Value="None">
                 <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
                 <Setter TargetName="TargetText" Property="Opacity" Value="0.5"/>
                 <Setter TargetName="TargetText" Property="Text" Value="No Target"/>

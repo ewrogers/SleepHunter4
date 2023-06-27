@@ -21,10 +21,16 @@
     <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
     <Description>Dark Ages Automation Tool</Description>
     <Title>SleepHunter</Title>
-    <AssemblyVersion>4.9.0.0</AssemblyVersion>
-    <FileVersion>4.9.0.0</FileVersion>
+    <AssemblyVersion>4.10.0.0</AssemblyVersion>
+    <FileVersion>4.10.0.0</FileVersion>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Services\State\**" />
+    <EmbeddedResource Remove="Services\State\**" />
+    <None Remove="Services\State\**" />
+    <Page Remove="Services\State\**" />
+  </ItemGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
