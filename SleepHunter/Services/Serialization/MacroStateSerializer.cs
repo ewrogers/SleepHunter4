@@ -104,7 +104,8 @@ namespace SleepHunter.Services.Serialization
                 Description = string.Empty,
                 SpellRotation = state.SpellQueueRotation,
                 UseLyliacVineyard = state.UseLyliacVineyard,
-                FlowerAlternateCharacters = state.FlowerAlternateCharacters
+                FlowerAlternateCharacters = state.FlowerAlternateCharacters,
+                LocalStorage = new SerializedLocalStorage(state.LocalStorage)
             };
 
             if (state.Client.HasHotkey)

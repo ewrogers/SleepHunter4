@@ -51,6 +51,9 @@ namespace SleepHunter.Services.Serialization
         [XmlArrayItem("Flower")]
         public List<SerializedFlowerState> FlowerTargets { get; set; } = new();
 
+        [XmlElement("LocalStorage")]
+        public SerializedLocalStorage LocalStorage { get; set; } = new();
+
         public override string ToString() => Name;
     }
 }

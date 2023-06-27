@@ -5,8 +5,6 @@ namespace SleepHunter.Settings
 {
     public sealed class FeatureFlag : ObservableObject
     {
-        public const string UseWaterAndBedsKey = @"UseWaterAndBeds";
-
         private string key;
         private bool enabled = true;
 

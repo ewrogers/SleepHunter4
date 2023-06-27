@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Save Macro` toolbar button
 - `Load Macro` toolbar button
 - Window title parameter for client versions
+- Macro features are now saved with state
 
 ### Changed
 
@@ -21,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed 
 
 - Auto-save reliability
-- Spell rotation combo box sometimes being emptty
+- Spell rotation combo box sometimes being empty
 
 ## [4.9.0] - 2023-06-24
 

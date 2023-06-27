@@ -472,22 +472,18 @@ namespace SleepHunter.Macro
             if (timeSinceLastAttempt.TotalSeconds < 0.5)
                 return false;
 
-            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
-            if (!client.GetFeatureValueOrDefault(isEnabledKey, false))
+            if (!LocalStorage.GetBoolOrDefault(LocalStorageKey.UseWaterAndBeds.IsEnabled, false))
                 return false;
 
             client.Update(PlayerFieldFlags.Stats);
 
-            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
-            var manaThreshold = client.GetFeatureValueOrDefault(manaThresholdKey, 1000);
+            var manaThreshold = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.ManaThreshold, 1000);
 
             if (client.Stats.CurrentMana >= manaThreshold)
                 return false;
 
-            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
-            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
-            var tileX = client.GetFeatureValueOrDefault(tileXKey, 5);
-            var tileY = client.GetFeatureValueOrDefault(tileYKey, 1);
+            var tileX = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileX, 5);
+            var tileY = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileY, 1);
 
             var user = new Point(client.Location.X, client.Location.Y);
             var targetLocation = new Point(tileX, tileY);

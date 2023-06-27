@@ -555,22 +555,15 @@ namespace SleepHunter.Views
             if (selectedMacro is not PlayerMacroState state)
                 return;
 
-            RefreshUseWaterAndBedsFeature(state.Client);
+            RefreshUseWaterAndBedsFeature(state);
         }
 
-        private void RefreshUseWaterAndBedsFeature(Player player)
+        private void RefreshUseWaterAndBedsFeature(PlayerMacroState state)
         {
-            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
-            useWaterAndBedsCheckBox.IsChecked = player.GetFeatureValueOrDefault(isEnabledKey, false);
-
-            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
-            useWaterAndBedsThresholdUpDown.Value = player.GetFeatureValueOrDefault(manaThresholdKey, 1000);
-
-            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
-            useWaterAndBedsTileXUpDown.Value = player.GetFeatureValueOrDefault(tileXKey, 5);
-
-            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
-            useWaterAndBedsTileYUpDown.Value = player.GetFeatureValueOrDefault(tileYKey, 1);
+            useWaterAndBedsCheckBox.IsChecked = state.LocalStorage.GetBoolOrDefault(LocalStorageKey.UseWaterAndBeds.IsEnabled, false);
+            useWaterAndBedsThresholdUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.ManaThreshold, 1000);
+            useWaterAndBedsTileXUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileX, 5);
+            useWaterAndBedsTileYUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileY, 1);
         }
 
         private void LoadVersions()
@@ -1436,6 +1429,7 @@ namespace SleepHunter.Views
                 state.Client.Skillbook.ClearActiveSkills();
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
+                state.LocalStorage.Clear();
 
                 // Re-register the new hotkey (if defined)
                 if (deserialized.Hotkey != null)
@@ -1515,6 +1509,12 @@ namespace SleepHunter.Views
                         Interval = flowerMacro.HasInterval ? flowerMacro.Interval : null,
                         ManaThreshold = flowerMacro.ManaThreshold > 0 ? flowerMacro.ManaThreshold : null
                     });
+                }
+
+                // Copy local storage
+                foreach (var keyValuePair in deserialized.LocalStorage.Entries)
+                {
+                    state.LocalStorage.Add(keyValuePair.Key, keyValuePair.Value);
                 }
             }
             catch (Exception ex)
@@ -2515,22 +2515,15 @@ namespace SleepHunter.Views
             if (selectedMacro is not PlayerMacroState state)
                 return;
 
-            var player = state.Client;
-            var isEnabledKey = $"{FeatureFlag.UseWaterAndBedsKey}.IsEnabled";
-
-            player.SetFeatureValue(isEnabledKey, checkBox.IsChecked);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.IsEnabled, checkBox.IsChecked ?? false);
 
             if (checkBox.IsChecked != true)
                 return;
 
             // Ensure these values are in sync with the key/value store when ENABLED
-            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
-            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
-            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
-
-            player.SetFeatureValue(manaThresholdKey, (int)useWaterAndBedsThresholdUpDown.Value);
-            player.SetFeatureValue(tileXKey, (int)useWaterAndBedsTileXUpDown.Value);
-            player.SetFeatureValue(tileYKey, (int)useWaterAndBedsTileYUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.ManaThreshold, (int)useWaterAndBedsThresholdUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileX, (int)useWaterAndBedsTileXUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileY, (int)useWaterAndBedsTileYUpDown.Value);
         }
 
         private void useWaterAndBedsThresholdUpDown_ValueChanged(object sender, RoutedEventArgs e)
@@ -2540,10 +2533,7 @@ namespace SleepHunter.Views
             if (selectedMacro is not PlayerMacroState state)
                 return;
 
-            var player = state.Client;
-            var manaThresholdKey = $"{FeatureFlag.UseWaterAndBedsKey}.ManaThreshold";
-
-            player.SetFeatureValue(manaThresholdKey, (int)numericUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.ManaThreshold, (int)numericUpDown.Value);
         }
 
         private void useWaterAndBedsTileXUpDown_ValueChanged(object sender, RoutedEventArgs e)
@@ -2553,10 +2543,7 @@ namespace SleepHunter.Views
             if (selectedMacro is not PlayerMacroState state)
                 return;
 
-            var player = state.Client;
-            var tileXKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileX";
-
-            player.SetFeatureValue(tileXKey, (int)numericUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileX, (int)numericUpDown.Value);
         }
 
         private void useWaterAndBedsTileYUpDown_ValueChanged(object sender, RoutedEventArgs e)
@@ -2566,10 +2553,7 @@ namespace SleepHunter.Views
             if (selectedMacro is not PlayerMacroState state)
                 return;
 
-            var player = state.Client;
-            var tileYKey = $"{FeatureFlag.UseWaterAndBedsKey}.TileY";
-
-            player.SetFeatureValue(tileYKey, (int)numericUpDown.Value);
+            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileY, (int)numericUpDown.Value);
         }
         #endregion
     }
