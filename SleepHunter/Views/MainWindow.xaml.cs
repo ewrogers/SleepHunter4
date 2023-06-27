@@ -67,7 +67,7 @@ namespace SleepHunter.Views
             InitializeLogger();
             InitializeComponent();
             InitializeViews();
-            
+
             LoadThemes();
             LoadSettings();
             ApplyTheme();
@@ -135,7 +135,7 @@ namespace SleepHunter.Views
                 }
 
                 var processInformation = StartClientProcess(clientPath);
-                
+
                 if (!ClientVersionManager.TryDetectClientVersion(processInformation.ProcessId, out var detectedVersion))
                 {
                     logger.LogWarn("Unable to determine client version, using default version");
@@ -1367,6 +1367,8 @@ namespace SleepHunter.Views
             {
                 logger.LogException(ex);
                 logger.LogError($"Unable to save macro state file: {filename}");
+
+                this.ShowMessageBox("Failed to Save Macro", "Unable to save the macro state.", ex.Message);
             }
         }
 
@@ -1392,6 +1394,8 @@ namespace SleepHunter.Views
             {
                 logger.LogException(ex);
                 logger.LogError($"Unable to load macro state file: {filename}");
+
+                this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
                 return;
             }
 
@@ -1435,14 +1439,14 @@ namespace SleepHunter.Views
                 state.Client.Update(PlayerFieldFlags.Skillbook | PlayerFieldFlags.Spellbook);
 
                 // Add all skill macros to state
-                foreach(var skillMacro in deserialized.Skills)
+                foreach (var skillMacro in deserialized.Skills)
                 {
                     if (!state.Client.Skillbook.ContainSkill(skillMacro.SkillName))
                         continue;
 
                     state.Client.Skillbook.ToggleActive(skillMacro.SkillName, true);
                 }
-                
+
                 // Add all spell macros to state
                 foreach (var spellMacro in deserialized.Spells)
                 {
@@ -1478,7 +1482,8 @@ namespace SleepHunter.Views
 
                     state.AddToFlowerQueue(new FlowerQueueItem
                     {
-                        Target = new SpellTarget {
+                        Target = new SpellTarget
+                        {
                             Mode = flowerMacro.TargetMode,
                             CharacterName = flowerMacro.TargetName,
                             Location = new Point(flowerMacro.LocationX, flowerMacro.LocationY),
@@ -1487,14 +1492,16 @@ namespace SleepHunter.Views
                             OuterRadius = flowerMacro.OuterRadius,
                         },
                         Interval = flowerMacro.HasInterval ? flowerMacro.Interval : null,
-                        ManaThreshold = flowerMacro.ManaThreshold > 0 ? flowerMacro.ManaThreshold: null
-                    }); 
+                        ManaThreshold = flowerMacro.ManaThreshold > 0 ? flowerMacro.ManaThreshold : null
+                    });
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogException(ex);
                 logger.LogError($"Unable to update {state.Client.Name} macro state from deserialized data");
+
+                this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
             }
             finally
             {
@@ -1502,6 +1509,8 @@ namespace SleepHunter.Views
                 RefreshSpellQueue();
                 RefreshFlowerQueue();
                 RefreshFeatures();
+
+                ToggleSpellQueue(state.QueuedSpells.Count > 0);
             }
         }
 
