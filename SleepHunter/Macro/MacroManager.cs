@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Input;
 
 using SleepHunter.Models;
 
@@ -51,83 +48,6 @@ namespace SleepHunter.Macro
 
             clientMacros.Clear();
         }
-
-        /*
-        public void ImportMacroState(Player player, SavedMacroState state)
-        {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
-
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-
-            var macro = GetMacroState(player);
-            if (macro == null)
-                return;
-
-            macro.Stop();
-
-            var process = Process.GetCurrentProcess();
-
-            if (player.HasHotkey)
-            {
-                HotkeyManager.Instance.UnregisterHotkey(process.MainWindowHandle, player.Hotkey);
-                player.Hotkey = null;
-            }
-
-            player.Skillbook.ClearActiveSkills();
-            macro.ClearSpellQueue();
-            macro.ClearFlowerQueue();
-
-            player.Update(PlayerFieldFlags.Spellbook);
-            
-            macro.SpellQueueRotation = state.SpellRotation;
-            macro.UseLyliacVineyard = player.HasLyliacVineyard && state.UseLyliacVineyard;
-            macro.FlowerAlternateCharacters = player.HasLyliacPlant && state.FlowerAlternateCharacters;
-
-            player.Update(PlayerFieldFlags.Skillbook);
-            foreach (var skill in state.Skills)
-            {
-                if (!player.Skillbook.ContainSkill(skill.SkillName))
-                    continue;
-
-                player.Skillbook.ToggleActive(skill.SkillName, true);
-            }
-
-            foreach (var spell in state.Spells)
-            {
-                if (!player.Spellbook.ContainSpell(spell.SpellName))
-                    continue;
-
-                var spellInfo = player.Spellbook.GetSpell(spell.SpellName);
-                if (spellInfo == null)
-                    continue;
-
-                var queueItem = new SpellQueueItem(spellInfo, spell);
-                macro.AddToSpellQueue(queueItem);
-            }
-
-            if (player.HasLyliacPlant)
-                foreach (var flower in state.Flowers)
-                {
-                    if (flower.TargetMode == SpellTargetMode.None)
-                        continue;
-
-                    var queueItem = new FlowerQueueItem(flower);
-                    macro.AddToFlowerQueue(queueItem);
-                }
-
-            var windowHandle = Process.GetCurrentProcess().MainWindowHandle;
-
-            if (state.HotkeyKey != Key.None && (state.HotkeyModifiers != ModifierKeys.None || Hotkey.IsFunctionKey(state.HotkeyKey)))
-            {
-                var hotkey = new Hotkey(state.HotkeyModifiers, state.HotkeyKey);
-
-                if (HotkeyManager.Instance.RegisterHotkey(windowHandle, hotkey))
-                    player.Hotkey = hotkey;
-            }
-        }
-        */
 
         public void StartAll()
         {

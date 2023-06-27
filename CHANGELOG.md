@@ -4,7 +4,7 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.9.1] - Unreleased
+## [4.10.0] - Unreleased
 
 ### Added
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed `Start New Client` button to `Launch` to fit new `Load` and `Save` buttons
 - Updated min width to accomodate new toolbar buttons
+- Refactored entire save state system
 
 ### Fixed 
 

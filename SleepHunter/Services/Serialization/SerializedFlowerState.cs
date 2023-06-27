@@ -13,7 +13,7 @@ namespace SleepHunter.Services.Serialization
 
         [XmlAttribute("Target")]
         [DefaultValue(null)]
-        public string CharacterName { get; set; }
+        public string TargetName { get; set; }
 
         [XmlAttribute("X")]
         [DefaultValue(0)]

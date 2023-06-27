@@ -5,12 +5,12 @@ namespace SleepHunter.Services.Serialization
 {
     public interface IMacroStateSerializer
     {
-        void SaveState(PlayerMacroState state, TextWriter writer);
-        void SaveState(PlayerMacroState state, Stream stream, bool leaveOpen = true);
-        void SaveState(PlayerMacroState state, string file);
+        void Serialize(PlayerMacroState state, TextWriter writer);
+        void Serialize(PlayerMacroState state, Stream stream, bool leaveOpen = true);
+        void Serialize(PlayerMacroState state, string file);
 
-        void LoadState(PlayerMacroState state, TextReader reader);
-        void LoadState(PlayerMacroState state, Stream stream, bool leaveOpen = true);
-        void LoadState(PlayerMacroState state, string file);
+        SerializedMacroState Deserialize(PlayerMacroState state, TextReader reader);
+        SerializedMacroState Deserialize(PlayerMacroState state, Stream stream, bool leaveOpen = true);
+        SerializedMacroState Deserialize(PlayerMacroState state, string file);
     }
 }

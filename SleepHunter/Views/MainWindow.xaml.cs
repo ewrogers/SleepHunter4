@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using SleepHunter.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.IO;
@@ -25,6 +25,7 @@ using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
+using SleepHunter.Services.Serialization;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
 using Path = System.IO.Path;
@@ -34,11 +35,14 @@ namespace SleepHunter.Views
     public partial class MainWindow : Window, IDisposable
     {
         private const int WM_HOTKEY = 0x312;
+        private const string SleepHunterMacroFileExtension = "sh4";
+        private const string SleepHunterMacroFileFilter = "SleepHunter v4 Macro Files (*.sh4)|*.sh4";
 
         private static readonly int IconPadding = 14;
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
+        private readonly IMacroStateSerializer macroStateSerializer;
 
         private bool isDisposed;
         private HwndSource windowSource;
@@ -58,6 +62,7 @@ namespace SleepHunter.Views
         {
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
+            macroStateSerializer = App.Current.Services.GetService<IMacroStateSerializer>();
 
             InitializeLogger();
             InitializeComponent();
@@ -385,44 +390,11 @@ namespace SleepHunter.Views
                 macro.Client.PlayerUpdated += HandleClientUpdateTick;
             }
 
-            var didLoadFromState = false;
+            UpdateWindowTitle();
 
-            try
-            {
-                if (shouldRecallMacroState && macro != null)
-                {
-                    logger.LogInfo($"Attempting to load previous macro state for character: {player.Name}");
-                    LoadMacroState(player);
-
-                    if (macro.SpellQueueRotation == SpellRotationMode.Default)
-                        macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
-
-                    didLoadFromState = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Failed to load previous macro state for character: {player.Name}");
-                logger.LogException(ex);
-
-                Dispatcher.Invoke((Action)delegate
-                {
-                    this.ShowMessageBox("Load State Error",
-                   string.Format("There was an error loading the macro state:\n{0}", ex.Message),
-                   string.Format("{0}'s macro state was not preserved.", player.Name),
-                   MessageBoxButton.OK, 460, 260);
-
-                }, DispatcherPriority.Normal, null);
-
-            }
-            finally
-            {
-                UpdateWindowTitle();
-
-                // Set default spell queue rotation mode
-                if (!didLoadFromState)
-                    macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
-            }
+            // Set default spell queue rotation mode
+            if (macro.SpellQueueRotation == SpellRotationMode.Default)
+                macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
         }
 
         private void OnPlayerLoggedOut(Player player)
@@ -565,6 +537,9 @@ namespace SleepHunter.Views
                 Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
                 return;
             }
+
+            if (selectedMacro != null)
+                spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
 
             var hasItemsInQueue = selectedMacro != null && selectedMacro.QueuedSpells.Count > 0;
 
@@ -1322,28 +1297,23 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var shouldSaveStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
 
-            if (shouldSaveStates)
+            var allMacros = MacroManager.Instance.Macros.ToList();
+
+            foreach (var macro in allMacros)
             {
-                foreach (var macro in MacroManager.Instance.Macros)
+                try
                 {
-                    try
-                    {
-                        if (macro.Client == null || !macro.Client.IsLoggedIn)
-                            continue;
+                    if (macro.Client == null || !macro.Client.IsLoggedIn)
+                        continue;
 
-                        if (!string.IsNullOrEmpty(macro.Client.Name))
-                        {
-                            macro.Stop();
-                            SaveMacroState(macro);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError($"Failed to save macro state for character '{macro.Name}'!");
-                        logger.LogException(ex);
-                    }
+                    if (!string.IsNullOrEmpty(macro.Client.Name))
+                        macro.Stop();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Failed to stop macro state for character '{macro.Name}'!");
+                    logger.LogException(ex);
                 }
             }
         }
@@ -1379,40 +1349,160 @@ namespace SleepHunter.Views
             }
         }
 
-        private void SaveMacroState(PlayerMacroState macro)
+        private void SaveMacroState(PlayerMacroState state, string filename)
         {
-            if (macro == null)
-                throw new ArgumentNullException(nameof(macro));
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
 
-            var filename = Path.Combine("saves", string.Format("{0}.xml", macro.Client.Name.Trim()));
-            // var state = new SavedMacroState(macro);
+            if (filename == null)
+                throw new ArgumentNullException(nameof(filename));
 
-            logger.LogInfo($"Saving macro state to file: {filename}");
-            // state.SaveToFile(filename);
+            try
+            {
+                logger.LogInfo($"Saving {state.Client.Name} macro state into {filename}...");
+                macroStateSerializer.Serialize(state, filename);
+                logger.LogInfo("Serialized successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                logger.LogError($"Unable to save macro state file: {filename}");
+            }
         }
 
-        private void LoadMacroState(Player player)
+        private void LoadMacroState(PlayerMacroState state, string filename)
         {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
 
-            if (!Directory.Exists("saves"))
+            if (filename == null)
+                throw new ArgumentNullException(nameof(filename));
+
+            state.Stop();
+
+            SerializedMacroState deserialized;
+
+            try
+            {
+                logger.LogInfo($"Loading {state.Client.Name} macro state from {filename}...");
+                deserialized = macroStateSerializer.Deserialize(state, filename);
+                logger.LogInfo("Deserialized successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                logger.LogError($"Unable to load macro state file: {filename}");
                 return;
+            }
 
-            var filename = Path.Combine("saves", string.Format("{0}.xml", player.Name));
+            try
+            {
+                logger.LogInfo($"Updating {state.Client.Name} macro state from deserialized data...");
 
-            if (!File.Exists(filename))
-                return;
+                var process = Process.GetCurrentProcess();
 
-            logger.LogInfo($"Loading macro state from file: {filename}");
-            // var macroState = SavedMacroState.LoadFromFile(filename);
-            // MacroManager.Instance.ImportMacroState(player, macroState);
+                // Stop macro and unregister any current hotkey
+                state.Stop();
 
-            if (File.Exists(filename))
-                File.Delete(filename);
+                if (state.Client.HasHotkey)
+                    HotkeyManager.Instance.UnregisterHotkey(process.MainWindowHandle, state.Client.Hotkey);
 
-            RefreshSpellQueue();
-            RefreshFlowerQueue();
+                // Clear state
+                state.Client.Skillbook.ClearActiveSkills();
+                state.ClearSpellQueue();
+                state.ClearFlowerQueue();
+
+                // Re-register the new hotkey (if defined)
+                if (deserialized.Hotkey != null)
+                {
+                    var hotkey = new Hotkey(deserialized.Hotkey.Modifiers, deserialized.Hotkey.Key);
+                    HotkeyManager.Instance.RegisterHotkey(process.MainWindowHandle, hotkey);
+
+                    state.Client.Hotkey = hotkey;
+                }
+                else state.Client.Hotkey = null;
+
+                // Set spell rotation mode and flower configuration
+                if (deserialized.SpellRotation != SpellRotationMode.Default)
+                    state.SpellQueueRotation = deserialized.SpellRotation;
+                else
+                    state.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
+
+                state.UseLyliacVineyard = deserialized.UseLyliacVineyard;
+                state.FlowerAlternateCharacters = deserialized.FlowerAlternateCharacters;
+
+                // Update skillbook and spellbook just to be sure
+                state.Client.Update(PlayerFieldFlags.Skillbook | PlayerFieldFlags.Spellbook);
+
+                // Add all skill macros to state
+                foreach(var skillMacro in deserialized.Skills)
+                {
+                    if (!state.Client.Skillbook.ContainSkill(skillMacro.SkillName))
+                        continue;
+
+                    state.Client.Skillbook.ToggleActive(skillMacro.SkillName, true);
+                }
+                
+                // Add all spell macros to state
+                foreach (var spellMacro in deserialized.Spells)
+                {
+                    var spellInfo = state.Client.Spellbook.GetSpell(spellMacro.SpellName);
+                    if (spellInfo == null)
+                        continue;
+
+                    state.AddToSpellQueue(new SpellQueueItem
+                    {
+                        Icon = spellInfo.Icon,
+                        Name = spellInfo.Name,
+                        Target = new SpellTarget
+                        {
+                            Mode = spellMacro.TargetMode,
+                            CharacterName = spellMacro.TargetName,
+                            Location = new Point(spellMacro.LocationX, spellMacro.LocationY),
+                            Offset = new Point(spellMacro.OffsetX, spellMacro.OffsetY),
+                            InnerRadius = spellMacro.InnerRadius,
+                            OuterRadius = spellMacro.OuterRadius,
+                        },
+                        TargetLevel = spellMacro.TargetLevel > 0 ? spellMacro.TargetLevel : null,
+                        CurrentLevel = spellInfo.CurrentLevel,
+                        MaximumLevel = spellInfo.MaximumLevel,
+                        IsOnCooldown = spellInfo.IsOnCooldown
+                    });
+                }
+
+                // Add all flower macros to state
+                foreach (var flowerMacro in deserialized.FlowerTargets)
+                {
+                    if (flowerMacro.TargetMode == SpellTargetMode.None)
+                        continue;
+
+                    state.AddToFlowerQueue(new FlowerQueueItem
+                    {
+                        Target = new SpellTarget {
+                            Mode = flowerMacro.TargetMode,
+                            CharacterName = flowerMacro.TargetName,
+                            Location = new Point(flowerMacro.LocationX, flowerMacro.LocationY),
+                            Offset = new Point(flowerMacro.OffsetX, flowerMacro.OffsetY),
+                            InnerRadius = flowerMacro.InnerRadius,
+                            OuterRadius = flowerMacro.OuterRadius,
+                        },
+                        Interval = flowerMacro.HasInterval ? flowerMacro.Interval : null,
+                        ManaThreshold = flowerMacro.ManaThreshold > 0 ? flowerMacro.ManaThreshold: null
+                    }); 
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogException(ex);
+                logger.LogError($"Unable to update {state.Client.Name} macro state from deserialized data");
+            }
+            finally
+            {
+                UpdateToolbarState();
+                RefreshSpellQueue();
+                RefreshFlowerQueue();
+                RefreshFeatures();
+            }
         }
 
         #region Toolbar Button Click Methods
@@ -1422,12 +1512,65 @@ namespace SleepHunter.Views
         {
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
+
+            var defaultFilename = $"{selectedMacro.Client.Name}.{SleepHunterMacroFileExtension}";
+            var savesDirectory = Path.Combine(Environment.CurrentDirectory, "saves");
+
+            var dialog = new OpenFileDialog
+            {
+                Title = "Load Macro State",
+                Filter = SleepHunterMacroFileFilter,
+                DefaultExt = SleepHunterMacroFileExtension,
+                FileName = defaultFilename,
+                InitialDirectory = savesDirectory,
+                Multiselect = false,
+                CheckPathExists = true,
+                CheckFileExists = true
+            };
+
+            logger.LogInfo($"User has requested to load the macro state for character: {selectedMacro.Client.Name}");
+
+            if (!dialog.ShowDialog(this).GetValueOrDefault())
+            {
+                logger.LogInfo("User has cancelled the load macro dialog");
+                return;
+            }
+
+            if (selectedMacro != null)
+                LoadMacroState(selectedMacro, dialog.FileName);
         }
 
         private void saveStateButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
                 return;
+
+            var defaultFilename = $"{selectedMacro.Client.Name}.{SleepHunterMacroFileExtension}";
+            var savesDirectory = Path.Combine(Environment.CurrentDirectory, "saves");
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Save Macro State",
+                Filter = SleepHunterMacroFileFilter,
+                DefaultExt = SleepHunterMacroFileExtension,
+                FileName = defaultFilename,
+                InitialDirectory = savesDirectory,
+                OverwritePrompt = true,
+                AddExtension = true,
+                CheckPathExists = true,
+                ValidateNames = true,
+            };
+
+            logger.LogInfo($"User has requested to save the macro state for character: {selectedMacro.Client.Name}");
+
+            if (!dialog.ShowDialog(this).GetValueOrDefault())
+            {
+                logger.LogInfo("User has cancelled the save macro dialog");
+                return;
+            }
+
+            if (selectedMacro != null)
+                SaveMacroState(selectedMacro, dialog.FileName);
         }
 
         private void startMacroButton_Click(object sender, RoutedEventArgs e)

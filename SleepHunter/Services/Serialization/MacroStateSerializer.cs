@@ -10,9 +10,7 @@ namespace SleepHunter.Services.Serialization
     {
         private const int DefaultBufferSize = 4096;
 
-        public MacroStateSerializer() { }
-
-        public void SaveState(PlayerMacroState state, string file)
+        public void Serialize(PlayerMacroState state, string file)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -23,10 +21,10 @@ namespace SleepHunter.Services.Serialization
             using var stream = File.OpenWrite(file);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
 
-            SaveState(state, writer);
+            Serialize(state, writer);
         }
 
-        public void SaveState(PlayerMacroState state, Stream stream, bool leaveOpen = true)
+        public void Serialize(PlayerMacroState state, Stream stream, bool leaveOpen = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -35,10 +33,10 @@ namespace SleepHunter.Services.Serialization
                 throw new ArgumentNullException(nameof(stream));
 
             using var writer = new StreamWriter(stream, Encoding.UTF8, DefaultBufferSize, leaveOpen);
-            SaveState(state, writer);
+            Serialize(state, writer);
         }
 
-        public void SaveState(PlayerMacroState state, TextWriter writer)
+        public void Serialize(PlayerMacroState state, TextWriter writer)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -52,7 +50,7 @@ namespace SleepHunter.Services.Serialization
             xs.Serialize(writer, serializedState);
         }
 
-        public void LoadState(PlayerMacroState state, string file)
+        public SerializedMacroState Deserialize(PlayerMacroState state, string file)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -63,10 +61,10 @@ namespace SleepHunter.Services.Serialization
             using var stream = File.OpenRead(file);
             using var reader = new StreamReader(stream, Encoding.UTF8);
 
-            LoadState(state, reader);
+            return Deserialize(state, reader);
         }
 
-        public void LoadState(PlayerMacroState state, Stream stream, bool leaveOpen = true)
+        public SerializedMacroState Deserialize(PlayerMacroState state, Stream stream, bool leaveOpen = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -75,10 +73,11 @@ namespace SleepHunter.Services.Serialization
                 throw new ArgumentNullException(nameof(stream));
 
             using var reader = new StreamReader(stream, Encoding.UTF8, false, DefaultBufferSize, leaveOpen);
-            LoadState(state, reader);
+
+            return Deserialize(state, reader);
         }
 
-        public void LoadState(PlayerMacroState state, TextReader reader)
+        public SerializedMacroState Deserialize(PlayerMacroState state, TextReader reader)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -89,18 +88,72 @@ namespace SleepHunter.Services.Serialization
             var xs = new XmlSerializer(typeof(SerializedMacroState), string.Empty);
             var result = xs.Deserialize(reader);
 
-            if (result is SerializedMacroState deserializedState)
-                DeserializeStateInto(state, deserializedState);
+            if (result is not SerializedMacroState deserializedState)
+                throw new InvalidOperationException("Unable to parse macro state");
+
+            return deserializedState;
         }
 
-        private SerializedMacroState SerializeState(PlayerMacroState state)
+        private static SerializedMacroState SerializeState(PlayerMacroState state)
         {
-            return new SerializedMacroState();
-        }
+            var client = state.Client;
 
-        private void DeserializeStateInto(PlayerMacroState state, SerializedMacroState deserializedState)
-        {
+            var serialized = new SerializedMacroState
+            {
+                Name = client.Name,
+                Description = string.Empty,
+                SpellRotation = state.SpellQueueRotation,
+                UseLyliacVineyard = state.UseLyliacVineyard,
+                FlowerAlternateCharacters = state.FlowerAlternateCharacters
+            };
 
+            if (state.Client.HasHotkey)
+            {
+                serialized.Hotkey = new SerializedHotkey
+                {
+                    Key = client.Hotkey.Key,
+                    Modifiers = client.Hotkey.Modifiers
+                };
+            }
+
+            foreach (var skillName in client.Skillbook.ActiveSkills)
+                serialized.Skills.Add(new SerializedSkillState { SkillName = skillName });
+
+            foreach(var spell in state.QueuedSpells)
+            {
+                serialized.Spells.Add(new SerializedSpellState
+                {
+                    SpellName = spell.Name,
+                    TargetMode = spell.Target.Mode,
+                    TargetName = spell.Target.CharacterName,
+                    LocationX = spell.Target.Location.X,
+                    LocationY = spell.Target.Location.Y,
+                    OffsetX = spell.Target.Offset.X,
+                    OffsetY = spell.Target.Offset.Y,
+                    InnerRadius = spell.Target.InnerRadius,
+                    OuterRadius = spell.Target.OuterRadius,
+                    TargetLevel = spell.TargetLevel ?? 0
+                });
+            }
+
+            foreach (var flower in state.FlowerTargets)
+            {
+                serialized.FlowerTargets.Add(new SerializedFlowerState
+                {
+                    TargetMode = flower.Target.Mode,
+                    TargetName = flower.Target.CharacterName,
+                    LocationX = flower.Target.Location.X,
+                    LocationY = flower.Target.Location.Y,
+                    OffsetX = flower.Target.Offset.X,
+                    OffsetY = flower.Target.Offset.Y,
+                    InnerRadius = flower.Target.InnerRadius,
+                    OuterRadius = flower.Target.OuterRadius,
+                    Interval = flower.Interval ?? TimeSpan.Zero,
+                    ManaThreshold = flower.ManaThreshold ?? 0
+                });
+            }
+
+            return serialized;
         }
     }
 }

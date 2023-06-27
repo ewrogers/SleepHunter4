@@ -10,7 +10,12 @@ namespace SleepHunter.Services.Serialization
     [XmlRoot("MacroState")]
     public sealed class SerializedMacroState
     {
-        [XmlAttribute("Name")]
+        private const string SaveFileVersion = "4.10";
+
+        [XmlAttribute("Version")]
+        public string Version { get; set; } = SaveFileVersion;
+
+        [XmlElement("Name")]
         [DefaultValue(null)]
         public string Name { get; set; }
 
@@ -44,7 +49,7 @@ namespace SleepHunter.Services.Serialization
 
         [XmlArray("Flowering")]
         [XmlArrayItem("Flower")]
-        public List<SerializedFlowerState> Flower { get; set; } = new();
+        public List<SerializedFlowerState> FlowerTargets { get; set; } = new();
 
         public override string ToString() => Name;
     }
