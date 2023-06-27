@@ -25,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Autosave load error popup info
+- Autosave load error popup & info
+- Thousands formatting for HP/MP
 
 ## [4.10.0] - 2023-06-27
 

@@ -25,12 +25,12 @@ namespace SleepHunter.Converters
             {
                 if (integerValue >= MillionsThreshold)
                 {
-                    var fractionalMillions = integerValue / (double)MillionsThreshold;
+                    var fractionalMillions = integerValue / (double)1_000_000;
                     return $"{fractionalMillions:0.0}m";
                 }
                 else if (integerValue >= ThousandsThreshold)
                 {
-                    var fractionalThousands = integerValue / (double)ThousandsThreshold;
+                    var fractionalThousands = integerValue / (double)1_000;
                     return $"{fractionalThousands:0}k";
                 }
             }
