@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Renamed `Start New Client` button to `Launch` to fit new `Load` and `Save` buttons
-- Updated min width to accomodate new toolbar buttons
+- Renamed `Start New Client` button to `Launch Client` to fit new `Load` and `Save` buttons
+- Updated min width to fit new toolbar buttons
 - Refactored entire save state system
 - Refactored local storage (features)
 
