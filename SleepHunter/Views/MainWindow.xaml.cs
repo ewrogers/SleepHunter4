@@ -447,6 +447,7 @@ namespace SleepHunter.Views
 
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
+                state.LocalStorage.Clear();
             }
 
             UpdateUIForSelectedClient(player.Name);
