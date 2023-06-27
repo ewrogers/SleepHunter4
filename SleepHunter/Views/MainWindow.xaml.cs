@@ -1331,11 +1331,16 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to create autosave directory: {autosaveDirectory}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Autosave", $"Unable to autosave macro state for {state.Client.Name}.", ex.Message);
+                {
+                    this.ShowMessageBox("Failed to Autosave", $"Unable to save macro state for {state.Client.Name}.", ex.Message);
+                    return;
+                }
             }
 
             var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
-            SaveMacroState(state, Path.Combine(autosaveDirectory, autosaveFile), showError);
+            var autosaveFilePath = Path.Combine (autosaveDirectory, autosaveFile);
+
+            SaveMacroState(state, autosaveFilePath, showError);
         }
 
         private void SaveMacroState(PlayerMacroState state, string filename, bool showError = true)
@@ -1375,13 +1380,15 @@ namespace SleepHunter.Views
             }
 
             var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
-            if (!File.Exists(autosaveFile))
+            var autosaveFilePath = Path.Combine(autosaveDirectory, autosaveFile);
+
+            if (!File.Exists(autosaveFilePath))
             {
-                logger.LogInfo($"Auto-save file does not exist: {autosaveFile}");
+                logger.LogInfo($"Auto-save file does not exist: {autosaveFilePath}");
                 return;
             }
 
-            LoadMacroState(state, autosaveFile, showError);
+            LoadMacroState(state, autosaveFilePath, showError);
         }
 
         private void LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
