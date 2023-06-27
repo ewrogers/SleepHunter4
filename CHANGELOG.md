@@ -4,6 +4,26 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1] - 2023-06-27
+
+### Added
+
+- `MinHealthPercent` to spell/skill metadata
+- `MaxHealthPercent` to spell/skill metadata (Crasher/Animal Feast/Execute)
+- `OpensDialog` to spell metadata (was only skills before)
+
+### Changed
+
+- Use new metadata properties for HP based conditions
+
+### Removed
+
+- Removed hard-coded names for HP-based skills
+
+### Fixed
+
+- Autosave load error popup info
+
 ## [4.10.0] - 2023-06-27
 
 ### Added

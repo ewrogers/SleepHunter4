@@ -338,7 +338,7 @@ namespace SleepHunter.Views
 
             Dispatcher.InvokeIfRequired(() =>
             {
-                if (string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 {
                     if (!player.IsLoggedIn)
                         OnPlayerLoggedOut(player);
@@ -1357,7 +1357,7 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to save macro state file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Save Macro", "Unable to save the macro state.", ex.Message);
+                    this.ShowMessageBox("Failed to Save Macro", $"Unable to save the macro state for {state.Client.Name}.", ex.Message);
             }
         }
 
@@ -1382,10 +1382,24 @@ namespace SleepHunter.Views
                 return;
             }
 
-            LoadMacroState(state, autosaveFilePath, showError);
+            var didLoad = LoadMacroState(state, autosaveFilePath, showError);
+            
+            // File is probably broken, delete it
+            if (!didLoad && File.Exists(autosaveFilePath))
+            {
+                try
+                {
+                    File.Delete(autosaveFilePath);
+                }
+                catch(Exception ex)
+                {
+                    logger.LogException(ex);
+                    logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
+                }
+            }
         }
 
-        private void LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
+        private bool LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -1409,9 +1423,9 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to load macro state file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                    this.ShowMessageBox("Failed to Load Macro", $"Unable to load the macro state for {state.Client.Name}.", ex.Message);
 
-                return;
+                return false;
             }
 
             try
@@ -1517,6 +1531,8 @@ namespace SleepHunter.Views
                 {
                     state.LocalStorage.Add(keyValuePair.Key, keyValuePair.Value);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -1524,6 +1540,7 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to update {state.Client.Name} macro state from deserialized data");
 
                 this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                return false;
             }
             finally
             {

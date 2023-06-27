@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
-
+using System.Threading;
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
@@ -14,6 +13,8 @@ namespace SleepHunter.Models
     public sealed class Player : ObservableObject, IDisposable
     {
         private const string CharacterNameKey = @"CharacterName";
+
+        private readonly SemaphoreSlim updateLock = new(1);
 
         private bool isDisposed;
         private ClientVersion version;
@@ -279,66 +280,121 @@ namespace SleepHunter.Models
             {
                 skillbook?.Dispose();
                 accessor?.Dispose();
+
+                updateLock?.Dispose();
             }
 
             isDisposed = true;
         }
 
-        public void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
+        public async void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
         {
-            GameClient.VersionKey = Version?.Key ?? "Unknown";
+            await updateLock.WaitAsync();
 
-            var wasLoggedIn = IsLoggedIn;
+            GameClient.VersionKey = Version?.Key ?? "Unknown";
 
             try
             {
-                if (updateFields.HasFlag(PlayerFieldFlags.Name))
-                    UpdateName(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.GameClient))
+                        gameClient.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Guild))
-                    UpdateGuild(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Window))
+                        Process.Update();
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.GuildRank))
-                    UpdateGuildRank(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Name))
+                        UpdateName(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Title))
-                    UpdateTitle(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Guild))
+                        UpdateGuild(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Inventory))
-                    inventory.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.GuildRank))
+                        UpdateGuildRank(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Equipment))
-                    equipment.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Title))
+                        UpdateTitle(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Skillbook))
-                    skillbook.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Stats))
+                        stats.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Spellbook))
-                    spellbook.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Modifiers))
+                        modifiers.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Stats))
-                    stats.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Location))
+                        location.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Modifiers))
-                    modifiers.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Inventory))
+                        inventory.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Location))
-                    location.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Equipment))
+                        equipment.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.GameClient))
-                    gameClient.Update(accessor);
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Skillbook))
+                        skillbook.Update(accessor);
+                }
+                catch { }
 
-                if (updateFields.HasFlag(PlayerFieldFlags.Window))
-                    Process.Update();
+                try
+                {
+                    if (updateFields.HasFlag(PlayerFieldFlags.Spellbook))
+                        spellbook.Update(accessor);
+                }
+                catch { }
             }
-            catch { }
             finally
             {
-                IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
+                updateLock.Release();
             }
 
+            var wasLoggedIn = IsLoggedIn;
+            IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
             var isNowLoggedIn = IsLoggedIn;
-
+            
             if (isNowLoggedIn && !wasLoggedIn)
                 OnLoggedIn();
             else if (wasLoggedIn && !isNowLoggedIn)
