@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
         Title="Skill Editor"
-        Width="600" Height="600"
+        Width="600" Height="620"
         Style="{StaticResource ObsidianWindow}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
@@ -22,7 +22,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -63,7 +62,7 @@
 
         <ctl:NumericUpDown x:Name="manaUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
-                           DecoratorText="MP"
+                           DecoratorText="MP   "
                            Grid.Row="2"
                            Grid.Column="1" 
                            Width="250"
@@ -121,7 +120,8 @@
             <CheckBox Name="minHpPercentCheckBox" 
                       Style="{StaticResource ObsidianCheckBox}"
                       Content="Requires M_in HP %"
-                      Margin="32,4"/>
+                      Margin="32,4"
+                      ToolTip="This skill will only be used when HP percent is above this amount."/>
 
             <!-- Min HP Percentage -->
             <ctl:NumericUpDown x:Name="minHpPercentUpDown"
@@ -141,7 +141,8 @@
                       Grid.Row="1"
                       Style="{StaticResource ObsidianCheckBox}"
                       Content="Requires Low HP %"
-                      Margin="32,4"/>
+                      Margin="32,4"
+                      ToolTip="This skill will only be used when HP percent is below this amount."/>
 
             <!-- Max HP Percentage -->
             <ctl:NumericUpDown x:Name="maxHpPercentUpDown"
@@ -194,23 +195,26 @@
                       Style="{StaticResource ObsidianCheckBox}"
                       IsThreeState="False"
                       Content="Opens Dialog on Use"
-                      Margin="32,4,4,4"/>
+                      Margin="32,4,4,4"
+                      ToolTip="Indicates this skill opens a dialog when used."/>
 
-            <CheckBox Name="assailCheckBox"
+            <CheckBox Name="improveCheckBox" 
                       Grid.Column="1"
                       Style="{StaticResource ObsidianCheckBox}"
                       IsThreeState="False"
-                      Content="Is an Assail Skill"                 
+                      Content="Does Not Improve"
                       Margin="32,4,4,4"
-                      VerticalAlignment="Center"/>
+                      VerticalAlignment="Center"
+                      ToolTip="Indicates this skill cannot improve in level."/>
 
-            <CheckBox Name="improveCheckBox" 
+            <CheckBox Name="assailCheckBox"
                       Grid.Row="1"
                       Style="{StaticResource ObsidianCheckBox}"
                       IsThreeState="False"
-                      Content="Does Not Level"
+                      Content="Is Assail Skill"                 
                       Margin="32,4,4,4"
-                      VerticalAlignment="Center"/>
+                      VerticalAlignment="Center"
+                      ToolTip="Indicates this skill can be used via spacebar."/>
 
             <CheckBox Name="disarmCheckBox" 
                       Grid.Row="1"
@@ -219,8 +223,8 @@
                       IsThreeState="False"
                       Content="Disarm Before Using"
                       Margin="32,4,4,4"
-                      VerticalAlignment="Center"/>
-
+                      VerticalAlignment="Center"
+                      ToolTip="Indicates this skill requires no weapon equipped to use."/>
         </Grid>
 
         <Separator Grid.Row="8"

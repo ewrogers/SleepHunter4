@@ -3,13 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
         Title="Spell Editor" 
-        Width="500" Height="440"
+        Width="600" Height="640"
         Style="{StaticResource ObsidianWindow}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Loaded="Window_Loaded">
     <Grid Margin="8">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -61,7 +64,7 @@
 
         <ctl:NumericUpDown x:Name="manaUpDown"
                            Style="{StaticResource ObsidianNumericUpDown}"
-                           DecoratorText="MP"
+                           DecoratorText="MP   "
                            Grid.Row="3"
                            Grid.Column="1" 
                            Width="250"
@@ -99,21 +102,136 @@
                  TextAlignment="Center"
                  Margin="4"/>
 
-        <CheckBox Name="improveCheckBox" 
-                  Grid.Row="6"
-                  Grid.Column="1"
-                  Style="{StaticResource ObsidianCheckBox}"
-                  IsThreeState="False"
-                  Content="Does Not Level"
-                  VerticalAlignment="Center"
-                  Margin="32,4,4,4"/>
-
-        <Separator Grid.Row="7"
+        <Separator Grid.Row="6"
                    Grid.ColumnSpan="2"
                    Style="{StaticResource ObsidianSeparator}"
                    Margin="2,6"/>
 
-        <WrapPanel Grid.Row="8" 
+        <!-- Conditions -->
+        <Grid Grid.Row="7" Grid.ColumnSpan="2" Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="236"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- OPTIONS text -->
+            <TextBlock Grid.RowSpan="2"
+                       Panel.ZIndex="-1"
+                       Style="{StaticResource ObsidianSymbolText}"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="14"
+                       FontWeight="Normal"
+                       TextAlignment="Center"
+                       Text="CONDITIONS"
+                       Margin="-4,0,0,0">
+                <TextBlock.LayoutTransform>
+                    <RotateTransform Angle="-90"/>
+                </TextBlock.LayoutTransform>
+            </TextBlock>
+
+
+            <!-- Min HP Checkbox -->
+            <CheckBox Name="minHpPercentCheckBox" 
+                      Style="{StaticResource ObsidianCheckBox}"
+                      Content="Requires M_in HP %"
+                      Margin="32,4"
+                      ToolTip="This spell will only be cast when HP percent is above this amount."/>
+
+            <!-- Min HP Percentage -->
+            <ctl:NumericUpDown x:Name="minHpPercentUpDown"
+                               Grid.Column="1"
+                               Style="{StaticResource ObsidianNumericUpDown}"
+                               IsEnabled="{Binding ElementName=minHpPercentCheckBox, Path=IsChecked}"
+                               DecoratorText="HP % &gt;"
+                               Height="32"
+                               Width="250"
+                               Minimum="0"
+                               Maximum="100"
+                               HorizontalAlignment="Left"
+                               Margin="2,6"/>
+
+            <!-- Max HP Checkbox -->
+            <CheckBox Name="maxHpPercentCheckBox" 
+                      Grid.Row="1"
+                      Style="{StaticResource ObsidianCheckBox}"
+                      Content="Requires Low HP %"
+                      Margin="32,4"
+                      ToolTip="This spell will only be cast when HP percent is below this amount."/>
+
+            <!-- Max HP Percentage -->
+            <ctl:NumericUpDown x:Name="maxHpPercentUpDown"
+                               Grid.Row="1"
+                               Grid.Column="1"
+                               Style="{StaticResource ObsidianNumericUpDown}"
+                               IsEnabled="{Binding ElementName=maxHpPercentCheckBox, Path=IsChecked}"
+                               DecoratorText="HP % &lt;"
+                               Height="32"
+                               Width="250"
+                               Minimum="0"
+                               Maximum="100"
+                               HorizontalAlignment="Left"
+                               Margin="2,6"/>
+        </Grid>
+
+        <Separator Grid.Row="8"
+                   Grid.ColumnSpan="2"
+                   Style="{StaticResource ObsidianSeparator}"
+                   Margin="2,6"/>
+
+        <!-- Options -->
+        <Grid Grid.Row="9" Grid.ColumnSpan="2" Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- OPTIONS text -->
+            <TextBlock Grid.RowSpan="2"
+                       Panel.ZIndex="-1"
+                       Style="{StaticResource ObsidianSymbolText}"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       FontSize="14"
+                       FontWeight="Normal"
+                       TextAlignment="Center"
+                       Text="OPTIONS"
+                       Margin="-4,0,0,0">
+                <TextBlock.LayoutTransform>
+                    <RotateTransform Angle="-90"/>
+                </TextBlock.LayoutTransform>
+            </TextBlock>
+
+            <CheckBox Name="dialogCheckBox"
+                      Style="{StaticResource ObsidianCheckBox}"
+                      IsThreeState="False"
+                      Content="Opens Dialog on Cast"
+                      Margin="32,4,4,4"
+                      ToolTip="Indicates this spell opens a dialog when cast."/>
+
+            <CheckBox Name="improveCheckBox" 
+                      Grid.Column="1"
+                      Style="{StaticResource ObsidianCheckBox}"
+                      IsThreeState="False"
+                      Content="Does Not Improve"
+                      Margin="32,4,4,4"
+                      VerticalAlignment="Center"
+                      ToolTip="Indicates this spell cannot improve in level."/>
+
+        </Grid>
+
+        <Separator Grid.Row="10"
+                   Grid.ColumnSpan="2"
+                   Style="{StaticResource ObsidianSeparator}"
+                   Margin="2,6"/>
+
+        <WrapPanel Grid.Row="11" 
                    Grid.ColumnSpan="2"
                    Orientation="Horizontal"
                    VerticalAlignment="Center"
@@ -156,13 +274,13 @@
 
         </WrapPanel>
 
-        <Separator Grid.Row="9"
+        <Separator Grid.Row="12"
                    Grid.ColumnSpan="2"
                    Style="{StaticResource ObsidianSeparator}"
                    Margin="2,6"/>
 
         <Button Name="okButton" 
-                Grid.Row="10"
+                Grid.Row="13"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"
@@ -174,7 +292,7 @@
                 Click="okButton_Click"/>
 
         <Button Name="cancelButton" 
-                Grid.Row="10"
+                Grid.Row="13"
                 Grid.ColumnSpan="2"
                 Width="180" Height="32"
                 Style="{StaticResource ObsidianButton}"
