@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Save Macro` toolbar button
 - `Load Macro` toolbar button
+- Window title parameter for client versions
 
 ### Changed
 
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed 
 
-- Refactor save/load logic to be more stable
+- Auto-save reliability
 
 ## [4.9.0] - 2023-06-24
 

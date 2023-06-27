@@ -379,22 +379,31 @@ namespace SleepHunter.Views
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
 
             if (!string.IsNullOrEmpty(player.Name))
-                NativeMethods.SetWindowText(player.Process.WindowHandle, $"Darkages - {player.Name}");
+                NativeMethods.SetWindowText(player.Process.WindowHandle, $"{player.Version.WindowTitle} - {player.Name}");
 
-            var shouldRecallMacroState = UserSettingsManager.Instance.Settings.SaveMacroStates;
-            var macro = MacroManager.Instance.GetMacroState(player);
+            var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
+            var state = MacroManager.Instance.GetMacroState(player);
 
-            if (macro != null)
+            if (state != null)
             {
-                macro.StatusChanged += HandleMacroStatusChanged;
-                macro.Client.PlayerUpdated += HandleClientUpdateTick;
+                state.StatusChanged += HandleMacroStatusChanged;
+                state.Client.PlayerUpdated += HandleClientUpdateTick;
+            }
+
+            if (autosaveEnabled && state != null)
+            {
+                Dispatcher.InvokeIfRequired(() =>
+                {
+                    logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
+                    AutoLoadMacroState(state);
+                }, DispatcherPriority.DataBind);
             }
 
             UpdateWindowTitle();
 
             // Set default spell queue rotation mode
-            if (macro.SpellQueueRotation == SpellRotationMode.Default)
-                macro.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
+            if (state.SpellQueueRotation == SpellRotationMode.Default)
+                state.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
         }
 
         private void OnPlayerLoggedOut(Player player)
@@ -407,42 +416,29 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
 
-            NativeMethods.SetWindowText(player.Process.WindowHandle, "Darkages");
+            NativeMethods.SetWindowText(player.Process.WindowHandle, player.Version.WindowTitle);
 
-            var shouldSaveMacroStates = UserSettingsManager.Instance.Settings.SaveMacroStates;
+            var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var state = MacroManager.Instance.GetMacroState(player);
 
-            try
-            {
-                if (shouldSaveMacroStates && state != null)
-                    OnSerializePlayerState(player, state);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Failed to save macro state for character: {player.Name}");
-                logger.LogException(ex);
-
-                Dispatcher.Invoke((Action)delegate
-                {
-                    this.ShowMessageBox("Save State Error",
-                       string.Format("There was an error saving the macro state:\n{0}", ex.Message),
-                       string.Format("{0}'s macro state may not be preserved upon next login.", player.Name),
-                       MessageBoxButton.OK, 460, 260);
-
-                }, DispatcherPriority.Normal, null);
-            }
-            finally
+            if (autosaveEnabled && state != null)
             {
                 Dispatcher.InvokeIfRequired(() =>
                 {
-                    if (player.HasHotkey)
-                        HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
-
-                    player.Hotkey = null;
-                });
-
-                UpdateWindowTitle();
+                    logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
+                    AutoSaveMacroState(state);
+                }, DispatcherPriority.DataBind);
             }
+
+            Dispatcher.InvokeIfRequired(() =>
+            {
+                if (player.HasHotkey)
+                    HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
+
+                player.Hotkey = null;
+            });
+
+            UpdateWindowTitle();
 
             if (state != null)
             {
@@ -467,26 +463,7 @@ namespace SleepHunter.Views
                 ToggleSpellQueue(false);
         }
 
-        private void OnDeserializePlayerState(Player player, PlayerMacroState state)
-        {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-        }
-
-        private void OnSerializePlayerState(Player player, PlayerMacroState state)
-        {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-        }
-
-        private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e)
-        {
-            UpdateToolbarState();
-        }
+        private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e) => UpdateToolbarState();
 
         private void HandleClientUpdateTick(object sender, EventArgs e)
         {
@@ -1285,38 +1262,26 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
             }
 
-            try
-            {
-                if (!Directory.Exists("saves"))
-                    Directory.CreateDirectory("saves");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Failed to create saves directory");
-                logger.LogException(ex);
-                return;
-            }
-
-
             var allMacros = MacroManager.Instance.Macros.ToList();
 
-            foreach (var macro in allMacros)
+            foreach (var state in allMacros)
             {
-                try
-                {
-                    if (macro.Client == null || !macro.Client.IsLoggedIn)
-                        continue;
+                state.Stop();
 
-                    if (!string.IsNullOrEmpty(macro.Client.Name))
-                        macro.Stop();
-                }
-                catch (Exception ex)
+                if (state.Client == null || !state.Client.IsLoggedIn)
+                    continue;
+
+                state.Stop();
+
+                if (UserSettingsManager.Instance.Settings.SaveMacroStates)
                 {
-                    logger.LogError($"Failed to stop macro state for character '{macro.Name}'!");
-                    logger.LogException(ex);
+                    logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
+                    AutoSaveMacroState(state, showError: false);
                 }
             }
-        }
+
+            logger.LogInfo("Application shutdown tasks have completed");
+        } 
 
         private void Window_Closed(object sender, EventArgs e)
         {
@@ -1349,7 +1314,31 @@ namespace SleepHunter.Views
             }
         }
 
-        private void SaveMacroState(PlayerMacroState state, string filename)
+        private void AutoSaveMacroState(PlayerMacroState state, bool showError = true)
+        {
+            var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
+            try
+            {
+                if (!Directory.Exists(autosaveDirectory))
+                {
+                    logger.LogInfo($"Creating autosave directory: {autosaveDirectory}");
+                    Directory.CreateDirectory(autosaveDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                logger.LogError($"Unable to create autosave directory: {autosaveDirectory}");
+
+                if (showError)
+                    this.ShowMessageBox("Failed to Autosave", $"Unable to autosave macro state for {state.Client.Name}.", ex.Message);
+            }
+
+            var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
+            SaveMacroState(state, Path.Combine(autosaveDirectory, autosaveFile), showError);
+        }
+
+        private void SaveMacroState(PlayerMacroState state, string filename, bool showError = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -1368,11 +1357,34 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
                 logger.LogError($"Unable to save macro state file: {filename}");
 
-                this.ShowMessageBox("Failed to Save Macro", "Unable to save the macro state.", ex.Message);
+                if (showError)
+                    this.ShowMessageBox("Failed to Save Macro", "Unable to save the macro state.", ex.Message);
             }
         }
 
-        private void LoadMacroState(PlayerMacroState state, string filename)
+        private void AutoLoadMacroState(PlayerMacroState state, bool showError = true)
+        {
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
+
+            var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
+            if (!Directory.Exists(autosaveDirectory))
+            {
+                logger.LogInfo($"Auto-save directory does not exist: {autosaveDirectory}");
+                return;
+            }
+
+            var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
+            if (!File.Exists(autosaveFile))
+            {
+                logger.LogInfo($"Auto-save file does not exist: {autosaveFile}");
+                return;
+            }
+
+            LoadMacroState(state, autosaveFile, showError);
+        }
+
+        private void LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -1395,7 +1407,9 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
                 logger.LogError($"Unable to load macro state file: {filename}");
 
-                this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                if (showError)
+                    this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+
                 return;
             }
 

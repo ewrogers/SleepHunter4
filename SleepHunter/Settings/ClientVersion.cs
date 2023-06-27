@@ -15,6 +15,7 @@ namespace SleepHunter.Settings
     {
         private const string DefaultExecutableName = "Darkages.exe";
         private const string DefaultWindowClassName = "DarkAges";
+        private const string DefaultWindowTitle = "Darkages";
 
         public static readonly ClientVersion AutoDetect = new("Auto-Detect");
 
@@ -23,6 +24,7 @@ namespace SleepHunter.Settings
         private ClientSignature signature;
         private string executableName = DefaultExecutableName;
         private string windowClassName = DefaultWindowClassName;
+        private string windowTitle = DefaultWindowTitle;
         private bool supportsFlowering;
         private long multipleInstanceAddress;
         private long introVideoAddress;
@@ -69,6 +71,13 @@ namespace SleepHunter.Settings
         {
             get => windowClassName;
             set => SetProperty(ref windowClassName, value);
+        }
+
+        [XmlElement]
+        public string WindowTitle
+        {
+            get => windowTitle;
+            set => SetProperty(ref windowTitle, value);
         }
 
         [XmlElement]

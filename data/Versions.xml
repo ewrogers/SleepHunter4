@@ -5,6 +5,7 @@
       <Signature Address="685B08" Value="7D4E--1K" />
       <ExecutableName>Darkages.exe</ExecutableName>
       <WindowClassName>DarkAges</WindowClassName>
+      <WindowTitle>Darkages</WindowTitle>
       <SupportsFlowering>true</SupportsFlowering>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
@@ -137,6 +138,7 @@
         <Signature Address="8A87A0" Value="9D1Z--1B" />
         <ExecutableName>Zolian 9.1.1.exe</ExecutableName>
         <WindowClassName>DarkAges</WindowClassName>
+        <WindowTitle>Zolian</WindowTitle>
         <MultipleInstanceAddress>78D559</MultipleInstanceAddress>
         <IntroVideoAddress>62F455</IntroVideoAddress>
         <Features>
