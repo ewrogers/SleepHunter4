@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use new metadata properties for HP based conditions
 - Redesign some metadata editors for skill/spells
 - Increase dialog size for skill/spell metadata editors
+- Tooltip design
 
 ### Removed
 
