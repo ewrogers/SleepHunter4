@@ -34,6 +34,15 @@ namespace SleepHunter.Views
             groupNameTextBox.Text = skill.GroupName;
             manaUpDown.Value = skill.ManaCost;
             cooldownTextBox.Text = skill.Cooldown.ToShortEnglish();
+
+            // conditions
+            minHpPercentCheckBox.IsChecked = skill.MinHealthPercent > 0;
+            minHpPercentUpDown.Value = skill.MinHealthPercent;
+
+            maxHpPercentCheckBox.IsChecked = skill.MaxHealthPercent > 0;
+            maxHpPercentUpDown.Value = skill.MaxHealthPercent;
+
+            // options
             assailCheckBox.IsChecked = skill.IsAssail;
             dialogCheckBox.IsChecked = skill.OpensDialog;
             improveCheckBox.IsChecked = !skill.CanImprove;
@@ -61,15 +70,21 @@ namespace SleepHunter.Views
 
         private bool ValidateSkill()
         {
-            string skillName = nameTextBox.Text.Trim();
-            string groupName = groupNameTextBox.Text.Trim();
-            int manaCost = (int)manaUpDown.Value;
+            var skillName = nameTextBox.Text.Trim();
+            var groupName = groupNameTextBox.Text.Trim();
+            var manaCost = (int)manaUpDown.Value;
             TimeSpan cooldown;
-            bool isAssail = assailCheckBox.IsChecked.Value;
-            bool opensDialog = dialogCheckBox.IsChecked.Value;
-            bool doesNotLevel = improveCheckBox.IsChecked.Value;
-            bool requiresDisarm = disarmCheckBox.IsChecked.Value;
-            bool nameChanged = originalName == null || !string.Equals(originalName, skillName, StringComparison.OrdinalIgnoreCase);
+
+            // conditions
+            var minHpPercent = (minHpPercentCheckBox.IsChecked ?? false) ? minHpPercentUpDown.Value : 0;
+            var maxHpPercent = (maxHpPercentCheckBox.IsChecked ?? false) ? maxHpPercentUpDown.Value : 0;
+
+            // options
+            var isAssail = assailCheckBox.IsChecked.Value;
+            var opensDialog = dialogCheckBox.IsChecked.Value;
+            var doesNotLevel = improveCheckBox.IsChecked.Value;
+            var requiresDisarm = disarmCheckBox.IsChecked.Value;
+            var nameChanged = originalName == null || !string.Equals(originalName, skillName, StringComparison.OrdinalIgnoreCase);
 
             if (string.IsNullOrWhiteSpace(skillName))
             {
@@ -119,6 +134,10 @@ namespace SleepHunter.Views
             skill.Class = GetPlayerClass();
             skill.ManaCost = manaCost;
             skill.Cooldown = cooldown;
+
+            skill.MinHealthPercent = minHpPercent;
+            skill.MaxHealthPercent = maxHpPercent;
+
             skill.IsAssail = isAssail;
             skill.OpensDialog = opensDialog;
             skill.CanImprove = !doesNotLevel;

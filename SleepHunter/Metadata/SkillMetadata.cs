@@ -19,8 +19,8 @@ namespace SleepHunter.Metadata
         private bool canImprove = true;
         private TimeSpan cooldown;
         private bool requiresDisarm;
-        private int? minHealthPercent;
-        private int? maxHealthPercent;
+        private double minHealthPercent;
+        private double maxHealthPercent;
 
         [XmlAttribute("Name")]
         public string Name
@@ -102,7 +102,7 @@ namespace SleepHunter.Metadata
 
         [XmlAttribute("MinHealthPercent")]
         [DefaultValue(null)]
-        public int? MinHealthPercent
+        public double MinHealthPercent
         {
             get => minHealthPercent;
             set => SetProperty(ref  minHealthPercent, value);
@@ -110,7 +110,7 @@ namespace SleepHunter.Metadata
 
         [XmlAttribute("MaxHealthPercent")]
         [DefaultValue(null)]
-        public int? MaxHealthPercent
+        public double MaxHealthPercent
         {
             get => maxHealthPercent;
             set => SetProperty(ref maxHealthPercent, value);

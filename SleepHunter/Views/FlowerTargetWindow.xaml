@@ -346,7 +346,7 @@
                        TextAlignment="Center"
                        Text="&#xE112; OR &#xE111; "
                        Margin="8,0"
-                       ToolTip="Why would this have a tooltip?">
+                       ToolTip="Either condition will trigger a flowering.">
                 <TextBlock.LayoutTransform>
                     <RotateTransform Angle="-90"/>
                 </TextBlock.LayoutTransform>
