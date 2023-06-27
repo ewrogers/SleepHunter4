@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-
+using SleepHunter.Common;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
@@ -14,7 +14,9 @@ namespace SleepHunter.Macro
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan DialogDelay = TimeSpan.FromSeconds(2);
 
+        private readonly DeferredDispatcher deferredDispatcher = new();
         private readonly ReaderWriterLockSlim spellQueueLock = new();
         private readonly ReaderWriterLockSlim flowerQueueLock = new();
 
@@ -391,6 +393,9 @@ namespace SleepHunter.Macro
         {
             client.Update(PlayerFieldFlags.GameClient);
 
+            // Tick the dispatcher so any scheduled events go off
+            deferredDispatcher.Tick();
+
             if (client.GameClient.IsUserChatting)
             {
                 SetPlayerStatus(PlayerMacroStatus.ChatIsUp);
@@ -565,8 +570,9 @@ namespace SleepHunter.Macro
                 }
             }
 
+            // Close the dialog after a few seconds
             if (expectDialog)
-                client.CancelDialog();
+                deferredDispatcher.DispatchAfter(client.CancelDialog, DialogDelay);
 
             if (useSpaceForAssail && isAssailQueued)
             {
@@ -603,8 +609,14 @@ namespace SleepHunter.Macro
                 return false;
             }
 
-            nextSpell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(nextSpell.Name);
+            var spellMetadata = SpellMetadataManager.Instance.GetSpell(nextSpell.Name);
+            nextSpell.IsUndefined = spellMetadata == null;
+
             CastSpell(nextSpell);
+
+            // Close the dialog after a few seconds
+            if (spellMetadata?.OpensDialog ?? false)
+                deferredDispatcher.DispatchAfter(client.CancelDialog, DialogDelay);
 
             lastUsedSpellItem = nextSpell;
             lastUsedSpellItem.IsActive = true;
