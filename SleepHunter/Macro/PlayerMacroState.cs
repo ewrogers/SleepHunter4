@@ -526,6 +526,10 @@ namespace SleepHunter.Macro
                 skillList.Add(skill);
             }
 
+            // Update stats for current HP if any skill might need it for evaluating min/max thresholds
+            if (skillList.Any(skill => skill.MinHealthPercent.HasValue || skill.MaxHealthPercent.HasValue))
+                client.Update(PlayerFieldFlags.Stats);
+
             foreach (var skill in skillList.OrderBy((s) => { return s.OpensDialog; }))
             {
                 client.Update(PlayerFieldFlags.GameClient);
@@ -543,18 +547,13 @@ namespace SleepHunter.Macro
                     }
                 }
 
-                // Check HP conditionals
-                // Crasher skill (requires < 2% HP)
-                if (CrasherSkillNames.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    client.Update(PlayerFieldFlags.Stats);
-                    if (client.Stats.HealthPercent >= 2)
-                        continue;
+                // Min health percentage (ex: > 90%), skip if cannot use YET
+                if (skill.MinHealthPercent.HasValue && skill.MinHealthPercent >= client.Stats.HealthPercent)
+                    continue;
 
-                    // TODO: Add Mad Soul + Sacrifice support!
-
-                    // TODO: Add auto-hemloch + hemloch deum support!
-                }
+                // Max health percentage (ex < 2%), skip if cannot use YET
+                if (skill.MaxHealthPercent.HasValue && client.Stats.HealthPercent > skill.MaxHealthPercent)
+                    continue;
 
                 if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out var didRequireSwitch, useShiftKey))
                 {
