@@ -6,23 +6,37 @@ namespace SleepHunter.Models
         private bool isAssail;
         private bool opensDialog;
         private bool requiresDisarm;
+        private double? minHealthPercent;
+        private double? maxHealthPercent;
 
         public bool IsAssail
         {
-            get { return isAssail; }
-            set { SetProperty(ref isAssail, value); }
+            get => isAssail;
+            set => SetProperty(ref isAssail, value);
         }
 
         public bool OpensDialog
         {
-            get { return opensDialog; }
-            set { SetProperty(ref opensDialog, value); }
+            get => opensDialog;
+            set => SetProperty(ref opensDialog, value);
         }
 
         public bool RequiresDisarm
         {
-            get { return requiresDisarm; }
-            set { SetProperty(ref requiresDisarm, value); }
+            get => requiresDisarm;
+            set => SetProperty(ref requiresDisarm, value);
+        }
+
+        public double? MinHealthPercent
+        {
+            get => minHealthPercent;
+            set => SetProperty(ref minHealthPercent, value);
+        }
+
+        public double? MaxHealthPercent
+        {
+            get => maxHealthPercent;
+            set => SetProperty(ref maxHealthPercent, value);
         }
 
         public static Skill MakeEmpty(int slot)

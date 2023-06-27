@@ -14,7 +14,6 @@ namespace SleepHunter.Macro
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
-        private static readonly string[] CrasherSkillNames = new[] { "Crasher", "Animal Feast", "Execute" };
 
         private readonly ReaderWriterLockSlim spellQueueLock = new();
         private readonly ReaderWriterLockSlim flowerQueueLock = new();
@@ -544,6 +543,7 @@ namespace SleepHunter.Macro
                     }
                 }
 
+                // Check HP conditionals
                 // Crasher skill (requires < 2% HP)
                 if (CrasherSkillNames.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
                 {

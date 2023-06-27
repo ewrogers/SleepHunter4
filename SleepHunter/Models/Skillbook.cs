@@ -226,6 +226,8 @@ namespace SleepHunter.Models
                         skills[i].IsAssail = metadata.IsAssail;
                         skills[i].OpensDialog = metadata.OpensDialog;
                         skills[i].RequiresDisarm = metadata.RequiresDisarm;
+                        skills[i].MinHealthPercent = metadata.MinHealthPercent > 0 ? metadata.MinHealthPercent : null;
+                        skills[i].MaxHealthPercent = metadata.MaxHealthPercent > 0 ? metadata.MaxHealthPercent : null;
                     }
                     else
                     {
@@ -235,6 +237,8 @@ namespace SleepHunter.Models
                         skills[i].IsAssail = false;
                         skills[i].OpensDialog = false;
                         skills[i].RequiresDisarm = false;
+                        skills[i].MinHealthPercent = null;
+                        skills[i].MaxHealthPercent = null;
                     }
 
                     skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, accessor.ProcessHandle);
