@@ -4,7 +4,7 @@
     <Skill Name="Ambush" Class="Monk" Cooldown="7" />
     <Skill Name="Amensia" Class="Rogue" Cooldown="7" />
     <Skill Name="Analyze Item" Class="Wizard" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="6" />
-    <Skill Name="Animal Feast" Class="Monk" Cooldown="28" />
+    <Skill Name="Animal Feast" Class="Monk" Cooldown="28" MaxHealthPercent="2" />
     <Skill Name="Animal Roar" Class="Monk" Cooldown="27" />
     <Skill Name="ao beag suain" Class="Warrior" Mana="1" Cooldown="7" />
     <Skill Name="Appraise" Class="Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="12" />
@@ -62,7 +62,7 @@
     <Skill Name="Claw Slash 9" Class="Monk" Group="Claw Slash" Cooldown="12" />
     <Skill Name="Clobber" Class="Warrior" Group="Assail" IsAssail="true" />
     <Skill Name="Combat Senses" Class="Warrior" Group="Sense User" OpensDialog="true" Cooldown="7" />
-    <Skill Name="Crasher" Class="Warrior" Cooldown="28" />
+    <Skill Name="Crasher" Class="Warrior" Cooldown="28" MaxHealthPercent="2" />
     <Skill Name="Cyclone Blade" Class="Warrior" Cooldown="15" />
     <Skill Name="Cyclone Kick" Class="Warrior" Cooldown="15" />
     <Skill Name="Dark Mega Blade" Class="Warrior" Cooldown="28" />
@@ -102,7 +102,7 @@
     <Skill Name="Elemental Bless 8" Class="Wizard" Group="Elemental Bless" />
     <Skill Name="Elemental Bless 9" Class="Wizard" Group="Elemental Bless" />
     <Skill Name="Evaluate Item" Class="Rogue" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="12" />
-    <Skill Name="Execute" Class="Warrior" Cooldown="28" />
+    <Skill Name="Execute" Class="Warrior" Cooldown="28" MaxHealthPercent="2" />
     <Skill Name="Food Lore" Class="Priest Monk" Group="Sense Item" OpensDialog="true" CanImprove="false" Cooldown="12" />
     <Skill Name="Frost Strike" Class="Warrior" Cooldown="3" />
     <Skill Name="Furious Bash" Class="Monk" Cooldown="28" />

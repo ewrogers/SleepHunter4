@@ -101,7 +101,7 @@ namespace SleepHunter.Metadata
         }
 
         [XmlAttribute("MinHealthPercent")]
-        [DefaultValue(null)]
+        [DefaultValue(0)]
         public double MinHealthPercent
         {
             get => minHealthPercent;
@@ -109,7 +109,7 @@ namespace SleepHunter.Metadata
         }
 
         [XmlAttribute("MaxHealthPercent")]
-        [DefaultValue(null)]
+        [DefaultValue(0)]
         public double MaxHealthPercent
         {
             get => maxHealthPercent;
