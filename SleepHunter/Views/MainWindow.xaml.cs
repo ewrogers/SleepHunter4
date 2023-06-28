@@ -57,6 +57,13 @@ namespace SleepHunter.Views
         private BackgroundWorker flowerUpdateWorker;
 
         private PlayerMacroState selectedMacro;
+        private volatile int closingFlag;
+
+        public bool IsClosing
+        {
+            get => Interlocked.And(ref closingFlag, 1) > 0;
+            set => Interlocked.Exchange(ref closingFlag, value ? 1 : 0);
+        }
 
         public MainWindow()
         {
@@ -338,7 +345,7 @@ namespace SleepHunter.Views
 
             Dispatcher.InvokeIfRequired(() =>
             {
-                if (string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 {
                     if (!player.IsLoggedIn)
                         OnPlayerLoggedOut(player);
@@ -394,6 +401,10 @@ namespace SleepHunter.Views
             {
                 Dispatcher.InvokeIfRequired(() =>
                 {
+                    // Ignore if the application is already closing, it will be saved by the closing routine
+                    if (IsClosing)
+                        return;
+
                     logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
                     AutoLoadMacroState(state);
                 }, DispatcherPriority.DataBind);
@@ -425,6 +436,10 @@ namespace SleepHunter.Views
             {
                 Dispatcher.InvokeIfRequired(() =>
                 {
+                    // Ignore if the application is already closing, do not auto load
+                    if (IsClosing)
+                        return;
+
                     logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
                     AutoSaveMacroState(state);
                 }, DispatcherPriority.DataBind);
@@ -484,6 +499,17 @@ namespace SleepHunter.Views
                 queuedSpell.MaximumLevel = spell.MaximumLevel;
                 queuedSpell.CurrentLevel = spell.CurrentLevel;
                 queuedSpell.IsOnCooldown = spell.IsOnCooldown;
+
+                var isWaitingOnHealth = false;
+
+                // Min health percentage (ex: > 90%), cannot use yet
+                if (spell.MinHealthPercent.HasValue && spell.MinHealthPercent.Value >= player.Stats.HealthPercent)
+                    isWaitingOnHealth = true;
+                // Max health percentage (ex: < 2%), cannot use yet
+                else if (spell.MaxHealthPercent.HasValue && player.Stats.HealthPercent > spell.MaxHealthPercent.Value)
+                    isWaitingOnHealth = true;
+
+                queuedSpell.IsWaitingOnHealth = isWaitingOnHealth;
             }
         }
 
@@ -1218,6 +1244,8 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            IsClosing = true;
+
             logger.LogInfo("Application is shutting down");
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
@@ -1357,7 +1385,7 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to save macro state file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Save Macro", "Unable to save the macro state.", ex.Message);
+                    this.ShowMessageBox("Failed to Save Macro", $"Unable to save the macro state for {state.Client.Name}.", ex.Message);
             }
         }
 
@@ -1382,10 +1410,24 @@ namespace SleepHunter.Views
                 return;
             }
 
-            LoadMacroState(state, autosaveFilePath, showError);
+            var didLoad = LoadMacroState(state, autosaveFilePath, showError);
+            
+            // File is probably broken, delete it
+            if (!didLoad && File.Exists(autosaveFilePath))
+            {
+                try
+                {
+                    File.Delete(autosaveFilePath);
+                }
+                catch(Exception ex)
+                {
+                    logger.LogException(ex);
+                    logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
+                }
+            }
         }
 
-        private void LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
+        private bool LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -1409,9 +1451,9 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to load macro state file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                    this.ShowMessageBox("Failed to Load Macro", $"Unable to load the macro state for {state.Client.Name}.", ex.Message);
 
-                return;
+                return false;
             }
 
             try
@@ -1517,6 +1559,8 @@ namespace SleepHunter.Views
                 {
                     state.LocalStorage.Add(keyValuePair.Key, keyValuePair.Value);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -1524,6 +1568,7 @@ namespace SleepHunter.Views
                 logger.LogError($"Unable to update {state.Client.Name} macro state from deserialized data");
 
                 this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                return false;
             }
             finally
             {

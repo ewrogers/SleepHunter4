@@ -4,6 +4,34 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1] - 2023-06-27
+
+### Added
+
+- `MinHealthPercent` to ability metadata
+- `MaxHealthPercent` to ability metadata (Crasher/Animal Feast/Execute)
+- Visual indicator on spell queue when waiting on HP thresholds
+- `OpensDialog` to spell metadata (was only skills before)
+- HP threshold in ability tooltips
+- More tooltips in metadata editors
+
+### Changed
+
+- Use new metadata properties for HP based conditions on abilities
+- Redesign some metadata editors for skill/spells
+- Increase dialog size for skill/spell metadata editors
+- Tooltip design
+
+### Removed
+
+- Removed hard-coded names for HP-based skills (now is customizable)
+
+### Fixed
+
+- Improved dialog closing (deferred dispatcher)
+- Autosave load error popup & info
+- Thousands formatting for HP/MP
+
 ## [4.10.0] - 2023-06-27
 
 ### Added

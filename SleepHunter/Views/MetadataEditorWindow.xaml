@@ -4,7 +4,7 @@
         xmlns:metadata="clr-namespace:SleepHunter.Metadata"
         xmlns:views="clr-namespace:SleepHunter.Views"
         Title="Metadata Editor"
-        Width="900" Height="640"
+        Width="900" Height="680"
         MinWidth="720" MinHeight="560"
         Style="{StaticResource ObsidianWindow}"
         ResizeMode="CanResizeWithGrip"
@@ -45,7 +45,7 @@
                             <GridViewColumn Header="Cooldown" Width="110" CellTemplate="{StaticResource CooldownDataTemplate}"/>
                             <GridViewColumn Header="Assail?" Width="75" CellTemplate="{StaticResource IsAssailDataTemplate}"/>
                             <GridViewColumn Header="Dialog?" Width="75" CellTemplate="{StaticResource OpensDialogDataTemplate}"/>
-                            <GridViewColumn Header="No Level?" Width="100" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
+                            <GridViewColumn Header="No Improve?" Width="120" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
                             <GridViewColumn Header="Disarm?" Width="100" CellTemplate="{StaticResource RequiresDisarmDataTemplate}"/>
                         </GridView>
                     </ListView.View>
@@ -72,7 +72,8 @@
                             <GridViewColumn Header="Mana" Width="70" CellTemplate="{StaticResource ManaDataTemplate}"/>
                             <GridViewColumn Header="Lines" Width="75" CellTemplate="{StaticResource LinesDataTemplate}"/>
                             <GridViewColumn Header="Cooldown" Width="110" CellTemplate="{StaticResource CooldownDataTemplate}"/>
-                            <GridViewColumn Header="No Level?" Width="100" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
+                            <GridViewColumn Header="Dialog?" Width="75" CellTemplate="{StaticResource OpensDialogDataTemplate}"/>
+                            <GridViewColumn Header="No Improve?" Width="120" CellTemplate="{StaticResource CanImproveDataTemplate}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>

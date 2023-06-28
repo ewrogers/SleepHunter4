@@ -124,6 +124,30 @@
                                                FontWeight="Normal"
                                                TextAlignment="Center"
                                                Margin="4,2"/>
+                                    <TextBlock Name="ToolTipMinHealthText"
+                                               Text="{Binding MinHealthPercent, StringFormat=HP &gt; {0}%}"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Visibility="Collapsed"
+                                               Margin="4,2"/>
+                                    <TextBlock Name="ToolTipMaxHealthText"
+                                               Text="{Binding MaxHealthPercent, StringFormat=HP &lt; {0}%}"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Visibility="Collapsed"
+                                               Margin="4,2"/>
+                                    <TextBlock Name="ToolTipOpensDialogText"
+                                               Style="{StaticResource ObsidianText}"
+                                               Text="Opens Dialog on Use"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Visibility="Collapsed"
+                                               Margin="4,2"/>
                                 </StackPanel>
                             </Image.ToolTip>
                         </Image>
@@ -177,6 +201,18 @@
 
             <DataTrigger Binding="{Binding IsSkill}" Value="True">
                 <Setter TargetName="ToolTipLinesText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding OpensDialog, Mode=OneWay}" Value="True">
+                <Setter TargetName="ToolTipOpensDialogText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding MinHealthPercent, Mode=OneWay, Converter={StaticResource NotNullConverter}}" Value="True">
+                <Setter TargetName="ToolTipMinHealthText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding MaxHealthPercent, Mode=OneWay, Converter={StaticResource NotNullConverter}}" Value="True">
+                <Setter TargetName="ToolTipMaxHealthText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
 
             <MultiDataTrigger>

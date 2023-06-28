@@ -4,28 +4,39 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-        <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Margin" Value="8"/>
+        <Setter Property="ToolTipService.HasDropShadow" Value="False"/>
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
         <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
         <Setter Property="ToolTipService.BetweenShowDelay" Value="500"/>
-        <Setter Property="ToolTipService.Placement" Value="MousePoint"/>
+        <Setter Property="ToolTipService.Placement" Value="Bottom"/>
+        <Setter Property="ToolTipService.HorizontalOffset" Value="8"/>
+        <Setter Property="ToolTipService.VerticalOffset" Value="4"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
                     <Border Background="{TemplateBinding Background}"
-                            Opacity="0.90"
-                            Padding="8"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="16,4"
+                            Margin="8"
                             CornerRadius="2">
+                        
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           TextBlock.FontSize="16"
                                           TextBlock.FontFamily="{StaticResource ObsidianFontFamily}"
                                           TextBlock.FontWeight="{StaticResource ObsidianFontWeight}"
-                                          Margin="0,2,0,0">
-                            <ContentPresenter.Effect>
-                                <DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="Black"/>
-                            </ContentPresenter.Effect>
-                        </ContentPresenter>
+                                          Margin="0,2,0,0"/>
+
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="Black"/>
+                        </Border.Effect>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

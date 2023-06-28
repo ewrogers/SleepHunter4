@@ -200,14 +200,20 @@ namespace SleepHunter.Models
                         spells[i].NumberOfLines = metadata.NumberOfLines;
                         spells[i].ManaCost = metadata.ManaCost;
                         spells[i].Cooldown = metadata.Cooldown;
+                        spells[i].OpensDialog = metadata.OpensDialog;
                         spells[i].CanImprove = metadata.CanImprove;
+                        spells[i].MinHealthPercent = metadata.MinHealthPercent > 0 ? metadata.MinHealthPercent : null;
+                        spells[i].MaxHealthPercent = metadata.MaxHealthPercent > 0 ? metadata.MaxHealthPercent : null;
                     }
                     else
                     {
                         spells[i].NumberOfLines = 1;
                         spells[i].ManaCost = 0;
                         spells[i].Cooldown = TimeSpan.Zero;
+                        spells[i].OpensDialog = false;
                         spells[i].CanImprove = true;
+                        spells[i].MinHealthPercent = null;
+                        spells[i].MaxHealthPercent = null;
                     }
                 }
                 catch { }

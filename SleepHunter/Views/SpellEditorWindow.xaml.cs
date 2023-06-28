@@ -36,6 +36,16 @@ namespace SleepHunter.Views
             manaUpDown.Value = spell.ManaCost;
             linesUpDown.Value = spell.NumberOfLines;
             cooldownTextBox.Text = spell.Cooldown.ToShortEnglish();
+
+            // conditions
+            minHpPercentCheckBox.IsChecked = spell.MinHealthPercent > 0;
+            minHpPercentUpDown.Value = spell.MinHealthPercent;
+
+            maxHpPercentCheckBox.IsChecked = spell.MaxHealthPercent > 0;
+            maxHpPercentUpDown.Value = spell.MaxHealthPercent;
+
+            // options
+            dialogCheckBox.IsChecked = spell.OpensDialog;
             improveCheckBox.IsChecked = !spell.CanImprove;
 
             SetPlayerClass(spell.Class);
@@ -63,13 +73,20 @@ namespace SleepHunter.Views
 
         private bool ValidateSpell()
         {
-            string spellName = nameTextBox.Text.Trim();
-            string groupName = groupNameTextBox.Text.Trim();
-            int manaCost = (int)manaUpDown.Value;
-            int numberOfLines = (int)linesUpDown.Value;
+            var spellName = nameTextBox.Text.Trim();
+            var groupName = groupNameTextBox.Text.Trim();
+            var manaCost = (int)manaUpDown.Value;
+            var numberOfLines = (int)linesUpDown.Value;
             TimeSpan cooldown;
-            bool doesNotLevel = improveCheckBox.IsChecked.Value;
-            bool nameChanged = originalName == null || !string.Equals(originalName, spellName, StringComparison.OrdinalIgnoreCase);
+
+            // conditions
+            var minHpPercent = (minHpPercentCheckBox.IsChecked ?? false) ? minHpPercentUpDown.Value : 0;
+            var maxHpPercent = (maxHpPercentCheckBox.IsChecked ?? false) ? maxHpPercentUpDown.Value : 0;
+
+            // options
+            var opensDialog = dialogCheckBox.IsChecked.Value;
+            var doesNotLevel = improveCheckBox.IsChecked.Value;
+            var nameChanged = originalName == null || !string.Equals(originalName, spellName, StringComparison.OrdinalIgnoreCase);
 
             if (string.IsNullOrWhiteSpace(spellName))
             {
@@ -120,6 +137,11 @@ namespace SleepHunter.Views
             spell.ManaCost = manaCost;
             spell.NumberOfLines = numberOfLines;
             spell.Cooldown = cooldown;
+
+            spell.MinHealthPercent = minHpPercent;
+            spell.MaxHealthPercent = maxHpPercent;
+
+            spell.OpensDialog = opensDialog;
             spell.CanImprove = !doesNotLevel;
             return true;
         }

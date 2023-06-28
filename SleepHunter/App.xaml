@@ -17,6 +17,7 @@
                     <converters:LessThanConverter x:Key="LessThanConverter"/>
                     <converters:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
                     <converters:NumericConverter x:Key="NumericConverter"/>
+                    <converters:NotNullConverter x:Key="NotNullConverter"/>
                     <converters:EquipmentSlotConverter x:Key="EquipmentSlotConverter"/>
                     <converters:PlayerClassConverter x:Key="PlayerClassConverter"/>
                     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>

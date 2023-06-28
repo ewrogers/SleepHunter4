@@ -14,9 +14,12 @@ namespace SleepHunter.Metadata
         private PlayerClass playerClass;
         private string groupName;
         private int manaCost;
+        private bool opensDialog;
         private int numberOfLines;
         private TimeSpan cooldown;
         private bool canImprove = true;
+        private double minHealthPercent;
+        private double maxHealthPercent;
 
         [XmlAttribute("Name")]
         public string Name
@@ -47,6 +50,14 @@ namespace SleepHunter.Metadata
         {
             get => manaCost;
             set => SetProperty(ref manaCost, value);
+        }
+
+        [XmlAttribute("OpensDialog")]
+        [DefaultValue(false)]
+        public bool OpensDialog
+        {
+            get => opensDialog;
+            set => SetProperty(ref opensDialog, value);
         }
 
         [XmlAttribute("Lines")]
@@ -80,6 +91,22 @@ namespace SleepHunter.Metadata
             set => SetProperty(ref canImprove, value);
         }
 
+        [XmlAttribute("MinHealthPercent")]
+        [DefaultValue(0)]
+        public double MinHealthPercent
+        {
+            get => minHealthPercent;
+            set => SetProperty(ref minHealthPercent, value);
+        }
+
+        [XmlAttribute("MaxHealthPercent")]
+        [DefaultValue(0)]
+        public double MaxHealthPercent
+        {
+            get => maxHealthPercent;
+            set => SetProperty(ref maxHealthPercent, value);
+        }
+
         public SpellMetadata() { }
 
         public override string ToString() => Name ?? "Unknown Spell";
@@ -90,9 +117,12 @@ namespace SleepHunter.Metadata
             other.Class = Class;
             other.GroupName = GroupName;
             other.ManaCost = ManaCost;
+            other.OpensDialog = OpensDialog;
             other.NumberOfLines = NumberOfLines;
             other.Cooldown = Cooldown;
             other.CanImprove = CanImprove;
+            other.MinHealthPercent = MinHealthPercent;
+            other.MaxHealthPercent = MaxHealthPercent;
         }
     }
 }

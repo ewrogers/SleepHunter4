@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-
+using SleepHunter.Common;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Settings;
@@ -14,8 +14,9 @@ namespace SleepHunter.Macro
     {
         private static readonly TimeSpan PanelTimeout = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan SwitchDelay = TimeSpan.FromMilliseconds(100);
-        private static readonly string[] CrasherSkillNames = new[] { "Crasher", "Animal Feast", "Execute" };
+        private static readonly TimeSpan DialogDelay = TimeSpan.FromSeconds(2);
 
+        private readonly DeferredDispatcher deferredDispatcher = new();
         private readonly ReaderWriterLockSlim spellQueueLock = new();
         private readonly ReaderWriterLockSlim flowerQueueLock = new();
 
@@ -392,6 +393,9 @@ namespace SleepHunter.Macro
         {
             client.Update(PlayerFieldFlags.GameClient);
 
+            // Tick the dispatcher so any scheduled events go off
+            deferredDispatcher.Tick();
+
             if (client.GameClient.IsUserChatting)
             {
                 SetPlayerStatus(PlayerMacroStatus.ChatIsUp);
@@ -527,6 +531,10 @@ namespace SleepHunter.Macro
                 skillList.Add(skill);
             }
 
+            // Update stats for current HP if any skill might need it for evaluating min/max thresholds
+            if (skillList.Any(skill => skill.MinHealthPercent.HasValue || skill.MaxHealthPercent.HasValue))
+                client.Update(PlayerFieldFlags.Stats);
+
             foreach (var skill in skillList.OrderBy((s) => { return s.OpensDialog; }))
             {
                 client.Update(PlayerFieldFlags.GameClient);
@@ -544,17 +552,13 @@ namespace SleepHunter.Macro
                     }
                 }
 
-                // Crasher skill (requires < 2% HP)
-                if (CrasherSkillNames.Contains(skill.Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    client.Update(PlayerFieldFlags.Stats);
-                    if (client.Stats.HealthPercent >= 2)
-                        continue;
+                // Min health percentage (ex: > 90%), skip if cannot use YET
+                if (skill.MinHealthPercent.HasValue && skill.MinHealthPercent.Value >= client.Stats.HealthPercent)
+                    continue;
 
-                    // TODO: Add Mad Soul + Sacrifice support!
-
-                    // TODO: Add auto-hemloch + hemloch deum support!
-                }
+                // Max health percentage (ex < 2%), skip if cannot use YET
+                if (skill.MaxHealthPercent.HasValue && client.Stats.HealthPercent > skill.MaxHealthPercent.Value)
+                    continue;
 
                 if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out var didRequireSwitch, useShiftKey))
                 {
@@ -566,8 +570,9 @@ namespace SleepHunter.Macro
                 }
             }
 
+            // Close the dialog after a few seconds
             if (expectDialog)
-                client.CancelDialog();
+                deferredDispatcher.DispatchAfter(client.CancelDialog, DialogDelay);
 
             if (useSpaceForAssail && isAssailQueued)
             {
@@ -604,8 +609,14 @@ namespace SleepHunter.Macro
                 return false;
             }
 
-            nextSpell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(nextSpell.Name);
+            var spellMetadata = SpellMetadataManager.Instance.GetSpell(nextSpell.Name);
+            nextSpell.IsUndefined = spellMetadata == null;
+
             CastSpell(nextSpell);
+
+            // Close the dialog after a few seconds
+            if (spellMetadata?.OpensDialog ?? false)
+                deferredDispatcher.DispatchAfter(client.CancelDialog, DialogDelay);
 
             lastUsedSpellItem = nextSpell;
             lastUsedSpellItem.IsActive = true;
@@ -913,32 +924,28 @@ namespace SleepHunter.Macro
         private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
         {
             if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown);
             else
-                return spellQueue.FirstOrDefault();
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth);
         }
 
         private SpellQueueItem GetNextSpell_SingularOrder(bool skipOnCooldown = true)
         {
             if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown && !spell.IsDone);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown && !spell.IsDone);
             else
-                return spellQueue.FirstOrDefault(spell => !spell.IsDone);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsDone);
         }
 
         private SpellQueueItem GetNextSpell_RoundRobin(bool skipOnCooldown = true)
         {
-            // All spells are done, nothing to cast
-            if (spellQueue.All(spell => spell.IsDone))
-                return null;
-
-            // All spells are on cooldown, and skipping so nothing to do
-            if (spellQueue.All(spell => spell.IsOnCooldown) && skipOnCooldown)
+            // All spells are unavailable, nothing to do
+            if (spellQueue.All(spell => spell.IsWaitingOnHealth || spell.IsOnCooldown || spell.IsDone))
                 return null;
 
             var currentSpell = spellQueue.ElementAt(spellQueueIndex);
 
-            while (currentSpell.IsDone || (skipOnCooldown && currentSpell.IsOnCooldown))
+            while (currentSpell.IsWaitingOnHealth || currentSpell.IsDone || (skipOnCooldown && currentSpell.IsOnCooldown))
                 currentSpell = AdvanceToNextSpell();
 
             // Round robin rotation for next time

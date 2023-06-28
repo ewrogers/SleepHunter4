@@ -9,6 +9,9 @@ namespace SleepHunter.Models
 
         private AbilityTargetType targetType;
         private string prompt;
+        private bool opensDialog;
+        private double? minHealthPercent;
+        private double? maxHealthPercent;
 
         public AbilityTargetType TargetType
         {
@@ -20,6 +23,24 @@ namespace SleepHunter.Models
         {
             get { return prompt; }
             set { SetProperty(ref prompt, value); }
+        }
+
+        public bool OpensDialog
+        {
+            get => opensDialog;
+            set => SetProperty(ref opensDialog, value);
+        }
+
+        public double? MinHealthPercent
+        {
+            get => minHealthPercent;
+            set => SetProperty(ref minHealthPercent, value);
+        }
+
+        public double? MaxHealthPercent
+        {
+            get => maxHealthPercent;
+            set => SetProperty(ref maxHealthPercent, value);
         }
 
         public static Spell MakeEmpty(int slot)
