@@ -499,6 +499,17 @@ namespace SleepHunter.Views
                 queuedSpell.MaximumLevel = spell.MaximumLevel;
                 queuedSpell.CurrentLevel = spell.CurrentLevel;
                 queuedSpell.IsOnCooldown = spell.IsOnCooldown;
+
+                var isWaitingOnHealth = false;
+
+                // Min health percentage (ex: > 90%), cannot use yet
+                if (spell.MinHealthPercent.HasValue && spell.MinHealthPercent.Value >= player.Stats.HealthPercent)
+                    isWaitingOnHealth = true;
+                // Max health percentage (ex: < 2%), cannot use yet
+                else if (spell.MaxHealthPercent.HasValue && player.Stats.HealthPercent > spell.MaxHealthPercent.Value)
+                    isWaitingOnHealth = true;
+
+                queuedSpell.IsWaitingOnHealth = isWaitingOnHealth;
             }
         }
 

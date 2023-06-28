@@ -553,11 +553,11 @@ namespace SleepHunter.Macro
                 }
 
                 // Min health percentage (ex: > 90%), skip if cannot use YET
-                if (skill.MinHealthPercent.HasValue && skill.MinHealthPercent >= client.Stats.HealthPercent)
+                if (skill.MinHealthPercent.HasValue && skill.MinHealthPercent.Value >= client.Stats.HealthPercent)
                     continue;
 
                 // Max health percentage (ex < 2%), skip if cannot use YET
-                if (skill.MaxHealthPercent.HasValue && client.Stats.HealthPercent > skill.MaxHealthPercent)
+                if (skill.MaxHealthPercent.HasValue && client.Stats.HealthPercent > skill.MaxHealthPercent.Value)
                     continue;
 
                 if (client.SwitchToPanelAndWait(skill.Panel, TimeSpan.FromSeconds(1), out var didRequireSwitch, useShiftKey))
@@ -924,32 +924,28 @@ namespace SleepHunter.Macro
         private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
         {
             if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown);
             else
-                return spellQueue.FirstOrDefault();
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth);
         }
 
         private SpellQueueItem GetNextSpell_SingularOrder(bool skipOnCooldown = true)
         {
             if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsOnCooldown && !spell.IsDone);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown && !spell.IsDone);
             else
-                return spellQueue.FirstOrDefault(spell => !spell.IsDone);
+                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsDone);
         }
 
         private SpellQueueItem GetNextSpell_RoundRobin(bool skipOnCooldown = true)
         {
-            // All spells are done, nothing to cast
-            if (spellQueue.All(spell => spell.IsDone))
-                return null;
-
-            // All spells are on cooldown, and skipping so nothing to do
-            if (spellQueue.All(spell => spell.IsOnCooldown) && skipOnCooldown)
+            // All spells are unavailable, nothing to do
+            if (spellQueue.All(spell => spell.IsWaitingOnHealth || spell.IsOnCooldown || spell.IsDone))
                 return null;
 
             var currentSpell = spellQueue.ElementAt(spellQueueIndex);
 
-            while (currentSpell.IsDone || (skipOnCooldown && currentSpell.IsOnCooldown))
+            while (currentSpell.IsWaitingOnHealth || currentSpell.IsDone || (skipOnCooldown && currentSpell.IsOnCooldown))
                 currentSpell = AdvanceToNextSpell();
 
             // Round robin rotation for next time
