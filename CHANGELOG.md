@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MinHealthPercent` to spell/skill metadata
 - `MaxHealthPercent` to spell/skill metadata (Crasher/Animal Feast/Execute)
 - `OpensDialog` to spell metadata (was only skills before)
+- HP threshold in spell/skill tooltips
 - More tooltips in metadata editors
 
 ### Changed
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Improved dialog closing (deferred dispatcher)
 - Autosave load error popup & info
 - Thousands formatting for HP/MP
 

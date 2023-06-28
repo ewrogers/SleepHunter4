@@ -57,6 +57,13 @@ namespace SleepHunter.Views
         private BackgroundWorker flowerUpdateWorker;
 
         private PlayerMacroState selectedMacro;
+        private volatile int closingFlag;
+
+        public bool IsClosing
+        {
+            get => Interlocked.And(ref closingFlag, 1) > 0;
+            set => Interlocked.Exchange(ref closingFlag, value ? 1 : 0);
+        }
 
         public MainWindow()
         {
@@ -394,6 +401,10 @@ namespace SleepHunter.Views
             {
                 Dispatcher.InvokeIfRequired(() =>
                 {
+                    // Ignore if the application is already closing, it will be saved by the closing routine
+                    if (IsClosing)
+                        return;
+
                     logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
                     AutoLoadMacroState(state);
                 }, DispatcherPriority.DataBind);
@@ -425,6 +436,10 @@ namespace SleepHunter.Views
             {
                 Dispatcher.InvokeIfRequired(() =>
                 {
+                    // Ignore if the application is already closing, do not auto load
+                    if (IsClosing)
+                        return;
+
                     logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
                     AutoSaveMacroState(state);
                 }, DispatcherPriority.DataBind);
@@ -1218,6 +1233,8 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            IsClosing = true;
+
             logger.LogInfo("Application is shutting down");
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;

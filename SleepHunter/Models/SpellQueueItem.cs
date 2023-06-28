@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Windows;
 using System.Windows.Media;
 
 using SleepHunter.Common;
-using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
@@ -21,6 +19,7 @@ namespace SleepHunter.Models
         private bool isUndefined;
         private bool isActive;
         private bool isOnCooldown;
+        private bool isWaitingOnHealth;
 
         public int Id
         {
@@ -118,6 +117,12 @@ namespace SleepHunter.Models
             set => SetProperty(ref isOnCooldown, value);
         }
 
+        public bool IsWaitingOnHealth
+        {
+            get => isWaitingOnHealth;
+            set => SetProperty(ref isWaitingOnHealth, value);
+        }
+
         public void CopyTo(SpellQueueItem other) => CopyTo(other, true, false);
 
         public void CopyTo(SpellQueueItem other, bool copyId) => CopyTo(other, copyId, false);
@@ -136,6 +141,8 @@ namespace SleepHunter.Models
             other.TargetLevel = TargetLevel;
             other.IsUndefined = IsUndefined;
             other.IsActive = IsActive;
+            other.isOnCooldown = IsOnCooldown;
+            other.IsWaitingOnHealth = IsWaitingOnHealth;
         }
 
         public override string ToString() => string.Format("{0} on {1}", name, target.ToString());

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Windows;
 
 using SleepHunter.Common;
-using SleepHunter.Macro;
 
 namespace SleepHunter.Models
 {
