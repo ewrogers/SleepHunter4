@@ -48,7 +48,23 @@
                                            FontSize="12"
                                            Margin="2"/>
                                 </Border>
-                                
+
+                                <Border x:Name="HealthBorder"
+                                        Background="{DynamicResource ObsidianBackground}"
+                                        BorderThickness="0"
+                                        CornerRadius="4"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Bottom"
+                                        Margin="0"
+                                        ToolTip="This spell is waiting on a health threshold."
+                                        Visibility="{Binding Path=IsWaitingOnHealth, Converter={StaticResource VisibilityConverter}}">
+                                    <TextBlock Name="HealthIcon"
+                                           Style="{StaticResource ObsidianSymbolText}"
+                                           Text="&#x1f497;"
+                                           FontSize="12"
+                                           Margin="4,2"/>
+                                </Border>
+
                             </Grid>
                         </Border>
 
