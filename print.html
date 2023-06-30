@@ -1,0 +1,1641 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>SleepHunter v4</title>
+        <meta name="robots" content="noindex" />
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">Overview</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="history.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="features.html"><strong aria-hidden="true">3.</strong> Features</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">4.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CHANGELOG.html"><strong aria-hidden="true">6.</strong> Release Notes</a></li><li class="chapter-item expanded "><a href="LICENSE.html"><strong aria-hidden="true">7.</strong> License</a></li><li class="chapter-item expanded affix "><li class="part-title">Main Window</li><li class="chapter-item expanded "><a href="main-window/toolbar.html"><strong aria-hidden="true">8.</strong> Toolbar</a></li><li class="chapter-item expanded "><a href="main-window/character-list.html"><strong aria-hidden="true">9.</strong> Character List</a></li><li class="chapter-item expanded "><a href="main-window/items-tab.html"><strong aria-hidden="true">10.</strong> Items Tab</a></li><li class="chapter-item expanded "><a href="main-window/skills-tab.html"><strong aria-hidden="true">11.</strong> Skills Tab</a></li><li class="chapter-item expanded "><a href="main-window/spells-tab.html"><strong aria-hidden="true">12.</strong> Spells Tab</a></li><li class="chapter-item expanded "><a href="main-window/flowering-tab.html"><strong aria-hidden="true">13.</strong> Flowering Tab</a></li><li class="chapter-item expanded "><a href="main-window/features-tab.html"><strong aria-hidden="true">14.</strong> Features Tab</a></li><li class="chapter-item expanded "><a href="main-window/spell-queue.html"><strong aria-hidden="true">15.</strong> Spell Queue</a></li><li class="chapter-item expanded affix "><li class="part-title">Spell Targets</li><li class="chapter-item expanded "><a href="spell-target/no-target.html"><strong aria-hidden="true">16.</strong> No Target</a></li><li class="chapter-item expanded "><a href="spell-target/self.html"><strong aria-hidden="true">17.</strong> Self Target</a></li><li class="chapter-item expanded "><a href="spell-target/alternate-character.html"><strong aria-hidden="true">18.</strong> Alternate Character</a></li><li class="chapter-item expanded "><a href="spell-target/relative-tile.html"><strong aria-hidden="true">19.</strong> Relative Tile</a></li><li class="chapter-item expanded "><a href="spell-target/relative-tile-area.html"><strong aria-hidden="true">20.</strong> Relative Tile Area</a></li><li class="chapter-item expanded "><a href="spell-target/absolute-tile.html"><strong aria-hidden="true">21.</strong> Absolute Tile</a></li><li class="chapter-item expanded "><a href="spell-target/absolute-tile-area.html"><strong aria-hidden="true">22.</strong> Absolute Tile Area</a></li><li class="chapter-item expanded "><a href="spell-target/screen-position.html"><strong aria-hidden="true">23.</strong> Screen Position</a></li><li class="chapter-item expanded affix "><li class="part-title">Flower Targets</li><li class="chapter-item expanded "><a href="flower-target/alternate-character.html"><strong aria-hidden="true">24.</strong> Alternate Character</a></li><li class="chapter-item expanded "><a href="flower-target/relative-tile.html"><strong aria-hidden="true">25.</strong> Relative Tile</a></li><li class="chapter-item expanded "><a href="flower-target/relative-tile-area.html"><strong aria-hidden="true">26.</strong> Relative Tile Area</a></li><li class="chapter-item expanded "><a href="flower-target/absolute-tile.html"><strong aria-hidden="true">27.</strong> Absolute Tile</a></li><li class="chapter-item expanded "><a href="flower-target/absolute-tile-area.html"><strong aria-hidden="true">28.</strong> Absolute Tile Area</a></li><li class="chapter-item expanded "><a href="flower-target/screen-position.html"><strong aria-hidden="true">29.</strong> Screen Position</a></li><li class="chapter-item expanded affix "><li class="part-title">Settings</li><li class="chapter-item expanded "><a href="settings/general.html"><strong aria-hidden="true">30.</strong> General Settings</a></li><li class="chapter-item expanded "><a href="settings/user-interface.html"><strong aria-hidden="true">31.</strong> User Interface</a></li><li class="chapter-item expanded "><a href="settings/game-client.html"><strong aria-hidden="true">32.</strong> Game Client</a></li><li class="chapter-item expanded "><a href="settings/all-macros.html"><strong aria-hidden="true">33.</strong> All Macros</a></li><li class="chapter-item expanded "><a href="settings/skill-macros.html"><strong aria-hidden="true">34.</strong> Skill Macros</a></li><li class="chapter-item expanded "><a href="settings/spell-macros.html"><strong aria-hidden="true">35.</strong> Spell Macros</a></li><li class="chapter-item expanded "><a href="settings/flowering.html"><strong aria-hidden="true">36.</strong> Flowering</a></li><li class="chapter-item expanded "><a href="settings/updates.html"><strong aria-hidden="true">37.</strong> Updates</a></li><li class="chapter-item expanded "><a href="settings/debug.html"><strong aria-hidden="true">38.</strong> Debug</a></li><li class="chapter-item expanded "><a href="settings/about.html"><strong aria-hidden="true">39.</strong> About</a></li><li class="chapter-item expanded affix "><li class="part-title">Metadata Editor</li><li class="chapter-item expanded "><a href="metadata-editor/skills-editor.html"><strong aria-hidden="true">40.</strong> Skills Editor</a></li><li class="chapter-item expanded "><a href="metadata-editor/spells-editor.html"><strong aria-hidden="true">41.</strong> Spells Editor</a></li><li class="chapter-item expanded "><a href="metadata-editor/staves-editor.html"><strong aria-hidden="true">42.</strong> Staves Editor</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">SleepHunter v4</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<h2 id="what-is-sleephunter"><a class="header" href="#what-is-sleephunter">What is SleepHunter?</a></h2>
+<p>SleepHunter is an automation tool for <a href="https://www.darkages.com">Dark Ages</a>, a massively multiplayer online role-playing game (MMORPG).
+It is used to automate the repetitive process of leveling a character's abilities.</p>
+<p>The current version is <strong>4.x</strong>, which is the culmination of over a decade of experience, testing, and enhancements from user feedback.</p>
+<p>You can view the <a href="./CHANGELOG.html">release notes</a> to see what has changed in each version.</p>
+<p><img src="./screenshots/SleepHunter.png" alt="image" /></p>
+<h2 id="what-was-it-made-using"><a class="header" href="#what-was-it-made-using">What was it made using?</a></h2>
+<p>SleepHunter is written in C# using the <a href="https://learn.microsoft.com/en-us/dotnet/desktop/wpf/overview/?view=netdesktop-7.0">Windows Presentation Foundation</a> (WPF) framework.</p>
+<p>It is built using the <a href="https://visualstudio.microsoft.com/">Visual Studio</a> IDE, and now targets .NET 7.0 as of 2023.</p>
+<p>The user interface is designed using custom XAML styles and templates.</p>
+<p>You can view the source code on <a href="https://www.github.com/ewrogers/SleepHunter4">GitHub</a>.</p>
+<h4 id="why-didnt-you-go-network-packet-based-instead"><a class="header" href="#why-didnt-you-go-network-packet-based-instead">Why didn't you go network (packet-based) instead?</a></h4>
+<p>This was a constant internal struggle that I had when developing v4.
+In fact, several times I had thought about scrapping v4 and re-writing it to be network-proxy based instead.</p>
+<p>It was quite the effort digging through the client's memory and figuring out static and dynamic memory offsets
+for variables. Many, many times I'd get frustrated and ask myself why am I taking the half-measure of being memory-based instead!</p>
+<p>The primary reason was that I was concerned that SleepHunter would become a defacto bot, even if not my intentions.
+It was already quite powerful, and I was toeing a line of ethics in being somewhat measured in what I released to the public.</p>
+<p>For those who know me and my history in-game, I am no stranger to the more &quot;questionable&quot; methods of play.
+Had my fair share of malarkey, shennanigans, and downright tom-foolery. Good memories indeed.</p>
+<p>However, I had seen what could happen if a program of that magnitude was released for everyone.
+I remember the days of Eru's zero-line client going around. I remember my infamous Injector that also got around.
+I remembered other developers' bots and &quot;hacks&quot; that got passed around quite freely.</p>
+<p>Ultimately, I did not want to see that happen again and ruin whatever was left of the game at the time.</p>
+<p>Another reason was that if SleepHunter acted like a network proxy between the client and server, it becomes a potential point of failure.
+If it crashes, you disconnect. If there's a bug in the network code, you might crash or disconnect. With memory-based, it's an entirely &quot;passive&quot; approach the client is unaffected.</p>
+<p>The other limitation is that you can't attach post-login. So if you decided you wanted to macro suddenly, you would have to log out and re-launch through the SleepHunter proxy application instead.
+This felt like a hassle, whereas with reading process memory you can do that anytime.</p>
+<p>There are certainly pros and cons to each approach. I eventually sided with controlled power, reliability, and ease of use.</p>
+<h2 id="what-is-the-license"><a class="header" href="#what-is-the-license">What is the license?</a></h2>
+<p>SleepHunter is licensed under the <a href="./LICENSE.html">MIT License</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="history"><a class="header" href="#history">History</a></h1>
+<p>As the version would suggest, this fourth major iteration 4 of SleepHunter.</p>
+<p>Let's take a look back at how it came to be what it is today.</p>
+<h2 id="why-is-it-called-sleephunter"><a class="header" href="#why-is-it-called-sleephunter">Why is it called &quot;SleepHunter&quot;?</a></h2>
+<p><a href="https://www.darkages.com">Dark Ages</a> is a heavily in-character online role-playing game, especially in the earlier days.</p>
+<p>Using some kind of program or &quot;tool&quot; to increase your skills was considered an unfair advantage and deemed against the rules.
+In-character this was considered &quot;sleephunting&quot; (leveling your skills while being &quot;asleep&quot;, or away from the keyboard).</p>
+<p>If you were caught doing this, whether using a program or something as simple as a paperclip stuffed in your keyboard to auto-attack,
+you would be punished for the crime of &quot;sleephunting&quot;. This meant you would be temporarily banned from certain areas, or placed into a jail cell to serve time.</p>
+<p>Your &quot;legend&quot;, or history of character's deeds and misdeeds, would be tarnished with an orange mark for each time you were caught.
+You could even have your character permanently banned if caught enough times.</p>
+<p>So thus the name was born from being cheeky and naming an automation tool after the crime itself.</p>
+<h2 id="why-did-you-make-it"><a class="header" href="#why-did-you-make-it">Why did you make it?</a></h2>
+<p>In <a href="https://www.darkages.com">Dark Ages</a> each skill or spell would start at level zero and gradually improve as you used it, usually up to the maximum of level 100.
+Depending on the ability, the level would impact effectiveness or chance of success, or even duration.
+To learn the next rank of an ability, or other higher abilities you often needed a certain level of an existing ability.</p>
+<p>Being an online, social game it was very common for people to sit around non-hostile areas and improve their skill and spells levels while chatting.
+Some people did it by hand, others used off-the-shelf &quot;macro&quot; prorgrams that would move their mouse cursor and type keys on the keyboard for them.
+Usually, these were set up in somewhat a repeatable, looping script.</p>
+<p>It was not considered &quot;illegal&quot; to do this if you were paying attention at the keyboard and could respond to an in-game &quot;guard&quot; or &quot;Ranger&quot; that suspected you.
+However, if you did not respond, you would be in trouble and face punishment.</p>
+<p>The main problem with existing tools of the time is that these macro programs would move your mouse cursor or send keystrokes to the current active application.
+It made multi-tasking very difficult because your mouse would keep moving and keys would just be hit.</p>
+<p>I wanted a specialized macro program that would send mouse and keyboard events only to the game client itself, allowing a seamless multi-tasking experience.
+Fortunately, this was possible using <a href="https://learn.microsoft.com/en-us/windows/win32/learnwin32/window-messages">Win32 Window Messages</a> and a debugging tool called <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/introducing-spy-increment?view=vs-2022">Spy++</a> from Microsoft.</p>
+<h2 id="why-was-macroing-such-a-thing"><a class="header" href="#why-was-macroing-such-a-thing">Why was &quot;macroing&quot; such a thing?</a></h2>
+<p><a href="https://www.darkages.com">Dark Ages</a> is a fairly long-running game initially released around August 1999.
+It went through a long period of testing and design before that as well.</p>
+<p>Being from that era, and based around &quot;old school&quot; D&amp;D mechanics and table-top design it was what some would call very &quot;grindy&quot;.
+Meaning that it would take a lot of time for you to gain experience, level up, and progress your character.</p>
+<p>During normal play of this time, your abilities would naturally develop as you hunted in groups and spent hours killing monsters.
+So this was not nearly as much of an issue of abilities being &quot;behind&quot;.</p>
+<h3 id="content-creep--imbalance"><a class="header" href="#content-creep--imbalance">Content Creep &amp; Imbalance</a></h3>
+<p>However, as more content was added to the game, it became easier and easier to level up quite quickly.
+To the point where you would always be very far behind and frustrated when going to learn the next ability.</p>
+<p>In other cases, some vital skills would have abyssmal &quot;hit&quot; chances unless they were almost maxed.
+Healing efficiency was also reduced and it was almost mana-inefficient at times unless you got to a certain level of your healing spells.</p>
+<p>So to put it shortly, bad game design that was never revisited or fixed lead people to &quot;macro&quot; or &quot;sleephunt&quot; to get by.
+This was a contentious issue that constantly went back and forth on the ethical debate. Some saying it was unfair play, others saying the development team should actively address the game balance.</p>
+<h3 id="enter-the-dojo"><a class="header" href="#enter-the-dojo">Enter the Dojo</a></h3>
+<p>At some point, a &quot;sleephunting Dojo&quot; was created by the development team. A place where you could pay gold and legally &quot;macro&quot; your skills while being away for a set amount of time (hours).
+After which, it would automatically teleport you out and you would have to pay to re-enter again.</p>
+<p>Ironically enough, if you got kicked out and continued to be &quot;sleephunting&quot;, you could get in trouble as you were outside of the Dojo.</p>
+<h3 id="sleephunter-v1-2004"><a class="header" href="#sleephunter-v1-2004">SleepHunter v1 (2004)</a></h3>
+<p>The first version of SleepHunter came from my frustration with existing macro programs.
+The main thing I wanted was the ability to multi-task properly while also improving my skills.</p>
+<p>I was in college at that time and would come back home on the weekends to visit my parents.
+I would use my dad's work laptop, some IBM Thinkpad and play Dark Ages while I was there.</p>
+<p>I was still &quot;learning&quot; .NET (C#) at the time, so this program was written in Visual Basic 6 as I was more familiar with it.</p>
+<p>The overall design was a listbox that you could add a variety of pre-defined commands, including repeat loops.
+You could start/stop playback of the macro as well as save and load it for future use.</p>
+<p>Despite being quite basic, it did use Window Messages to send events which meant that only the game client would receive those mouse and keyboard actions,
+instead of the current application. It was now possible to &quot;macro&quot; or &quot;sleephunt&quot; while doing other things!</p>
+<p><a href="https://www.planetda.net/index.php?/topic/10964-sleephunter-released-v1/">PlanetDA link</a></p>
+<h3 id="sleephunter-v2-2004"><a class="header" href="#sleephunter-v2-2004">SleepHunter v2 (2004)</a></h3>
+<p>The second version was released only a month after the first, also written in Visual Basic 6.
+At that time, it was obvious to me that I really wanted to expand the functionality possible with the application.</p>
+<p>The major improvement in this version was reading character state from the game client itself,
+enabling logic for if/else on variables like HP, MP, X, Y, and Map number.</p>
+<p>There were also some changes in how it would activate the different skill/spell panels to (hopefully) keep the chat pane open
+while you were macroing (if desired).</p>
+<p>The overall application was more or less the same, just more game-specific commands that you could perform.</p>
+<p><a href="https://www.planetda.net/index.php?/topic/11116-sleephunter-v2-released/">PlanetDA link</a></p>
+<h3 id="sleephunter-v3-2005"><a class="header" href="#sleephunter-v3-2005">SleepHunter v3 (2005)</a></h3>
+<p>The third version was released the following year, completely rewritten in .NET 2.0.
+I was enjoying C# compared to VB6 and it opened a lot of possibilities within the codebase.</p>
+<p>There definitely was a learning curve, especially with Win32 interopability and P/Invokes but it was worth it.</p>
+<p>Following the trend, more functions were added and multiple characters could be macroed at once.</p>
+<p>This time the UI was split with the left sidebar showing the &quot;library&quot; of available functions,
+and the right area hosted windows showing each character and their macro script.</p>
+<p>It was amazing to see what people built using these commands, including &quot;walking&quot; scripts to far-off places.
+Some would even &quot;pathfind&quot; by extensive if/else logic on the map coordinates.</p>
+<p><a href="https://www.planetda.net/index.php?/topic/14097-sleephunter-v3-beta-121/">PlanetDA link</a></p>
+<h3 id="sleephunter-v4-2012"><a class="header" href="#sleephunter-v4-2012">SleepHunter v4 (2012)</a></h3>
+<p>The fourth version was released several years, again rewritten in WPF instead of WinForms for the UI.</p>
+<p>I was fascinated with the themeing and skinning potential of WPF, and went all out.
+I probably spent more time on the UI design and XAML than I did actually coding the functionality.</p>
+<p>I wanted to add more capabilities to make it the most efficient, yet easy to use macroing program for Dark Ages.
+In order to do that, I knew I would need to be able to read more character state and implement the ability to
+perform more actions like equipping items and having alternate characters assist others.</p>
+<p>It became obvious to me that this was untennable from a &quot;scripting&quot; perspective, at least if the layperson was going to be able to use it.
+So the user experience was drastically changed. Instead you could simply double-click to add spells and skills to a queue and be on your way.</p>
+<p>The macro engine let you set a variety of parameters but for the most part it was automatic.
+It could detect when to switch staves for better cast times, wait for mana regeneration, and even flower other characters for nearly-inifite mana.</p>
+<p>All of these things required building XML data files so the application could understand the game mechanics.
+To keep it sustainable, it is also user-editable within the application.</p>
+<p>After looking back on it, it was worth the effort. The application aged incredibly well and stood the test of time,
+even if being &quot;ahead&quot; of the modern flat design trend.</p>
+<p>There was also a slight UI facelift in 2016 as well, mostly toning down font sizes and some iconography improvements.</p>
+<p><a href="https://www.planetda.net/index.php?/topic/25089-sleephunter-v150-2016-facelift/">PlanetDA link</a></p>
+<h2 id="going-forward-2023"><a class="header" href="#going-forward-2023">Going Forward (2023+)</a></h2>
+<p>While SleepHunter v4 continues to be the current version and fairly stable, there were always things I wanted to improve upon or add.
+The infamous &quot;Auto-Update&quot; that never actually functioned is one of many (now available in v4.1.0).</p>
+<p>A proper user manual hosted as this repositories GitHub Pages would also be useful, and can be linked from the application itself.</p>
+<p>I also was never happy that despite using WPF, I ended up building it very WinForms-y in terms of code-behind instead of a proper MVVM data-binding application.
+It's probably too much work to refactor for no apparent gain, but for anyone considering writing a WPF application today -- <a href="https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/">use MVVM</a>.</p>
+<p>There's still a few bugs I want to fix as well. I am still humbled by the fact people still use this application over two decades later.
+That and I am surprised the game itself is still online, even if only a husk of its former self.</p>
+<p>I absolutely accept PRs for this application! If you have a feature or bug fix that you want to implement yourself, have at it.
+It should be much easier to coordinate and distribute now that <code>Auto-Update</code> is live.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="features"><a class="header" href="#features">Features</a></h1>
+<p>SleepHunter is an incredibly powerful automation tool for <a href="https://www.darkages.com">Dark Ages</a>.</p>
+<p>This section is a high-level overview of the features that are available in SleepHunter.
+You can find more detailed information about each feature as you read through the rest of this documentation.</p>
+<h3 id="direct-interaction"><a class="header" href="#direct-interaction">Direct Interaction</a></h3>
+<p>SleepHunter uses <a href="https://learn.microsoft.com/en-us/windows/win32/learnwin32/window-messages">Windows Messages</a> to directly interact with the game client.
+This allows SleepHunter to emulate user input without interrupting the user's normal workflow on their computer.
+No errant mouse clicks or keyboard presses in other applications will occur while SleepHunter is running.</p>
+<h3 id="game-client-detection"><a class="header" href="#game-client-detection">Game Client Detection</a></h3>
+<p>SleepHunter scans all running processes to find Dark Ages game clients automatically.
+It can detect multiple game clients running on the same computer at the same time.</p>
+<p>Uses client signature to differentiate between varying client versions (including modified clients).</p>
+<h3 id="runtime-patching"><a class="header" href="#runtime-patching">Runtime Patching</a></h3>
+<p>SleepHunter can launch new game client instances and patch them at runtime, allowing tweaks such as multiple instances
+and skipping the intro video on startup. This is useful for running multiple characters together.</p>
+<h3 id="character-state-reading"><a class="header" href="#character-state-reading">Character State Reading</a></h3>
+<p>SleepHunter can read the current state of each character logged into a game client.
+This includes the character's name, level, health, mana, location, inventory, skills, and spells.
+It can also read the state of various user interface elements such as the chat window, skill window, and spell window.</p>
+<h3 id="map-aware"><a class="header" href="#map-aware">Map Aware</a></h3>
+<p>SleepHunter reads the current map that the character is on, and can detect when the character has moved to a new map.
+This allows automatic stopping of macros when the character has left the Dojo or any other map, avoiding the risk of punishment.</p>
+<h3 id="game-metadata"><a class="header" href="#game-metadata">Game Metadata</a></h3>
+<p>SleepHunter has a built-in database of game data, including the names of all skills, spells, and staves for casting.
+This allows intelligent &quot;wait for mana&quot;, &quot;disarm&quot;, and other features that require knowledge of the game's mechanics and state.</p>
+<p>There is even a built-in metadata editor that allows you to add your own custom skills, spells, and staves.</p>
+<h3 id="asynchronous-skills"><a class="header" href="#asynchronous-skills">Asynchronous Skills</a></h3>
+<p>SleepHunter can use multiple skills at the same time, interleaving them to maximize the skill increases.
+It can also do this while casting spells, allowing you to level up your spells while you level up your skills.</p>
+<h3 id="spell-queue"><a class="header" href="#spell-queue">Spell Queue</a></h3>
+<p>SleepHunter can queue multiple spells to be leveled up at the same time, either one at a time or round-robin style.
+You can set a maximum level for each spell, and it will stop casting that spell once it reaches that level.</p>
+<h3 id="flower-queue"><a class="header" href="#flower-queue">Flower Queue</a></h3>
+<p>SleepHunter can queue different targets to use Lyliac Plant (flower) for sharing mana to others.
+It also supports Lyliac Vineyard for group-based mana distribution.</p>
+<h3 id="automatic-fas-spiorad"><a class="header" href="#automatic-fas-spiorad">Automatic Fas Spiorad</a></h3>
+<p>SleepHunter can cast &quot;fas spiorad&quot; automatically when your character is low on mana.
+This includes when acting as a &quot;mana battery&quot; for other characters, including your own.</p>
+<h3 id="staff-switching"><a class="header" href="#staff-switching">Staff Switching</a></h3>
+<p>SleepHunter can automatically switch between staves when casting spells to ensure the fastest possible cast time.
+It can also temporarily un-equip a staff for zero-line casting of some instant spells.</p>
+<h3 id="alternate-character-aware"><a class="header" href="#alternate-character-aware">Alternate Character Aware</a></h3>
+<p>SleepHunter is aware of all other characters logged in on the same computer.
+This allows it special functionality when supporting other characters and prioritizing mana distribution.</p>
+<h3 id="hotkeys"><a class="header" href="#hotkeys">Hotkeys</a></h3>
+<p>SleepHunter allows user-defined hotkeys to start, pause, and resume automation for each character.
+This can be used to pause automation when you need to do something manually, or to resume automation when you are done.</p>
+<h3 id="auto-save-macro-state"><a class="header" href="#auto-save-macro-state">Auto-Save Macro State</a></h3>
+<p>SleepHunter automatically saves the state of each character's last macro when the application is closed.
+This allows you to easily resume automation where you left off, even after you close the application.</p>
+<h3 id="color-themes"><a class="header" href="#color-themes">Color Themes</a></h3>
+<p>SleepHunter supports multiple color themes that act as a &quot;skin&quot; for the application.
+This allows you to customize the look and feel of the application to your liking.</p>
+<h3 id="automatic-updates"><a class="header" href="#automatic-updates">Automatic Updates</a></h3>
+<p>SleepHunter now supports automatic updates, checking the same GitHub releases page that you downloaded the application from.
+If an update is available, you will be prompted to download and install it.
+SleepHunter will automatically close and restart after the update is applied.</p>
+<h3 id="and-more"><a class="header" href="#and-more">...and more!</a></h3>
+<p>As you read through the rest of this documentation, you will find many more features that are available in SleepHunter.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
+<ul>
+<li><a href="https://www.darkages.com">Dark Ages</a> Client 7.41 (current latest)</li>
+<li>.NET 7.0 Runtime
+<ul>
+<li>Windows arm64 - <a href="https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-7.0.5-windows-arm64-installer">Download Link</a></li>
+<li>Windows x64 - <a href="https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-7.0.5-windows-x64-installer">Download Link</a></li>
+<li>Windows x86 - <a href="https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-7.0.5-windows-x86-installer">Download Link</a></li>
+</ul>
+</li>
+<li>Windows 7, 10, 11 (64-bit)</li>
+</ul>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<ol>
+<li>Download the latest version from the <a href="https://github.com/ewrogers/SleepHunter4/releases">Releases</a> page.</li>
+<li>Extract the <code>SleepHunter-4.x.x.zip</code> file to a folder of your choice.</li>
+<li>Run <code>SleepHunter.exe</code> to start the application.</li>
+<li>Configure your game client settings in the <code>Settings-&gt;GameClient</code> section.</li>
+<li>Read the rest of this documentation to learn how to use the application.</li>
+</ol>
+<p>It is very important that you extract <strong>all</strong> of the files from the <code>SleepHunter-4.x.x.zip</code> file.</p>
+<h2 id="auto-update"><a class="header" href="#auto-update">Auto-Update</a></h2>
+<p>As of version <strong>4.1.0</strong>, SleepHunter will automatically check for updates when it starts.
+It checks the same GitHub releases page that you downloaded the application from.</p>
+<p>If an update is available, you will be prompted to download and install it.
+SleepHunter will automatically close and restart after the update is applied.</p>
+<p>You can also manually check for updates by clicking the <code>Check for Updates</code> button in the <code>Settings-&gt;Updates</code> section.</p>
+<p><strong>NOTE:</strong> Your <code>Settings.xml</code> file will <strong>not</strong> be overwritten when you update SleepHunter.</p>
+<h2 id="manual-update"><a class="header" href="#manual-update">Manual Update</a></h2>
+<p>If you are unable to update SleepHunter automatically, you can manually download and install the latest version.
+Follow the same steps as the <a href="installation.html#installation">Installation</a> section, but replace the existing files with the new ones.</p>
+<p>In most cases, you do not have to overwrite the <code>Settings.xml</code> file.</p>
+<h2 id="uninstall"><a class="header" href="#uninstall">Uninstall</a></h2>
+<p>To uninstall SleepHunter, simply delete the folder that you extracted the application to.
+There are no registry entries or other files that need to be removed.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>So you just installed SleepHunter, and you're ready to start using it. Now what?</p>
+<p>One tip is that most of the user interface supports tooltips.
+If you hover your mouse over a control, you will see information appear with a description of what it does.</p>
+<p>See the <code>Main Window</code> section in the sidebar for more information.</p>
+<h2 id="how-do-i-macro-a-skill"><a class="header" href="#how-do-i-macro-a-skill">How do I macro a skill?</a></h2>
+<p>You can macro any number of skills at the same time, simply double-click on the skill you wish to macro as part of your rotation.</p>
+<p>The skill will be highlighted in white as well as a colorful box around it, indicating that is is &quot;enabled&quot;.</p>
+<p>Once you have enabled all the skills you wish to macro, you can start the macro by clicking the <code>Start Macro</code> button in the toolbar.
+The selected character will then begin to macro the skills you have enabled.</p>
+<p>You can toggle any skill on or off at any time by double-clicking on it, even while the macro is running.</p>
+<p>See more information about the <a href="./main-window/skills-tab.html">Skills Tab</a>.</p>
+<h2 id="how-do-i-macro-a-spell"><a class="header" href="#how-do-i-macro-a-spell">How do I macro a spell?</a></h2>
+<p>You can macro a spell by double-clicking on the spell you wish to macro as part of your <code>Spell Queue</code>.
+You will get a popup dialog asking you to select the target for the spell, as well as the maximum level you wish to cast the spell to.</p>
+<p>You can leave the <code>Offset X/Y</code> to zero, as that is only needed for fine-tuning the mouse coordinates on non-standard targets.</p>
+<p>Once you add a spell to the queue, you will see it appear on the right sidebar. You can add as many spells as you wish to the queue.
+The spell queue supports drag and drop for re-ordering.</p>
+<p>Once you have added all the spells you wish to macro, you can start the macro by clicking the <code>Start Macro</code> button in the toolbar.</p>
+<p>You can add and remove spells from the queue at any time, even while the macro is running.</p>
+<p>See more information about the <a href="./main-window/spell-queue.html">Spell Queue</a>.</p>
+<h2 id="how-do-i-flower-another-character-lyliac-plant"><a class="header" href="#how-do-i-flower-another-character-lyliac-plant">How do I flower another character? (Lyliac Plant)</a></h2>
+<p>You can cast <code>Lyliac Plant</code> (flower) on another character by adding a new flower target at the bottom of the <code>Flowering</code> tab.
+Similar to the spell macro, you will get a popup dialog asking you to select the recipient for <code>Lyliac Plant</code>, as well as some logic parameters.</p>
+<p>You can leave the <code>Offset X/Y</code> to zero, as that is only needed for fine-tuning the mouse coordinates on non-standard targets.</p>
+<p>Once you add a flower target, you will set it appear in the <code>Flowering</code> tab queue. You can add as many flower targets as you wish.
+The flower queue supports drag and drop for re-ordering.</p>
+<p>Once you have added all the flower targets you wish to macro, you can start the macro by clicking the <code>Start Macro</code> button in the toolbar.</p>
+<p>You can add and remove flower targets from the queue at any time, even while the macro is running.</p>
+<p>See more information about <a href="./main-window/flowering-tab.html">Flowering</a>.</p>
+<h2 id="how-do-i-flower-my-entire-group-lyliac-vineyard"><a class="header" href="#how-do-i-flower-my-entire-group-lyliac-vineyard">How do I flower my entire group? (Lyliac Vineyard)</a></h2>
+<p>You can cast <code>Lyliac Vineyard</code> for your entire group by enabling the option at the top of the <code>Flowering</code> tab.
+This will automatically cast <code>Lyliac Plant</code> on all other characters in your group, when it is available on cooldown.</p>
+<p>You can enable this option at any time, even while individually casting <code>Lyliac Plant</code> on other characters.</p>
+<p>Remember, you must click the <code>Start Macro</code> button in the toolbar to start the process.</p>
+<h2 id="can-i-use-all-of-these-together"><a class="header" href="#can-i-use-all-of-these-together">Can I use all of these together?</a></h2>
+<p>Yes, absolutely! You can macro skills, spells, and flower your entire group at the same time.
+SleepHunter has been designed to support all of these features at the same time and will automatically handle the timing of each macro.</p>
+<p>It will also switch staves and cast <code>fas spiorad</code> as needed to regain mana.</p>
+<h2 id="how-do-i-bind-hotkeys-to-a-character"><a class="header" href="#how-do-i-bind-hotkeys-to-a-character">How do I bind hotkeys to a character?</a></h2>
+<p>You can assign custom hotkeys to each of your characters by selecting them in SleepHunter and pressing the hotkey combination you wish to use.
+This will toggle their macro state when you press the hotkey, even if the main SleepHunter window is not in focus.</p>
+<p>To remove the hotkey, simply press the <code>Delete</code> or <code>Backspace</code> key while the character is selected.
+If you assign the same hotkey to another character, the previous character will have the hotkey unbound.</p>
+<p>There is a visual indicator on the character list item to show if a hotkey is assigned.</p>
+<h2 id="do-i-have-to-redo-this-every-time-i-start-sleephunter"><a class="header" href="#do-i-have-to-redo-this-every-time-i-start-sleephunter">Do I have to redo this every time I start SleepHunter?</a></h2>
+<p>SleepHunter will automatically save the state of your macroing when you close the application, including hotkeys.
+This means that when you start SleepHunter again, it will automatically restore the state of your macroing for that character.</p>
+<p><strong>NOTE:</strong> This does not mean that SleepHunter will automatically start macroing when you start the application, only that it will restore the state of your character's macro when you close the application.</p>
+<h2 id="what-about-the-dojo"><a class="header" href="#what-about-the-dojo">What about the Dojo?</a></h2>
+<p>By default SleepHunter is configured to stop macroing once a character's map changes.
+This is to prevent macros continuing to run once you leave the Dojo (or are kicked out).</p>
+<p>You can also configure SleepHunter to close the game client entirely when you leave the Dojo.</p>
+<h2 id="can-i-customize-certain-behaviors"><a class="header" href="#can-i-customize-certain-behaviors">Can I customize certain behaviors?</a></h2>
+<p>Yes, many of the behaviors of SleepHunter can be customized to your liking in the <code>Settings</code> tab.
+It is recommended that you review the <a href="./settings/general.html">Settings</a> before starting macroing.
+The default settings are designed to work for most users, but you may want to customize them to your needs.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<p>All notable changes to this library will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="4102---2023-06-29"><a class="header" href="#4102---2023-06-29">[4.10.2] - 2023-06-29</a></h2>
+<h3 id="removed"><a class="header" href="#removed">Removed</a></h3>
+<ul>
+<li>Lots of old code and things that were not being used</li>
+</ul>
+<h3 id="fixed"><a class="header" href="#fixed">Fixed</a></h3>
+<ul>
+<li>Auto-save and load reliability</li>
+<li>Some UI bugs on auto-load</li>
+<li>Lots of performance and under the hood optimizations</li>
+</ul>
+<h2 id="4101---2023-06-27"><a class="header" href="#4101---2023-06-27">[4.10.1] - 2023-06-27</a></h2>
+<h3 id="added"><a class="header" href="#added">Added</a></h3>
+<ul>
+<li><code>MinHealthPercent</code> to ability metadata</li>
+<li><code>MaxHealthPercent</code> to ability metadata (Crasher/Animal Feast/Execute)</li>
+<li>Visual indicator on spell queue when waiting on HP thresholds</li>
+<li><code>OpensDialog</code> to spell metadata (was only skills before)</li>
+<li>HP threshold in ability tooltips</li>
+<li>More tooltips in metadata editors</li>
+</ul>
+<h3 id="changed"><a class="header" href="#changed">Changed</a></h3>
+<ul>
+<li>Use new metadata properties for HP based conditions on abilities</li>
+<li>Redesign some metadata editors for skill/spells</li>
+<li>Increase dialog size for skill/spell metadata editors</li>
+<li>Tooltip design</li>
+</ul>
+<h3 id="removed-1"><a class="header" href="#removed-1">Removed</a></h3>
+<ul>
+<li>Removed hard-coded names for HP-based skills (now is customizable)</li>
+</ul>
+<h3 id="fixed-1"><a class="header" href="#fixed-1">Fixed</a></h3>
+<ul>
+<li>Improved dialog closing (deferred dispatcher)</li>
+<li>Autosave load error popup &amp; info</li>
+<li>Thousands formatting for HP/MP</li>
+</ul>
+<h2 id="4100---2023-06-27"><a class="header" href="#4100---2023-06-27">[4.10.0] - 2023-06-27</a></h2>
+<h3 id="added-1"><a class="header" href="#added-1">Added</a></h3>
+<ul>
+<li><code>Save Macro</code> toolbar button</li>
+<li><code>Load Macro</code> toolbar button</li>
+<li>Window title parameter for client versions</li>
+<li>Macro features are now saved with state</li>
+</ul>
+<h3 id="changed-1"><a class="header" href="#changed-1">Changed</a></h3>
+<ul>
+<li>Renamed <code>Start New Client</code> button to <code>Launch Client</code> to fit new <code>Load</code> and <code>Save</code> buttons</li>
+<li>Updated min width to fit new toolbar buttons</li>
+<li>Refactored entire save state system</li>
+<li>Refactored local storage (features)</li>
+</ul>
+<h3 id="fixed-2"><a class="header" href="#fixed-2">Fixed</a></h3>
+<ul>
+<li>Auto-save reliability</li>
+<li>Spell rotation combo box sometimes being empty</li>
+</ul>
+<h2 id="490---2023-06-24"><a class="header" href="#490---2023-06-24">[4.9.0] - 2023-06-24</a></h2>
+<h3 id="added-2"><a class="header" href="#added-2">Added</a></h3>
+<ul>
+<li><code>Items</code> tab now features an <code>Inventory</code> / <code>Equipment</code> toggle for viewing each</li>
+<li><code>Equipment</code> view to see all equipped items in a list (by slot)</li>
+</ul>
+<h3 id="changed-2"><a class="header" href="#changed-2">Changed</a></h3>
+<ul>
+<li><code>Inventory</code> tab has been renamed to <code>Items</code></li>
+<li><code>Inventory</code> will now scroll vertically (when necessary)</li>
+<li><code>Skills</code> will now scroll vertically (when necessary)</li>
+<li><code>Spells</code> will now scroll vertically (when necessary)</li>
+</ul>
+<h3 id="fixed-3"><a class="header" href="#fixed-3">Fixed</a></h3>
+<ul>
+<li>Equipment memory offsets for Zolian (staff-switching now works)</li>
+</ul>
+<h2 id="482---2023-06-23"><a class="header" href="#482---2023-06-23">[4.8.2] - 2023-06-23</a></h2>
+<h3 id="added-3"><a class="header" href="#added-3">Added</a></h3>
+<ul>
+<li>&quot;Use Water &amp; Beds&quot; for MP recovery feature (Zolian only)</li>
+<li>&quot;Browse&quot; button for selecting client path with open file dialog</li>
+</ul>
+<h3 id="changed-3"><a class="header" href="#changed-3">Changed</a></h3>
+<ul>
+<li><code>Flowering</code> tab is now only shown in USDA clients</li>
+<li>Tweak the color theme dropdown layout</li>
+<li>Spell queue automatically opens when selected a character with queued spells</li>
+</ul>
+<h2 id="481---2023-06-22"><a class="header" href="#481---2023-06-22">[4.8.1] - 2023-06-22</a></h2>
+<h3 id="added-4"><a class="header" href="#added-4">Added</a></h3>
+<ul>
+<li>Gold display to inventory (last slot)</li>
+<li><code>Features</code> tab for client-specific feature options (per-character)</li>
+<li>Feature flag support for client-specific functionality in <code>ClientVersion</code> definitions</li>
+</ul>
+<h3 id="changed-4"><a class="header" href="#changed-4">Changed</a></h3>
+<ul>
+<li>Client version <code>7.41</code> is now renamed <code>USDA 7.41</code> for clarity</li>
+</ul>
+<h3 id="fixed-4"><a class="header" href="#fixed-4">Fixed</a></h3>
+<ul>
+<li>Fas spiorad bugs (needlessly cast at low mana)</li>
+<li>Better spellbook cooldown updates</li>
+</ul>
+<h2 id="480---2023-06-21"><a class="header" href="#480---2023-06-21">[4.8.0] - 2023-06-21</a></h2>
+<h3 id="added-5"><a class="header" href="#added-5">Added</a></h3>
+<ul>
+<li><code>Inventory</code> tab to view items (names only for now)</li>
+<li>Inventory grid display options under <code>User Interface</code> settings</li>
+<li><code>Signature</code> definition for <code>ClientVersion</code>, which allows version to be detected by signature bytes instead of hash</li>
+<li><code>ExecutableName</code> and <code>WindowClassName</code> properties for <code>ClientVersion</code> to support other clients</li>
+<li>Client version for <code>Zolian 9.1.1</code> memory offsets (<a href="https://www.thebucknetwork.com/Zolian">Zolian Server</a>)</li>
+</ul>
+<h3 id="changed-5"><a class="header" href="#changed-5">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> is now version <code>1.6</code></li>
+<li>Launched clients now detect version based on the new signature definitions</li>
+<li>Process manager can detect other clients based on version definitions</li>
+<li>HP/MP formatting threshold increased to 10k for &quot;thousands&quot; shorthand</li>
+<li><code>User Settings</code> dialog is now larger</li>
+</ul>
+<h3 id="removed-2"><a class="header" href="#removed-2">Removed</a></h3>
+<ul>
+<li><code>Value</code> in <code>ClientVersion</code>, as it was never used</li>
+<li><code>Hash</code> in <code>ClientVersion</code>, now using signature-based detection instead </li>
+</ul>
+<h3 id="fixed-5"><a class="header" href="#fixed-5">Fixed</a></h3>
+<ul>
+<li>Parsing of skills/spell names with no level text</li>
+</ul>
+<h2 id="470---2023-06-16"><a class="header" href="#470---2023-06-16">[4.7.0] - 2023-06-16</a></h2>
+<h3 id="added-6"><a class="header" href="#added-6">Added</a></h3>
+<ul>
+<li>Spell rotation combo box in Spell Queue for per-character setting</li>
+<li>Spell rotation character setting is preserved in saved state</li>
+<li>Spell cooldown indicator in Spell Queue</li>
+<li>New option for <code>Skip Spells on Cooldown</code> for <code>Spell Macros</code> (default is <code>Enabled</code>)</li>
+<li>Spells on cooldown will be skipped, even in no rotation/singular order (when enabled)</li>
+<li>More accessibility key for checkboxes in <code>Spell Macro</code> settings</li>
+</ul>
+<h3 id="changed-6"><a class="header" href="#changed-6">Changed</a></h3>
+<ul>
+<li><code>Spell Rotation Mode</code> renamed <code>Default Spell Queue Rotation</code> to better describe it can be overriden</li>
+<li><code>UserSettings</code> are now version <code>1.5</code></li>
+<li>Now format health/mana using <code>k</code> and <code>m</code> suffixes for thousands/millions (ex: <code>256k</code>, <code>1.2m</code>)</li>
+</ul>
+<h3 id="fixed-6"><a class="header" href="#fixed-6">Fixed</a></h3>
+<ul>
+<li>Some staff line changes</li>
+<li>Better spell queue rotation handling</li>
+</ul>
+<h2 id="461---2023-06-03"><a class="header" href="#461---2023-06-03">[4.6.1] - 2023-06-03</a></h2>
+<h3 id="added-7"><a class="header" href="#added-7">Added</a></h3>
+<ul>
+<li>Status icons now next to character name (when running/paused)</li>
+</ul>
+<h3 id="changed-7"><a class="header" href="#changed-7">Changed</a></h3>
+<ul>
+<li>Small UI tweaks on character list text spacing</li>
+<li>Adjusted min size on the character list to accomodate new status icon</li>
+<li>Will look in a few places for the default DA client path</li>
+</ul>
+<h3 id="removed-3"><a class="header" href="#removed-3">Removed</a></h3>
+<ul>
+<li><code>DirectDrawCompatibilityFix</code> option and support (it was causing side effects for some users)</li>
+<li><strong>TO REMOVE:</strong> Delete <code>ddraw.dll</code> and the <code>DDrawCompat-Darkages.ini</code> files from your DA client folder</li>
+</ul>
+<h3 id="fixed-7"><a class="header" href="#fixed-7">Fixed</a></h3>
+<ul>
+<li>Marked <code>Assail</code>, <code>Assault</code>, and <code>Clobber</code> skills as assail types</li>
+<li>Clear macro status on stop (fixes &quot;Assailing&quot; being displayed when stopped)</li>
+<li><code>Execute</code> skill now also waits for &lt; 2% hp</li>
+<li>Spell queue levels not updating until next cast</li>
+</ul>
+<h2 id="460---2023-05-31"><a class="header" href="#460---2023-05-31">[4.6.0] - 2023-05-31</a></h2>
+<h3 id="added-8"><a class="header" href="#added-8">Added</a></h3>
+<ul>
+<li><code>DirectDrawCompatibilityFix</code> option for fixing flickering mouse cursor (<a href="https://github.com/narzoul/DDrawCompat">DDrawCompat</a> repo)</li>
+</ul>
+<h3 id="changed-8"><a class="header" href="#changed-8">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> are now version <code>1.4</code></li>
+</ul>
+<h2 id="455---2023-05-21"><a class="header" href="#455---2023-05-21">[4.5.5] - 2023-05-21</a></h2>
+<h3 id="added-9"><a class="header" href="#added-9">Added</a></h3>
+<ul>
+<li>Many missing spells for Temuair</li>
+<li>Many missing spells for Medenia (AB50+)</li>
+<li>Many missing skills for Temuair</li>
+<li>Many missing skills for Medenia (AB50+)</li>
+</ul>
+<h3 id="fixed-8"><a class="header" href="#fixed-8">Fixed</a></h3>
+<ul>
+<li>Spell lines and mana costs for some spells</li>
+<li>Keyboard navigation via tab in some UI elements</li>
+</ul>
+<h2 id="454---2023-05-19"><a class="header" href="#454---2023-05-19">[4.5.4] - 2023-05-19</a></h2>
+<h3 id="fixed-9"><a class="header" href="#fixed-9">Fixed</a></h3>
+<ul>
+<li>Skill cooldown memory reading inconsistencies</li>
+</ul>
+<h2 id="453---2023-05-18"><a class="header" href="#453---2023-05-18">[4.5.3] - 2023-05-18</a></h2>
+<h3 id="fixed-10"><a class="header" href="#fixed-10">Fixed</a></h3>
+<ul>
+<li>Process memory scanning on 64-bit, cooldowns should be more reliable now</li>
+<li>Reset cooldown pointer on re-log same client instance</li>
+</ul>
+<h2 id="452---2023-05-18"><a class="header" href="#452---2023-05-18">[4.5.2] - 2023-05-18</a></h2>
+<h3 id="added-10"><a class="header" href="#added-10">Added</a></h3>
+<ul>
+<li>Missing staves for all Medenia classes (AB 50+)</li>
+<li>Missing staves for bards (AB 70+)</li>
+<li>Missing staves for summoners (AB 70+)</li>
+</ul>
+<h3 id="fixed-11"><a class="header" href="#fixed-11">Fixed</a></h3>
+<ul>
+<li>Cooldown detection fixed on 64-bit computers</li>
+<li>Macro toolbar state now updates more reliably (map/location change)</li>
+<li>Spell queue now hides when last character logs out</li>
+<li>Non-integer window scaling now supported (ex: 150%, 175%, etc)</li>
+</ul>
+<h2 id="451---2023-04-18"><a class="header" href="#451---2023-04-18">[4.5.1] - 2023-04-18</a></h2>
+<h3 id="added-11"><a class="header" href="#added-11">Added</a></h3>
+<ul>
+<li>Can dismiss Spell &amp; Flower Target dialogs via <code>Escape</code> key</li>
+</ul>
+<h3 id="fixed-12"><a class="header" href="#fixed-12">Fixed</a></h3>
+<ul>
+<li>Hide <code>No Target</code> option for spells that require one</li>
+<li>Hide the <code>Mouse Offset</code> for <code>No Target</code> spells</li>
+<li>Hide the <code>Mouse Offset</code> for <code>Screen Position</code> flower target</li>
+</ul>
+<h2 id="450---2023-04-18"><a class="header" href="#450---2023-04-18">[4.5.0] - 2023-04-18</a></h2>
+<h3 id="added-12"><a class="header" href="#added-12">Added</a></h3>
+<ul>
+<li>CPU info in <code>Settings-About</code> tab</li>
+<li>.NET version displayed in <code>Settings-&gt;About</code> tab</li>
+</ul>
+<h3 id="changed-9"><a class="header" href="#changed-9">Changed</a></h3>
+<ul>
+<li>Now built against newer <a href="https://dotnet.microsoft.com/en-us/download/dotnet/7.00">.NET 7</a> instead of older .NET Framework 4.8.1 runtime</li>
+<li>Removed build date from <code>Settings-&gt;About</code> tab</li>
+</ul>
+<h2 id="442---2023-04-18"><a class="header" href="#442---2023-04-18">[4.4.2] - 2023-04-18</a></h2>
+<h3 id="changed-10"><a class="header" href="#changed-10">Changed</a></h3>
+<ul>
+<li>Client versions no longer reset to defaults, file is required</li>
+<li>Client versions no longer auto-save to file on close</li>
+<li>Client versions will warn on startup when not found, disable start client button</li>
+<li>Themes no longer auto-save to file on close</li>
+<li>Themes will fallback to default style on error</li>
+<li>Metadata files no longer auto-save to files on close</li>
+<li>Status bar has been removed and made into thinner border + resize grip</li>
+</ul>
+<h3 id="fixed-13"><a class="header" href="#fixed-13">Fixed</a></h3>
+<ul>
+<li>Character sorting by login time</li>
+<li>Character sorting not updating</li>
+<li>Not showing all clients when debug option was checked on startup</li>
+</ul>
+<h2 id="441---2023-04-16"><a class="header" href="#441---2023-04-16">[4.4.1] - 2023-04-16</a></h2>
+<h3 id="added-13"><a class="header" href="#added-13">Added</a></h3>
+<ul>
+<li><code>Show All Processes</code> debug option in <code>Settings-&gt;Debug</code></li>
+<li>Login timestamp to players</li>
+<li>Client sort order option in <code>Settings-&gt;User Interface</code>, defaults to login time</li>
+<li>Get client start time from Win32 kernel</li>
+</ul>
+<h3 id="changed-11"><a class="header" href="#changed-11">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> are now version <code>1.3</code></li>
+<li>Non-logged in game clients are now hidden by default (use new debug option to show)</li>
+<li>Clients now default sort by login time (oldest to newest)</li>
+<li>Tweak layout of metadata editor windows</li>
+</ul>
+<h3 id="fixed-14"><a class="header" href="#fixed-14">Fixed</a></h3>
+<ul>
+<li>Disable spell queue remove buttons on startup (when empty)</li>
+<li>SleepHunter window title not changing sometimes</li>
+<li>Disable skill/spell tabs when no client</li>
+<li>Disable spell queue when no client</li>
+</ul>
+<h2 id="440---2023-04-15"><a class="header" href="#440---2023-04-15">[4.4.0] - 2023-04-15</a></h2>
+<h3 id="added-14"><a class="header" href="#added-14">Added</a></h3>
+<ul>
+<li><code>Debug</code> tab in <code>Settings</code> window</li>
+<li>More skill &amp; spell metadata</li>
+<li>MP cost display in spell target dialog</li>
+<li>Height resize animations to spell and flower dialogs when selecting target types</li>
+<li><a href="https://ewrogers.github.io/SleepHunter4/">User Manual</a> hyperlink within application (still WIP)</li>
+<li>On first run the application will ask the user if they wish to open the user manual docs in the browser</li>
+<li>User manual link in settings window (below all tabs)</li>
+<li>Spell queue toggle button</li>
+<li><code>Stop All</code> toolbar button</li>
+</ul>
+<h3 id="changed-12"><a class="header" href="#changed-12">Changed</a></h3>
+<ul>
+<li>All new color themes</li>
+<li><code>UserSettings</code> are now version <code>1.2</code></li>
+<li>Moved debug logging option to new <code>Debug</code> section in <code>Settings</code> window</li>
+<li>Accessibility shortcuts for tabs in the <code>Settings</code> window</li>
+<li>Better control alignment and layout in the <code>Settings</code> window sections</li>
+<li>Shortened toolbar button text as <code>Start Macro</code>, <code>Pause Macro</code>, <code>Stop Macro</code> instead</li>
+<li>Metadata editor is now launched from toolbar directly (instead of <code>Settings-&gt;General</code>)</li>
+<li>Improved wording on auto-save macro state setting</li>
+<li>Minimum flower &quot;less than mana&quot; threshold is 1 mana (instead of zero)</li>
+<li>Numeric inputs can now have prefix/unit contextual decorators</li>
+<li>Redesigned layout of spell and flower target dialogs</li>
+<li>Flower queue now shows a timer instead</li>
+<li>Increased padding on flowering options under the main window tab</li>
+<li>Spell queue now highlights icon in white instead of color to be consistent with skill macros</li>
+<li>Renamed <code>Tile Radius</code> to <code>Tile Area</code> target type for more clairity</li>
+<li>Renamed <code>Absolute X/Y</code> to <code>Screen Position</code> target type for more clarity</li>
+<li>Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension</li>
+<li>Slightly narrower dropdown button</li>
+<li>Tooltips open faster</li>
+<li>Spell queue now has a placeholder on the right side</li>
+<li>Show 'No Target' in spell queue for no target spells</li>
+</ul>
+<h3 id="removed-4"><a class="header" href="#removed-4">Removed</a></h3>
+<ul>
+<li>Data file error dialogs on launch</li>
+<li><code>Relative Coordinates</code> target type, as it is redundant with <code>Self</code> and x/y offsets</li>
+<li><code>Rainbow Mode</code> as it is not very useful, visually</li>
+<li><code>Reset Themes</code> button in <code>Settings-&gt;User Interface</code> section</li>
+<li><code>Reset Version</code> button in <code>Settings-&gt;Game Client</code> section</li>
+<li>Missing spell indicator warning (now shows as zero MP)</li>
+<li>Progress bar in flower queue</li>
+<li>Status bar 'Ready' text</li>
+</ul>
+<h3 id="fixed-15"><a class="header" href="#fixed-15">Fixed</a></h3>
+<ul>
+<li>Disable start/pause/stop buttons on app load, until client login</li>
+<li>Disable start/pause/stop buttons on client logout</li>
+<li>Numeric inputs now use regex and allow much better text input of values</li>
+<li>Numeric input boxes now validate/update on lost focus</li>
+<li>Spell queue &quot;disabled&quot; selected text is now white instead of gray on gray</li>
+<li>Double-click actions only respond to left-click now</li>
+<li>Select default them when invalid settings</li>
+<li>Spell queue will only open when adding a spell (not when switching tabs)</li>
+</ul>
+<h2 id="430---2023-04-11"><a class="header" href="#430---2023-04-11">[4.3.0] - 2023-04-11</a></h2>
+<h3 id="added-15"><a class="header" href="#added-15">Added</a></h3>
+<ul>
+<li>SleepHunter can now update the Updater prior to installing new versions</li>
+<li>Visual separate between vertical tabs (settings window)</li>
+<li>New standalone Updater (no references to main app)</li>
+<li>Basic MVVM code for Updater</li>
+</ul>
+<h3 id="changed-13"><a class="header" href="#changed-13">Changed</a></h3>
+<ul>
+<li>Main window title font reduced</li>
+<li>Font size reduced throughout most text</li>
+<li>HP/MP font size slightly increased</li>
+<li>Dropdown and text input boxes wider in most places</li>
+<li>Spell queue current/max level font size slightly increased</li>
+<li>Slightly adjusted UI background and text colors for contrast</li>
+</ul>
+<h3 id="fixed-16"><a class="header" href="#fixed-16">Fixed</a></h3>
+<ul>
+<li>Better file handling for potentially missing files when client path is invalid</li>
+<li>Numeric up/down now highlights border when it has focus</li>
+</ul>
+<h2 id="421---2023-04-11"><a class="header" href="#421---2023-04-11">[4.2.1] - 2023-04-11</a></h2>
+<h3 id="added-16"><a class="header" href="#added-16">Added</a></h3>
+<ul>
+<li>Updater now has a retry button on failure</li>
+</ul>
+<h3 id="fixed-17"><a class="header" href="#fixed-17">Fixed</a></h3>
+<ul>
+<li>Revert macro core changes, causes crashes when flowering sometimes</li>
+<li>Updater now waits for <code>SleepHunter.exe</code> instances to terminate before updating</li>
+</ul>
+<h2 id="420---2023-04-11"><a class="header" href="#420---2023-04-11">[4.2.0] - 2023-04-11</a></h2>
+<h3 id="added-17"><a class="header" href="#added-17">Added</a></h3>
+<ul>
+<li>Support for logging to files</li>
+<li><code>LoggingEnabled</code> user setting to enable generating log files (off by default)</li>
+<li>Logging throughout the application</li>
+<li>Basic inversion of control (IoC) framework</li>
+<li>Dark Ages client titles now renamed to <code>Darkages - ${Character}</code> for identifying multiple instances</li>
+<li>Dark Ages client titles renamed back to <code>Darkages</code> when logged out of a character</li>
+</ul>
+<h3 id="changed-14"><a class="header" href="#changed-14">Changed</a></h3>
+<ul>
+<li>User settings version is now <code>1.1</code></li>
+<li>User settings version is now updated on save</li>
+<li>Initialize services on startup before app load</li>
+<li>Improved wording on several error dialogs</li>
+<li>Flower worker is now more responsive (100ms -&gt; 16ms delay)</li>
+<li>Client versions (<code>Versions.xml</code>) are only saved when the existing file does not exist</li>
+<li>Color themes (<code>Themes.xml</code>) are only saved when the existing file does not exist</li>
+</ul>
+<h3 id="removed-5"><a class="header" href="#removed-5">Removed</a></h3>
+<ul>
+<li>Annoying &quot;unable to save file&quot; popups on close, are logged instead</li>
+<li>More dead code</li>
+</ul>
+<h3 id="fixed-18"><a class="header" href="#fixed-18">Fixed</a></h3>
+<ul>
+<li>Flowering target should now wait for <code>If Mana &lt; X</code> thresholds for alts</li>
+<li>Flowering targets should better multiple handle alts (not getting stuck queue)</li>
+<li>Updater throwing error when <code>Settings.xml</code> already exists</li>
+<li>Updater should use same color theme as main application</li>
+</ul>
+<h2 id="410---2023-04-10"><a class="header" href="#410---2023-04-10">[4.1.0] - 2023-04-10</a></h2>
+<h3 id="added-18"><a class="header" href="#added-18">Added</a></h3>
+<ul>
+<li>New <code>Updates</code> section in <code>Settings</code> window allowing version checking</li>
+<li>New <code>Auto-Update</code> window for downloading updates and launching the updater</li>
+<li>New <code>SleepHunter.Updater</code> child project for applying auto-updates</li>
+<li>New scanline overlay for displaying modals</li>
+<li>Check for new updates on startup (if enabled)</li>
+</ul>
+<h3 id="changed-15"><a class="header" href="#changed-15">Changed</a></h3>
+<ul>
+<li>Accessor key for <code>About</code> is now <code>Alt+B</code> instead of <code>Alt+A</code> (conflicted with <code>All Macros</code>)</li>
+</ul>
+<h3 id="removed-6"><a class="header" href="#removed-6">Removed</a></h3>
+<ul>
+<li>Dead code for MVVM (use <code>CommunityToolkit.Mvvm</code> instead)</li>
+<li>Old <code>Debug.WriteLine</code> calls (only used in Debug mode)</li>
+</ul>
+<h2 id="401---2023-04-09"><a class="header" href="#401---2023-04-09">[4.0.1] - 2023-04-09</a></h2>
+<h3 id="added-19"><a class="header" href="#added-19">Added</a></h3>
+<ul>
+<li>Proper CHANGELOG format</li>
+</ul>
+<h3 id="changed-16"><a class="header" href="#changed-16">Changed</a></h3>
+<ul>
+<li><strong>Version is now 4.0.1</strong> to align with the namesake</li>
+<li>.NET Framework 4.8.1 support</li>
+<li>Updated personal email address</li>
+</ul>
+<h3 id="removed-7"><a class="header" href="#removed-7">Removed</a></h3>
+<ul>
+<li>.NET Framework version display in <code>Settings-&gt;About</code></li>
+</ul>
+<h2 id="150---2016-09-13"><a class="header" href="#150---2016-09-13">[1.5.0] - 2016-09-13</a></h2>
+<h3 id="added-20"><a class="header" href="#added-20">Added</a></h3>
+<ul>
+<li>Support for DA Client 7.41</li>
+<li>Main toolbar buttons now recognize ALT shortcut key</li>
+<li>Drag and drop support for spell queue list</li>
+<li>Drag and drop support for flowering queue list</li>
+<li>Improved tool tip for undefined spell warning</li>
+<li>Better support for 64-bit Win32 APIs</li>
+<li>More color themes based on Google Material palette</li>
+</ul>
+<h3 id="changed-17"><a class="header" href="#changed-17">Changed</a></h3>
+<ul>
+<li>Default window size increased to 1024x768</li>
+<li>Minimum window size increased to 800x600</li>
+<li>Main toolbar icons now use Segoe UI Symbol font</li>
+<li>Main toolbar text labels slightly modified</li>
+<li>Use Segoe UI Symbol font for icons</li>
+<li>Reduced font sizes in many areas</li>
+<li>New selection indicator that shows a left bar instead of full cell highlight</li>
+<li>Character list font sizes have been decreased</li>
+<li>Character list health and mana bars are slightly taller</li>
+<li>Skills tab is no longer scrollable, uses compact sub-tabs for Temuair/Medenia/World</li>
+<li>Spells tab is no longer scrollable, uses compact sub-tabs for Temuair/Medenia/World</li>
+<li>Spell queue is now always visible when not empty</li>
+<li>Spell queue no longer hidden when switching to other tabs</li>
+<li>Spell queue now has &quot;remove&quot; and &quot;clear all&quot; buttons for clarity</li>
+<li>Spell queue warning indicator now flashes</li>
+<li>Spell queue rotation now defaults to singular order instead of round robin (can be changed)</li>
+<li>Flowering queue list item layout redesign for clarity</li>
+</ul>
+<h3 id="removed-8"><a class="header" href="#removed-8">Removed</a></h3>
+<ul>
+<li>Spell queue &quot;move up&quot;/&quot;move down&quot; buttons (in favor of drag and drop)</li>
+<li>Flower queue &quot;move up&quot;/&quot;move down&quot; buttons (in favor of drag and drop)</li>
+</ul>
+<h3 id="fixed-19"><a class="header" href="#fixed-19">Fixed</a></h3>
+<ul>
+<li>UI threading issues that could cause <code>InvalidOperation</code> exceptions</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="license"><a class="header" href="#license">License</a></h1>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2004-2023 Erik Rogers</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="toolbar"><a class="header" href="#toolbar">Toolbar</a></h1>
+<p><img src="main-window/../screenshots/tool-bar.png" alt="image" /></p>
+<p>The toolbar has the following buttons:</p>
+<ul>
+<li><a href="main-window/toolbar.html#launch-client">Launch Client</a></li>
+<li><a href="main-window/toolbar.html#load-state">Load State</a></li>
+<li><a href="main-window/toolbar.html#save-state">Save State</a></li>
+<li><a href="main-window/toolbar.html#start-macro">Start Macro</a></li>
+<li><a href="main-window/toolbar.html#pause-macro">Pause Macro</a></li>
+<li><a href="main-window/toolbar.html#stop-macro">Stop Macro</a></li>
+<li><a href="main-window/toolbar.html#stop-all">Stop All</a></li>
+<li><a href="main-window/toolbar.html#metadata-editor">Metadata Editor</a></li>
+<li><a href="main-window/toolbar.html#app-settings">App Settings</a>.</li>
+</ul>
+<h2 id="launch-client"><a class="header" href="#launch-client">Launch Client</a></h2>
+<p>This button will launch a new game client, applying any tweaks that are enabled in the <a href="main-window/./settings.html#game-client">Settings</a> window.</p>
+<p>By default, game clients that are not actively &quot;logged in&quot; will <strong>not</strong> be displayed in the list.</p>
+<h2 id="load-state"><a class="header" href="#load-state">Load State</a></h2>
+<p>This button will open a dialog to manually open the current character's state from a file.</p>
+<p><strong>NOTE:</strong> Any skills/spells that are not available on the character will be ignored and not added to the queue.</p>
+<h2 id="save-state"><a class="header" href="#save-state">Save State</a></h2>
+<p>This button will open a dialog to manually save the current character's state to a file.</p>
+<h2 id="start-macro"><a class="header" href="#start-macro">Start Macro</a></h2>
+<p>This button will start macroing the selected character, performing any actions that they have queued.
+If paused, this will resume macroing the selected character.</p>
+<h2 id="pause-macro"><a class="header" href="#pause-macro">Pause Macro</a></h2>
+<p>This button will pause macroing the selected character, retaining the current state of the macro.</p>
+<h2 id="stop-macro"><a class="header" href="#stop-macro">Stop Macro</a></h2>
+<p>This button will stop macroing the selected character, resetting the macro state.</p>
+<h2 id="stop-all"><a class="header" href="#stop-all">Stop All</a></h2>
+<p>This button will stop macroing on all characters, resetting the macro state.
+It is equivalent to clicking the <code>Stop Macro</code> button for each character.</p>
+<h3 id="pause-vs-stop-macro"><a class="header" href="#pause-vs-stop-macro">Pause vs Stop Macro</a></h3>
+<p>The main difference between <code>Pause Macro</code> and <code>Stop Macro</code> is that pause acts as a temporary stop, while stop will reset the macro state for that character.
+You can notice this with certain timers like flower targets when you pause/resume versus stopping and re-starting.</p>
+<p><strong>NOTE:</strong> This does <strong>not</strong> mean that your skills and spells will be removed from the queue, only that the macro state will be reset.</p>
+<h2 id="metadata-editor"><a class="header" href="#metadata-editor">Metadata Editor</a></h2>
+<p>This button will open the <a href="main-window/./metadata-editor.html">Metadata Editor</a> window.</p>
+<h2 id="app-settings"><a class="header" href="#app-settings">App Settings</a></h2>
+<p>This button will open the <a href="main-window/../settings/general.html">Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="character-list"><a class="header" href="#character-list">Character List</a></h1>
+<p><img src="main-window/../screenshots/character-list.png" alt="image" /></p>
+<p>Shows information about the character, including current location, health, mana, and activity status (when macroing).
+The selected character will be displayed with a highlighted indicator on the left side of the list item.</p>
+<p>The main window title will also display the name of the selected character.</p>
+<h2 id="quick-select"><a class="header" href="#quick-select">Quick Select</a></h2>
+<p>Double-clicking on a character will bring that Dark Ages game client window to the foreground.
+This is useful when you are trying to find that particular game client window that is hidden behind other windows.</p>
+<h2 id="hotkey-binding"><a class="header" href="#hotkey-binding">Hotkey Binding</a></h2>
+<p>You can also bind a hotkey combination to a character by selecting the character and pressing the hotkey combination (ex: <code>Ctrl+1</code>).
+This will act as a global hotkey that can be used to pause/resume macroing for that particular character.</p>
+<p>If a hotkey is bound to a character, the hotkey combination will be displayed in the character window.
+You can unbind a hotkey by selecting the character and pressing the <code>Delete</code> or <code>Backspace</code> key.</p>
+<h2 id="character-sorting"><a class="header" href="#character-sorting">Character Sorting</a></h2>
+<p>By default, characters are sorted by their login time (oldest to newest).
+This sorting can be modified in the <a href="main-window/../settings/user-interface.html">User Interface Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="items-tab"><a class="header" href="#items-tab">Items Tab</a></h1>
+<p>The items tab shows either the inventory of items and gold, or equipped gear and accessories.</p>
+<p>You can toggle between the two by clicking the buttons at the top of the panel area.</p>
+<h2 id="inventory-grid-layout"><a class="header" href="#inventory-grid-layout">Inventory Grid Layout</a></h2>
+<p>By default, items are arranged with 12 items per row.
+You can change the number of items displayed per row in the <a href="main-window/../settings.html">Settings</a> window.</p>
+<p>The character's gold will be displayed in the last slot.</p>
+<h2 id="equipment-list-layout"><a class="header" href="#equipment-list-layout">Equipment List Layout</a></h2>
+<p>Equipment that is worn by the character is displayed in a list.</p>
+<h2 id="tooltip-help"><a class="header" href="#tooltip-help">Tooltip Help</a></h2>
+<p>You can mouse over an item to see the tooltip for that item.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="skills-tab"><a class="header" href="#skills-tab">Skills Tab</a></h1>
+<p><img src="main-window/../screenshots/skills-tab.png" alt="image" /></p>
+<p>Skills are arranged as a grid of icon buttons similar to the game client, displaying the current level of the skill and the cooldown status (if on cooldown).</p>
+<h2 id="skill-organization"><a class="header" href="#skill-organization">Skill Organization</a></h2>
+<p>Skills are organized into 3 tabs:</p>
+<ul>
+<li><code>Temuair</code> - skills learned from your original class path</li>
+<li><code>Medenia</code> - skills learned from your Medenian class path</li>
+<li><code>World</code> - skills learned for world-related activities (<code>Look</code>, <code>Swimming</code>, etc.)</li>
+</ul>
+<h2 id="toggling-skills"><a class="header" href="#toggling-skills">Toggling Skills</a></h2>
+<p>Double-clicking a skill will toggle it on or off for macroing.
+When a skill is &quot;enabled&quot; for macroing, the icon will be highlighted white and a thick border will be displayed around the skill.</p>
+<h2 id="cooldown-display"><a class="header" href="#cooldown-display">Cooldown Display</a></h2>
+<p>When a skill is on cooldown it will be shaded the theme color to indicate that it is not available for use.</p>
+<h2 id="grid-layout"><a class="header" href="#grid-layout">Grid Layout</a></h2>
+<p>By default, skills are arranged with 12 skills per row.
+You can change the number of skills displayed per row in the <a href="main-window/../settings.html">Settings</a> window.</p>
+<h2 id="tooltip-help-1"><a class="header" href="#tooltip-help-1">Tooltip Help</a></h2>
+<p>You can mouse over a skill to see the tooltip for that skill.</p>
+<h2 id="additional-settings"><a class="header" href="#additional-settings">Additional Settings</a></h2>
+<p>Additional settings for the <code>Skills</code> tab can be found in the <a href="main-window/../settings/skill-macros.html">Skill Macros Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spells-tab"><a class="header" href="#spells-tab">Spells Tab</a></h1>
+<p><img src="main-window/../screenshots/spells-tab.png" alt="image" /></p>
+<p>Spells are arranged as a grid of icon buttons similar to the game client, displaying the current level of the spell and the cooldown status (if on cooldown).</p>
+<h2 id="spell-organization"><a class="header" href="#spell-organization">Spell Organization</a></h2>
+<p>Spells are organized into 3 tabs:</p>
+<ul>
+<li><code>Temuair</code> - spells learned from your original class path</li>
+<li><code>Medenia</code> - spells learned from your Medenian class path</li>
+<li><code>World</code> - spells learned for world-related activities (<code>nis</code>, etc.)</li>
+</ul>
+<h2 id="queueing-spells"><a class="header" href="#queueing-spells">Queueing Spells</a></h2>
+<p>Double-clicking a spell will bring up the <code>Spell Target</code> dialog for that casting spell.
+This dialog allows you to select a target for the spell and add it to the <a href="main-window/./spell-queue.html">Spell Queue</a>.</p>
+<p>When a spell is being cast, it will be highlighted white and a thick border will be displayed around the spell icon.</p>
+<p>For more information about the <code>Spell Target</code> dialog, see the sidebar.</p>
+<h2 id="grid-layout-1"><a class="header" href="#grid-layout-1">Grid Layout</a></h2>
+<p>By default, spells are arranged with 12 spells per row.
+You can change the number of spells displayed per row in the <a href="main-window/../settings.html">Settings</a> window.</p>
+<h2 id="tooltip-help-2"><a class="header" href="#tooltip-help-2">Tooltip Help</a></h2>
+<p>You can mouse over a spell to see the tooltip for that spell.</p>
+<h2 id="additional-settings-1"><a class="header" href="#additional-settings-1">Additional Settings</a></h2>
+<p>Additional settings for spell macros can be found in the <a href="main-window/../settings/spell-macros.html">Spell Macros Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="flowering-tab"><a class="header" href="#flowering-tab">Flowering Tab</a></h1>
+<p><img src="main-window/../screenshots/flowering-tab.png" alt="image" /></p>
+<p>Shows the targets for casting <code>Lyliac Plant</code> and option to enable <code>Lyliac Vineyard</code> (if available).</p>
+<p>The user-selected flower target in the queue will have a left-side highlight indicator.</p>
+<p><strong>NOTE:</strong> The <code>Flowering</code> tab is only available if the <code>Lyliac Plant</code> or <code>Lyliac Vineyard</code> spells are available.</p>
+<h2 id="queueing-flower-targets"><a class="header" href="#queueing-flower-targets">Queueing Flower Targets</a></h2>
+<p>The <code>Add New</code> button at the bottom will bring up the <code>Flower Target</code> dialog for flowering.
+This dialog allows you to select a target for the spell and add it to the <code>Flower Queue</code>.</p>
+<p>The <code>Flower Queue</code> is the list contained in the <code>Flowering</code> tab itself.
+Here all targets for <code>Lyliac Planet</code> will be displayed, with the condition set as well as a countdown timer.</p>
+<p>For more information about the <code>Flower Target</code> dialog, see the sidebar.</p>
+<h2 id="modifying-flower-targets"><a class="header" href="#modifying-flower-targets">Modifying Flower Targets</a></h2>
+<p>Double-clicking a flower target will bring up the <code>Flower Target</code> dialog for modifying the cast target.
+You can re-arrange the order of the targets by dragging and dropping them.</p>
+<h2 id="flowering-timer"><a class="header" href="#flowering-timer">Flowering Timer</a></h2>
+<p>While the character macro is running, the timer will tick down and show the remaining time.
+When the timer reaches zero, the target will be flowered (when possible), and timer reset.</p>
+<h2 id="removing-flower-targets"><a class="header" href="#removing-flower-targets">Removing Flower Targets</a></h2>
+<p>Targets can be removed from the queue by clicking the <code>Remove</code> or <code>Clear All</code> buttons at the bottom.
+Alternatively, you can select a target and press the <code>Delete</code> or <code>Backspace</code> key.</p>
+<h2 id="additional-settings-2"><a class="header" href="#additional-settings-2">Additional Settings</a></h2>
+<p>Additional settings for the <code>Flowering</code> tab can be found in the <a href="main-window/../settings/flowering.html">Flowering Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="features-tab"><a class="header" href="#features-tab">Features Tab</a></h1>
+<p>Client-specific features that are enabled via feature flags will be displayed here.</p>
+<p>These are defined in the Client Version definitions under <code>FeatureFlags</code> section.</p>
+<p><strong>NOTE:</strong> If there are no <strong>Enabled</strong> features for a client, this tab will <strong>not</strong> be displayed!</p>
+<h2 id="use-water--beds-zolian"><a class="header" href="#use-water--beds-zolian">Use Water &amp; Beds (Zolian)</a></h2>
+<p>Allows the automatic clicking of water coolers and beds to recovery MP instantly while macroing.</p>
+<p>Can be set to a certain MP threshold and must target an absolute tile on the map.</p>
+<p><strong>This feature is only available in Zolian.</strong></p>
+<h2 id="tooltip-help-3"><a class="header" href="#tooltip-help-3">Tooltip Help</a></h2>
+<p>You can mouse over an option to see the tooltip for that feature flag.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spell-queue-1"><a class="header" href="#spell-queue-1">Spell Queue</a></h1>
+<p><img src="main-window/../screenshots/spell-queue.png" alt="image" /></p>
+<p>Shows the queued targets for casting spells.</p>
+<p>The user-selected spell in the queue will have a left-side highlight indicator.
+While being cast, the spell will be highlighted white and a thick border will be displayed around the spell.</p>
+<h2 id="spell-rotation"><a class="header" href="#spell-rotation">Spell Rotation</a></h2>
+<p>Each character can have their own spell queue rotation mode set in the <code>Spell Queue</code>.
+This setting is preserved with their macro state when saved.</p>
+<h2 id="progress-display"><a class="header" href="#progress-display">Progress Display</a></h2>
+<p>If set to only cast to a maximum level, the progress bar will be displayed.
+Once the spell reaches the maximum level desired, it will be ignored while in the queue.</p>
+<h2 id="modifying-spell-targets"><a class="header" href="#modifying-spell-targets">Modifying Spell Targets</a></h2>
+<p>Double-clicking a spell will bring up the <code>Spell Target</code> dialog for modifying the cast target.
+You can re-arrange the order of the targets by dragging and dropping them.</p>
+<h2 id="removing-spell-targets"><a class="header" href="#removing-spell-targets">Removing Spell Targets</a></h2>
+<p>Targets can be removed from the queue by clicking the <code>Remove</code> or <code>Clear All</code> buttons at the bottom.
+Alternatively, you can select a target and press the <code>Delete</code> or <code>Backspace</code> key.</p>
+<h2 id="showhide-spell-queue"><a class="header" href="#showhide-spell-queue">Show/Hide Spell Queue</a></h2>
+<p>The Spell Queue visibility can be toggled using the show/hide button.
+It will be shown when adding a new spell target for a character.</p>
+<h2 id="additional-settings-3"><a class="header" href="#additional-settings-3">Additional Settings</a></h2>
+<p>Additional settings for the <code>Spell Queue</code> can be found in the <a href="main-window/../settings/spell-macros.html">Spell Macros Settings</a> window.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="no-target"><a class="header" href="#no-target">No Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-none.png" alt="image" /></p>
+<p>This is used when a spell does not require a target, such as a self-only or group spell.</p>
+<p><strong>NOTE:</strong> This option cannot be selected, it is automatically selected when the spell does not require a target.</p>
+<h2 id="options"><a class="header" href="#options">Options</a></h2>
+<ul>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="self-target"><a class="header" href="#self-target">Self Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-self.png" alt="image" /></p>
+<p>This will cast the spell on yourself as the target.</p>
+<p>The <code>Mouse Offset X/Y</code> is used to fine-tune the mouse screen coordinates, if needed.</p>
+<p><strong>NOTE:</strong> The older <code>Relative Coordinates</code> target type has been replaced with this new <code>Offset X/Y</code> target type on <code>Self</code>, as it was redundant.</p>
+<h2 id="options-1"><a class="header" href="#options-1">Options</a></h2>
+<ul>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="alternate-character-target"><a class="header" href="#alternate-character-target">Alternate Character Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-character.png" alt="image" /></p>
+<p>This will cast the spell on another character logged in on the same computer.</p>
+<p><strong>NOTE:</strong> The other character must be within visible range of the character casting the spell.</p>
+<h2 id="options-2"><a class="header" href="#options-2">Options</a></h2>
+<ul>
+<li><code>Character</code> - specifies the other character you wish to cast the spell on.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="relative-tile-target"><a class="header" href="#relative-tile-target">Relative Tile Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-relative-tile.png" alt="image" /></p>
+<p>This will cast the spell on a tile relative to the character's current position.
+For example, &quot;2 Left, 1 Down&quot; would be the tile located 2 tiles left and 1 tile down of your character's current position.</p>
+<p>This relative tile will be preserved even if the character moves to a different tile.</p>
+<h2 id="options-3"><a class="header" href="#options-3">Options</a></h2>
+<ul>
+<li><code>Relative Tile</code> - the tile relative to your character's current position.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="relative-tile-area-target"><a class="header" href="#relative-tile-area-target">Relative Tile Area Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-relative-tile-area.png" alt="image" /></p>
+<p>This will cast the spell in an circular area relative to the character's current position.
+The spell will be cast on the tiles in a clockwise order.</p>
+<p><img src="spell-target/../screenshots/tile-radius-example.png" alt="image" /></p>
+<p>In the above example, the <code>Inner Radius</code> is set to <strong>2</strong>, and the <code>Outer Radius</code> is set to <strong>4</strong>.
+The dead-zone is the area in the center of the circle, where no spells will be cast.
+The solid blue tiles are the tiles that will be selected for casting the spell, in clockwise order.</p>
+<p>This can be useful in some instances, such as periodically casting a spell on targets within an area without knowing their exact location.</p>
+<h2 id="options-4"><a class="header" href="#options-4">Options</a></h2>
+<ul>
+<li><code>Relative Tile</code> - the tile relative to your character's current position. This will be the center of the circular region.</li>
+<li><code>Inner Radius</code> - the inner radius of the circular region. This is the dead-zone, where no spells will be cast.</li>
+<li><code>Outer Radius</code> - the outer radius of the circular region. This is the maximum distance from the center where spells will be cast.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="absolute-tile-target"><a class="header" href="#absolute-tile-target">Absolute Tile Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-absolute-tile.png" alt="image" /></p>
+<p>This will cast the spell on a tile at a specific location on the map, regardless of the character's current position.</p>
+<p><strong>NOTE:</strong> You must be within visible range of the tile for the spell to be cast.</p>
+<h2 id="options-5"><a class="header" href="#options-5">Options</a></h2>
+<ul>
+<li><code>Absolute Tile</code> - the tile on the map to cast the spell on. It is <strong>not</strong> relative to your character's current position.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="absolute-tile-area-target"><a class="header" href="#absolute-tile-area-target">Absolute Tile Area Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-absolute-tile-area.png" alt="image" /></p>
+<p>This will cast the spell in an circular area around a location on the map, regardless of the character's current position.
+The spell will be cast on the tiles in a clockwise order.</p>
+<p><img src="spell-target/../screenshots/tile-radius-example.png" alt="image" /></p>
+<p>In the above example, the <code>Inner Radius</code> is set to <strong>2</strong>, and the <code>Outer Radius</code> is set to <strong>4</strong>.
+The dead-zone is the area in the center of the circle, where no spells will be cast.
+The solid blue tiles are the tiles that will be selected for casting the spell, in clockwise order.</p>
+<p>This can be useful in some instances, such as periodically casting a spell on targets within an area without worrying about the character's current position.</p>
+<h2 id="options-6"><a class="header" href="#options-6">Options</a></h2>
+<ul>
+<li><code>Absolute Tile</code> - the tile on the map to cast the spell on. It is <strong>not</strong> relative to your character's current position. This will be the center of the circular region.</li>
+<li><code>Inner Radius</code> - the inner radius of the circular region. This is the dead-zone, where no spells will be cast.</li>
+<li><code>Outer Radius</code> - the outer radius of the circular region. This is the maximum distance from the center where spells will be cast.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="screen-position-target"><a class="header" href="#screen-position-target">Screen Position Target</a></h1>
+<p><img src="spell-target/../screenshots/spell-target-screen-coordinates.png" alt="image" /></p>
+<p>This will cast the spell on a specific location on the screen, regardless of the character's current position.</p>
+<p>The <code>Screen Position X/Y</code> is used to select the location on the screen to cast the spell on, in pixels.</p>
+<h2 id="options-7"><a class="header" href="#options-7">Options</a></h2>
+<ul>
+<li><code>Screen Position X/Y</code> - the screen coordinates to cast the spell on.</li>
+<li><code>Cast Spell Until Reaches</code> - sets the maximum level before this spell will no longer be cast in the <a href="spell-target/../user-interface/main-window.html#spell-queue">Spell Queue</a>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="alternate-character-flower"><a class="header" href="#alternate-character-flower">Alternate Character Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-character.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell on another character logged in on the same computer.</p>
+<p><strong>NOTE:</strong> The other character must be within visible range of the character casting flower.</p>
+<h2 id="options-8"><a class="header" href="#options-8">Options</a></h2>
+<ul>
+<li><code>Character</code> - specifies the other character you wish to cast flower on.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Flower Interval</code> - the time interval between casting flower on the same character.</li>
+<li><code>Flower Threshold</code> - the minimum mana percentage of the character before flower will be cast on them.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Interval</code> and <code>Flower Threshold</code> conditions are evaluated independent of each other.
+They act as a logical <code>OR</code> condition, where <strong>either</strong> condition can be met to cast flower.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="relative-tile-flower"><a class="header" href="#relative-tile-flower">Relative Tile Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-relative-tile.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell on a tile relative to the character's current position.
+For example, &quot;2 Left, 1 Down&quot; would be the tile located 2 tiles left and 1 tile down of your character's current position.</p>
+<p>This relative tile will be preserved even if the character moves to a different tile.</p>
+<h2 id="options-9"><a class="header" href="#options-9">Options</a></h2>
+<ul>
+<li><code>Relative Tile</code> - the tile relative to your character's current position.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Flower Interval</code> - the time interval between casting flower on the same tile location.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Threshold</code> option is not available for this target type.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="relative-tile-area-flower"><a class="header" href="#relative-tile-area-flower">Relative Tile Area Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-relative-tile-area.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell in an circular area relative to the character's current position.
+The spell will be cast on the tiles in a clockwise order.</p>
+<p><img src="flower-target/../screenshots/tile-radius-example.png" alt="image" /></p>
+<p>In the above example, the <code>Inner Radius</code> is set to <strong>2</strong>, and the <code>Outer Radius</code> is set to <strong>4</strong>.
+The dead-zone is the area in the center of the circle, where no flower will be cast.
+The solid blue tiles are the tiles that will be selected for casting flower, in clockwise order.</p>
+<p>This can be useful in some instances, such as periodically casting flower on targets within an area without knowing their exact location.</p>
+<h2 id="options-10"><a class="header" href="#options-10">Options</a></h2>
+<ul>
+<li><code>Relative Tile</code> - the tile relative to your character's current position. This will be the center of the circular region.</li>
+<li><code>Inner Radius</code> - the inner radius of the circular region. This is the dead-zone, where no flower will be cast.</li>
+<li><code>Outer Radius</code> - the outer radius of the circular region. This is the maximum distance from the center where flower will be cast.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Flower Interval</code> - the time interval between casting flower on the same tile area.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Threshold</code> option is not available for this target type.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="absolute-tile-flower"><a class="header" href="#absolute-tile-flower">Absolute Tile Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-absolute-tile.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell on a tile at a specific location on the map, regardless of the character's current position.
+This will restore the mana of the character standing on the tile.</p>
+<p><strong>NOTE:</strong> You must be within visible range of the tile for the spell to be cast.</p>
+<h2 id="options-11"><a class="header" href="#options-11">Options</a></h2>
+<ul>
+<li><code>Absolute Tile</code> - the tile on the map to cast flower on. It is <strong>not</strong> relative to your character's current position.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Flower Interval</code> - the time interval between casting flower on the same tile location.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Threshold</code> option is not available for this target type.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="absolute-tile-area-flower"><a class="header" href="#absolute-tile-area-flower">Absolute Tile Area Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-absolute-tile-area.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell in an circular area around a location on the map, regardless of the character's current position.
+The spell will be cast on the tiles in a clockwise order.</p>
+<p><img src="flower-target/../screenshots/tile-radius-example.png" alt="image" /></p>
+<p>In the above example, the <code>Inner Radius</code> is set to <strong>2</strong>, and the <code>Outer Radius</code> is set to <strong>4</strong>.
+The dead-zone is the area in the center of the circle, where no flower will be cast.
+The solid blue tiles are the tiles that will be selected for casting flower, in clockwise order.</p>
+<p>This can be useful in some instances, such as periodically casting flower on targets within an area without worrying about the character's current position.</p>
+<h2 id="options-12"><a class="header" href="#options-12">Options</a></h2>
+<ul>
+<li><code>Absolute Tile</code> - the tile on the map to cast flower on. It is <strong>not</strong> relative to your character's current position. This will be the center of the circular region.</li>
+<li><code>Inner Radius</code> - the inner radius of the circular region. This is the dead-zone, where no flower will be cast.</li>
+<li><code>Outer Radius</code> - the outer radius of the circular region. This is the maximum distance from the center where flower will be cast.</li>
+<li><code>Mouse Offset X/Y</code> - offsets the mouse screen coordinates by the specified amount.</li>
+<li><code>Flower Interval</code> - the time interval between casting flower on the same tile area.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Threshold</code> option is not available for this target type.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="screen-position-flower"><a class="header" href="#screen-position-flower">Screen Position Flower</a></h1>
+<p><img src="flower-target/../screenshots/flower-target-screen-coordinates.png" alt="image" /></p>
+<p>This will cast the <code>Lyliac Plant</code> spell on a specific location on the screen, regardless of the character's current position.</p>
+<p>The <code>Screen Position X/Y</code> is used to select the location on the screen to cast flower on, in pixels.</p>
+<h2 id="options-13"><a class="header" href="#options-13">Options</a></h2>
+<ul>
+<li><code>Screen Position X/Y</code> - the screen coordinates to cast flower on.</li>
+<li><code>Flower Interval</code> - the time interval between casting the spell on the same screen location.</li>
+</ul>
+<p><strong>NOTE:</strong> The <code>Flower Threshold</code> option is not available for this target type.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="general-settings"><a class="header" href="#general-settings">General Settings</a></h1>
+<p><img src="settings/../screenshots/settings-general.png" alt="image" /></p>
+<p>The <code>General</code> settings tab contains general settings for the application.</p>
+<h2 id="process-update-interval"><a class="header" href="#process-update-interval">Process Update Interval</a></h2>
+<p>The process update interval determines how often the application will check for new Dark Ages game client instances.</p>
+<h2 id="client-update-interval"><a class="header" href="#client-update-interval">Client Update Interval</a></h2>
+<p>The client update interval determines how often the application will read character state information from the Dark Ages game clients.</p>
+<h2 id="auto-save-macro-stats"><a class="header" href="#auto-save-macro-stats">Auto-Save Macro Stats</a></h2>
+<p>This setting will automatically save the macro stats for each character when the application is closed.
+They will automatically be loaded when the application is started and that character is logged in.</p>
+<h2 id="reset-all-settings"><a class="header" href="#reset-all-settings">Reset All Settings</a></h2>
+<p>This button will reset all settings to their default values, and be applied instantly.</p>
+<p><strong>NOTE:</strong> User settings are automatically saved when the application is closed.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="user-interface-settings"><a class="header" href="#user-interface-settings">User Interface Settings</a></h1>
+<p><img src="settings/../screenshots/settings-user-interface.png" alt="image" /></p>
+<p>The <code>User Interface</code> settings tab contains settings for the user interface.</p>
+<h2 id="color-theme"><a class="header" href="#color-theme">Color Theme</a></h2>
+<p>The color theme determines the color scheme used for the application.
+The default is a blue <code>Sapphire</code> color.</p>
+<h2 id="sort-characters-by"><a class="header" href="#sort-characters-by">Sort Characters By</a></h2>
+<p>This setting determines how characters are sorted in the <a href="settings/../main-window/character-list.html">Character List</a>.
+By default, characters are sorted by their <code>Login Time</code> (oldest to newest).</p>
+<p>The <code>Max Health &amp; Mana</code> option will sort characters by their maximum health and mana, similar to the in-game list.
+The total sort value is <code>Max HP + (Max MP * 2)</code>.</p>
+<h2 id="spellskill-icon-size"><a class="header" href="#spellskill-icon-size">Spell/Skill Icon Size</a></h2>
+<p>This setting determines the size of the spell and skill icons in the <a href="settings/../main-window/spells-tab.html">Spells Tab</a> and <a href="settings/../main-window/skills-tab.html">Skills Tab</a>.
+The default size is <code>Medium</code>.</p>
+<h2 id="temmed-skills-per-row"><a class="header" href="#temmed-skills-per-row">Tem/Med Skills Per Row</a></h2>
+<p>This setting determines how many skills are displayed per row in the <a href="settings/../main-window/skills-tab.html">Skills Tab</a> for Temuair and Medenian skills.
+The default is <code>12</code>, similar to the game client.</p>
+<h2 id="world-skills-per-row"><a class="header" href="#world-skills-per-row">World Skills Per Row</a></h2>
+<p>This setting determines how many skills are displayed per row in the <a href="settings/../main-window/skills-tab.html">Skills Tab</a> for World skills.
+The default is <code>6</code>, similar to the game client.</p>
+<h2 id="temmed-spells-per-row"><a class="header" href="#temmed-spells-per-row">Tem/Med Spells Per Row</a></h2>
+<p>This setting determines how many spells are displayed per row in the <a href="settings/../main-window/spells-tab.html">Spells Tab</a> for Temuair and Medenian spells.
+The default is <code>12</code>, similar to the game client.</p>
+<h2 id="world-spells-per-row"><a class="header" href="#world-spells-per-row">World Spells Per Row</a></h2>
+<p>This setting determines how many spells are displayed per row in the <a href="settings/../main-window/spells-tab.html">Spells Tab</a> for World spells.
+The default is <code>6</code>, similar to the game client.</p>
+<h2 id="show-skill-names"><a class="header" href="#show-skill-names">Show Skill Names</a></h2>
+<p>This setting determines whether skill names are displayed in the <a href="settings/../main-window/skills-tab.html">Skills Tab</a>.
+They are displayed underneath the skill icon.</p>
+<p>By default, this is <code>Disabled</code>.</p>
+<h2 id="show-spell-names"><a class="header" href="#show-spell-names">Show Spell Names</a></h2>
+<p>This setting determines whether spell names are displayed in the <a href="settings/../main-window/spells-tab.html">Spells Tab</a>.
+They are displayed underneath the spell icon.</p>
+<p>By default, this is <code>Disabled</code>.</p>
+<h2 id="show-skill-levels"><a class="header" href="#show-skill-levels">Show Skill Levels</a></h2>
+<p>This setting determines whether skill levels are displayed in the <a href="settings/../main-window/skills-tab.html">Skills Tab</a>.
+They are displayed in the bottom-right corner of the skill icon (if the skill can improve).</p>
+<p>By default, this is <code>Enabled</code>.</p>
+<h2 id="show-spell-levels"><a class="header" href="#show-spell-levels">Show Spell Levels</a></h2>
+<p>This setting determines whether spell levels are displayed in the <a href="settings/../main-window/spells-tab.html">Spells Tab</a>.
+They are displayed in the bottom-right corner of the spell icon (if the spell can improve).</p>
+<p>By default, this is <code>Enabled</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="game-client-settings"><a class="header" href="#game-client-settings">Game Client Settings</a></h1>
+<p><img src="settings/../screenshots/settings-game-client.png" alt="image" /></p>
+<p>The <code>Game Client</code> settings tab contains settings for the Dark Ages game client.</p>
+<h2 id="client-path"><a class="header" href="#client-path">Client Path</a></h2>
+<p>This setting determines the path to the Dark Ages game client executable.
+It is also used to determine the path to the Dark Ages game client data files for rendering icons.</p>
+<h2 id="client-version"><a class="header" href="#client-version">Client Version</a></h2>
+<p>This setting determines the version of the Dark Ages game client and how any runtime patches should be applied.
+The default is <code>Auto-Detect</code> and will automatically detect the version of the Dark Ages game client based on the client signature.</p>
+<p>You should not change this unless you are using a custom Dark Ages game client.</p>
+<h2 id="allow-multiple-instances"><a class="header" href="#allow-multiple-instances">Allow Multiple Instances</a></h2>
+<p>This setting determines when the &quot;multiple instances&quot; patch should be applied when the Dark Ages game client is started.
+By default, this is <code>Enabled</code>.</p>
+<h2 id="skip-intro-video"><a class="header" href="#skip-intro-video">Skip Intro Video</a></h2>
+<p>This setting determines when the &quot;skip intro video&quot; patch should be applied when the Dark Ages game client is started.
+By default, this is <code>Enabled</code>.</p>
+<h2 id="no-foreground-walls"><a class="header" href="#no-foreground-walls">No Foreground Walls</a></h2>
+<p>This setting determines when the &quot;no foreground walls&quot; patch should be applied when the Dark Ages game client is started.
+By default, this is <code>Disabled</code>.</p>
+<p>This is useful when trying to find items that are hidden behind walls.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="all-macro-settings"><a class="header" href="#all-macro-settings">All Macro Settings</a></h1>
+<p><img src="settings/../screenshots/settings-all-macros.png" alt="image" /></p>
+<p>The <code>All Macros</code> settings tab contains settings for all macros, both skills and spells.</p>
+<h2 id="action-on-map-change"><a class="header" href="#action-on-map-change">Action on Map Change</a></h2>
+<p>This setting determines what happens when the character changes maps.
+By default, this is <code>Stop Macro</code>.</p>
+<p>This is typically used to automatically stop macroing when the character leaves the Dojo.</p>
+<h2 id="action-on-xy-change"><a class="header" href="#action-on-xy-change">Action on X/Y Change</a></h2>
+<p>This setting determines what happens when the character changes X/Y coordinates.
+By default, this is <code>Continue Macro</code>.</p>
+<p>This is typically used to automatically stop macroing when the character is thrown or otherwise moved.</p>
+<h2 id="medenia-panel-switching"><a class="header" href="#medenia-panel-switching">Medenia Panel Switching</a></h2>
+<p>This setting determines how the Medenia panel switching feature should be used within the game client.
+By default, this is <code>Shift-Click</code>.</p>
+<p>If you have a different in-game setting, you can change this to match.</p>
+<h2 id="preserve-selected-panel"><a class="header" href="#preserve-selected-panel">Preserve Selected Panel</a></h2>
+<p>This setting determines whether the currently selected panel in the game client should be preserved while macroing.
+By default, this is <code>Enabled</code>.</p>
+<p>For example, if the chat window is up it will be set back to that while macroing to avoid having to click on it again.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="skill-macro-settings"><a class="header" href="#skill-macro-settings">Skill Macro Settings</a></h1>
+<p><img src="settings/../screenshots/settings-skill-macros.png" alt="image" /></p>
+<p>The <code>Skill Macro Settings</code> settings tab contains settings for skill macros.</p>
+<h2 id="assail-skills-mode"><a class="header" href="#assail-skills-mode">Assail Skills Mode</a></h2>
+<p>This setting determines how the <code>Assail Skills</code> macro will performed.
+By default, this is <code>Use Space Bar</code> which will perform all assails. Alternatively, they can be clicked individually.</p>
+<h2 id="disarm-before-using-assail-skills"><a class="header" href="#disarm-before-using-assail-skills">Disarm Before Using Assail Skills</a></h2>
+<p>This setting determines whether the character will automatically un-equip any weapons before using assail skills.
+By default, this is <code>Enabled</code>.</p>
+<p>This prevents unnecessary repairs to weapons when using assail skills.</p>
+<p><strong>NOTE:</strong> This setting is for historical purposes when certain sub-classes would not be able to re-equip certain weapons or staves from their previous class.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spell-macro-settings"><a class="header" href="#spell-macro-settings">Spell Macro Settings</a></h1>
+<p><img src="settings/../screenshots/settings-spell-macros.png" alt="image" /></p>
+<p>The <code>Spell Macro Settings</code> settings tab contains settings for spell macros.</p>
+<h2 id="default-spell-rotation-mode"><a class="header" href="#default-spell-rotation-mode">Default Spell Rotation Mode</a></h2>
+<p>This setting determines how the <a href="settings/../main-window/spell-queue.html">Spell Queue</a> will alternate casting of spells.
+By default, this is <code>Round Robin</code>.</p>
+<p>You can use <code>Singular Order</code> to cast spells in the order they are added to the queue, only moving to the next spell when the current spell reaches the desired level.</p>
+<ul>
+<li><code>No Rotation</code> - Do not rotate spells, even when the spell has reached the target level.</li>
+<li><code>Singular Order</code> - Rotate to the next spell once the current one has reached the target level.</li>
+<li><code>Round Robin</code> - Rotate to the next spell after each cast.</li>
+</ul>
+<p><strong>NOTE:</strong> If the <code>Skip Spells on Cooldown</code> setting is enabled, it will temporarily skip that spell in the queue.</p>
+<h2 id="zero-line-delay"><a class="header" href="#zero-line-delay">Zero Line Delay</a></h2>
+<p>This setting determines the delay when casting zero-line (instant) spells.
+By default, this is <code>0.2 seconds</code> (200 milliseconds).</p>
+<h2 id="single-line-delay"><a class="header" href="#single-line-delay">Single Line Delay</a></h2>
+<p>This setting determines the delay when casting one-line spells.
+By default, this is <code>1 second</code>.</p>
+<h2 id="multiple-line-delay"><a class="header" href="#multiple-line-delay">Multiple Line Delay</a></h2>
+<p>This setting determines the delay when casting multi-line spells, representing the delay between each line.
+By default, this is <code>1 second</code> per line.</p>
+<h2 id="auto-fas-spiorad"><a class="header" href="#auto-fas-spiorad">Auto Fas Spiorad</a></h2>
+<p>This setting determines whether the <code>fas spiorad</code> spell will be automatically cast for a character when they are below a certain mana threshold.
+By default, this is <code>Disabled</code>.</p>
+<p><strong>NOTE:</strong> This still requires the character to be in the &quot;macroing&quot; state. No actions are taken when the macro is paused or stopped.</p>
+<h2 id="use-fas-spiorad-when-insufficient-mana"><a class="header" href="#use-fas-spiorad-when-insufficient-mana">Use Fas Spiorad When Insufficient Mana</a></h2>
+<p>This setting determines whether the <code>fas spiorad</code> spell will be cast when the character does not have enough mana to cast the spell they are macroing.
+This also includes <code>Lyliac Plant</code> and <code>Lyliac Vineyard</code>.</p>
+<p>By default, this is <code>Enabled</code> and usually a much better option than above.</p>
+<h2 id="require-mana-for-casting-spells"><a class="header" href="#require-mana-for-casting-spells">Require Mana for Casting Spells</a></h2>
+<p>This setting determines whether the character will check their mana before casting spells. If they do not have enough mana, they will wait until they do.
+By default, this is <code>Enabled</code>.</p>
+<p>It can be useful to disable this if you are macroing spells that are not defined in the spell metadata.</p>
+<h2 id="allow-automatic-staff-switching"><a class="header" href="#allow-automatic-staff-switching">Allow Automatic Staff Switching</a></h2>
+<p>This setting determines whether the character will automatically switch to the most appropriate staff when casting spells.
+By default, this is <code>Enabled</code>.</p>
+<p>You can disable this if you are getting stuck in a loop of switching staffs or do not want your character to switch equipment.</p>
+<h2 id="warn-on-duplicate-spells-in-casting-queue"><a class="header" href="#warn-on-duplicate-spells-in-casting-queue">Warn on Duplicate Spells in Casting Queue</a></h2>
+<p>This setting determines whether the application will warn you when you add a spell to the casting queue that is already in the queue.
+By default, this is <code>Enabled</code>.</p>
+<p>You are still prompted if you wish to override the warning and add it anyways.</p>
+<h2 id="skip-spells-on-cooldown"><a class="header" href="#skip-spells-on-cooldown">Skip Spells on Cooldown</a></h2>
+<p>This setting determines whether spells that are on cooldown will be temporarily skipped in the <code>Spell Queue</code>.
+By default, this is <code>Enabled</code>.</p>
+<p>Once the spell comes off cooldown, it will be cast again depending on spell rotation mode.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="flowering-settings"><a class="header" href="#flowering-settings">Flowering Settings</a></h1>
+<p><img src="settings/../screenshots/settings-flowering.png" alt="image" /></p>
+<p>The <code>Flowering</code> settings tab contains settings for the casting <code>Lyliac Plant</code> (flower) spell on others.</p>
+<h2 id="prioritize-alternate-characters"><a class="header" href="#prioritize-alternate-characters">Prioritize Alternate Characters</a></h2>
+<p>This setting determines whether the application will prioritize casting the <code>Lyliac Plant</code> spell on alternate characters over other target types.
+By default, this is <code>Enabled</code>.</p>
+<h2 id="prioritize-flowering-over-spell-casting"><a class="header" href="#prioritize-flowering-over-spell-casting">Prioritize Flowering over Spell Casting</a></h2>
+<p>This setting determines whether the application will prioritize casting the <code>Lyliac Plant</code> spell over other spell casting macros.
+By default, this is <code>Enabled</code>.</p>
+<h2 id="minimum-flower-mana"><a class="header" href="#minimum-flower-mana">Minimum Flower Mana</a></h2>
+<p>This setting determines the minimum mana required to cast the <code>Lyliac Plant</code> spell.
+By default, this is <code>10000</code> but can be decreased as necessary.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="update-settings"><a class="header" href="#update-settings">Update Settings</a></h1>
+<p><img src="settings/../screenshots/settings-updates.png" alt="image" /></p>
+<p>The <code>Updates</code> settings tab contains settings for the application update system.</p>
+<h2 id="current-version"><a class="header" href="#current-version">Current Version</a></h2>
+<p>Displays the current version of the application.</p>
+<h2 id="latest-version"><a class="header" href="#latest-version">Latest Version</a></h2>
+<p>Displays the latest version of the application, available from the <a href="https://github.com/ewrogers/SleepHunter4/releases">GitHub releases page</a>.</p>
+<p>If an update is available, an <code>Update</code> button will be displayed and allow the user to download and install it.</p>
+<h2 id="release-notes"><a class="header" href="#release-notes">Release Notes</a></h2>
+<p>Opens a browser to show the release notes for the latest version of the application.</p>
+<h2 id="check-for-updates"><a class="header" href="#check-for-updates">Check for Updates</a></h2>
+<p>Manually checks for updates to the application.</p>
+<h2 id="check-for-updates-on-startup"><a class="header" href="#check-for-updates-on-startup">Check for Updates on Startup</a></h2>
+<p>This setting determines whether the application will automatically check for updates on startup.
+By default, this is <code>Enabled</code>.</p>
+<p>If an update is available, the user will be prompted to download and install it.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="debug-settings"><a class="header" href="#debug-settings">Debug Settings</a></h1>
+<p><img src="settings/../screenshots/settings-debug.png" alt="image" /></p>
+<p>The <code>Debug</code> settings tab contains settings for debugging the application, not intended for normal use.</p>
+<h2 id="show-all-game-processes"><a class="header" href="#show-all-game-processes">Show All Game Processes</a></h2>
+<p>This setting determines whether the application will show all running Dark Ages clients, including those that are not logged into a character.
+By default, this is <code>Disabled</code>.</p>
+<p>This is useful for debugging the application when client instances are not being detected properly.
+Typically, this is used with custom Dark Ages clients testing client version variations.</p>
+<h2 id="enable-debug-logging"><a class="header" href="#enable-debug-logging">Enable Debug Logging</a></h2>
+<p>This setting determines whether the application will write debug logs to the <code>logs</code> folder.
+By default, this is <code>Disabled</code>.</p>
+<p>This can be useful for debugging strange behavior in the application.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="about-sleephunter"><a class="header" href="#about-sleephunter">About SleepHunter</a></h1>
+<p><img src="settings/../screenshots/settings-about.png" alt="image" /></p>
+<p>The <code>About</code> settings tab contains information about the application, author, and computer.</p>
+<h2 id="application-version"><a class="header" href="#application-version">Application Version</a></h2>
+<p>Displays the current version of the application.</p>
+<h2 id="framework-version"><a class="header" href="#framework-version">Framework Version</a></h2>
+<p>Displays the current version of .NET used by the application.</p>
+<h2 id="os-version"><a class="header" href="#os-version">OS Version</a></h2>
+<p>Displays the current version of the operating system, including CPU architecture.</p>
+<h2 id="system-specs"><a class="header" href="#system-specs">System Specs</a></h2>
+<p>Displays the current system specifications, including CPU cores and installed RAM.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="skills-editor"><a class="header" href="#skills-editor">Skills Editor</a></h1>
+<p><img src="metadata-editor/../screenshots/metadata-skills-editor.png" alt="image" /></p>
+<p>The <code>Skills</code> tab in the <code>Metadata Editor</code> allows you to edit the database of known skills.
+This allows SleepHunter to recognize skills and configure behaviors when using them.</p>
+<h3 id="adding-a-new-skill"><a class="header" href="#adding-a-new-skill">Adding a New Skill</a></h3>
+<p>To add a new skill, click the <code>Add</code> button in the bottom bar. You will be prompted to enter the skill information.</p>
+<h3 id="editing-a-skill"><a class="header" href="#editing-a-skill">Editing a Skill</a></h3>
+<p>To edit a skill, double-click the skill in the list or select it and click the <code>Edit</code> button in the bottom bar. 
+You will be prompted to enter the skill information, similar to the <code>Add Skill</code> dialog.</p>
+<h3 id="removing-a-skill"><a class="header" href="#removing-a-skill">Removing a Skill</a></h3>
+<p>To remove a skill, select it and click the <code>Remove</code> button in the bottom bar.</p>
+<h3 id="clearing-all-skills"><a class="header" href="#clearing-all-skills">Clearing All Skills</a></h3>
+<p>To clear all skills, click the <code>Clear All</code> button in the bottom bar.</p>
+<h3 id="save-changes"><a class="header" href="#save-changes">Save Changes</a></h3>
+<p>Save all changes to the database file. This will overwrite the existing file.</p>
+<h3 id="revert-changes"><a class="header" href="#revert-changes">Revert Changes</a></h3>
+<p>Discard all changes and revert to the last saved state (from file).</p>
+<h2 id="addedit-skill-dialog"><a class="header" href="#addedit-skill-dialog">Add/Edit Skill Dialog</a></h2>
+<p><img src="metadata-editor/../screenshots/metadata-skill-dialog.png" alt="image" /></p>
+<p>The <code>Skill</code> dialog allows you to enter the information for a skill, either for adding a new skill or editing an existing one.</p>
+<h3 id="skill-name"><a class="header" href="#skill-name">Skill Name</a></h3>
+<p>The name of the skill. This is the name that will be displayed in the UI.</p>
+<h3 id="group-name"><a class="header" href="#group-name">Group Name</a></h3>
+<p>The group name of the skill, used for categorizing skills for certain interactions.</p>
+<h3 id="mana-cost"><a class="header" href="#mana-cost">Mana Cost</a></h3>
+<p>The mana cost of the skill, in MP.</p>
+<h3 id="cooldown"><a class="header" href="#cooldown">Cooldown</a></h3>
+<p>The cooldown of the skill, in seconds (if applicable). A zero-cool down means the skill has no cooldown.</p>
+<h3 id="opens-dialog-on-use"><a class="header" href="#opens-dialog-on-use">Opens Dialog on Use</a></h3>
+<p>Whether the skill opens a dialog when used. This is used to determine if the popup should be dismissed to continue macroing.
+For example <code>Peek</code>, <code>Sense</code>, <code>Martial Awareness</code>, etc.</p>
+<h3 id="does-not-level"><a class="header" href="#does-not-level">Does Not Level</a></h3>
+<p>Whether the skill does not increase on level. If this is set the skill level will not be displayed in the UI.</p>
+<h3 id="is-an-assail-skill"><a class="header" href="#is-an-assail-skill">Is an Assail Skill</a></h3>
+<p>Whether the skill is an <code>Assail</code> skill. This is used to determine if the skill should be treated as an <code>Assail</code> skill for certain behaviors, like space-bar performing.</p>
+<h3 id="disarm-before-using"><a class="header" href="#disarm-before-using">Disarm Before Using</a></h3>
+<p>Whether the character should disarm before using the skill. This is useful when using skills like monk kicks.</p>
+<h3 id="character-class"><a class="header" href="#character-class">Character Class</a></h3>
+<p>The character classes that can use the skill.</p>
+<p><strong>NOTE:</strong> This is currently unused but may be used in the future for certain behaviors.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spells-editor"><a class="header" href="#spells-editor">Spells Editor</a></h1>
+<p><img src="metadata-editor/../screenshots/metadata-spells-editor.png" alt="image" /></p>
+<p>The <code>Spells</code> tab in the <code>Metadata Editor</code> allows you to edit the database of known spells.
+This allows SleepHunter to recognize spells and configure behaviors when using them.</p>
+<h3 id="adding-a-new-spell"><a class="header" href="#adding-a-new-spell">Adding a New Spell</a></h3>
+<p>To add a new spell, click the <code>Add</code> button in the bottom bar. You will be prompted to enter the spell information.</p>
+<h3 id="editing-a-spell"><a class="header" href="#editing-a-spell">Editing a Spell</a></h3>
+<p>To edit a spell, double-click the spell in the list or select it and click the <code>Edit</code> button in the bottom bar.
+You will be prompted to enter the spell information, similar to the <code>Add Spell</code> dialog.</p>
+<h3 id="removing-a-spell"><a class="header" href="#removing-a-spell">Removing a Spell</a></h3>
+<p>To remove a spell, select it and click the <code>Remove</code> button in the bottom bar.</p>
+<h3 id="clearing-all-spells"><a class="header" href="#clearing-all-spells">Clearing All Spells</a></h3>
+<p>To clear all spells, click the <code>Clear All</code> button in the bottom bar.</p>
+<h3 id="save-changes-1"><a class="header" href="#save-changes-1">Save Changes</a></h3>
+<p>Save all changes to the database file. This will overwrite the existing file.</p>
+<h3 id="revert-changes-1"><a class="header" href="#revert-changes-1">Revert Changes</a></h3>
+<p>Discard all changes and revert to the last saved state (from file).</p>
+<h2 id="addedit-spell-dialog"><a class="header" href="#addedit-spell-dialog">Add/Edit Spell Dialog</a></h2>
+<p><img src="metadata-editor/../screenshots/metadata-spell-dialog.png" alt="image" /></p>
+<p>The <code>Spell</code> dialog allows you to enter the information for a spell, either for adding a new spell or editing an existing one.</p>
+<h3 id="spell-name"><a class="header" href="#spell-name">Spell Name</a></h3>
+<p>The name of the spell. This is the name that will be displayed in the UI.</p>
+<h3 id="group-name-1"><a class="header" href="#group-name-1">Group Name</a></h3>
+<p>The group name of the spell, used for categorizing spells for certain interactions like staff-switching.</p>
+<h3 id="mana-cost-1"><a class="header" href="#mana-cost-1">Mana Cost</a></h3>
+<p>The mana cost of the spell, in MP.</p>
+<h3 id="cast-time"><a class="header" href="#cast-time">Cast Time</a></h3>
+<p>The cast time of the spell, in lines. Each line is about one second.</p>
+<h3 id="cooldown-1"><a class="header" href="#cooldown-1">Cooldown</a></h3>
+<p>The cooldown of the spell, in seconds (if applicable). A zero-cool down means the spell has no cooldown.</p>
+<h3 id="does-not-level-1"><a class="header" href="#does-not-level-1">Does Not Level</a></h3>
+<p>Whether the spell does not increase on level. If this is set the spell level will not be displayed in the UI.</p>
+<h3 id="character-class-1"><a class="header" href="#character-class-1">Character Class</a></h3>
+<p>The character classes that can use the spell.</p>
+<p><strong>NOTE:</strong> This is currently unused but may be used in the future for certain behaviors.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="staves-editor"><a class="header" href="#staves-editor">Staves Editor</a></h1>
+<p><img src="metadata-editor/../screenshots/metadata-staves-editor.png" alt="image" /></p>
+<p>The <code>Staves</code> tab in the <code>Metadata Editor</code> allows you to edit the database of known staves and their modifiers.
+This allows SleepHunter to recognize staves and configure behaviors when using them.</p>
+<h3 id="adding-a-new-staff"><a class="header" href="#adding-a-new-staff">Adding a New Staff</a></h3>
+<p>To add a new staff, click the <code>Add</code> button in the bottom bar. You will be prompted to enter the staff information.</p>
+<h3 id="editing-a-staff"><a class="header" href="#editing-a-staff">Editing a Staff</a></h3>
+<p>To edit a staff, double-click the staff in the list or select it and click the <code>Edit</code> button in the bottom bar.
+You will be prompted to enter the staff information, similar to the <code>Add Staff</code> dialog.</p>
+<h3 id="removing-a-staff"><a class="header" href="#removing-a-staff">Removing a Staff</a></h3>
+<p>To remove a staff, select it and click the <code>Remove</code> button in the bottom bar.</p>
+<h3 id="clearing-all-staffs"><a class="header" href="#clearing-all-staffs">Clearing All Staffs</a></h3>
+<p>To clear all staffs, click the <code>Clear All</code> button in the bottom bar.</p>
+<h3 id="save-changes-2"><a class="header" href="#save-changes-2">Save Changes</a></h3>
+<p>Save all changes to the database file. This will overwrite the existing file.</p>
+<h3 id="revert-changes-2"><a class="header" href="#revert-changes-2">Revert Changes</a></h3>
+<p>Discard all changes and revert to the last saved state (from file).</p>
+<h2 id="addedit-staff-dialog"><a class="header" href="#addedit-staff-dialog">Add/Edit Staff Dialog</a></h2>
+<p><img src="metadata-editor/../screenshots/metadata-staff-dialog.png" alt="image" /></p>
+<p>The <code>Staff</code> dialog allows you to enter the information for a staff, either for adding a new staff or editing an existing one.</p>
+<h3 id="staff-name"><a class="header" href="#staff-name">Staff Name</a></h3>
+<p>The name of the staff. This is the name that will be displayed in the UI.</p>
+<h3 id="level-requirement"><a class="header" href="#level-requirement">Level Requirement</a></h3>
+<p>The level requirement of the staff for the character to use it.</p>
+<h3 id="is-medenian-path"><a class="header" href="#is-medenian-path">Is Medenian Path</a></h3>
+<p>Whether the staff requires a character to be a Medenian class to use it.</p>
+<h3 id="character-class-2"><a class="header" href="#character-class-2">Character Class</a></h3>
+<p>The character classes that can use the staff.</p>
+<p><strong>NOTE:</strong> This is currently unused but may be used in the future for certain behaviors.</p>
+<h2 id="addedit-staff-modifiers-dialog"><a class="header" href="#addedit-staff-modifiers-dialog">Add/Edit Staff Modifiers Dialog</a></h2>
+<p><img src="metadata-editor/../screenshots/metadata-modifiers-dialog.png" alt="image" /></p>
+<p>The <code>Staff Modifiers</code> dialog allows you to enter the modifiers for a staff, mostly for spell lines.</p>
+<h3 id="action"><a class="header" href="#action">Action</a></h3>
+<p>The type of modification of spell lines. Can be <code>Increase</code>, <code>Descrease</code> or <code>Set</code>.</p>
+<h3 id="scope"><a class="header" href="#scope">Scope</a></h3>
+<p>The scope of the modification. Can be <code>All</code>, <code>Single</code> or <code>Group</code>. This is where the <code>Group Name</code> comes in for spells.</p>
+<h3 id="scope-name"><a class="header" href="#scope-name">Scope Name</a></h3>
+<p>The name of the scope. This is the name of the spell or group of spells to modify, only when <code>Scope</code> is set to <code>Group</code>.
+For example, the <code>Holy Hermes</code> only affects spells in the <code>ioc</code> group.</p>
+<h3 id="value"><a class="header" href="#value">Value</a></h3>
+<p>The value of the modification. This is the amount of lines to increase, decrease or set the spell line to.</p>
+<h3 id="minimum-lines"><a class="header" href="#minimum-lines">Minimum Lines</a></h3>
+<p>The minimum number (inclusive) of lines for the spell to be in order to be affected by the modification.
+Zero means the spell will always be affected.</p>
+<p>Foe example the <code>Holy Gaea</code> only affects spells with 4 or more lines.</p>
+<h3 id="maximum-lines"><a class="header" href="#maximum-lines">Maximum Lines</a></h3>
+<p>The maximum number (inclusive) of lines for the spell to be in order to be affected by the modification.
+Zero means the spell will always be affected.</p>
+<p>For example the <code>Holy Kronos</code> only affects spells that are 2 lines.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>

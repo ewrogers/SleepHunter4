@@ -1,0 +1,679 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Release Notes - SleepHunter v4</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">Overview</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="history.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="features.html"><strong aria-hidden="true">3.</strong> Features</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">4.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CHANGELOG.html" class="active"><strong aria-hidden="true">6.</strong> Release Notes</a></li><li class="chapter-item expanded "><a href="LICENSE.html"><strong aria-hidden="true">7.</strong> License</a></li><li class="chapter-item expanded affix "><li class="part-title">Main Window</li><li class="chapter-item expanded "><a href="main-window/toolbar.html"><strong aria-hidden="true">8.</strong> Toolbar</a></li><li class="chapter-item expanded "><a href="main-window/character-list.html"><strong aria-hidden="true">9.</strong> Character List</a></li><li class="chapter-item expanded "><a href="main-window/items-tab.html"><strong aria-hidden="true">10.</strong> Items Tab</a></li><li class="chapter-item expanded "><a href="main-window/skills-tab.html"><strong aria-hidden="true">11.</strong> Skills Tab</a></li><li class="chapter-item expanded "><a href="main-window/spells-tab.html"><strong aria-hidden="true">12.</strong> Spells Tab</a></li><li class="chapter-item expanded "><a href="main-window/flowering-tab.html"><strong aria-hidden="true">13.</strong> Flowering Tab</a></li><li class="chapter-item expanded "><a href="main-window/features-tab.html"><strong aria-hidden="true">14.</strong> Features Tab</a></li><li class="chapter-item expanded "><a href="main-window/spell-queue.html"><strong aria-hidden="true">15.</strong> Spell Queue</a></li><li class="chapter-item expanded affix "><li class="part-title">Spell Targets</li><li class="chapter-item expanded "><a href="spell-target/no-target.html"><strong aria-hidden="true">16.</strong> No Target</a></li><li class="chapter-item expanded "><a href="spell-target/self.html"><strong aria-hidden="true">17.</strong> Self Target</a></li><li class="chapter-item expanded "><a href="spell-target/alternate-character.html"><strong aria-hidden="true">18.</strong> Alternate Character</a></li><li class="chapter-item expanded "><a href="spell-target/relative-tile.html"><strong aria-hidden="true">19.</strong> Relative Tile</a></li><li class="chapter-item expanded "><a href="spell-target/relative-tile-area.html"><strong aria-hidden="true">20.</strong> Relative Tile Area</a></li><li class="chapter-item expanded "><a href="spell-target/absolute-tile.html"><strong aria-hidden="true">21.</strong> Absolute Tile</a></li><li class="chapter-item expanded "><a href="spell-target/absolute-tile-area.html"><strong aria-hidden="true">22.</strong> Absolute Tile Area</a></li><li class="chapter-item expanded "><a href="spell-target/screen-position.html"><strong aria-hidden="true">23.</strong> Screen Position</a></li><li class="chapter-item expanded affix "><li class="part-title">Flower Targets</li><li class="chapter-item expanded "><a href="flower-target/alternate-character.html"><strong aria-hidden="true">24.</strong> Alternate Character</a></li><li class="chapter-item expanded "><a href="flower-target/relative-tile.html"><strong aria-hidden="true">25.</strong> Relative Tile</a></li><li class="chapter-item expanded "><a href="flower-target/relative-tile-area.html"><strong aria-hidden="true">26.</strong> Relative Tile Area</a></li><li class="chapter-item expanded "><a href="flower-target/absolute-tile.html"><strong aria-hidden="true">27.</strong> Absolute Tile</a></li><li class="chapter-item expanded "><a href="flower-target/absolute-tile-area.html"><strong aria-hidden="true">28.</strong> Absolute Tile Area</a></li><li class="chapter-item expanded "><a href="flower-target/screen-position.html"><strong aria-hidden="true">29.</strong> Screen Position</a></li><li class="chapter-item expanded affix "><li class="part-title">Settings</li><li class="chapter-item expanded "><a href="settings/general.html"><strong aria-hidden="true">30.</strong> General Settings</a></li><li class="chapter-item expanded "><a href="settings/user-interface.html"><strong aria-hidden="true">31.</strong> User Interface</a></li><li class="chapter-item expanded "><a href="settings/game-client.html"><strong aria-hidden="true">32.</strong> Game Client</a></li><li class="chapter-item expanded "><a href="settings/all-macros.html"><strong aria-hidden="true">33.</strong> All Macros</a></li><li class="chapter-item expanded "><a href="settings/skill-macros.html"><strong aria-hidden="true">34.</strong> Skill Macros</a></li><li class="chapter-item expanded "><a href="settings/spell-macros.html"><strong aria-hidden="true">35.</strong> Spell Macros</a></li><li class="chapter-item expanded "><a href="settings/flowering.html"><strong aria-hidden="true">36.</strong> Flowering</a></li><li class="chapter-item expanded "><a href="settings/updates.html"><strong aria-hidden="true">37.</strong> Updates</a></li><li class="chapter-item expanded "><a href="settings/debug.html"><strong aria-hidden="true">38.</strong> Debug</a></li><li class="chapter-item expanded "><a href="settings/about.html"><strong aria-hidden="true">39.</strong> About</a></li><li class="chapter-item expanded affix "><li class="part-title">Metadata Editor</li><li class="chapter-item expanded "><a href="metadata-editor/skills-editor.html"><strong aria-hidden="true">40.</strong> Skills Editor</a></li><li class="chapter-item expanded "><a href="metadata-editor/spells-editor.html"><strong aria-hidden="true">41.</strong> Spells Editor</a></li><li class="chapter-item expanded "><a href="metadata-editor/staves-editor.html"><strong aria-hidden="true">42.</strong> Staves Editor</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">SleepHunter v4</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<p>All notable changes to this library will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="4102---2023-06-29"><a class="header" href="#4102---2023-06-29">[4.10.2] - 2023-06-29</a></h2>
+<h3 id="removed"><a class="header" href="#removed">Removed</a></h3>
+<ul>
+<li>Lots of old code and things that were not being used</li>
+</ul>
+<h3 id="fixed"><a class="header" href="#fixed">Fixed</a></h3>
+<ul>
+<li>Auto-save and load reliability</li>
+<li>Some UI bugs on auto-load</li>
+<li>Lots of performance and under the hood optimizations</li>
+</ul>
+<h2 id="4101---2023-06-27"><a class="header" href="#4101---2023-06-27">[4.10.1] - 2023-06-27</a></h2>
+<h3 id="added"><a class="header" href="#added">Added</a></h3>
+<ul>
+<li><code>MinHealthPercent</code> to ability metadata</li>
+<li><code>MaxHealthPercent</code> to ability metadata (Crasher/Animal Feast/Execute)</li>
+<li>Visual indicator on spell queue when waiting on HP thresholds</li>
+<li><code>OpensDialog</code> to spell metadata (was only skills before)</li>
+<li>HP threshold in ability tooltips</li>
+<li>More tooltips in metadata editors</li>
+</ul>
+<h3 id="changed"><a class="header" href="#changed">Changed</a></h3>
+<ul>
+<li>Use new metadata properties for HP based conditions on abilities</li>
+<li>Redesign some metadata editors for skill/spells</li>
+<li>Increase dialog size for skill/spell metadata editors</li>
+<li>Tooltip design</li>
+</ul>
+<h3 id="removed-1"><a class="header" href="#removed-1">Removed</a></h3>
+<ul>
+<li>Removed hard-coded names for HP-based skills (now is customizable)</li>
+</ul>
+<h3 id="fixed-1"><a class="header" href="#fixed-1">Fixed</a></h3>
+<ul>
+<li>Improved dialog closing (deferred dispatcher)</li>
+<li>Autosave load error popup &amp; info</li>
+<li>Thousands formatting for HP/MP</li>
+</ul>
+<h2 id="4100---2023-06-27"><a class="header" href="#4100---2023-06-27">[4.10.0] - 2023-06-27</a></h2>
+<h3 id="added-1"><a class="header" href="#added-1">Added</a></h3>
+<ul>
+<li><code>Save Macro</code> toolbar button</li>
+<li><code>Load Macro</code> toolbar button</li>
+<li>Window title parameter for client versions</li>
+<li>Macro features are now saved with state</li>
+</ul>
+<h3 id="changed-1"><a class="header" href="#changed-1">Changed</a></h3>
+<ul>
+<li>Renamed <code>Start New Client</code> button to <code>Launch Client</code> to fit new <code>Load</code> and <code>Save</code> buttons</li>
+<li>Updated min width to fit new toolbar buttons</li>
+<li>Refactored entire save state system</li>
+<li>Refactored local storage (features)</li>
+</ul>
+<h3 id="fixed-2"><a class="header" href="#fixed-2">Fixed</a></h3>
+<ul>
+<li>Auto-save reliability</li>
+<li>Spell rotation combo box sometimes being empty</li>
+</ul>
+<h2 id="490---2023-06-24"><a class="header" href="#490---2023-06-24">[4.9.0] - 2023-06-24</a></h2>
+<h3 id="added-2"><a class="header" href="#added-2">Added</a></h3>
+<ul>
+<li><code>Items</code> tab now features an <code>Inventory</code> / <code>Equipment</code> toggle for viewing each</li>
+<li><code>Equipment</code> view to see all equipped items in a list (by slot)</li>
+</ul>
+<h3 id="changed-2"><a class="header" href="#changed-2">Changed</a></h3>
+<ul>
+<li><code>Inventory</code> tab has been renamed to <code>Items</code></li>
+<li><code>Inventory</code> will now scroll vertically (when necessary)</li>
+<li><code>Skills</code> will now scroll vertically (when necessary)</li>
+<li><code>Spells</code> will now scroll vertically (when necessary)</li>
+</ul>
+<h3 id="fixed-3"><a class="header" href="#fixed-3">Fixed</a></h3>
+<ul>
+<li>Equipment memory offsets for Zolian (staff-switching now works)</li>
+</ul>
+<h2 id="482---2023-06-23"><a class="header" href="#482---2023-06-23">[4.8.2] - 2023-06-23</a></h2>
+<h3 id="added-3"><a class="header" href="#added-3">Added</a></h3>
+<ul>
+<li>&quot;Use Water &amp; Beds&quot; for MP recovery feature (Zolian only)</li>
+<li>&quot;Browse&quot; button for selecting client path with open file dialog</li>
+</ul>
+<h3 id="changed-3"><a class="header" href="#changed-3">Changed</a></h3>
+<ul>
+<li><code>Flowering</code> tab is now only shown in USDA clients</li>
+<li>Tweak the color theme dropdown layout</li>
+<li>Spell queue automatically opens when selected a character with queued spells</li>
+</ul>
+<h2 id="481---2023-06-22"><a class="header" href="#481---2023-06-22">[4.8.1] - 2023-06-22</a></h2>
+<h3 id="added-4"><a class="header" href="#added-4">Added</a></h3>
+<ul>
+<li>Gold display to inventory (last slot)</li>
+<li><code>Features</code> tab for client-specific feature options (per-character)</li>
+<li>Feature flag support for client-specific functionality in <code>ClientVersion</code> definitions</li>
+</ul>
+<h3 id="changed-4"><a class="header" href="#changed-4">Changed</a></h3>
+<ul>
+<li>Client version <code>7.41</code> is now renamed <code>USDA 7.41</code> for clarity</li>
+</ul>
+<h3 id="fixed-4"><a class="header" href="#fixed-4">Fixed</a></h3>
+<ul>
+<li>Fas spiorad bugs (needlessly cast at low mana)</li>
+<li>Better spellbook cooldown updates</li>
+</ul>
+<h2 id="480---2023-06-21"><a class="header" href="#480---2023-06-21">[4.8.0] - 2023-06-21</a></h2>
+<h3 id="added-5"><a class="header" href="#added-5">Added</a></h3>
+<ul>
+<li><code>Inventory</code> tab to view items (names only for now)</li>
+<li>Inventory grid display options under <code>User Interface</code> settings</li>
+<li><code>Signature</code> definition for <code>ClientVersion</code>, which allows version to be detected by signature bytes instead of hash</li>
+<li><code>ExecutableName</code> and <code>WindowClassName</code> properties for <code>ClientVersion</code> to support other clients</li>
+<li>Client version for <code>Zolian 9.1.1</code> memory offsets (<a href="https://www.thebucknetwork.com/Zolian">Zolian Server</a>)</li>
+</ul>
+<h3 id="changed-5"><a class="header" href="#changed-5">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> is now version <code>1.6</code></li>
+<li>Launched clients now detect version based on the new signature definitions</li>
+<li>Process manager can detect other clients based on version definitions</li>
+<li>HP/MP formatting threshold increased to 10k for &quot;thousands&quot; shorthand</li>
+<li><code>User Settings</code> dialog is now larger</li>
+</ul>
+<h3 id="removed-2"><a class="header" href="#removed-2">Removed</a></h3>
+<ul>
+<li><code>Value</code> in <code>ClientVersion</code>, as it was never used</li>
+<li><code>Hash</code> in <code>ClientVersion</code>, now using signature-based detection instead </li>
+</ul>
+<h3 id="fixed-5"><a class="header" href="#fixed-5">Fixed</a></h3>
+<ul>
+<li>Parsing of skills/spell names with no level text</li>
+</ul>
+<h2 id="470---2023-06-16"><a class="header" href="#470---2023-06-16">[4.7.0] - 2023-06-16</a></h2>
+<h3 id="added-6"><a class="header" href="#added-6">Added</a></h3>
+<ul>
+<li>Spell rotation combo box in Spell Queue for per-character setting</li>
+<li>Spell rotation character setting is preserved in saved state</li>
+<li>Spell cooldown indicator in Spell Queue</li>
+<li>New option for <code>Skip Spells on Cooldown</code> for <code>Spell Macros</code> (default is <code>Enabled</code>)</li>
+<li>Spells on cooldown will be skipped, even in no rotation/singular order (when enabled)</li>
+<li>More accessibility key for checkboxes in <code>Spell Macro</code> settings</li>
+</ul>
+<h3 id="changed-6"><a class="header" href="#changed-6">Changed</a></h3>
+<ul>
+<li><code>Spell Rotation Mode</code> renamed <code>Default Spell Queue Rotation</code> to better describe it can be overriden</li>
+<li><code>UserSettings</code> are now version <code>1.5</code></li>
+<li>Now format health/mana using <code>k</code> and <code>m</code> suffixes for thousands/millions (ex: <code>256k</code>, <code>1.2m</code>)</li>
+</ul>
+<h3 id="fixed-6"><a class="header" href="#fixed-6">Fixed</a></h3>
+<ul>
+<li>Some staff line changes</li>
+<li>Better spell queue rotation handling</li>
+</ul>
+<h2 id="461---2023-06-03"><a class="header" href="#461---2023-06-03">[4.6.1] - 2023-06-03</a></h2>
+<h3 id="added-7"><a class="header" href="#added-7">Added</a></h3>
+<ul>
+<li>Status icons now next to character name (when running/paused)</li>
+</ul>
+<h3 id="changed-7"><a class="header" href="#changed-7">Changed</a></h3>
+<ul>
+<li>Small UI tweaks on character list text spacing</li>
+<li>Adjusted min size on the character list to accomodate new status icon</li>
+<li>Will look in a few places for the default DA client path</li>
+</ul>
+<h3 id="removed-3"><a class="header" href="#removed-3">Removed</a></h3>
+<ul>
+<li><code>DirectDrawCompatibilityFix</code> option and support (it was causing side effects for some users)</li>
+<li><strong>TO REMOVE:</strong> Delete <code>ddraw.dll</code> and the <code>DDrawCompat-Darkages.ini</code> files from your DA client folder</li>
+</ul>
+<h3 id="fixed-7"><a class="header" href="#fixed-7">Fixed</a></h3>
+<ul>
+<li>Marked <code>Assail</code>, <code>Assault</code>, and <code>Clobber</code> skills as assail types</li>
+<li>Clear macro status on stop (fixes &quot;Assailing&quot; being displayed when stopped)</li>
+<li><code>Execute</code> skill now also waits for &lt; 2% hp</li>
+<li>Spell queue levels not updating until next cast</li>
+</ul>
+<h2 id="460---2023-05-31"><a class="header" href="#460---2023-05-31">[4.6.0] - 2023-05-31</a></h2>
+<h3 id="added-8"><a class="header" href="#added-8">Added</a></h3>
+<ul>
+<li><code>DirectDrawCompatibilityFix</code> option for fixing flickering mouse cursor (<a href="https://github.com/narzoul/DDrawCompat">DDrawCompat</a> repo)</li>
+</ul>
+<h3 id="changed-8"><a class="header" href="#changed-8">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> are now version <code>1.4</code></li>
+</ul>
+<h2 id="455---2023-05-21"><a class="header" href="#455---2023-05-21">[4.5.5] - 2023-05-21</a></h2>
+<h3 id="added-9"><a class="header" href="#added-9">Added</a></h3>
+<ul>
+<li>Many missing spells for Temuair</li>
+<li>Many missing spells for Medenia (AB50+)</li>
+<li>Many missing skills for Temuair</li>
+<li>Many missing skills for Medenia (AB50+)</li>
+</ul>
+<h3 id="fixed-8"><a class="header" href="#fixed-8">Fixed</a></h3>
+<ul>
+<li>Spell lines and mana costs for some spells</li>
+<li>Keyboard navigation via tab in some UI elements</li>
+</ul>
+<h2 id="454---2023-05-19"><a class="header" href="#454---2023-05-19">[4.5.4] - 2023-05-19</a></h2>
+<h3 id="fixed-9"><a class="header" href="#fixed-9">Fixed</a></h3>
+<ul>
+<li>Skill cooldown memory reading inconsistencies</li>
+</ul>
+<h2 id="453---2023-05-18"><a class="header" href="#453---2023-05-18">[4.5.3] - 2023-05-18</a></h2>
+<h3 id="fixed-10"><a class="header" href="#fixed-10">Fixed</a></h3>
+<ul>
+<li>Process memory scanning on 64-bit, cooldowns should be more reliable now</li>
+<li>Reset cooldown pointer on re-log same client instance</li>
+</ul>
+<h2 id="452---2023-05-18"><a class="header" href="#452---2023-05-18">[4.5.2] - 2023-05-18</a></h2>
+<h3 id="added-10"><a class="header" href="#added-10">Added</a></h3>
+<ul>
+<li>Missing staves for all Medenia classes (AB 50+)</li>
+<li>Missing staves for bards (AB 70+)</li>
+<li>Missing staves for summoners (AB 70+)</li>
+</ul>
+<h3 id="fixed-11"><a class="header" href="#fixed-11">Fixed</a></h3>
+<ul>
+<li>Cooldown detection fixed on 64-bit computers</li>
+<li>Macro toolbar state now updates more reliably (map/location change)</li>
+<li>Spell queue now hides when last character logs out</li>
+<li>Non-integer window scaling now supported (ex: 150%, 175%, etc)</li>
+</ul>
+<h2 id="451---2023-04-18"><a class="header" href="#451---2023-04-18">[4.5.1] - 2023-04-18</a></h2>
+<h3 id="added-11"><a class="header" href="#added-11">Added</a></h3>
+<ul>
+<li>Can dismiss Spell &amp; Flower Target dialogs via <code>Escape</code> key</li>
+</ul>
+<h3 id="fixed-12"><a class="header" href="#fixed-12">Fixed</a></h3>
+<ul>
+<li>Hide <code>No Target</code> option for spells that require one</li>
+<li>Hide the <code>Mouse Offset</code> for <code>No Target</code> spells</li>
+<li>Hide the <code>Mouse Offset</code> for <code>Screen Position</code> flower target</li>
+</ul>
+<h2 id="450---2023-04-18"><a class="header" href="#450---2023-04-18">[4.5.0] - 2023-04-18</a></h2>
+<h3 id="added-12"><a class="header" href="#added-12">Added</a></h3>
+<ul>
+<li>CPU info in <code>Settings-About</code> tab</li>
+<li>.NET version displayed in <code>Settings-&gt;About</code> tab</li>
+</ul>
+<h3 id="changed-9"><a class="header" href="#changed-9">Changed</a></h3>
+<ul>
+<li>Now built against newer <a href="https://dotnet.microsoft.com/en-us/download/dotnet/7.00">.NET 7</a> instead of older .NET Framework 4.8.1 runtime</li>
+<li>Removed build date from <code>Settings-&gt;About</code> tab</li>
+</ul>
+<h2 id="442---2023-04-18"><a class="header" href="#442---2023-04-18">[4.4.2] - 2023-04-18</a></h2>
+<h3 id="changed-10"><a class="header" href="#changed-10">Changed</a></h3>
+<ul>
+<li>Client versions no longer reset to defaults, file is required</li>
+<li>Client versions no longer auto-save to file on close</li>
+<li>Client versions will warn on startup when not found, disable start client button</li>
+<li>Themes no longer auto-save to file on close</li>
+<li>Themes will fallback to default style on error</li>
+<li>Metadata files no longer auto-save to files on close</li>
+<li>Status bar has been removed and made into thinner border + resize grip</li>
+</ul>
+<h3 id="fixed-13"><a class="header" href="#fixed-13">Fixed</a></h3>
+<ul>
+<li>Character sorting by login time</li>
+<li>Character sorting not updating</li>
+<li>Not showing all clients when debug option was checked on startup</li>
+</ul>
+<h2 id="441---2023-04-16"><a class="header" href="#441---2023-04-16">[4.4.1] - 2023-04-16</a></h2>
+<h3 id="added-13"><a class="header" href="#added-13">Added</a></h3>
+<ul>
+<li><code>Show All Processes</code> debug option in <code>Settings-&gt;Debug</code></li>
+<li>Login timestamp to players</li>
+<li>Client sort order option in <code>Settings-&gt;User Interface</code>, defaults to login time</li>
+<li>Get client start time from Win32 kernel</li>
+</ul>
+<h3 id="changed-11"><a class="header" href="#changed-11">Changed</a></h3>
+<ul>
+<li><code>UserSettings</code> are now version <code>1.3</code></li>
+<li>Non-logged in game clients are now hidden by default (use new debug option to show)</li>
+<li>Clients now default sort by login time (oldest to newest)</li>
+<li>Tweak layout of metadata editor windows</li>
+</ul>
+<h3 id="fixed-14"><a class="header" href="#fixed-14">Fixed</a></h3>
+<ul>
+<li>Disable spell queue remove buttons on startup (when empty)</li>
+<li>SleepHunter window title not changing sometimes</li>
+<li>Disable skill/spell tabs when no client</li>
+<li>Disable spell queue when no client</li>
+</ul>
+<h2 id="440---2023-04-15"><a class="header" href="#440---2023-04-15">[4.4.0] - 2023-04-15</a></h2>
+<h3 id="added-14"><a class="header" href="#added-14">Added</a></h3>
+<ul>
+<li><code>Debug</code> tab in <code>Settings</code> window</li>
+<li>More skill &amp; spell metadata</li>
+<li>MP cost display in spell target dialog</li>
+<li>Height resize animations to spell and flower dialogs when selecting target types</li>
+<li><a href="https://ewrogers.github.io/SleepHunter4/">User Manual</a> hyperlink within application (still WIP)</li>
+<li>On first run the application will ask the user if they wish to open the user manual docs in the browser</li>
+<li>User manual link in settings window (below all tabs)</li>
+<li>Spell queue toggle button</li>
+<li><code>Stop All</code> toolbar button</li>
+</ul>
+<h3 id="changed-12"><a class="header" href="#changed-12">Changed</a></h3>
+<ul>
+<li>All new color themes</li>
+<li><code>UserSettings</code> are now version <code>1.2</code></li>
+<li>Moved debug logging option to new <code>Debug</code> section in <code>Settings</code> window</li>
+<li>Accessibility shortcuts for tabs in the <code>Settings</code> window</li>
+<li>Better control alignment and layout in the <code>Settings</code> window sections</li>
+<li>Shortened toolbar button text as <code>Start Macro</code>, <code>Pause Macro</code>, <code>Stop Macro</code> instead</li>
+<li>Metadata editor is now launched from toolbar directly (instead of <code>Settings-&gt;General</code>)</li>
+<li>Improved wording on auto-save macro state setting</li>
+<li>Minimum flower &quot;less than mana&quot; threshold is 1 mana (instead of zero)</li>
+<li>Numeric inputs can now have prefix/unit contextual decorators</li>
+<li>Redesigned layout of spell and flower target dialogs</li>
+<li>Flower queue now shows a timer instead</li>
+<li>Increased padding on flowering options under the main window tab</li>
+<li>Spell queue now highlights icon in white instead of color to be consistent with skill macros</li>
+<li>Renamed <code>Tile Radius</code> to <code>Tile Area</code> target type for more clairity</li>
+<li>Renamed <code>Absolute X/Y</code> to <code>Screen Position</code> target type for more clarity</li>
+<li>Screen coordinate targeting capped to 1280x960, minimum now zero for each dimension</li>
+<li>Slightly narrower dropdown button</li>
+<li>Tooltips open faster</li>
+<li>Spell queue now has a placeholder on the right side</li>
+<li>Show 'No Target' in spell queue for no target spells</li>
+</ul>
+<h3 id="removed-4"><a class="header" href="#removed-4">Removed</a></h3>
+<ul>
+<li>Data file error dialogs on launch</li>
+<li><code>Relative Coordinates</code> target type, as it is redundant with <code>Self</code> and x/y offsets</li>
+<li><code>Rainbow Mode</code> as it is not very useful, visually</li>
+<li><code>Reset Themes</code> button in <code>Settings-&gt;User Interface</code> section</li>
+<li><code>Reset Version</code> button in <code>Settings-&gt;Game Client</code> section</li>
+<li>Missing spell indicator warning (now shows as zero MP)</li>
+<li>Progress bar in flower queue</li>
+<li>Status bar 'Ready' text</li>
+</ul>
+<h3 id="fixed-15"><a class="header" href="#fixed-15">Fixed</a></h3>
+<ul>
+<li>Disable start/pause/stop buttons on app load, until client login</li>
+<li>Disable start/pause/stop buttons on client logout</li>
+<li>Numeric inputs now use regex and allow much better text input of values</li>
+<li>Numeric input boxes now validate/update on lost focus</li>
+<li>Spell queue &quot;disabled&quot; selected text is now white instead of gray on gray</li>
+<li>Double-click actions only respond to left-click now</li>
+<li>Select default them when invalid settings</li>
+<li>Spell queue will only open when adding a spell (not when switching tabs)</li>
+</ul>
+<h2 id="430---2023-04-11"><a class="header" href="#430---2023-04-11">[4.3.0] - 2023-04-11</a></h2>
+<h3 id="added-15"><a class="header" href="#added-15">Added</a></h3>
+<ul>
+<li>SleepHunter can now update the Updater prior to installing new versions</li>
+<li>Visual separate between vertical tabs (settings window)</li>
+<li>New standalone Updater (no references to main app)</li>
+<li>Basic MVVM code for Updater</li>
+</ul>
+<h3 id="changed-13"><a class="header" href="#changed-13">Changed</a></h3>
+<ul>
+<li>Main window title font reduced</li>
+<li>Font size reduced throughout most text</li>
+<li>HP/MP font size slightly increased</li>
+<li>Dropdown and text input boxes wider in most places</li>
+<li>Spell queue current/max level font size slightly increased</li>
+<li>Slightly adjusted UI background and text colors for contrast</li>
+</ul>
+<h3 id="fixed-16"><a class="header" href="#fixed-16">Fixed</a></h3>
+<ul>
+<li>Better file handling for potentially missing files when client path is invalid</li>
+<li>Numeric up/down now highlights border when it has focus</li>
+</ul>
+<h2 id="421---2023-04-11"><a class="header" href="#421---2023-04-11">[4.2.1] - 2023-04-11</a></h2>
+<h3 id="added-16"><a class="header" href="#added-16">Added</a></h3>
+<ul>
+<li>Updater now has a retry button on failure</li>
+</ul>
+<h3 id="fixed-17"><a class="header" href="#fixed-17">Fixed</a></h3>
+<ul>
+<li>Revert macro core changes, causes crashes when flowering sometimes</li>
+<li>Updater now waits for <code>SleepHunter.exe</code> instances to terminate before updating</li>
+</ul>
+<h2 id="420---2023-04-11"><a class="header" href="#420---2023-04-11">[4.2.0] - 2023-04-11</a></h2>
+<h3 id="added-17"><a class="header" href="#added-17">Added</a></h3>
+<ul>
+<li>Support for logging to files</li>
+<li><code>LoggingEnabled</code> user setting to enable generating log files (off by default)</li>
+<li>Logging throughout the application</li>
+<li>Basic inversion of control (IoC) framework</li>
+<li>Dark Ages client titles now renamed to <code>Darkages - ${Character}</code> for identifying multiple instances</li>
+<li>Dark Ages client titles renamed back to <code>Darkages</code> when logged out of a character</li>
+</ul>
+<h3 id="changed-14"><a class="header" href="#changed-14">Changed</a></h3>
+<ul>
+<li>User settings version is now <code>1.1</code></li>
+<li>User settings version is now updated on save</li>
+<li>Initialize services on startup before app load</li>
+<li>Improved wording on several error dialogs</li>
+<li>Flower worker is now more responsive (100ms -&gt; 16ms delay)</li>
+<li>Client versions (<code>Versions.xml</code>) are only saved when the existing file does not exist</li>
+<li>Color themes (<code>Themes.xml</code>) are only saved when the existing file does not exist</li>
+</ul>
+<h3 id="removed-5"><a class="header" href="#removed-5">Removed</a></h3>
+<ul>
+<li>Annoying &quot;unable to save file&quot; popups on close, are logged instead</li>
+<li>More dead code</li>
+</ul>
+<h3 id="fixed-18"><a class="header" href="#fixed-18">Fixed</a></h3>
+<ul>
+<li>Flowering target should now wait for <code>If Mana &lt; X</code> thresholds for alts</li>
+<li>Flowering targets should better multiple handle alts (not getting stuck queue)</li>
+<li>Updater throwing error when <code>Settings.xml</code> already exists</li>
+<li>Updater should use same color theme as main application</li>
+</ul>
+<h2 id="410---2023-04-10"><a class="header" href="#410---2023-04-10">[4.1.0] - 2023-04-10</a></h2>
+<h3 id="added-18"><a class="header" href="#added-18">Added</a></h3>
+<ul>
+<li>New <code>Updates</code> section in <code>Settings</code> window allowing version checking</li>
+<li>New <code>Auto-Update</code> window for downloading updates and launching the updater</li>
+<li>New <code>SleepHunter.Updater</code> child project for applying auto-updates</li>
+<li>New scanline overlay for displaying modals</li>
+<li>Check for new updates on startup (if enabled)</li>
+</ul>
+<h3 id="changed-15"><a class="header" href="#changed-15">Changed</a></h3>
+<ul>
+<li>Accessor key for <code>About</code> is now <code>Alt+B</code> instead of <code>Alt+A</code> (conflicted with <code>All Macros</code>)</li>
+</ul>
+<h3 id="removed-6"><a class="header" href="#removed-6">Removed</a></h3>
+<ul>
+<li>Dead code for MVVM (use <code>CommunityToolkit.Mvvm</code> instead)</li>
+<li>Old <code>Debug.WriteLine</code> calls (only used in Debug mode)</li>
+</ul>
+<h2 id="401---2023-04-09"><a class="header" href="#401---2023-04-09">[4.0.1] - 2023-04-09</a></h2>
+<h3 id="added-19"><a class="header" href="#added-19">Added</a></h3>
+<ul>
+<li>Proper CHANGELOG format</li>
+</ul>
+<h3 id="changed-16"><a class="header" href="#changed-16">Changed</a></h3>
+<ul>
+<li><strong>Version is now 4.0.1</strong> to align with the namesake</li>
+<li>.NET Framework 4.8.1 support</li>
+<li>Updated personal email address</li>
+</ul>
+<h3 id="removed-7"><a class="header" href="#removed-7">Removed</a></h3>
+<ul>
+<li>.NET Framework version display in <code>Settings-&gt;About</code></li>
+</ul>
+<h2 id="150---2016-09-13"><a class="header" href="#150---2016-09-13">[1.5.0] - 2016-09-13</a></h2>
+<h3 id="added-20"><a class="header" href="#added-20">Added</a></h3>
+<ul>
+<li>Support for DA Client 7.41</li>
+<li>Main toolbar buttons now recognize ALT shortcut key</li>
+<li>Drag and drop support for spell queue list</li>
+<li>Drag and drop support for flowering queue list</li>
+<li>Improved tool tip for undefined spell warning</li>
+<li>Better support for 64-bit Win32 APIs</li>
+<li>More color themes based on Google Material palette</li>
+</ul>
+<h3 id="changed-17"><a class="header" href="#changed-17">Changed</a></h3>
+<ul>
+<li>Default window size increased to 1024x768</li>
+<li>Minimum window size increased to 800x600</li>
+<li>Main toolbar icons now use Segoe UI Symbol font</li>
+<li>Main toolbar text labels slightly modified</li>
+<li>Use Segoe UI Symbol font for icons</li>
+<li>Reduced font sizes in many areas</li>
+<li>New selection indicator that shows a left bar instead of full cell highlight</li>
+<li>Character list font sizes have been decreased</li>
+<li>Character list health and mana bars are slightly taller</li>
+<li>Skills tab is no longer scrollable, uses compact sub-tabs for Temuair/Medenia/World</li>
+<li>Spells tab is no longer scrollable, uses compact sub-tabs for Temuair/Medenia/World</li>
+<li>Spell queue is now always visible when not empty</li>
+<li>Spell queue no longer hidden when switching to other tabs</li>
+<li>Spell queue now has &quot;remove&quot; and &quot;clear all&quot; buttons for clarity</li>
+<li>Spell queue warning indicator now flashes</li>
+<li>Spell queue rotation now defaults to singular order instead of round robin (can be changed)</li>
+<li>Flowering queue list item layout redesign for clarity</li>
+</ul>
+<h3 id="removed-8"><a class="header" href="#removed-8">Removed</a></h3>
+<ul>
+<li>Spell queue &quot;move up&quot;/&quot;move down&quot; buttons (in favor of drag and drop)</li>
+<li>Flower queue &quot;move up&quot;/&quot;move down&quot; buttons (in favor of drag and drop)</li>
+</ul>
+<h3 id="fixed-19"><a class="header" href="#fixed-19">Fixed</a></h3>
+<ul>
+<li>UI threading issues that could cause <code>InvalidOperation</code> exceptions</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="getting-started.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="LICENSE.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="getting-started.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="LICENSE.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
