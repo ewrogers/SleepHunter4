@@ -73,35 +73,30 @@ namespace SleepHunter.Views
         private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
-            PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionChanged;
 
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
         }
 
-        private void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
+        private async void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
+            await Dispatcher.SwitchToUIThread();
 
-            }, DispatcherPriority.DataBind);
+            BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
         }
 
-        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is not Player player)
                 return;
 
-            if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                Dispatcher.InvokeIfRequired(() =>
-                {
-                    BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
-                    characterComboBox.Items.Refresh();
+            await Dispatcher.SwitchToUIThread();
 
-                }, DispatcherPriority.DataBind);
+            if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
+                characterComboBox.Items.Refresh();
             }
         }
 
@@ -153,7 +148,7 @@ namespace SleepHunter.Views
                     interval = TimeSpan.Zero;
                 else if (double.TryParse(intervalTextBox.Text.Trim(), out var intervalSeconds) && intervalSeconds >= 0)
                     interval = TimeSpan.FromSeconds(intervalSeconds);
-                else if (!TimeSpanExtender.TryParse(intervalTextBox.Text.Trim(), out interval) || interval < TimeSpan.Zero)
+                else if (!TimeSpanExtensions.TryParse(intervalTextBox.Text.Trim(), out interval) || interval < TimeSpan.Zero)
                 {
                     this.ShowMessageBox("Invalid Interval",
                        "Interval must be a valid positive timespan value.",

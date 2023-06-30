@@ -391,8 +391,6 @@ namespace SleepHunter.Macro
 
         protected override void MacroLoop(object argument)
         {
-            client.Update(PlayerFieldFlags.GameClient);
-
             // Tick the dispatcher so any scheduled events go off
             deferredDispatcher.Tick();
 
@@ -406,10 +404,7 @@ namespace SleepHunter.Macro
             InterfacePanel currentPanel = InterfacePanel.Stats;
 
             if (preserveUserPanel)
-            {
-                client.Update(PlayerFieldFlags.GameClient);
                 currentPanel = client.GameClient.ActivePanel;
-            }
 
             if (UserSettingsManager.Instance.Settings.FlowerBeforeSpellMacros)
             {
@@ -479,8 +474,6 @@ namespace SleepHunter.Macro
             if (!LocalStorage.GetBoolOrDefault(LocalStorageKey.UseWaterAndBeds.IsEnabled, false))
                 return false;
 
-            client.Update(PlayerFieldFlags.Stats);
-
             var manaThreshold = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.ManaThreshold, 1000);
 
             if (client.Stats.CurrentMana >= manaThreshold)
@@ -517,7 +510,6 @@ namespace SleepHunter.Macro
             var skillList = new List<Skill>(100);
             var useShiftKey = UserSettingsManager.Instance.Settings.UseShiftForMedeniaPane;
 
-            client.Update(PlayerFieldFlags.Skillbook);
             foreach (var skillName in client.Skillbook.ActiveSkills)
             {
                 var skill = client.Skillbook.GetSkill(skillName);
@@ -531,17 +523,10 @@ namespace SleepHunter.Macro
                 skillList.Add(skill);
             }
 
-            // Update stats for current HP if any skill might need it for evaluating min/max thresholds
-            if (skillList.Any(skill => skill.MinHealthPercent.HasValue || skill.MaxHealthPercent.HasValue))
-                client.Update(PlayerFieldFlags.Stats);
-
             foreach (var skill in skillList.OrderBy((s) => { return s.OpensDialog; }))
             {
-                client.Update(PlayerFieldFlags.GameClient);
-
                 if (skill.RequiresDisarm || (skill.IsAssail && UserSettingsManager.Instance.Settings.DisarmForAssails))
                 {
-                    client.Update(PlayerFieldFlags.Equipment);
                     var isDisarmed = client.Equipment.IsEmpty(EquipmentSlot.Weapon | EquipmentSlot.Shield);
 
                     if (!isDisarmed)
@@ -628,7 +613,6 @@ namespace SleepHunter.Macro
             if (IsSpellCasting)
                 return false;
 
-            client.Update(PlayerFieldFlags.Spellbook);
             var prioritizeAlts = UserSettingsManager.Instance.Settings.FlowerAltsFirst;
 
             if (!client.HasLyliacPlant && !client.HasLyliacVineyard)
@@ -785,9 +769,6 @@ namespace SleepHunter.Macro
             if (waitingAlt == null)
                 return false;
 
-            client.Update(PlayerFieldFlags.Location);
-            waitingAlt.Update(PlayerFieldFlags.Location);
-
             if (!client.Location.IsWithinRange(waitingAlt.Location))
                 return false;
 
@@ -812,7 +793,6 @@ namespace SleepHunter.Macro
 
         private bool ShouldFasSpiorad(int? manaRequirement = null)
         {
-            client.Update(PlayerFieldFlags.Spellbook | PlayerFieldFlags.Stats);
             var autoFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
 
             if (!client.HasFasSpiorad)
@@ -894,8 +874,6 @@ namespace SleepHunter.Macro
             if (spellQueue.Count < 1)
                 return null;
 
-            client.Update(PlayerFieldFlags.Spellbook);
-
             var skipOnCooldown = UserSettingsManager.Instance.Settings.SkipSpellsOnCooldown;
 
             var currentSpell = SpellQueueRotation switch
@@ -963,8 +941,6 @@ namespace SleepHunter.Macro
         {
             var prioritizeAlts = UserSettingsManager.Instance.Settings.FlowerAltsFirst;
 
-            client.Update(PlayerFieldFlags.Spellbook);
-
             if (!client.HasLyliacPlant)
                 return null;
 
@@ -993,13 +969,9 @@ namespace SleepHunter.Macro
                         if (altClient == null)
                             continue;
 
-                        client.Update(PlayerFieldFlags.Location);
-                        altClient.Update(PlayerFieldFlags.Location);
-
                         if (!client.Location.IsWithinRange(altClient.Location))
                             continue;
 
-                        altClient.Update(PlayerFieldFlags.Stats);
                         isWithinManaThreshold = altTarget.ManaThreshold.HasValue && altClient.Stats.CurrentMana < altTarget.ManaThreshold.Value;
 
                         if (altTarget.IsReady || isWithinManaThreshold)
@@ -1024,10 +996,7 @@ namespace SleepHunter.Macro
                 {
                     var altClient = PlayerManager.Instance.GetPlayerByName(currentTarget.Target.CharacterName);
                     if (altClient != null)
-                    {
-                        altClient.Update(PlayerFieldFlags.Stats);
                         isWithinManaThreshold = altClient.Stats.CurrentMana < currentTarget.ManaThreshold.Value;
-                    }
                 }
 
                 if (currentTarget.Id == currentId)
@@ -1047,7 +1016,6 @@ namespace SleepHunter.Macro
 
             var useShiftKey = UserSettingsManager.Instance.Settings.UseShiftForMedeniaPane;
 
-            client.Update(PlayerFieldFlags.Spellbook);
             var spell = client.Spellbook.GetSpell(item.Name);
 
             if (spell == null)
@@ -1061,7 +1029,6 @@ namespace SleepHunter.Macro
 
             if (UserSettingsManager.Instance.Settings.RequireManaForSpells)
             {
-                client.Update(PlayerFieldFlags.Stats);
                 if (spell.ManaCost > client.Stats.CurrentMana)
                 {
                     IsWaitingOnMana = true;
@@ -1090,16 +1057,12 @@ namespace SleepHunter.Macro
                 if (alt == null || !alt.IsLoggedIn)
                     return false;
 
-                client.Update(PlayerFieldFlags.Location);
-                alt.Update(PlayerFieldFlags.Location);
-
                 if (!client.Location.IsWithinRange(alt.Location))
                     return false;
             }
 
             if (!modifiedNumberOfLines.HasValue)
             {
-                client.Update(PlayerFieldFlags.Equipment);
                 var weapon = client.Equipment.GetSlot(EquipmentSlot.Weapon);
 
                 if (weapon != null)
@@ -1142,8 +1105,6 @@ namespace SleepHunter.Macro
 
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
-
-            client.Update( PlayerFieldFlags.Inventory | PlayerFieldFlags.Equipment | PlayerFieldFlags.Stats | PlayerFieldFlags.Spellbook);
 
             var equippedStaff = client.Equipment.GetSlot(EquipmentSlot.Weapon);
             var availableList = new List<string>(client.Inventory.ItemNames);

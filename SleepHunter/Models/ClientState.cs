@@ -7,7 +7,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class ClientState : ObservableObject
+    public sealed class ClientState : UpdatableObject
     {
         private const string ActivePanelKey = @"ActivePanel";
         private const string InventoryExpandedKey = @"InventoryExpanded";
@@ -15,6 +15,9 @@ namespace SleepHunter.Models
         private const string DialogOpenKey = @"DialogOpen";
         private const string SenseOpenKey = @"SenseOpen";
         private const string UserChattingKey = @"UserChatting";
+
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
 
         private string versionKey;
         private InterfacePanel activePanel;
@@ -24,9 +27,7 @@ namespace SleepHunter.Models
         private bool isSenseOpen;
         private bool isUserChatting;
 
-        public event EventHandler ClientUpdated;
-
-        public Player Owner { get; }
+        public Player Owner { get; init; }
 
         public string VersionKey
         {
@@ -73,19 +74,13 @@ namespace SleepHunter.Models
         public ClientState(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
-            Update(Owner.Accessor);
-            ClientUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -100,9 +95,6 @@ namespace SleepHunter.Models
             var dialogOpenVariable = version.GetVariable(DialogOpenKey);
             var senseOpenVariable = version.GetVariable(SenseOpenKey);
             var userChattingVariable = version.GetVariable(UserChattingKey);
-
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
             if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out var activePanelByte))
                 ActivePanel = (InterfacePanel)activePanelByte;
@@ -135,7 +127,21 @@ namespace SleepHunter.Models
                 IsUserChatting = false;
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
         {
             ActivePanel = InterfacePanel.Unknown;
             IsInventoryExpanded = false;

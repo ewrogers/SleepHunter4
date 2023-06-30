@@ -57,13 +57,6 @@ namespace SleepHunter.Views
         private BackgroundWorker flowerUpdateWorker;
 
         private PlayerMacroState selectedMacro;
-        private volatile int closingFlag;
-
-        public bool IsClosing
-        {
-            get => Interlocked.And(ref closingFlag, 1) > 0;
-            set => Interlocked.Exchange(ref closingFlag, value ? 1 : 0);
-        }
 
         public MainWindow()
         {
@@ -298,7 +291,6 @@ namespace SleepHunter.Views
         private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionAdd;
-            PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionAdd;
             PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionRemove;
 
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
@@ -338,45 +330,45 @@ namespace SleepHunter.Views
                 SelectNextAvailablePlayer();
         }
 
-        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is not Player player)
                 return;
 
-            Dispatcher.InvokeIfRequired(() =>
+            await Dispatcher.SwitchToUIThread();
+
+            if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!player.IsLoggedIn)
-                        OnPlayerLoggedOut(player);
-                    else
-                        OnPlayerLoggedIn(player);
-                }
+                if (!player.IsLoggedIn)
+                    OnPlayerLoggedOut(player);
+                else
+                    OnPlayerLoggedIn(player);
+            }
 
-                clientListBox.Items.Refresh();
+            clientListBox.Items.Refresh();
 
-                var selectedPlayer = clientListBox.SelectedItem as Player;
+            var selectedPlayer = clientListBox.SelectedItem as Player;
 
-                if (player == selectedPlayer)
-                {
-                    var supportsFlowering = selectedPlayer?.Version?.SupportsFlowering ?? false;
-                    var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
-                    var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
+            if (player == selectedPlayer)
+            {
+                var supportsFlowering = selectedPlayer?.Version?.SupportsFlowering ?? false;
+                var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
+                var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
 
-                    ToggleInventory(selectedPlayer != null);
-                    ToggleSkills(selectedPlayer != null);
-                    ToggleSpells(selectedPlayer != null);
-                    ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
-                    ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
-                }
-
-            }, DispatcherPriority.DataBind);
+                ToggleInventory(selectedPlayer != null);
+                ToggleSkills(selectedPlayer != null);
+                ToggleSpells(selectedPlayer != null);
+                ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
+                ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
+            }
         }
 
-        private void OnPlayerLoggedIn(Player player)
+        private async void OnPlayerLoggedIn(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
+
+            await Dispatcher.SwitchToUIThread();
 
             if (!player.LoginTimestamp.HasValue)
                 player.LoginTimestamp = DateTime.Now;
@@ -394,20 +386,13 @@ namespace SleepHunter.Views
             if (state != null)
             {
                 state.StatusChanged += HandleMacroStatusChanged;
-                state.Client.PlayerUpdated += HandleClientUpdateTick;
+                state.Client.Updated += HandleClientUpdateTick;
             }
 
             if (autosaveEnabled && state != null)
             {
-                Dispatcher.InvokeIfRequired(() =>
-                {
-                    // Ignore if the application is already closing, it will be saved by the closing routine
-                    if (IsClosing)
-                        return;
-
-                    logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
-                    AutoLoadMacroState(state);
-                }, DispatcherPriority.DataBind);
+                logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
+                AutoLoadMacroState(state);
             }
 
             UpdateWindowTitle();
@@ -417,10 +402,12 @@ namespace SleepHunter.Views
                 state.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
         }
 
-        private void OnPlayerLoggedOut(Player player)
+        private async void OnPlayerLoggedOut(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
+
+            await Dispatcher.SwitchToUIThread();
 
             player.LoginTimestamp = null;
             UpdateClientList();
@@ -434,31 +421,21 @@ namespace SleepHunter.Views
 
             if (autosaveEnabled && state != null)
             {
-                Dispatcher.InvokeIfRequired(() =>
-                {
-                    // Ignore if the application is already closing, do not auto load
-                    if (IsClosing)
-                        return;
-
-                    logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
-                    AutoSaveMacroState(state);
-                }, DispatcherPriority.DataBind);
+                logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
+                AutoSaveMacroState(state);
             }
 
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                if (player.HasHotkey)
-                    HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
+            if (player.HasHotkey)
+                HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
 
-                player.Hotkey = null;
-            });
+            player.Hotkey = null;
 
             UpdateWindowTitle();
 
             if (state != null)
             {
                 state.StatusChanged -= HandleMacroStatusChanged;
-                state.Client.PlayerUpdated -= HandleClientUpdateTick;
+                state.Client.Updated -= HandleClientUpdateTick;
 
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
@@ -525,22 +502,16 @@ namespace SleepHunter.Views
             }
         }
 
-        private void RefreshInventory()
+        private async void RefreshInventory()
         {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(RefreshInventory, DispatcherPriority.DataBind);
-                return;
-            }
+            await Dispatcher.SwitchToUIThread();
+
+            // Do some stuff with inventory on UI thread
         }
 
-        private void RefreshSpellQueue()
+        private async void RefreshSpellQueue()
         {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(RefreshSpellQueue, DispatcherPriority.DataBind);
-                return;
-            }
+            await Dispatcher.SwitchToUIThread();
 
             if (selectedMacro != null)
                 spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
@@ -554,13 +525,9 @@ namespace SleepHunter.Views
             spellQueueListBox.Items.Refresh();
         }
 
-        private void RefreshFlowerQueue()
+        private async void RefreshFlowerQueue()
         {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(RefreshFlowerQueue, DispatcherPriority.DataBind);
-                return;
-            }
+            await Dispatcher.SwitchToUIThread();
 
             var hasItemsInQueue = selectedMacro != null && selectedMacro.FlowerQueueCount > 0;
 
@@ -571,13 +538,9 @@ namespace SleepHunter.Views
             flowerListBox.Items.Refresh();
         }
 
-        private void RefreshFeatures()
+        private async void RefreshFeatures()
         {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(RefreshFeatures, DispatcherPriority.DataBind);
-                return;
-            }
+            await Dispatcher.SwitchToUIThread();
 
             if (selectedMacro is not PlayerMacroState state)
                 return;
@@ -960,9 +923,7 @@ namespace SleepHunter.Views
             }
             else
             {
-                hotkeyPlayer.Update(PlayerFieldFlags.Location);
                 macroState.Start();
-
                 logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
             }
         }
@@ -1038,13 +999,9 @@ namespace SleepHunter.Views
             worldSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
-        private void UpdateUIForMacroStatus(MacroStatus status)
+        private async void UpdateUIForMacroStatus(MacroStatus status)
         {
-            if (!CheckAccess())
-            {
-                Dispatcher.InvokeIfRequired(UpdateUIForMacroStatus, status, DispatcherPriority.DataBind);
-                return;
-            }
+            await Dispatcher.SwitchToUIThread();
 
             switch (status)
             {
@@ -1077,8 +1034,6 @@ namespace SleepHunter.Views
         {
             if (spellQueueListBox == null)
                 return;
-
-            logger.LogInfo($"Toggle spell queue panel: {showQueue}");
 
             if (showQueue)
             {
@@ -1244,8 +1199,6 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            IsClosing = true;
-
             logger.LogInfo("Application is shutting down");
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
@@ -1493,9 +1446,6 @@ namespace SleepHunter.Views
                 state.UseLyliacVineyard = deserialized.UseLyliacVineyard;
                 state.FlowerAlternateCharacters = deserialized.FlowerAlternateCharacters;
 
-                // Update skillbook and spellbook just to be sure
-                state.Client.Update(PlayerFieldFlags.Skillbook | PlayerFieldFlags.Spellbook);
-
                 // Add all skill macros to state
                 foreach (var skillMacro in deserialized.Skills)
                 {
@@ -1577,7 +1527,8 @@ namespace SleepHunter.Views
                 RefreshFlowerQueue();
                 RefreshFeatures();
 
-                ToggleSpellQueue(state.QueuedSpells.Count > 0);
+                if (selectedMacro != null && selectedMacro == state)
+                    ToggleSpellQueue(state.QueuedSpells.Count > 0);
             }
         }
 
@@ -2444,20 +2395,19 @@ namespace SleepHunter.Views
             Title = $"SleepHunter - {selectedMacro.Client.Name}";
         }
 
-        private void UpdateToolbarState()
+        private async void UpdateToolbarState()
         {
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
-                loadStateButton.IsEnabled = saveStateButton.IsEnabled = selectedMacro != null && selectedMacro.Client.IsLoggedIn;
+            await Dispatcher.SwitchToUIThread();
 
-                stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
+            launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
+            loadStateButton.IsEnabled = saveStateButton.IsEnabled = selectedMacro != null && selectedMacro.Client.IsLoggedIn;
 
-                if (selectedMacro == null)
-                    startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
-                else
-                    UpdateUIForMacroStatus(selectedMacro.Status);
-            }, DispatcherPriority.Normal);
+            stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
+
+            if (selectedMacro == null)
+                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
+            else
+                UpdateUIForMacroStatus(selectedMacro.Status);
         }
 
         private void ToggleInventory(bool show = true)
@@ -2504,18 +2454,17 @@ namespace SleepHunter.Views
             featuresTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void UpdateClientList()
+        private async void UpdateClientList()
         {
+            await Dispatcher.SwitchToUIThread();
+
             var showAll = PlayerManager.Instance.ShowAllClients;
             var sortOrder = PlayerManager.Instance.SortOrder;
 
             logger.LogInfo($"Updating the client list (showAll = {showAll}, sortOrder = {sortOrder})");
 
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-                clientListBox.Items.Refresh();
-            }, DispatcherPriority.DataBind);
+            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
+            clientListBox.Items.Refresh();
         }
 
         private async void CheckForNewVersion()

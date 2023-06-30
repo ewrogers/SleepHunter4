@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace SleepHunter.Extensions
 {
-    public static class ControlExtender
+    public static class ControlExtensions
     {
         public static T FindItem<T>(this ItemsControl control, Func<T, bool> selector) where T : class
         {

@@ -14,7 +14,7 @@ using SleepHunter.Metadata;
 
 namespace SleepHunter.Models
 {
-    public sealed class Spellbook : ObservableObject, IEnumerable<Spell>
+    public sealed class Spellbook : UpdatableObject, IEnumerable<Spell>
     {
         private const string SpellbookKey = @"Spellbook";
 
@@ -22,18 +22,18 @@ namespace SleepHunter.Models
         public const int MedeniaSpellCount = 36;
         public const int WorldSpellCount = 18;
 
-        private readonly List<Spell> spells = new(TemuairSpellCount + MedeniaSpellCount + WorldSpellCount);
+        private readonly Spell[] spells = new Spell[TemuairSpellCount + MedeniaSpellCount + WorldSpellCount];
+
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
+
         private readonly ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new();
 
         private string activeSpell;
 
-        public event EventHandler SpellbookUpdated;
+        public Player Owner { get; init; }
 
-        public Player Owner { get; }
-
-        public int Count => spells.Count((spell) => { return !spell.IsEmpty; });
-
-        public IEnumerable<Spell> Spells => 
+        public IEnumerable<Spell> AllSpells => 
             from s in spells select s;
 
         public IEnumerable<Spell> TemuairSpells => 
@@ -54,74 +54,60 @@ namespace SleepHunter.Models
         public Spellbook(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-            InitialzeSpellbook();
-        }
 
-        private void InitialzeSpellbook()
-        {
-            spells.Clear();
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
 
-            for (int i = 0; i < spells.Capacity; i++)
-                spells.Add(Spell.MakeEmpty(i + 1));
+            for (var i = 0; i < spells.Length; i++)
+                spells[i] = (Spell.MakeEmpty(i + 1));
         }
 
         public bool ContainSpell(string spellName)
         {
-            spellName = spellName.Trim();
-
-            foreach (var spell in spells)
-                if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
+            CheckIfDisposed();
+            return spells.Any(spell => string.Equals(spell.Name, spellName.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         public Spell GetSpell(string spellName)
         {
-            spellName = spellName.Trim();
-
-            foreach (var spell in spells)
-                if (string.Equals(spell.Name, spellName, StringComparison.OrdinalIgnoreCase))
-                    return spell;
-
-            return null;
+            CheckIfDisposed();
+            return spells.FirstOrDefault(spell => string.Equals(spell.Name, spellName.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         public bool IsActive(string spellName)
         {
+            CheckIfDisposed();
+
             if (spellName == null)
                 return false;
 
-            spellName = spellName.Trim();
-
-            return string.Equals(spellName, activeSpell, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(activeSpell, spellName.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         public void SetCooldownTimestamp(string spellName, DateTime timestamp)
         {
+            CheckIfDisposed();
+
             spellName = spellName.Trim();
             spellCooldownTimestamps[spellName] = timestamp;
         }
 
         public bool ClearCooldown(string spellName)
         {
+            CheckIfDisposed();
+
             spellName = spellName.Trim();
             return spellCooldownTimestamps.TryRemove(spellName, out _);
         }
 
-        public void ClearAllCooldowns() => spellCooldownTimestamps.Clear();
-
-        public void Update()
+        public void ClearAllCooldowns()
         {
-            Update(Owner.Accessor);
-            SpellbookUpdated?.Invoke(this, EventArgs.Empty);
+            CheckIfDisposed();
+            spellCooldownTimestamps.Clear();
         }
 
-        public void Update(ProcessMemoryAccessor accessor)
+        protected override void OnUpdate()
         {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -131,34 +117,29 @@ namespace SleepHunter.Models
                 return;
             }
 
-            var spellbookVariable = version.GetVariable(SpellbookKey);
-
-            if (spellbookVariable == null)
+            if (!version.TryGetVariable(SpellbookKey, out var spellbookVariable))
             {
                 ResetDefaults();
                 UpdateCooldowns();
                 return;
             }
 
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
-
-            var spellbookPointer = spellbookVariable.DereferenceValue(reader);
-
-            if (spellbookPointer == 0)
+            if (!spellbookVariable.TryDereferenceValue(reader, out var basePointer))
             {
                 ResetDefaults();
                 UpdateCooldowns();
                 return;
             }
 
-            reader.BaseStream.Position = spellbookPointer;
+            stream.Position = basePointer;
 
-            bool foundFasSpiorad = false;
-            bool foundLyliacVineyard = false;
-            bool foundLyliacPlant = false;
+            var foundFasSpiorad = false;
+            var foundLyliacVineyard = false;
+            var foundLyliacPlant = false;
 
-            for (int i = 0; i < spellbookVariable.Count; i++)
+            var entryCount = Math.Min(spells.Length, spellbookVariable.Count);
+
+            for (var i = 0; i < entryCount; i++)
             {
                 SpellMetadata metadata = null;
 
@@ -230,7 +211,7 @@ namespace SleepHunter.Models
         {
             ActiveSpell = null;
 
-            for (int i = 0; i < spells.Capacity; i++)
+            for (int i = 0; i < spells.Length; i++)
             {
                 spells[i].IsEmpty = true;
                 spells[i].Name = null;
@@ -249,7 +230,7 @@ namespace SleepHunter.Models
 
         private void UpdateCooldowns()
         {
-            for (var i = 0; i < spells.Capacity; i++)
+            for (var i = 0; i < spells.Length; i++)
             {
                 var spellName = spells[i].Name;
 

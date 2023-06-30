@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Linq;
-
-using SleepHunter.IO.Process;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Models
@@ -22,9 +20,8 @@ namespace SleepHunter.Models
         private bool showAllClients;
 
         public event PlayerEventHandler PlayerAdded;
-        public event PropertyChangedEventHandler PlayerPropertyChanged;
-        public event PlayerEventHandler PlayerUpdated;
         public event PlayerEventHandler PlayerRemoved;
+        public event PropertyChangedEventHandler PlayerPropertyChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -99,9 +96,7 @@ namespace SleepHunter.Models
 
             players[player.Process.ProcessId] = player;
 
-            if (alreadyExists)
-                OnPlayerUpdated(player);
-            else
+            if (!alreadyExists)
                 OnPlayerAdded(player);
         }
 
@@ -125,6 +120,7 @@ namespace SleepHunter.Models
         public bool RemovePlayer(int processId)
         {
             var wasRemoved = players.TryRemove(processId, out var removedPlayer);
+            removedPlayer.PropertyChanged -= Player_PropertyChanged;
 
             if (wasRemoved)
             {
@@ -162,25 +158,11 @@ namespace SleepHunter.Models
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private void OnPlayerAdded(Player player)
-        {
-            player.PropertyChanged += Player_PropertyChanged;
-            PlayerAdded?.Invoke(this, new PlayerEventArgs(player));
-        }
+        private void OnPlayerAdded(Player player) => PlayerAdded?.Invoke(this, new PlayerEventArgs(player));
 
         private void OnPlayerPropertyChanged(Player player, string propertyName) => PlayerPropertyChanged?.Invoke(player, new PropertyChangedEventArgs(propertyName));
 
-        private void OnPlayerUpdated(Player player)
-        {
-            player.PropertyChanged += Player_PropertyChanged;
-            PlayerUpdated?.Invoke(this, new PlayerEventArgs(player));
-        }
-
-        private void OnPlayerRemoved(Player player)
-        {
-            player.PropertyChanged -= Player_PropertyChanged;
-            PlayerRemoved?.Invoke(this, new PlayerEventArgs(player));
-        }
+        private void OnPlayerRemoved(Player player) => PlayerRemoved?.Invoke(this, new PlayerEventArgs(player));
 
         private void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {

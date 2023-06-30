@@ -129,9 +129,6 @@ namespace SleepHunter.Macro
                     try
                     {
                         UpdateClientMacroStatus();
-                        
-                        if (!CheckMap())
-                            cancelSource.Cancel();
 
                         if (cancelSource.Token.IsCancellationRequested)
                             break;
@@ -143,13 +140,13 @@ namespace SleepHunter.Macro
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            Thread.Sleep(16);
                         }
                     }
                     finally
                     {
                         if (!cancelSource.IsCancellationRequested)
-                            Thread.Sleep(50);
+                            Thread.Sleep(16);
 
                         if (cancelSource.IsCancellationRequested)
                             Stop();
@@ -182,15 +179,6 @@ namespace SleepHunter.Macro
         }
 
         protected abstract void MacroLoop(object argument);
-
-        protected virtual bool CheckMap()
-        {
-            if (client == null)
-                return false;
-
-            client.Update(PlayerFieldFlags.Location);
-            return true;
-        }
 
         protected virtual bool CancelTask(bool waitForTask = false)
         {
@@ -259,8 +247,6 @@ namespace SleepHunter.Macro
 
         protected virtual void SaveKnownState()
         {
-            client.Update(PlayerFieldFlags.Location);
-
             lastKnownMapName = client.Location.MapName;
             lastKnownMapNumber = client.Location.MapNumber;
             lastKnownXCoordinate = client.Location.X;
@@ -269,8 +255,6 @@ namespace SleepHunter.Macro
 
         protected virtual void CheckKnownState(bool saveStateAfterCheck = true)
         {
-            client.Update(PlayerFieldFlags.Location);
-
             if (!string.Equals(client.Location.MapName, lastKnownMapName) ||
                client.Location.MapNumber != lastKnownMapNumber)
             {

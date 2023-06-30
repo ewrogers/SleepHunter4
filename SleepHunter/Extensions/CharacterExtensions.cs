@@ -1,7 +1,7 @@
 ﻿
 namespace SleepHunter.Extensions
 {
-    public static class CharacterExtender
+    public static class CharacterExtensions
     {
         public static bool IsValidHexDigit(this char c, bool allowControl = true)
         {

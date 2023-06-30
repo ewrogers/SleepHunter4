@@ -7,12 +7,15 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class MapLocation : ObservableObject
+    public sealed class MapLocation : UpdatableObject
     {
         private const string MapNumberKey = @"MapNumber";
         private const string MapNameKey = @"MapName";
         private const string MapXKey = @"MapX";
         private const string MapYKey = @"MapY";
+
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
 
         private int mapNumber;
         private int x;
@@ -20,9 +23,7 @@ namespace SleepHunter.Models
         private string mapName;
         private string mapHash;
 
-        public event EventHandler LocationUpdated;
-
-        public Player Owner { get; }
+        public Player Owner { get; init; }
 
         public int MapNumber
         {
@@ -57,13 +58,21 @@ namespace SleepHunter.Models
         public MapLocation(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
         }
 
-        public bool IsSameMap(MapLocation other) 
-            => MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
+        public bool IsSameMap(MapLocation other)
+        {
+            CheckIfDisposed();
+            return MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
+        }
 
         public bool IsWithinRange(MapLocation other, int maxX = 10, int maxY = 10)
         {
+            CheckIfDisposed();
+
             if (!IsSameMap(other))
                 return false;
 
@@ -73,17 +82,8 @@ namespace SleepHunter.Models
             return deltaX <= maxX && deltaY <= maxY;
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
-            Update(Owner.Accessor);
-            LocationUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -96,9 +96,6 @@ namespace SleepHunter.Models
             var mapXVariable = version.GetVariable(MapXKey);
             var mapYVariable = version.GetVariable(MapYKey);
             var mapNameVariable = version.GetVariable(MapNameKey);
-
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
             if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out var mapNumber))
                 MapNumber = mapNumber;
@@ -121,7 +118,21 @@ namespace SleepHunter.Models
                 MapName = null;
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
         {
             MapNumber = 0;
             X = 0;
