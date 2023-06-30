@@ -5,7 +5,6 @@ using SleepHunter.Common;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Settings;
-using SleepHunter.Win32;
 
 namespace SleepHunter.Models
 {
@@ -22,7 +21,10 @@ namespace SleepHunter.Models
         private readonly PlayerStats stats;
         private readonly PlayerModifiers modifiers;
         private readonly MapLocation location;
-        
+
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
+
         private ClientVersion version;
         
         private string name;
@@ -159,6 +161,10 @@ namespace SleepHunter.Models
             Process = process ?? throw new ArgumentNullException(nameof(process));
             accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.Read);
 
+            stream = accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
+
+            gameClient = new ClientState(this);
             inventory = new Inventory(this);
             equipment = new EquipmentSet(this);
             skillbook = new Skillbook(this);
@@ -166,7 +172,6 @@ namespace SleepHunter.Models
             stats = new PlayerStats(this);
             modifiers = new PlayerModifiers(this);
             location = new MapLocation(this);
-            gameClient = new ClientState(this);
         }
 
         ~Player() => Dispose(false);
@@ -178,11 +183,18 @@ namespace SleepHunter.Models
 
             if (isDisposing)
             {
+                gameClient.Dispose();
                 inventory.Dispose();
                 equipment.Dispose();
+                skillbook.Dispose();
+                spellbook.Dispose();
+                stats.Dispose();
+                modifiers.Dispose();
+                location.Dispose();
 
-                skillbook?.Dispose();
-                accessor?.Dispose();
+                stream.Dispose();
+                reader.Dispose();
+                accessor.Dispose();
             }
 
             base.Dispose(isDisposing);
@@ -207,12 +219,7 @@ namespace SleepHunter.Models
             inventory.TryUpdate();
             equipment.TryUpdate();
             skillbook.TryUpdate();
-
-            try
-            {
-                spellbook.Update(accessor);
-            }
-            catch { }
+            spellbook.TryUpdate();
 
             var wasLoggedIn = IsLoggedIn;
             IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
@@ -231,14 +238,8 @@ namespace SleepHunter.Models
 
             string name = null;
 
-            if (version != null && version.ContainsVariable(CharacterNameKey))
-            {
-                using var stream = accessor.GetStream();
-                using var reader = new BinaryReader(stream, Encoding.ASCII);
-
-                var nameVariable = version.GetVariable(CharacterNameKey);
+            if (version != null && version.TryGetVariable(CharacterNameKey, out var nameVariable))
                 nameVariable.TryReadString(reader, out name);
-            }
 
             if (!string.IsNullOrWhiteSpace(name))
                 Name = name;
