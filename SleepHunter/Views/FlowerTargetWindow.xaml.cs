@@ -73,7 +73,6 @@ namespace SleepHunter.Views
         private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
-            PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionChanged;
 
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;

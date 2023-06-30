@@ -222,9 +222,8 @@ namespace SleepHunter.Models
             spellbook.TryUpdate();
 
             var wasLoggedIn = IsLoggedIn;
-            IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
-            var isNowLoggedIn = IsLoggedIn;
-
+            var isNowLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
+            
             if (isNowLoggedIn && !wasLoggedIn)
                 OnLoggedIn();
             else if (wasLoggedIn && !isNowLoggedIn)
@@ -247,6 +246,7 @@ namespace SleepHunter.Models
 
         private void OnLoggedIn()
         {
+            IsLoggedIn = true;
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }
 
@@ -255,6 +255,7 @@ namespace SleepHunter.Models
             // This memory gets re-allocated when a new character logs into the same client instance
             skillbook.ResetCooldownPointer();
 
+            IsLoggedIn = false;
             LoggedOut?.Invoke(this, EventArgs.Empty);
         }
 

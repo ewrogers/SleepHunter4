@@ -12,8 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Lots of performance and under the hood optimizations
 - Auto-save and load reliability
+- Some UI bugs on auto-load
+- Lots of performance and under the hood optimizations
 
 ## [4.10.1] - 2023-06-27
 

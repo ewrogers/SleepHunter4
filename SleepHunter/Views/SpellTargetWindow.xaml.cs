@@ -98,7 +98,6 @@ namespace SleepHunter.Views
         private void InitializeViews()
         {
             PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
-            PlayerManager.Instance.PlayerUpdated += OnPlayerCollectionChanged;
             PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionChanged;
 
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
@@ -120,7 +119,7 @@ namespace SleepHunter.Views
             if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
                string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
-                BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
+                BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
                 characterComboBox.Items.Refresh();
             }
         }
