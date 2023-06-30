@@ -104,29 +104,24 @@ namespace SleepHunter.Views
             PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
         }
 
-        private void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
+        private async void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            Dispatcher.InvokeIfRequired(() =>
-            {
-                BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
-
-            }, DispatcherPriority.DataBind);
+            await Dispatcher.SwitchToUIThread();
+            BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
         }
 
-        private void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!(sender is Player player))
+            if (sender is not Player player)
                 return;
 
-            if (string.Equals("Name", e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals("IsLoggedIn", e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                Dispatcher.InvokeIfRequired(() =>
-                {
-                    BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
-                    characterComboBox.Items.Refresh();
+            await Dispatcher.SwitchToUIThread();
 
-                }, DispatcherPriority.DataBind);
+            if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                BindingOperations.GetBindingExpression(characterComboBox, ListView.ItemsSourceProperty).UpdateTarget();
+                characterComboBox.Items.Refresh();
             }
         }
 

@@ -118,7 +118,7 @@ namespace SleepHunter.Views
                 cooldown = TimeSpan.Zero;
             else if (double.TryParse(cooldownTextBox.Text.Trim(), out var cooldownSeconds) && cooldownSeconds >= 0)
                 cooldown = TimeSpan.FromSeconds(cooldownSeconds);
-            else if (!TimeSpanExtender.TryParse(cooldownTextBox.Text.Trim(), out cooldown) || cooldown < TimeSpan.Zero)
+            else if (!TimeSpanExtensions.TryParse(cooldownTextBox.Text.Trim(), out cooldown) || cooldown < TimeSpan.Zero)
             {
                 this.ShowMessageBox("Invalid Cooldown",
                    "Cooldown must be a valid positive timespan value.",

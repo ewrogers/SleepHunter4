@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SleepHunter.Extensions
 {
-    public static class BinaryReaderExtender
+    public static class BinaryReaderExtensions
     {
         public static string ReadFixedString(this BinaryReader reader, int length)
         {

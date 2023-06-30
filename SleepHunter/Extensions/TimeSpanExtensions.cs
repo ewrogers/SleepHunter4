@@ -3,12 +3,12 @@ using System.Text.RegularExpressions;
 
 namespace SleepHunter.Extensions
 {
-    public static class TimeSpanExtender
+    public static class TimeSpanExtensions
     {
-        static readonly Regex TimeSpanSecondsRegex = new(@"\s*(?<seconds>-?[0-9]*\.?[0-9]{1,})\s*s\s*");
-        static readonly Regex TimeSpanMinutesRegex = new(@"\s*(?<minutes>-?[0-9]*\.?[0-9]{1,})\s*m\s*");
-        static readonly Regex TimeSpanHoursRegex = new(@"\s*(?<hours>-?[0-9]*\.?[0-9]{1,})\s*h\s*");
-        static readonly Regex TimeSpanDaysRegex = new(@"\s*(?<days>-?[0-9]*\.?[0-9]{1,})\s*d\s*");
+        static readonly Regex TimeSpanSecondsRegex = new(@"\s*(?<seconds>-?[0-9]*\.?[0-9]{1,})\s*s\s*", RegexOptions.Compiled);
+        static readonly Regex TimeSpanMinutesRegex = new(@"\s*(?<minutes>-?[0-9]*\.?[0-9]{1,})\s*m\s*", RegexOptions.Compiled);
+        static readonly Regex TimeSpanHoursRegex = new(@"\s*(?<hours>-?[0-9]*\.?[0-9]{1,})\s*h\s*", RegexOptions.Compiled);
+        static readonly Regex TimeSpanDaysRegex = new(@"\s*(?<days>-?[0-9]*\.?[0-9]{1,})\s*d\s*", RegexOptions.Compiled);
 
         public static string ToFractionalEnglish(this TimeSpan timeSpan, bool useShortNotation = false, string format = null)
             => ToEnglish(timeSpan, useShortNotation, false, true, format);
