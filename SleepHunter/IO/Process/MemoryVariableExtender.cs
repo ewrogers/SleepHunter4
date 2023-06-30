@@ -20,7 +20,7 @@ namespace SleepHunter.IO.Process
             return reference;
         }
 
-        public static bool TryDeferenceValue(this MemoryVariable variable, BinaryReader reader, out long address, bool isStringType = false)
+        public static bool TryDereferenceValue(this MemoryVariable variable, BinaryReader reader, out long address, bool isStringType = false)
         {
             address = DereferenceValue(variable, reader, isStringType);
             return address != 0;

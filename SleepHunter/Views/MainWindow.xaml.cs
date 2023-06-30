@@ -57,13 +57,6 @@ namespace SleepHunter.Views
         private BackgroundWorker flowerUpdateWorker;
 
         private PlayerMacroState selectedMacro;
-        private volatile int closingFlag;
-
-        public bool IsClosing
-        {
-            get => Interlocked.And(ref closingFlag, 1) > 0;
-            set => Interlocked.Exchange(ref closingFlag, value ? 1 : 0);
-        }
 
         public MainWindow()
         {
@@ -394,7 +387,7 @@ namespace SleepHunter.Views
             if (state != null)
             {
                 state.StatusChanged += HandleMacroStatusChanged;
-                state.Client.PlayerUpdated += HandleClientUpdateTick;
+                state.Client.Updated += HandleClientUpdateTick;
             }
 
             if (autosaveEnabled && state != null)
@@ -443,7 +436,7 @@ namespace SleepHunter.Views
             if (state != null)
             {
                 state.StatusChanged -= HandleMacroStatusChanged;
-                state.Client.PlayerUpdated -= HandleClientUpdateTick;
+                state.Client.Updated -= HandleClientUpdateTick;
 
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
@@ -931,9 +924,7 @@ namespace SleepHunter.Views
             }
             else
             {
-                hotkeyPlayer.Update(PlayerFieldFlags.Location);
                 macroState.Start();
-
                 logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
             }
         }
@@ -1211,8 +1202,6 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            IsClosing = true;
-
             logger.LogInfo("Application is shutting down");
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
@@ -1459,9 +1448,6 @@ namespace SleepHunter.Views
 
                 state.UseLyliacVineyard = deserialized.UseLyliacVineyard;
                 state.FlowerAlternateCharacters = deserialized.FlowerAlternateCharacters;
-
-                // Update skillbook and spellbook just to be sure
-                state.Client.Update(PlayerFieldFlags.Skillbook | PlayerFieldFlags.Spellbook);
 
                 // Add all skill macros to state
                 foreach (var skillMacro in deserialized.Skills)

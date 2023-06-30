@@ -11,8 +11,6 @@ namespace SleepHunter.Macro
     {
         public static void Disarm(this Player client)
         {
-            client.Update(PlayerFieldFlags.Equipment);
-
             if (!client.Equipment.IsEmpty(EquipmentSlot.Weapon | EquipmentSlot.Shield))
                 WindowAutomator.SendKeystroke(client.Process.WindowHandle, '`');
         }
@@ -35,7 +33,6 @@ namespace SleepHunter.Macro
 
             itemName = itemName.Trim();
 
-            client.Update(PlayerFieldFlags.Inventory);
             var slot = client.Inventory.FindItemSlot(itemName);
 
             if (slot < 0)
@@ -104,8 +101,6 @@ namespace SleepHunter.Macro
             var pt = new Point(570, 320);
             pt = pt.ScalePoint(client.Process.WindowScaleX, client.Process.WindowScaleY);
 
-            client.Update(PlayerFieldFlags.GameClient);
-
             if (!client.GameClient.IsInventoryExpanded)
                 WindowAutomator.SendMouseClick(client.Process.WindowHandle, MouseButton.Left, (int)pt.X, (int)pt.Y);
         }
@@ -114,8 +109,6 @@ namespace SleepHunter.Macro
         {
             var pt = new Point(570, 320);
             pt = pt.ScalePoint(client.Process.WindowScaleX, client.Process.WindowScaleY);
-
-            client.Update(PlayerFieldFlags.GameClient);
 
             if (client.GameClient.IsInventoryExpanded)
                 WindowAutomator.SendMouseClick(client.Process.WindowHandle, MouseButton.Left, (int)pt.X, (int)pt.Y);
@@ -139,8 +132,6 @@ namespace SleepHunter.Macro
 
             while (true)
             {
-                client.Update(PlayerFieldFlags.GameClient);
-
                 if (client.GameClient.IsInventoryExpanded == isExpanded)
                     return true;
 
@@ -149,7 +140,7 @@ namespace SleepHunter.Macro
                 if (timeout != TimeSpan.Zero && deltaTime >= timeout)
                     break;
 
-                Thread.Sleep(1);
+                Thread.Sleep(16);
             }
 
             return false;
@@ -161,8 +152,6 @@ namespace SleepHunter.Macro
 
             while (true)
             {
-                client.Update(PlayerFieldFlags.Equipment);
-
                 if (client.Equipment.IsEquipped(itemName, slot))
                     return true;
 
@@ -171,7 +160,7 @@ namespace SleepHunter.Macro
                 if (timeout != TimeSpan.Zero && deltaTime >= timeout)
                     break;
 
-                Thread.Sleep(1);
+                Thread.Sleep(16);
             }
 
             return false;
@@ -183,8 +172,6 @@ namespace SleepHunter.Macro
 
             while (true)
             {
-                client.Update(PlayerFieldFlags.Equipment);
-
                 if (client.Equipment.IsEmpty(slot))
                     return true;
 
@@ -193,7 +180,7 @@ namespace SleepHunter.Macro
                 if (timeout == TimeSpan.Zero && deltaTime >= timeout)
                     break;
 
-                Thread.Sleep(1);
+                Thread.Sleep(16);
             }
 
             return false;
@@ -210,7 +197,6 @@ namespace SleepHunter.Macro
 
             var hwnd = client.Process.WindowHandle;
 
-            client.Update(PlayerFieldFlags.GameClient);
             var currentPanel = client.GameClient.ActivePanel;
 
             if (currentPanel.IsSameAs(panel))
@@ -273,8 +259,6 @@ namespace SleepHunter.Macro
 
             while (true)
             {
-                client.Update(PlayerFieldFlags.GameClient);
-
                 var activePanel = client.GameClient.ActivePanel;
 
                 if (activePanel.IsSameAs(panel))
@@ -285,7 +269,7 @@ namespace SleepHunter.Macro
                 if (timeout != TimeSpan.Zero && delaTime >= timeout)
                     break;
 
-                Thread.Sleep(1);
+                Thread.Sleep(16);
             }
 
             return false;

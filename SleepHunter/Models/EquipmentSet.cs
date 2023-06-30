@@ -4,48 +4,44 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using SleepHunter.Common;
 using SleepHunter.Extensions;
 using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
     
-    public sealed class EquipmentSet : IEnumerable<InventoryItem>
+    public sealed class EquipmentSet : UpdatableObject, IEnumerable<InventoryItem>
     {
         private const string EquipmentKey = @"Equipment";
-
         public const int EquipmentCount = 18;
 
-        private readonly List<InventoryItem> equipment = new(EquipmentCount);
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
+        private readonly InventoryItem[] equipment = new InventoryItem[EquipmentCount];
 
-        public event EventHandler EquipmentUpdated;
-
-        public Player Owner { get; }
-
-        public int Count => equipment.Count((item) => { return !item.IsEmpty; });
+        public Player Owner { get; init; }
 
         public IEnumerable<InventoryItem> SortedBySlot => equipment.OrderBy(item => item.Slot);
 
         public EquipmentSet(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-            InitializeEquipment();
-        }
 
-        private void InitializeEquipment()
-        {
-            for (int i = 0; i < EquipmentCount; i++)
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
+
+            for (int i = 0; i < equipment.Length; i++)
             {
-                var item = InventoryItem.MakeEmpty(i);
-                item.Slot = i + 1;
-
-                equipment.Add(item);
+                equipment[i] = InventoryItem.MakeEmpty(i);
+                equipment[i].Slot = i + 1;
             }
         }
 
         public bool IsEquipped(string itemName, EquipmentSlot slot)
         {
+            CheckIfDisposed();
+
             itemName = itemName.Trim();
             var isEquipped = true;
 
@@ -108,6 +104,8 @@ namespace SleepHunter.Models
 
         public bool IsEmpty(EquipmentSlot slot)
         {
+            CheckIfDisposed();
+
             var isEmpty = true;
 
             if (slot.HasFlag(EquipmentSlot.Accessory1))
@@ -167,6 +165,12 @@ namespace SleepHunter.Models
             return isEmpty;
         }
 
+        public InventoryItem GetSlot(EquipmentSlot slot)
+        {
+            CheckIfDisposed();
+            return equipment[(int)slot];
+        }
+
         private bool IsSlotEmpty(EquipmentSlot slot)
         {
             var item = GetSlot(slot);
@@ -175,17 +179,8 @@ namespace SleepHunter.Models
             return isEmpty;
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
-            Update(Owner.Accessor);
-            EquipmentUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -194,28 +189,23 @@ namespace SleepHunter.Models
                 return;
             }
 
-            var equipmentVariable = version.GetVariable(EquipmentKey);
-
-            if (equipmentVariable == null)
+            if (!version.TryGetVariable(EquipmentKey, out var equipmentVariable))
             {
                 ResetDefaults();
                 return;
             }
 
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
-
-            var equipmentPointer = equipmentVariable.DereferenceValue(reader);
-
-            if (equipmentPointer == 0)
+            if (!equipmentVariable.TryDereferenceValue(reader, out var basePointer))
             {
                 ResetDefaults();
                 return;
             }
 
-            reader.BaseStream.Position = equipmentPointer;
+            stream.Position = basePointer;
 
-            for (int i = 0; i < equipmentVariable.Count; i++)
+            var entryCount = Math.Min(equipment.Length, equipmentVariable.Count);
+
+            for (int i = 0; i < entryCount; i++)
             {
                 try
                 {
@@ -231,17 +221,29 @@ namespace SleepHunter.Models
             }
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
         {
-            for (int i = 0; i < equipment.Capacity; i++)
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
+        {
+            for (int i = 0; i < equipment.Length; i++)
             {
                 equipment[i].IsEmpty = true;
                 equipment[i].Name = null;
                 equipment[i].Quantity = 0;
             }
         }
-
-        public InventoryItem GetSlot(EquipmentSlot slot) => equipment[(int)slot];
 
         public IEnumerator<InventoryItem> GetEnumerator()
         {

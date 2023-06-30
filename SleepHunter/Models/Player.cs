@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using SleepHunter.Common;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
@@ -10,28 +9,27 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Models
 {
-    public sealed class Player : ObservableObject, IDisposable
+    public sealed class Player : UpdatableObject, IDisposable
     {
         private const string CharacterNameKey = @"CharacterName";
 
-        private readonly SemaphoreSlim updateLock = new(1);
-
-        private bool isDisposed;
-        private ClientVersion version;
         private readonly ProcessMemoryAccessor accessor;
+        private readonly ClientState gameClient;
+        private readonly Inventory inventory;
+        private readonly EquipmentSet equipment;
+        private readonly Skillbook skillbook;
+        private readonly Spellbook spellbook;
+        private readonly PlayerStats stats;
+        private readonly PlayerModifiers modifiers;
+        private readonly MapLocation location;
+        
+        private ClientVersion version;
+        
         private string name;
         private string guild;
         private string guildRank;
         private string title;
         private PlayerClass playerClass;
-        private Inventory inventory;
-        private EquipmentSet equipment;
-        private Skillbook skillbook;
-        private Spellbook spellbook;
-        private PlayerStats stats;
-        private PlayerModifiers modifiers;
-        private MapLocation location;
-        private ClientState gameClient;
         private DateTime? loginTimestamp;
         private bool isLoggedIn;
         private string status;
@@ -40,16 +38,11 @@ namespace SleepHunter.Models
         private bool isMacroStopped;
         private Hotkey hotkey;
         private int selectedTabIndex;
-        private double? skillbookScrollPosition;
-        private double? spellbookScrollPosition;
-        private double? spellQueueScrollPosition;
-        private double? flowerScrollPosition;
         private bool hasLyliacPlant;
         private bool hasLyliacVineyard;
         private bool hasFasSpiorad;
         private DateTime lastFlowerTimestamp;
 
-        public event EventHandler PlayerUpdated;
         public event EventHandler LoggedIn;
         public event EventHandler LoggedOut;
 
@@ -95,54 +88,22 @@ namespace SleepHunter.Models
             set => SetProperty(ref playerClass, value);
         }
 
-        public Inventory Inventory
-        {
-            get => inventory;
-            private set => SetProperty(ref inventory, value);
-        }
+        public ClientState GameClient => gameClient;
 
-        public EquipmentSet Equipment
-        {
-            get => equipment;
-            set => SetProperty(ref equipment, value);
-        }
+        public Inventory Inventory => inventory;
 
-        public Skillbook Skillbook
-        {
-            get => skillbook;
-            private set => SetProperty(ref skillbook, value);
-        }
+        public EquipmentSet Equipment => equipment;
 
-        public Spellbook Spellbook
-        {
-            get => spellbook;
-            private set => SetProperty(ref spellbook, value);
-        }
+        public Skillbook Skillbook => skillbook;
 
-        public PlayerStats Stats
-        {
-            get => stats;
-            private set => SetProperty(ref stats, value);
-        }
+        public Spellbook Spellbook => spellbook;
 
-        public PlayerModifiers Modifiers
-        {
-            get => modifiers;
-            private set => SetProperty(ref modifiers, value);
-        }
+        public PlayerStats Stats => stats;
 
-        public MapLocation Location
-        {
-            get => location;
-            private set => SetProperty(ref location, value);
-        }
+        public PlayerModifiers Modifiers => modifiers;
 
-        public ClientState GameClient
-        {
-            get => gameClient;
-            private set => SetProperty(ref gameClient, value);
-        }
-
+        public MapLocation Location => location;
+        
         public bool IsLoggedIn
         {
             get => isLoggedIn;
@@ -195,30 +156,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref selectedTabIndex, value);
         }
 
-        public double? SkillbookScrollPosition
-        {
-            get => skillbookScrollPosition;
-            set => SetProperty(ref skillbookScrollPosition, value);
-        }
-
-        public double? SpellbookScrollPosition
-        {
-            get => spellbookScrollPosition;
-            set => SetProperty(ref spellbookScrollPosition, value);
-        }
-
-        public double? SpellQueueScrollPosition
-        {
-            get => spellQueueScrollPosition;
-            set => SetProperty(ref spellQueueScrollPosition, value);
-        }
-
-        public double? FlowerScrollPosition
-        {
-            get => flowerScrollPosition;
-            set => SetProperty(ref flowerScrollPosition, value);
-        }
-
         public bool HasLyliacPlant
         {
             get => hasLyliacPlant;
@@ -265,142 +202,107 @@ namespace SleepHunter.Models
 
         ~Player() => Dispose(false);
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
-        private void Dispose(bool isDisposing)
+        protected override void Dispose(bool isDisposing)
         {
             if (isDisposed)
                 return;
 
             if (isDisposing)
             {
+                inventory.Dispose();
+                equipment.Dispose();
+
                 skillbook?.Dispose();
                 accessor?.Dispose();
-
-                updateLock?.Dispose();
             }
 
-            isDisposed = true;
+            base.Dispose(isDisposing);
         }
 
-        public async void Update(PlayerFieldFlags updateFields = PlayerFieldFlags.All)
+        protected override void OnUpdate()
         {
-            await updateLock.WaitAsync();
 
             GameClient.VersionKey = Version?.Key ?? "Unknown";
 
             try
             {
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.GameClient))
-                        gameClient.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Window))
-                        Process.Update();
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Name))
-                        UpdateName(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Guild))
-                        UpdateGuild(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.GuildRank))
-                        UpdateGuildRank(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Title))
-                        UpdateTitle(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Stats))
-                        stats.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Modifiers))
-                        modifiers.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Location))
-                        location.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Inventory))
-                        inventory.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Equipment))
-                        equipment.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Skillbook))
-                        skillbook.Update(accessor);
-                }
-                catch { }
-
-                try
-                {
-                    if (updateFields.HasFlag(PlayerFieldFlags.Spellbook))
-                        spellbook.Update(accessor);
-                }
-                catch { }
+                gameClient.Update(accessor);
             }
-            finally
+            catch { }
+
+            try
             {
-                updateLock.Release();
+                Process.Update();
             }
+            catch { }
+
+            try
+            {
+                UpdateName(accessor);
+            }
+            catch { }
+
+            try
+            {
+                UpdateGuild(accessor);
+            }
+            catch { }
+
+            try
+            {
+                UpdateGuildRank(accessor);
+            }
+            catch { }
+
+            try
+            {
+                UpdateTitle(accessor);
+            }
+            catch { }
+
+            try
+            {
+                stats.Update(accessor);
+            }
+            catch { }
+
+            try
+            {
+                modifiers.Update(accessor);
+            }
+            catch { }
+
+            try
+            {
+                location.Update(accessor);
+            }
+            catch { }
+
+            inventory.TryUpdate();
+
+            equipment.TryUpdate();
+
+            try
+            {
+                skillbook.Update(accessor);
+            }
+            catch { }
+
+            try
+            {
+                spellbook.Update(accessor);
+            }
+            catch { }
 
             var wasLoggedIn = IsLoggedIn;
             IsLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
             var isNowLoggedIn = IsLoggedIn;
-            
+
             if (isNowLoggedIn && !wasLoggedIn)
                 OnLoggedIn();
             else if (wasLoggedIn && !isNowLoggedIn)
                 OnLoggedOut();
-
-            PlayerUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         private void UpdateName(ProcessMemoryAccessor accessor)
