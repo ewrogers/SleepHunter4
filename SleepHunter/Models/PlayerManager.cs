@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Linq;
-
-using SleepHunter.IO.Process;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Models

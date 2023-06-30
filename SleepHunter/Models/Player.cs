@@ -26,10 +26,6 @@ namespace SleepHunter.Models
         private ClientVersion version;
         
         private string name;
-        private string guild;
-        private string guildRank;
-        private string title;
-        private PlayerClass playerClass;
         private DateTime? loginTimestamp;
         private bool isLoggedIn;
         private string status;
@@ -46,7 +42,7 @@ namespace SleepHunter.Models
         public event EventHandler LoggedIn;
         public event EventHandler LoggedOut;
 
-        public ClientProcess Process { get; }
+        public ClientProcess Process { get; init; }
 
         public ClientVersion Version
         {
@@ -62,30 +58,6 @@ namespace SleepHunter.Models
         {
             get => name;
             set => SetProperty(ref name, value);
-        }
-
-        public string Guild
-        {
-            get => guild;
-            set => SetProperty(ref guild, value);
-        }
-
-        public string GuildRank
-        {
-            get => guildRank;
-            set => SetProperty(ref guildRank, value);
-        }
-
-        public string Title
-        {
-            get => title;
-            set => SetProperty(ref title, value);
-        }
-
-        public PlayerClass Class
-        {
-            get => playerClass;
-            set => SetProperty(ref playerClass, value);
         }
 
         public ClientState GameClient => gameClient;
@@ -187,9 +159,6 @@ namespace SleepHunter.Models
             Process = process ?? throw new ArgumentNullException(nameof(process));
             accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.Read);
 
-            if (NativeMethods.GetProcessTimes(accessor.ProcessHandle, out var creationTime, out _, out _, out _))
-                process.CreationTime = creationTime.FiletimeToDateTime();
-
             inventory = new Inventory(this);
             equipment = new EquipmentSet(this);
             skillbook = new Skillbook(this);
@@ -201,7 +170,6 @@ namespace SleepHunter.Models
         }
 
         ~Player() => Dispose(false);
-
 
         protected override void Dispose(bool isDisposing)
         {
@@ -222,20 +190,10 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-
             GameClient.VersionKey = Version?.Key ?? "Unknown";
 
-            try
-            {
-                gameClient.Update(accessor);
-            }
-            catch { }
-
-            try
-            {
-                Process.Update();
-            }
-            catch { }
+            Process.TryUpdate();
+            gameClient.TryUpdate();
 
             try
             {
@@ -243,51 +201,12 @@ namespace SleepHunter.Models
             }
             catch { }
 
-            try
-            {
-                UpdateGuild(accessor);
-            }
-            catch { }
-
-            try
-            {
-                UpdateGuildRank(accessor);
-            }
-            catch { }
-
-            try
-            {
-                UpdateTitle(accessor);
-            }
-            catch { }
-
-            try
-            {
-                stats.Update(accessor);
-            }
-            catch { }
-
-            try
-            {
-                modifiers.Update(accessor);
-            }
-            catch { }
-
-            try
-            {
-                location.Update(accessor);
-            }
-            catch { }
-
+            stats.TryUpdate();
+            modifiers.TryUpdate();
+            location.TryUpdate();
             inventory.TryUpdate();
-
             equipment.TryUpdate();
-
-            try
-            {
-                skillbook.Update(accessor);
-            }
-            catch { }
+            skillbook.TryUpdate();
 
             try
             {
@@ -323,30 +242,6 @@ namespace SleepHunter.Models
 
             if (!string.IsNullOrWhiteSpace(name))
                 Name = name;
-        }
-
-        private void UpdateGuild(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
-            // Not currently implemented
-        }
-
-        private void UpdateGuildRank(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
-            // Not currently implemented
-        }
-
-        private void UpdateTitle(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
-            // Not currently implemented
         }
 
         private void OnLoggedIn()

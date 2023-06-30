@@ -22,7 +22,7 @@ namespace SleepHunter.Models
         private readonly InventoryItem[] inventory = new InventoryItem[InventoryCount];
         private int gold;
 
-        public Player Owner { get; }
+        public Player Owner { get; init; }
 
         public IEnumerable<InventoryItem> ItemsAndGold => inventory;
 
@@ -46,7 +46,7 @@ namespace SleepHunter.Models
             stream = owner.Accessor.GetStream();
             reader = new BinaryReader(stream, Encoding.ASCII);
 
-            for (int i = 0; i < inventory.Length; i++)
+            for (var i = 0; i < inventory.Length; i++)
                 inventory[i] = InventoryItem.MakeEmpty(i + 1);
 
             UpdateGoldInventoryItem();
@@ -105,7 +105,7 @@ namespace SleepHunter.Models
             var entryCount = Math.Min(inventory.Length, inventoryVariable.Count);
 
             // Gold is the last item, skip it
-            for (int i = 0; i < entryCount - 1; i++)
+            for (var i = 0; i < entryCount - 1; i++)
             {
                 try
                 {
@@ -123,20 +123,6 @@ namespace SleepHunter.Models
             }
 
             UpdateGold();
-        }
-
-        protected override void Dispose(bool isDisposing)
-        {
-            if (isDisposed)
-                return;
-
-            if (isDisposing)
-            {
-                reader?.Dispose();
-                stream?.Dispose();
-            }
-
-            base.Dispose(isDisposing);
         }
 
         private void UpdateGold()
@@ -169,9 +155,23 @@ namespace SleepHunter.Models
             inventory[InventoryCount - 1].Name = $"Gold ({Gold:n0})";
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
         {
-            for (int i = 0; i < inventory.Length; i++)
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
+        {
+            for (var i = 0; i < inventory.Length; i++)
             {
                 inventory[i].IsEmpty = true;
                 inventory[i].Name = null;

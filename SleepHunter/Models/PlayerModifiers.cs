@@ -1,33 +1,21 @@
 ﻿using System;
 
 using SleepHunter.Common;
-using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerModifiers : ObservableObject
+    public sealed class PlayerModifiers : UpdatableObject
     {
-        public event EventHandler ModifiersUpdated;
-
-        public Player Owner { get; }
+        public Player Owner { get; init; }
 
         public PlayerModifiers(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
-            Update(Owner.Accessor);
-            ModifiersUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
-            // Not currently implemented
+            // Does nothing yet
         }
     }
 }

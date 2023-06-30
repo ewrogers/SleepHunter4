@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 
 using SleepHunter.Win32;
+using SleepHunter.Models;
 
 namespace SleepHunter.IO.Process
 {

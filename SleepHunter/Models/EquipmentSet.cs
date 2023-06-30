@@ -31,7 +31,7 @@ namespace SleepHunter.Models
             stream = owner.Accessor.GetStream();
             reader = new BinaryReader(stream, Encoding.ASCII);
 
-            for (int i = 0; i < equipment.Length; i++)
+            for (var i = 0; i < equipment.Length; i++)
             {
                 equipment[i] = InventoryItem.MakeEmpty(i);
                 equipment[i].Slot = i + 1;
@@ -205,7 +205,7 @@ namespace SleepHunter.Models
 
             var entryCount = Math.Min(equipment.Length, equipmentVariable.Count);
 
-            for (int i = 0; i < entryCount; i++)
+            for (var i = 0; i < entryCount; i++)
             {
                 try
                 {
@@ -237,7 +237,7 @@ namespace SleepHunter.Models
 
         private void ResetDefaults()
         {
-            for (int i = 0; i < equipment.Length; i++)
+            for (var i = 0; i < equipment.Length; i++)
             {
                 equipment[i].IsEmpty = true;
                 equipment[i].Name = null;

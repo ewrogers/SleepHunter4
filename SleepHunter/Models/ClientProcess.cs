@@ -2,11 +2,12 @@
 using System.Text;
 
 using SleepHunter.Common;
+using SleepHunter.IO.Process;
 using SleepHunter.Win32;
 
-namespace SleepHunter.IO.Process
+namespace SleepHunter.Models
 {
-    public sealed class ClientProcess : ObservableObject
+    public sealed class ClientProcess : UpdatableObject
     {
         private const int ViewportWidth = 640;
         private const int ViewportHeight = 480;
@@ -18,8 +19,6 @@ namespace SleepHunter.IO.Process
         private int windowWidth = ViewportWidth;
         private int windowHeight = ViewportHeight;
         private DateTime creationTime;
-
-        public event EventHandler ProcessUpdated;
 
         public int ProcessId
         {
@@ -69,7 +68,7 @@ namespace SleepHunter.IO.Process
 
         public ClientProcess() { }
 
-        public void Update()
+        protected override void OnUpdate()
         {
             var windowTextLength = NativeMethods.GetWindowTextLength(windowHandle);
             var windowTextBuffer = new StringBuilder(windowTextLength + 1);
@@ -83,7 +82,16 @@ namespace SleepHunter.IO.Process
                 WindowHeight = clientRect.Height;
             }
 
-            ProcessUpdated?.Invoke(this, EventArgs.Empty);
+            if (CreationTime == DateTime.MinValue)
+                UpdateProcessTime();
+        }
+
+        private void UpdateProcessTime()
+        {
+            using var accessor = new ProcessMemoryAccessor(processId, ProcessAccess.Read);
+
+            if (NativeMethods.GetProcessTimes(accessor.ProcessHandle, out var creationTime, out _, out _, out _))
+                CreationTime = creationTime.FiletimeToDateTime();
         }
     }
 }

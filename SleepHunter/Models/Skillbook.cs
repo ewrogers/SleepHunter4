@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 
 namespace SleepHunter.Models
 {
-    public sealed class Skillbook : ObservableObject, IEnumerable<Skill>, IDisposable
+    public sealed class Skillbook : UpdatableObject, IEnumerable<Skill>, IDisposable
     {
         private const string SkillbookKey = @"Skillbook";
         private const string SkillCooldownsKey = "SkillCooldowns";
@@ -26,20 +26,18 @@ namespace SleepHunter.Models
         public const int MedeniaSkillCount = 36;
         public const int WorldSkillCount = 18;
 
-        private bool isDisposed;
-        private readonly List<Skill> skills = new(TemuairSkillCount + MedeniaSkillCount + WorldSkillCount);
+        private readonly Skill[] skills = new Skill[TemuairSkillCount + MedeniaSkillCount + WorldSkillCount];
         private readonly ConcurrentDictionary<string, bool> activeSkills = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly ProcessMemoryScanner scanner;
-        nint baseCooldownPointer;
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
 
-        public event EventHandler SkillbookUpdated;
+        private nint baseCooldownPointer;
 
-        public Player Owner { get; }
+        public Player Owner { get; init;  }
 
-        public int Count => skills.Count((skill) => { return !skill.IsEmpty; });
-
-        public IEnumerable<Skill> Skills => 
+        public IEnumerable<Skill> AllSkills => 
             from s in skills select s;
 
         public IEnumerable<Skill> TemuairSkills => 
@@ -59,75 +57,46 @@ namespace SleepHunter.Models
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             scanner = new ProcessMemoryScanner(Owner.ProcessHandle, leaveOpen: true);
 
-            InitializeSkillbook();
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
+
+            for (var i = 0; i < skills.Length; i++)
+                skills[i] = Skill.MakeEmpty(i + 1);
         }
 
         ~Skillbook() => Dispose(false);
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool isDisposing)
-        {
-            if (isDisposed)
-                return;
-
-            if (isDisposing)
-            {
-                scanner?.Dispose();
-            }
-
-            isDisposed = true;
-        }
-
-        private void InitializeSkillbook()
-        {
-            skills.Clear();
-
-            for (int i = 0; i < skills.Capacity; i++)
-                skills.Add(Skill.MakeEmpty(i + 1));
-        }
-
         public bool ContainSkill(string skillName)
         {
-            skillName = skillName.Trim();
-
-            foreach (var skill in skills)
-                if (string.Equals(skill.Name, skillName, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
+            CheckIfDisposed();
+            return skills.Any(skill => string.Equals(skill.Name, skillName.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         public Skill GetSkill(string skillName)
         {
-            skillName = skillName.Trim();
-
-            foreach (var skill in skills)
-                if (string.Equals(skill.Name, skillName, StringComparison.OrdinalIgnoreCase))
-                    return skill;
-
-            return null;
+            CheckIfDisposed();
+            return skills.FirstOrDefault(skill => string.Equals(skill.Name, skillName.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         public bool? IsActive(string skillName)
         {
+            CheckIfDisposed();
+
             if (skillName == null)
                 return null;
 
             skillName = skillName.Trim();
 
-            if (activeSkills.ContainsKey(skillName))
-                return activeSkills[skillName];
-            else
-                return null;
+            if (activeSkills.TryGetValue(skillName, out var activeState))
+                return activeState;
+
+            return null;
         }
 
         public bool? ToggleActive(string skillName, bool? isActive = null)
         {
+            CheckIfDisposed();
+
             skillName = skillName.Trim();
 
             bool? wasActive = null;
@@ -149,17 +118,8 @@ namespace SleepHunter.Models
 
         public void ResetCooldownPointer() => baseCooldownPointer = nint.Zero;
 
-        public void Update()
+        protected override void OnUpdate()
         {
-            Update(Owner.Accessor);
-            SkillbookUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -168,36 +128,31 @@ namespace SleepHunter.Models
                 return;
             }
 
-            var skillbookVariable = version.GetVariable(SkillbookKey);
-
-            if (skillbookVariable == null)
+            if (!version.TryGetVariable(SkillbookKey, out var skillbookVariable))
             {
                 ResetDefaults();
                 return;
             }
 
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
-
-            var skillbookPointer = skillbookVariable.DereferenceValue(reader);
-
-            if (skillbookPointer == 0)
+            if (!skillbookVariable.TryDereferenceValue(reader, out var basePointer))
             {
                 ResetDefaults();
                 return;
             }
 
-            reader.BaseStream.Position = skillbookPointer;
+            stream.Position = basePointer;
 
-            for (int i = 0; i < skillbookVariable.Count; i++)
+            var entryCount = Math.Min(skills.Length, skillbookVariable.Count);
+
+            for (var i = 0; i < entryCount; i++)
             {
                 SkillMetadata metadata = null;
 
                 try
                 {
-                    bool hasSkill = reader.ReadInt16() != 0;
-                    ushort iconIndex = reader.ReadUInt16();
-                    string name = reader.ReadFixedString(skillbookVariable.MaxLength);
+                    var hasSkill = reader.ReadInt16() != 0;
+                    var iconIndex = reader.ReadUInt16();
+                    var name = reader.ReadFixedString(skillbookVariable.MaxLength);
 
                     if (!Ability.TryParseLevels(name, out name, out var currentLevel, out var maximumLevel))
                     {
@@ -241,17 +196,32 @@ namespace SleepHunter.Models
                         skills[i].MaxHealthPercent = null;
                     }
 
-                    skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, accessor.ProcessHandle);
+                    skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, Owner.Accessor.ProcessHandle);
                 }
                 catch { }
             }
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                scanner?.Dispose();
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
         {
             activeSkills.Clear();
 
-            for (int i = 0; i < skills.Capacity; i++)
+            for (int i = 0; i < skills.Length; i++)
             {
                 skills[i].IsEmpty = true;
                 skills[i].Name = null;

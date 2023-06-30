@@ -7,7 +7,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    public sealed class PlayerStats : ObservableObject
+    public sealed class PlayerStats : UpdatableObject
     {
         private const string CurrentHealthKey = @"CurrentHealth";
         private const string MaximumHealthKey = @"MaximumHealth";
@@ -16,6 +16,9 @@ namespace SleepHunter.Models
         private const string LevelKey = @"Level";
         private const string AbilityLevelKey = @"AbilityLevel";
 
+        private readonly Stream stream;
+        private readonly BinaryReader reader;
+
         private int currentHealth;
         private int maximumHealth;
         private int currentMana;
@@ -23,9 +26,7 @@ namespace SleepHunter.Models
         private int level;
         private int abilityLevel;
 
-        public event EventHandler StatsUpdated;
-
-        public Player Owner { get; }
+        public Player Owner { get; init;  }
 
         public int CurrentHealth
         {
@@ -98,19 +99,14 @@ namespace SleepHunter.Models
         public PlayerStats(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            stream = owner.Accessor.GetStream();
+            reader = new BinaryReader(stream, Encoding.ASCII);
         }
 
-        public void Update()
-        {
-            Update(Owner.Accessor);
-            StatsUpdated?.Invoke(this, EventArgs.Empty);
-        }
 
-        public void Update(ProcessMemoryAccessor accessor)
+        protected override void OnUpdate()
         {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
             var version = Owner.Version;
 
             if (version == null)
@@ -125,9 +121,6 @@ namespace SleepHunter.Models
             var maxMpVariable = version.GetVariable(MaximumManaKey);
             var levelVariable = version.GetVariable(LevelKey);
             var abVariable = version.GetVariable(AbilityLevelKey);
-
-            using var stream = accessor.GetStream();
-            using var reader = new BinaryReader(stream, Encoding.ASCII);
 
             // Current Health
             if (hpVariable != null && hpVariable.TryReadIntegerString(reader, out var currentHealth))
@@ -166,7 +159,21 @@ namespace SleepHunter.Models
                 AbilityLevel = 0;
         }
 
-        public void ResetDefaults()
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposed)
+                return;
+
+            if (isDisposing)
+            {
+                reader?.Dispose();
+                stream?.Dispose();
+            }
+
+            base.Dispose(isDisposing);
+        }
+
+        private void ResetDefaults()
         {
             CurrentHealth = 0;
             MaximumHealth = 0;
