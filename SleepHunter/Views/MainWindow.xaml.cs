@@ -1530,7 +1530,8 @@ namespace SleepHunter.Views
                 RefreshFlowerQueue();
                 RefreshFeatures();
 
-                ToggleSpellQueue(state.QueuedSpells.Count > 0);
+                if (selectedMacro != null && selectedMacro == state)
+                    ToggleSpellQueue(state.QueuedSpells.Count > 0);
             }
         }
 
