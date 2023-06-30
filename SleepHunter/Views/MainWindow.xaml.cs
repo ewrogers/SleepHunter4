@@ -1035,8 +1035,6 @@ namespace SleepHunter.Views
             if (spellQueueListBox == null)
                 return;
 
-            logger.LogInfo($"Toggle spell queue panel: {showQueue}");
-
             if (showQueue)
             {
                 Grid.SetColumnSpan(tabControl, 1);
