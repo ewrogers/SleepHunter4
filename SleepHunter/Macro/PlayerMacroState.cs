@@ -460,6 +460,8 @@ namespace SleepHunter.Macro
             // Tick the dispatcher so any scheduled events go off
             deferredDispatcher.Tick();
 
+            RefreshQueuedSpellsState();
+            
             if (client.GameClient.IsUserChatting)
             {
                 SetPlayerStatus(PlayerMacroStatus.ChatIsUp);
@@ -1022,6 +1024,38 @@ namespace SleepHunter.Macro
                 return null;
 
             return !currentSpell.IsDone ? currentSpell : null;
+        }
+
+        private void RefreshQueuedSpellsState()
+        {
+            spellQueueLock.EnterReadLock();
+            try
+            {
+                foreach (var queued in spellQueue)
+                {
+                    var spell = client.Spellbook.GetSpell(queued.Name);
+                    if (spell == null)
+                    {
+                        continue;
+                    }
+
+                    queued.MaximumLevel = spell.MaximumLevel;
+                    queued.CurrentLevel = spell.CurrentLevel;
+                    queued.IsOnCooldown = spell.IsOnCooldown;
+
+                    bool isWaitingOnHealth = spell.MinHealthPercent.HasValue &&
+                                             spell.MinHealthPercent.Value >= client.Stats.HealthPercent;
+
+                    if (!isWaitingOnHealth && spell.MaxHealthPercent.HasValue &&
+                        client.Stats.HealthPercent > spell.MaxHealthPercent.Value)
+                    {
+                        isWaitingOnHealth = true;
+                    }
+
+                    queued.IsWaitingOnHealth = isWaitingOnHealth;
+                }
+            }
+            finally{ spellQueueLock.ExitReadLock(); }
         }
 
         private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
