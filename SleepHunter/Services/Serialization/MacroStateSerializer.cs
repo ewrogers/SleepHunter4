@@ -18,10 +18,23 @@ namespace SleepHunter.Services.Serialization
             if (file == null)
                 throw new ArgumentNullException(nameof(file));
 
-            using var stream = File.OpenWrite(file);
-            using var writer = new StreamWriter(stream, Encoding.UTF8);
+            var tempFile = Path.GetTempFileName();
+            using var stream = File.Create(tempFile);
+            using var writer = new StreamWriter(stream, Encoding.UTF8, DefaultBufferSize, false);
 
             Serialize(state, writer);
+
+            writer.Flush();
+            writer.Close();
+
+            if (File.Exists(file))
+            {
+                File.Replace(tempFile, file, null);
+            }
+            else
+            {
+                File.Move(tempFile, file);
+            }
         }
 
         public void Serialize(PlayerMacroState state, Stream stream, bool leaveOpen = true)
@@ -34,6 +47,7 @@ namespace SleepHunter.Services.Serialization
 
             using var writer = new StreamWriter(stream, Encoding.UTF8, DefaultBufferSize, leaveOpen);
             Serialize(state, writer);
+            writer.Flush();
         }
 
         public void Serialize(PlayerMacroState state, TextWriter writer)

@@ -13,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Threading;
 using Microsoft.Win32;
 using SleepHunter.Controls;
 using SleepHunter.Extensions;
@@ -284,7 +283,7 @@ namespace SleepHunter.Views
             var helper = new WindowInteropHelper(this);
             windowSource = HwndSource.FromHwnd(helper.Handle);
 
-            windowSource.AddHook(WindowMessageHook);
+            windowSource?.AddHook(WindowMessageHook);
             logger.LogInfo("Hotkey hook initialized");
         }
 
@@ -370,8 +369,7 @@ namespace SleepHunter.Views
 
             await Dispatcher.SwitchToUIThread();
 
-            if (!player.LoginTimestamp.HasValue)
-                player.LoginTimestamp = DateTime.Now;
+            player.LoginTimestamp ??= DateTime.Now;
 
             UpdateClientList();
 
@@ -498,7 +496,6 @@ namespace SleepHunter.Views
                 UpdateToolbarState();
                 UpdateWindowTitle();
                 ToggleSpellQueue(false);
-                return;
             }
         }
 
@@ -1243,7 +1240,7 @@ namespace SleepHunter.Views
             {
                 state.Stop();
 
-                if (state.Client == null || !state.Client.IsLoggedIn)
+                if (state.Client is not { IsLoggedIn: true })
                     continue;
 
                 state.Stop();
@@ -1537,7 +1534,7 @@ namespace SleepHunter.Views
 
         private void loadStateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
+            if (selectedMacro?.Client is not { IsLoggedIn: true })
                 return;
 
             var defaultFilename = $"{selectedMacro.Client.Name}.{SleepHunterMacroFileExtension}";
@@ -1569,7 +1566,7 @@ namespace SleepHunter.Views
 
         private void saveStateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
+            if (selectedMacro?.Client is not { IsLoggedIn: true })
                 return;
 
             var defaultFilename = $"{selectedMacro.Client.Name}.{SleepHunterMacroFileExtension}";
@@ -1602,7 +1599,7 @@ namespace SleepHunter.Views
 
         private void startMacroButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMacro == null || selectedMacro.Client == null || !selectedMacro.Client.IsLoggedIn)
+            if (selectedMacro?.Client is not { IsLoggedIn: true })
                 return;
 
             selectedMacro.Client.Update();
@@ -1710,7 +1707,7 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            if (e.Key == Key.Delete || e.Key == Key.Back)
+            if (e.Key is Key.Delete or Key.Back)
             {
                 logger.LogInfo($"Removing spell '{spell.Name}' from spell queue for character: {selectedMacro.Client.Name}");
 
@@ -1808,7 +1805,7 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            if (e.Key == Key.Delete || e.Key == Key.Back)
+            if (e.Key is Key.Delete or Key.Back)
             {
                 logger.LogInfo($"Removing '{flower.Target}' from flower queue for character: {selectedMacro.Name}");
 
@@ -1868,7 +1865,7 @@ namespace SleepHunter.Views
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is not ListBox listBox || listBox.SelectedItem is not Player player)
+            if (sender is not ListBox { SelectedItem: Player player })
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
@@ -1976,7 +1973,7 @@ namespace SleepHunter.Views
             if (e.Key == Key.None)
                 return;
 
-            if (sender is not ListBoxItem listBoxItem || listBoxItem.Content is not Player player)
+            if (sender is not ListBoxItem { Content: Player player })
                 return;
 
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
@@ -1986,7 +1983,7 @@ namespace SleepHunter.Views
             var hasWindows = Keyboard.Modifiers.HasFlag(ModifierKeys.Windows);
             var isFunctionKey = Hotkey.IsFunctionKey(key);
 
-            if (key == Key.LeftCtrl || key == Key.RightCtrl)
+            if (key is Key.LeftCtrl or Key.RightCtrl)
                 return;
 
             if (key == Key.LeftAlt || e.Key == Key.RightAlt)
@@ -1997,7 +1994,7 @@ namespace SleepHunter.Views
 
             if (!hasControl && !hasAlt && !hasShift && !isFunctionKey)
             {
-                if (e.Key == Key.Delete || e.Key == Key.Back || e.Key == Key.Escape)
+                if (e.Key is Key.Delete or Key.Back or Key.Escape)
                 {
                     if (player.Hotkey != null)
                     {
@@ -2494,11 +2491,10 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                logger.LogError($"Unable to check for latest version");
+                logger.LogError("Unable to check for latest version");
                 logger.LogException(ex);
 
                 this.ShowMessageBox("Check for Updates", $"Unable to check for a newer version:\n{ex.Message}", "You can disable this on startup in Settings->Updates.");
-                return;
             }
         }
 

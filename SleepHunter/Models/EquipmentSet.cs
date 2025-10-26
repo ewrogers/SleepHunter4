@@ -10,7 +10,7 @@ using SleepHunter.IO.Process;
 
 namespace SleepHunter.Models
 {
-    
+
     public sealed class EquipmentSet : UpdatableObject, IEnumerable<InventoryItem>
     {
         private const string EquipmentKey = @"Equipment";
@@ -46,58 +46,76 @@ namespace SleepHunter.Models
             var isEquipped = true;
 
             if (slot.HasFlag(EquipmentSlot.Accessory1))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory1).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory1).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Accessory2))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory2).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory2).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Accessory3))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory3).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Accessory3).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Armor))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Armor).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Armor).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Belt))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Belt).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Belt).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Boots))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Boots).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Boots).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Earring))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Earring).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Earring).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Greaves))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Greaves).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Greaves).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Hat))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Hat).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Hat).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Helmet))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Helmet).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Helmet).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.LeftGauntlet))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.LeftGauntlet).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.LeftGauntlet).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.LeftRing))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.LeftRing).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.LeftRing).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Necklace))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Necklace).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Necklace).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Overcoat))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Overcoat).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Overcoat).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.RightGauntlet))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.RightGauntlet).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.RightGauntlet).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.RightRing))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.RightRing).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.RightRing).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Shield))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Shield).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Shield).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             if (slot.HasFlag(EquipmentSlot.Weapon))
-                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Weapon).Name, StringComparison.OrdinalIgnoreCase);
+                isEquipped &= string.Equals(itemName, GetSlot(EquipmentSlot.Weapon).Name,
+                    StringComparison.OrdinalIgnoreCase);
 
             return isEquipped;
         }
