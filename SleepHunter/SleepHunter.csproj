@@ -21,8 +21,8 @@
     <Copyright>2023 Erik 'SiLo' Rogers</Copyright>
     <Description>Dark Ages Automation Tool</Description>
     <Title>SleepHunter</Title>
-    <AssemblyVersion>4.10.2.0</AssemblyVersion>
-    <FileVersion>4.10.2.0</FileVersion>
+    <AssemblyVersion>4.10.3.0</AssemblyVersion>
+    <FileVersion>4.10.3.0</FileVersion>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
@@ -34,6 +34,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.10" />
   </ItemGroup>
 </Project>

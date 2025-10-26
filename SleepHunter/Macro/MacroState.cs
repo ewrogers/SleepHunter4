@@ -136,12 +136,16 @@ namespace SleepHunter.Macro
                         if (Status == MacroStatus.Running)
                         {
                             CheckKnownState();
-                            MacroLoop(arg);
+                            MacroLoop(arg, cancelSource.Token);
                         }
                         else
                         {
                             Thread.Sleep(16);
                         }
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // do nothing
                     }
                     finally
                     {
@@ -178,7 +182,7 @@ namespace SleepHunter.Macro
             client.IsMacroStopped = Status == MacroStatus.Stopped;
         }
 
-        protected abstract void MacroLoop(object argument);
+        protected abstract void MacroLoop(object argument, CancellationToken cancellationToken = default);
 
         protected virtual bool CancelTask(bool waitForTask = false)
         {
