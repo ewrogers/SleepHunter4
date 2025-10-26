@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using SleepHunter.Common;
 using SleepHunter.Metadata;
@@ -454,7 +455,7 @@ namespace SleepHunter.Macro
             spellCastDuration = TimeSpan.Zero;
         }
 
-        protected override void MacroLoop(object argument)
+        protected override void MacroLoop(object argument, CancellationToken token = default)
         {
             // Tick the dispatcher so any scheduled events go off
             deferredDispatcher.Tick();
@@ -473,18 +474,18 @@ namespace SleepHunter.Macro
 
             if (UserSettingsManager.Instance.Settings.FlowerBeforeSpellMacros)
             {
-                DoFlowerMacro();
-                DoSpellMacro();
+                DoFlowerMacro(token);
+                DoSpellMacro(token);
             }
             else
             {
-                DoSpellMacro();
-                DoFlowerMacro();
+                DoSpellMacro(token);
+                DoFlowerMacro(token);
             }
 
-            var didUseSkill = DoSkillMacro(out var didAssail);
+            var didUseSkill = DoSkillMacro(token, out var didAssail);
 
-            DoClickWaterAndBedsIfNeeded();
+            DoClickWaterAndBedsIfNeeded(token);
 
             if (!IsSpellCasting)
                 client.Spellbook.ActiveSpell = null;
@@ -530,8 +531,13 @@ namespace SleepHunter.Macro
         }
 
         // Zolian feature!
-        private bool DoClickWaterAndBedsIfNeeded()
+        private bool DoClickWaterAndBedsIfNeeded(CancellationToken token = default)
         {
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            
             var timeSinceLastAttempt = DateTime.Now - waterAndBedsTimestamp;
             if (timeSinceLastAttempt.TotalSeconds < 0.5)
                 return false;
@@ -560,9 +566,14 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        private bool DoSkillMacro(out bool didAssail)
+        private bool DoSkillMacro(CancellationToken token, out bool didAssail)
         {
             didAssail = false;
+
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }   
 
             var isAssailQueued = false;
             var useSpaceForAssail = UserSettingsManager.Instance.Settings.UseSpaceForAssail;
@@ -577,22 +588,54 @@ namespace SleepHunter.Macro
 
             foreach (var skillName in client.Skillbook.ActiveSkills)
             {
-                var skill = client.Skillbook.GetSkill(skillName);
+                Skill skill;
+                try
+                {
+                    token.ThrowIfCancellationRequested();
+                    skill = client.Skillbook.GetSkill(skillName);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+
+                if (skill == null)
+                {
+                    continue;
+                }
 
                 isAssailQueued |= skill.IsAssail;
                 expectDialog |= skill.OpensDialog;
 
-                if (skill == null || skill.IsEmpty || skill.IsOnCooldown || (skill.IsAssail && useSpaceForAssail))
+                if (skill.IsEmpty || skill.IsOnCooldown || (skill.IsAssail && useSpaceForAssail))
                     continue;
 
                 skillList.Add(skill);
             }
 
-            foreach (var skill in skillList.OrderBy((s) => { return s.OpensDialog; }))
+            foreach (var skill in skillList.OrderBy(s => s.OpensDialog))
             {
                 if (skill.RequiresDisarm || (skill.IsAssail && UserSettingsManager.Instance.Settings.DisarmForAssails))
                 {
-                    var isDisarmed = client.Equipment.IsEmpty(EquipmentSlot.Weapon | EquipmentSlot.Shield);
+                    bool isDisarmed;
+
+                    try
+                    {
+                        token.ThrowIfCancellationRequested();
+                        isDisarmed = client.Equipment.IsEmpty(EquipmentSlot.Weapon | EquipmentSlot.Shield);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        break;
+                    }
 
                     if (!isDisarmed)
                     {
@@ -638,14 +681,12 @@ namespace SleepHunter.Macro
             return didUseSkill;
         }
 
-        private bool DoSpellMacro()
+        private bool DoSpellMacro(CancellationToken token = default)
         {
-            if (IsSpellCasting)
+            if (token.IsCancellationRequested || IsSpellCasting)
                 return false;
 
-            SpellQueueItem nextSpell;
-
-            nextSpell = ShouldFasSpiorad() ? GetFasSpiorad() : GetNextSpell();
+            var nextSpell = ShouldFasSpiorad(null, token) ? GetFasSpiorad() : GetNextSpell();
 
             if (lastUsedSpellItem != null && lastUsedSpellItem != nextSpell)
                 lastUsedSpellItem.IsActive = false;
@@ -670,9 +711,9 @@ namespace SleepHunter.Macro
             return true;
         }
 
-        private bool DoFlowerMacro()
+        private bool DoFlowerMacro(CancellationToken token = default)
         {
-            if (IsSpellCasting)
+            if (token.IsCancellationRequested || IsSpellCasting)
                 return false;
 
             var prioritizeAlts = UserSettingsManager.Instance.Settings.FlowerAltsFirst;
@@ -685,7 +726,7 @@ namespace SleepHunter.Macro
             if (prioritizeAlts)
             {
                 if (FlowerAlternateCharacters)
-                    if (FlowerNextAltWaitingForMana())
+                    if (FlowerNextAltWaitingForMana(token))
                         return false;
 
                 checkedAlts = true;
@@ -708,7 +749,7 @@ namespace SleepHunter.Macro
             if (flowerSpell != null)
                 flowerManaCost = flowerSpell.ManaCost;
 
-            if (ShouldFasSpiorad(flowerManaCost))
+            if (ShouldFasSpiorad(flowerManaCost, token))
             {
                 var fasSpiorad = GetFasSpiorad();
                 CastSpell(fasSpiorad);
@@ -719,7 +760,8 @@ namespace SleepHunter.Macro
 
             if (nextTarget != null)
             {
-                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana))
+                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && 
+                    ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana, token))
                 {
                     var fasSpiorad = GetFasSpiorad();
                     CastSpell(fasSpiorad);
@@ -739,7 +781,7 @@ namespace SleepHunter.Macro
                 return false;
             }
 
-            return FlowerNextAltWaitingForMana();
+            return FlowerNextAltWaitingForMana(token);
         }
 
         private void SetPlayerStatus(PlayerMacroStatus status)
@@ -822,8 +864,13 @@ namespace SleepHunter.Macro
             }
         }
 
-        private bool FlowerNextAltWaitingForMana()
+        private bool FlowerNextAltWaitingForMana(CancellationToken token = default)
         {
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            
             var waitingAlt = FindAltWaitingOnMana();
 
             if (waitingAlt == null)
@@ -838,7 +885,7 @@ namespace SleepHunter.Macro
 
             if (lyliacMetadata != null)
             {
-                if (ShouldFasSpiorad(lyliacMetadata.ManaCost))
+                if (ShouldFasSpiorad(lyliacMetadata.ManaCost, token))
                 {
                     spell = GetFasSpiorad();
                     isFasSpiorading = true;
@@ -851,8 +898,13 @@ namespace SleepHunter.Macro
             return CastSpell(spell);
         }
 
-        private bool ShouldFasSpiorad(int? manaRequirement = null)
+        private bool ShouldFasSpiorad(int? manaRequirement = null, CancellationToken token = default)
         {
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            
             var autoFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
 
             if (!client.HasFasSpiorad)
@@ -878,16 +930,29 @@ namespace SleepHunter.Macro
                    client.Stats.CurrentMana < manaRequirement.Value;
         }
 
-        private static Player FindAltWaitingOnMana()
+        private static Player FindAltWaitingOnMana(CancellationToken token = default)
         {
             Player waitingAlt = null;
 
             foreach (var macro in MacroManager.Instance.Macros)
             {
-                if (macro.Status == MacroStatus.Running && macro.IsWaitingOnMana)
+                try
                 {
-                    if (waitingAlt == null || waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower)
-                        waitingAlt = macro.client;
+                    token.ThrowIfCancellationRequested();
+                    
+                    if (macro.Status == MacroStatus.Running && macro.IsWaitingOnMana)
+                    {
+                        if (waitingAlt == null || waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower)
+                            waitingAlt = macro.client;
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
                 }
             }
 
@@ -1110,7 +1175,7 @@ namespace SleepHunter.Macro
             {
                 var alt = PlayerManager.Instance.GetPlayerByName(item.Target.CharacterName);
 
-                if (alt == null || !alt.IsLoggedIn)
+                if (alt is not { IsLoggedIn: true })
                     return false;
 
                 if (!client.Location.IsWithinRange(alt.Location))
