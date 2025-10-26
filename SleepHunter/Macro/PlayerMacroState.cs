@@ -493,7 +493,13 @@ namespace SleepHunter.Macro
                 client.Spellbook.ActiveSpell = null;
 
             if (preserveUserPanel)
-                client.SwitchToPanel(currentPanel, out _);
+            {
+                if (client.SwitchToPanelAndWait(currentPanel, PanelTimeout, out var didRequireSwitch, true, token))
+                {
+                    if (didRequireSwitch)
+                        Thread.Sleep(SwitchDelay);
+                }
+            }
 
             if (Status == MacroStatus.Running)
             {
