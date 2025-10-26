@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using SleepHunter.Macro;
@@ -134,7 +135,8 @@ namespace SleepHunter.Services.Serialization
             foreach (var skillName in client.Skillbook.ActiveSkills)
                 serialized.Skills.Add(new SerializedSkillState { SkillName = skillName });
 
-            foreach(var spell in state.QueuedSpells)
+            var queuedSpellsSnapshot = state.GetSpellQueueSnapshot();
+            foreach(var spell in queuedSpellsSnapshot)
             {
                 serialized.Spells.Add(new SerializedSpellState
                 {
@@ -151,7 +153,8 @@ namespace SleepHunter.Services.Serialization
                 });
             }
 
-            foreach (var flower in state.FlowerTargets)
+            var flowerTargetsSnapshot = state.GetFlowerQueueSnapshot();
+            foreach (var flower in flowerTargetsSnapshot)
             {
                 serialized.FlowerTargets.Add(new SerializedFlowerState
                 {

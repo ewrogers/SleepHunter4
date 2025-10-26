@@ -53,20 +53,64 @@ namespace SleepHunter.Macro
         public PlayerMacroStatus PlayerStatus
         {
             get => playerStatus;
-            set => SetProperty(ref playerStatus, value, nameof(PlayerStatus));
+            set => SetProperty(ref playerStatus, value);
         }
 
         public IReadOnlyList<SpellQueueItem> QueuedSpells => spellQueue;
 
         public IReadOnlyList<FlowerQueueItem> FlowerTargets => flowerQueue;
 
-        public int ActiveSpellsCount => spellQueue.Count((spell) => { return !spell.IsDone; });
+        public int ActiveSpellsCount
+        {
+            get
+            {
+                spellQueueLock.EnterReadLock();
+                try
+                {
+                    return spellQueue.Count(spell => !spell.IsDone);
+                }
+                finally { spellQueueLock.ExitReadLock(); }
+            }
+        }
 
-        public int CompletedSpellsCount => spellQueue.Count((spell) => { return spell.IsDone; });
+        public int CompletedSpellsCount
+        {
+            get
+            {
+                spellQueueLock.EnterReadLock();
+                try
+                {
+                    return spellQueue.Count(spell => spell.IsDone);
+                }
+                finally { spellQueueLock.ExitReadLock(); }
+            }
+        }
 
-        public int TotalSpellsCount => spellQueue.Count;
+        public int TotalSpellsCount
+        {
+            get
+            {
+                spellQueueLock.EnterReadLock();
+                try
+                {
+                    return spellQueue.Count;
+                }
+                finally { spellQueueLock.ExitReadLock(); }
+            }
+        }
 
-        public int FlowerQueueCount => flowerQueue.Count;
+        public int FlowerQueueCount
+        {
+            get
+            {
+                flowerQueueLock.EnterReadLock();
+                try
+                {
+                    return flowerQueue.Count;
+                }
+                finally { flowerQueueLock.ExitReadLock(); }
+            }
+        }
 
         public SpellRotationMode SpellQueueRotation
         {
@@ -124,6 +168,27 @@ namespace SleepHunter.Macro
 
         public PlayerMacroState(Player client)
            : base(client) { }
+
+
+        public List<SpellQueueItem> GetSpellQueueSnapshot()
+        {
+            spellQueueLock.EnterReadLock();
+            try
+            {
+                return new List<SpellQueueItem>(spellQueue);
+            }
+            finally { spellQueueLock.ExitReadLock(); }
+        }
+        
+        public List<FlowerQueueItem> GetFlowerQueueSnapshot()
+        {
+            flowerQueueLock.EnterReadLock();
+            try
+            {
+                return new List<FlowerQueueItem>(flowerQueue);
+            }
+            finally { flowerQueueLock.ExitReadLock(); }
+        }
 
         public void AddToSpellQueue(SpellQueueItem spell, int index = -1)
         {
@@ -580,10 +645,7 @@ namespace SleepHunter.Macro
 
             SpellQueueItem nextSpell;
 
-            if (ShouldFasSpiorad())
-                nextSpell = GetFasSpiorad();
-            else
-                nextSpell = GetNextSpell();
+            nextSpell = ShouldFasSpiorad() ? GetFasSpiorad() : GetNextSpell();
 
             if (lastUsedSpellItem != null && lastUsedSpellItem != nextSpell)
                 lastUsedSpellItem.IsActive = false;
@@ -632,7 +694,7 @@ namespace SleepHunter.Macro
             if (UseLyliacVineyard)
             {
                 var vineyardSpell = client.Spellbook.GetSpell(Spell.LyliacVineyardKey);
-                if (vineyardSpell != null && !vineyardSpell.IsOnCooldown)
+                if (vineyardSpell is { IsOnCooldown: false })
                 {
                     var vine = GetLyliacVineyard();
                     CastSpell(vine);
@@ -672,14 +734,12 @@ namespace SleepHunter.Macro
                 return true;
             }
 
-            if (!checkedAlts)
+            if (checkedAlts || !FlowerAlternateCharacters)
             {
-                if (FlowerAlternateCharacters)
-                    if (FlowerNextAltWaitingForMana())
-                        return true;
+                return false;
             }
 
-            return false;
+            return FlowerNextAltWaitingForMana();
         }
 
         private void SetPlayerStatus(PlayerMacroStatus status)
@@ -725,7 +785,7 @@ namespace SleepHunter.Macro
                     break;
 
                 case PlayerMacroStatus.Casting:
-                    client.Status = string.Format("Casting {0}", client.Spellbook.ActiveSpell);
+                    client.Status = $"Casting {client.Spellbook.ActiveSpell}";
                     break;
 
                 case PlayerMacroStatus.Flowering:
@@ -807,15 +867,15 @@ namespace SleepHunter.Macro
                 if (client.Stats.CurrentMana < UserSettingsManager.Instance.Settings.FasSpioradThreshold)
                     return true;
             }
-
-            // If the spell being cast has a mana requirement, check if fas-spiorad on demand
-            if (manaRequirement.HasValue)
+            
+            if (!manaRequirement.HasValue)
             {
-                if (UserSettingsManager.Instance.Settings.UseFasSpioradOnDemand && client.Stats.CurrentMana < manaRequirement.Value)
-                    return true;
+                return false;
             }
 
-            return false;
+            // If the spell being cast has a mana requirement, check if fas-spiorad on demand
+            return UserSettingsManager.Instance.Settings.UseFasSpioradOnDemand &&
+                   client.Stats.CurrentMana < manaRequirement.Value;
         }
 
         private static Player FindAltWaitingOnMana()
@@ -838,9 +898,8 @@ namespace SleepHunter.Macro
         {
             if (fasSpioradQueueItem == null)
             {
-                fasSpioradQueueItem = new SpellQueueItem();
-                fasSpioradQueueItem.Target.Mode = SpellTargetMode.None;
-                fasSpioradQueueItem.Name = Spell.FasSpioradKey;
+                fasSpioradQueueItem =
+                    new SpellQueueItem { Target = { Mode = SpellTargetMode.None }, Name = Spell.FasSpioradKey };
             }
 
             return fasSpioradQueueItem;
@@ -861,9 +920,10 @@ namespace SleepHunter.Macro
         {
             if (lyliacVineyardQueueItem == null)
             {
-                lyliacVineyardQueueItem = new SpellQueueItem();
-                lyliacVineyardQueueItem.Target.Mode = SpellTargetMode.None;
-                lyliacVineyardQueueItem.Name = Spell.LyliacVineyardKey;
+                lyliacVineyardQueueItem = new SpellQueueItem
+                {
+                    Target = { Mode = SpellTargetMode.None }, Name = Spell.LyliacVineyardKey
+                };
             }
 
             return lyliacVineyardQueueItem;
@@ -901,18 +961,16 @@ namespace SleepHunter.Macro
 
         private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
         {
-            if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown);
-            else
-                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth);
+            return skipOnCooldown
+                ? spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown)
+                : spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth);
         }
 
         private SpellQueueItem GetNextSpell_SingularOrder(bool skipOnCooldown = true)
         {
-            if (skipOnCooldown)
-                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown && !spell.IsDone);
-            else
-                return spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsDone);
+            return skipOnCooldown
+                ? spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsOnCooldown && !spell.IsDone)
+                : spellQueue.FirstOrDefault(spell => !spell.IsWaitingOnHealth && !spell.IsDone);
         }
 
         private SpellQueueItem GetNextSpell_RoundRobin(bool skipOnCooldown = true)
@@ -1034,11 +1092,9 @@ namespace SleepHunter.Macro
                     IsWaitingOnMana = true;
                     return false;
                 }
-                else
-                    IsWaitingOnMana = false;
             }
-            else
-                IsWaitingOnMana = false;
+
+            IsWaitingOnMana = false;
 
             bool didRequireSwitch;
             if (UserSettingsManager.Instance.Settings.AllowStaffSwitching)
@@ -1068,8 +1124,7 @@ namespace SleepHunter.Macro
                 if (weapon != null)
                     modifiedNumberOfLines = StaffMetadataManager.Instance.GetLinesWithStaff(weapon.Name, item.Name);
 
-                if (!modifiedNumberOfLines.HasValue)
-                    modifiedNumberOfLines = spell.NumberOfLines;
+                modifiedNumberOfLines ??= spell.NumberOfLines;
             }
 
             var numberOfLines = modifiedNumberOfLines.Value;
@@ -1134,7 +1189,7 @@ namespace SleepHunter.Macro
 
             SetPlayerStatus(PlayerMacroStatus.SwitchingStaff);
 
-            if (string.Equals(staffToUse.Name, equippedStaff.Name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(staffToUse.Name, equippedStaff?.Name ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 return true;
 
             if (!client.EquipItemAndWait(staffToUse.Name, EquipmentSlot.Weapon, PanelTimeout, out didRequireSwitch))
@@ -1187,10 +1242,10 @@ namespace SleepHunter.Macro
             }
 
             // scale for window
-            if (client.Process.WindowScaleX > 0 && client.Process.WindowScaleX != 1)
+            if (client.Process.WindowScaleX > 0 && Math.Abs(client.Process.WindowScaleX - 1) > double.Epsilon)
                 pt.X *= client.Process.WindowScaleX;
 
-            if (client.Process.WindowScaleY > 0 && client.Process.WindowScaleY != 1)
+            if (client.Process.WindowScaleY > 0 && Math.Abs(client.Process.WindowScaleY - 1) > double.Epsilon)
                 pt.Y *= client.Process.WindowScaleY;
 
             // apply final offset
@@ -1205,13 +1260,9 @@ namespace SleepHunter.Macro
 
             var targetPlayer = PlayerManager.Instance.GetPlayerByName(characterName);
 
-            if (targetPlayer == null || !targetPlayer.IsLoggedIn)
-                return pt;
-
-            if (targetPlayer.Location.MapNumber != client.Location.MapNumber)
-                return pt;
-
-            if (!string.Equals(targetPlayer.Location.MapName, client.Location.MapName, StringComparison.Ordinal))
+            if (targetPlayer is not { IsLoggedIn: true } ||
+                targetPlayer.Location.MapNumber != client.Location.MapNumber ||
+                !string.Equals(targetPlayer.Location.MapName, client.Location.MapName, StringComparison.Ordinal))
                 return pt;
 
             var deltaX = targetPlayer.Location.X - client.Location.X;
@@ -1242,8 +1293,8 @@ namespace SleepHunter.Macro
 
             if (Math.Abs(deltaX) > 10 || Math.Abs(deltaY) > 10)
                 return new Point(0, 0);
-            else
-                return GetRelativeTilePoint(deltaX, deltaY);
+
+            return GetRelativeTilePoint(deltaX, deltaY);
         }
 
         private static bool IsWithinRange(Point a, Point b, int maxX = 10, int maxY = 10)
@@ -1256,14 +1307,17 @@ namespace SleepHunter.Macro
 
         private static TimeSpan CalculateLineDuration(int numberOfLines)
         {
-            if (numberOfLines == 0)
-                return UserSettingsManager.Instance.Settings.ZeroLineDelay;
-            else if (numberOfLines == 1)
-                return UserSettingsManager.Instance.Settings.SingleLineDelay;
-            else
+            switch (numberOfLines)
             {
-                var delay = UserSettingsManager.Instance.Settings.MultipleLineDelaySeconds * numberOfLines;
-                return TimeSpan.FromSeconds(delay);
+                case 0:
+                    return UserSettingsManager.Instance.Settings.ZeroLineDelay;
+                case 1:
+                    return UserSettingsManager.Instance.Settings.SingleLineDelay;
+                default:
+                {
+                    var delay = UserSettingsManager.Instance.Settings.MultipleLineDelaySeconds * numberOfLines;
+                    return TimeSpan.FromSeconds(delay);
+                }
             }
         }
 
@@ -1278,9 +1332,6 @@ namespace SleepHunter.Macro
             switch (status)
             {
                 case MacroStatus.Running:
-                    SetPlayerStatus(PlayerStatus);
-                    break;
-
                 case MacroStatus.Paused:
                     SetPlayerStatus(PlayerStatus);
                     break;
