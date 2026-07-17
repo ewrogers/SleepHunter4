@@ -27,6 +27,7 @@ namespace SleepHunter.Settings
         private string windowTitle = DefaultWindowTitle;
         private bool supportsFlowering;
         private bool supportsLoginNotificationSuppression;
+        private bool supportsModifiersKeyFix;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -93,6 +94,13 @@ namespace SleepHunter.Settings
         {
             get => supportsLoginNotificationSuppression;
             set => SetProperty(ref supportsLoginNotificationSuppression, value);
+        }
+
+        [XmlElement]
+        public bool SupportsModifiersKeyFix
+        {
+            get => supportsModifiersKeyFix;
+            set => SetProperty(ref supportsModifiersKeyFix, value);
         }
 
         [XmlIgnore]

@@ -33,6 +33,14 @@ By default, this is `Enabled`.
 
 The setting has no effect for client versions that do not support the patch.
 
+## Apply Modifiers Key Fix
+
+This setting clears held keys and modifiers when a supported Dark Ages game client loses focus.
+It prevents client hotkeys from becoming stuck when key-release events are sent to another window.
+
+By default, this is `Enabled`.
+The setting has no effect for client versions that do not support the patch.
+
 ## No Foreground Walls
 
 This setting determines when the "no foreground walls" patch should be applied when the Dark Ages game client is started.

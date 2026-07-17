@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Added an enabled-by-default client launch option that clears pressed keys and modifiers when the Dark Ages client loses focus
 - Included client versions and other runtime XML data in Debug and published builds
 - Resolved runtime data files relative to the application directory regardless of the launch working directory
 

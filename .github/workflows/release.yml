@@ -79,6 +79,9 @@ jobs:
       - name: Build Release configuration
         run: dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
 
+      - name: Test Release configuration
+        run: dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj --configuration Release --no-build
+
       - name: Publish SleepHunter
         shell: pwsh
         run: |

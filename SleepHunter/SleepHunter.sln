@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter", "SleepHunter.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter.Updater", "..\SleepHunter.Updater\SleepHunter.Updater.csproj", "{344FCCBB-ECF5-4C77-BB34-079B98928752}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleepHunter.Tests", "..\SleepHunter.Tests\SleepHunter.Tests.csproj", "{CE374820-D36C-4E7D-BD34-AF4F8E298062}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{344FCCBB-ECF5-4C77-BB34-079B98928752}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE374820-D36C-4E7D-BD34-AF4F8E298062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE374820-D36C-4E7D-BD34-AF4F8E298062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE374820-D36C-4E7D-BD34-AF4F8E298062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE374820-D36C-4E7D-BD34-AF4F8E298062}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
+    <InternalsVisibleTo Include="SleepHunter.Tests" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />

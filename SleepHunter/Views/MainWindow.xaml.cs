@@ -153,7 +153,7 @@ namespace SleepHunter.Views
                 }
 
                 if (detectedVersion != null)
-                    PatchClient(processInformation, detectedVersion);
+                    PatchClient(processInformation, detectedVersion, clientPath);
                 else
                     logger.LogWarn($"No client version, unable to apply patches to pid {processInformation.ProcessId}");
             }
@@ -213,18 +213,23 @@ namespace SleepHunter.Views
             return processInformation;
         }
 
-        private void PatchClient(ProcessInformation process, ClientVersion version)
+        private void PatchClient(ProcessInformation process, ClientVersion version, string clientPath)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
             var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
+            var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
             var pid = process.ProcessId;
+            var patchCompleted = false;
             logger.LogInfo($"Attempting to patch client process {pid}, version = {version.Key}");
 
             try
             {
+                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
+                    ClientPatcher.VerifyModifiersKeyFixClient(clientPath);
+
                 // Patch Process
                 using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
                 using var patchStream = accessor.GetWriteableStream();
@@ -268,11 +273,27 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x17);        // +0x17
                     writer.Write((byte)0x90);        // NOP
                 }
+
+                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
+                {
+                    logger.LogInfo($"Applying modifiers key fix to process {pid}");
+                    ClientPatcher.ApplyModifiersKeyFix(patchStream, process.ProcessHandle);
+                }
+
+                patchCompleted = true;
             }
             finally
             {
-                // Resume and close handles.
-                NativeMethods.ResumeThread(process.ThreadHandle);
+                if (patchCompleted)
+                {
+                    NativeMethods.ResumeThread(process.ThreadHandle);
+                }
+                else
+                {
+                    logger.LogWarn($"Client patching failed; terminating suspended process {pid}");
+                    NativeMethods.TerminateProcess(process.ProcessHandle, 1);
+                }
+
                 NativeMethods.CloseHandle(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ProcessHandle);
             }

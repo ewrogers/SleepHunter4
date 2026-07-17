@@ -580,6 +580,15 @@
                             Suppress _Login Notification
                         </CheckBox>
 
+                        <!-- Apply Modifiers Key Fix CheckBox -->
+                        <CheckBox Name="applyModifiersKeyFixCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ApplyModifiersKeyFix}"
+                                  Margin="8"
+                                  ToolTip="This will clear held keys and modifiers when the client loses focus.">
+                            Apply _Modifiers Key Fix
+                        </CheckBox>
+
                         <!-- Patch Walls CheckBox -->
                         <CheckBox Name="patchNoWallsCheckBox"
                                    Style="{StaticResource ObsidianCheckBox}"
