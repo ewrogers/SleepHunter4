@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated `Microsoft.Windows.Compatibility` from 9.0.10 to 9.0.18
+- Removed the unused `Microsoft.Windows.Compatibility` metapackage from SleepHunter and the Updater
 - Completed product, company, author, version, and informational-version metadata for the SleepHunter and Updater assemblies
 
 ### Fixed
@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Updated transitive .NET dependencies to resolve known `System.Security.Cryptography.Xml` vulnerabilities
+- Removed vulnerable transitive dependencies previously introduced by `Microsoft.Windows.Compatibility`
 
 ## [4.10.3] - 2025-10-26
 
