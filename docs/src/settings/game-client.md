@@ -26,6 +26,13 @@ By default, this is `Enabled`.
 This setting determines when the "skip intro video" patch should be applied when the Dark Ages game client is started.
 By default, this is `Enabled`.
 
+## Suppress Login Notification
+
+This setting bypasses the login notification and its associated transfer delay when a supported Dark Ages game client is started.
+By default, this is `Enabled`.
+
+The setting has no effect for client versions that do not support the patch.
+
 ## No Foreground Walls
 
 This setting determines when the "no foreground walls" patch should be applied when the Dark Ages game client is started.

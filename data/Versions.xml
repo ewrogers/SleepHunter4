@@ -7,6 +7,7 @@
       <WindowClassName>DarkAges</WindowClassName>
       <WindowTitle>Darkages</WindowTitle>
       <SupportsFlowering>true</SupportsFlowering>
+      <SupportsLoginNotificationSuppression>true</SupportsLoginNotificationSuppression>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>

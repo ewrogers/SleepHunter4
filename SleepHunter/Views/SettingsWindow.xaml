@@ -571,6 +571,15 @@
                             Skip Intro _Video
                         </CheckBox>
 
+                        <!-- Suppress Login Notification CheckBox -->
+                        <CheckBox Name="suppressLoginNotificationCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SuppressLoginNotification}"
+                                  Margin="8"
+                                  ToolTip="This will bypass the login notification and its transfer delay for supported clients.">
+                            Suppress _Login Notification
+                        </CheckBox>
+
                         <!-- Patch Walls CheckBox -->
                         <CheckBox Name="patchNoWallsCheckBox"
                                    Style="{StaticResource ObsidianCheckBox}"

@@ -39,6 +39,7 @@ namespace SleepHunter
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
             base.OnStartup(e);
 
             var mainWindow = new MainWindow();

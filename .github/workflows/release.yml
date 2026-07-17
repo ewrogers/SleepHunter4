@@ -1,0 +1,180 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out tag
+        uses: actions/checkout@v6
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Validate release versions
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $tag = $env:RELEASE_TAG
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+              throw "Release tag '$tag' must use the v1.2.3 format"
+          }
+
+          $version = $Matches.version
+          $projectPath = "SleepHunter/SleepHunter.csproj"
+          $appVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/Version").Node.InnerText
+          $assemblyVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/AssemblyVersion").Node.InnerText
+          $fileVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/FileVersion").Node.InnerText
+          $informationalVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/InformationalVersion").Node.InnerText
+
+          if ($appVersion -ne $version -or
+              $assemblyVersion -ne "$version.0" -or
+              $fileVersion -ne "$version.0" -or
+              $informationalVersion -ne $version) {
+              throw "Release tag '$tag' does not match the SleepHunter project metadata"
+          }
+
+          $updaterProjectPath = "SleepHunter.Updater/SleepHunter.Updater.csproj"
+          $updaterVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/Version").Node.InnerText
+          $updaterAssemblyVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/AssemblyVersion").Node.InnerText
+          $updaterFileVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/FileVersion").Node.InnerText
+          $updaterInformationalVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/InformationalVersion").Node.InnerText
+
+          if ($updaterAssemblyVersion -ne "$updaterVersion.0" -or
+              $updaterFileVersion -ne "$updaterVersion.0" -or
+              $updaterInformationalVersion -ne $updaterVersion) {
+              throw "Updater project metadata is inconsistent for version '$updaterVersion'"
+          }
+
+          $changelog = Get-Content "CHANGELOG.md" -Raw
+          $escapedVersion = [Regex]::Escape($version)
+          $match = [Regex]::Match($changelog, "(?ms)^## \[$escapedVersion\].*?(?=^## \[|\z)")
+          if (!$match.Success) {
+              throw "CHANGELOG.md does not contain a release section for $version"
+          }
+
+          $notesPath = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          $match.Value.Trim() | Set-Content $notesPath -Encoding utf8
+
+          "version=$version" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "notes_path=$notesPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Restore
+        run: dotnet restore SleepHunter/SleepHunter.sln
+
+      - name: Build Release configuration
+        run: dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
+
+      - name: Publish SleepHunter
+        shell: pwsh
+        run: |
+          dotnet publish SleepHunter/SleepHunter.csproj `
+              --runtime win-x64 `
+              --configuration Release `
+              -p:PublishSingleFile=true `
+              -p:DebugType=None `
+              -p:DebugSymbols=false `
+              --no-self-contained `
+              --output "$env:RUNNER_TEMP/sleephunter-publish"
+
+      - name: Publish Updater
+        shell: pwsh
+        run: |
+          dotnet publish SleepHunter.Updater/SleepHunter.Updater.csproj `
+              --runtime win-x64 `
+              --configuration Release `
+              -p:PublishSingleFile=true `
+              -p:DebugType=None `
+              -p:DebugSymbols=false `
+              --no-self-contained `
+              --output "$env:RUNNER_TEMP/updater-publish"
+
+      - name: Create and validate auto-update package
+        id: package
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          $clientPublishDirectory = Join-Path $env:RUNNER_TEMP "sleephunter-publish"
+          $updaterPublishDirectory = Join-Path $env:RUNNER_TEMP "updater-publish"
+          $packageDirectory = Join-Path $env:RUNNER_TEMP "package"
+          $requiredClientFiles = @(
+              "SleepHunter.exe",
+              "Versions.xml",
+              "Themes.xml",
+              "Skills.xml",
+              "Spells.xml",
+              "Staves.xml"
+          )
+          $requiredUpdaterFiles = @("Updater.exe")
+          $expectedPackageFiles = @($requiredClientFiles + $requiredUpdaterFiles) | Sort-Object
+
+          New-Item -ItemType Directory -Path $packageDirectory -Force | Out-Null
+
+          foreach ($filename in $requiredClientFiles) {
+              $sourcePath = Join-Path $clientPublishDirectory $filename
+              if (!(Test-Path -LiteralPath $sourcePath)) {
+                  throw "SleepHunter published output is missing $filename"
+              }
+
+              Copy-Item -LiteralPath $sourcePath -Destination $packageDirectory
+          }
+
+          foreach ($filename in $requiredUpdaterFiles) {
+              $sourcePath = Join-Path $updaterPublishDirectory $filename
+              if (!(Test-Path -LiteralPath $sourcePath)) {
+                  throw "Updater published output is missing $filename"
+              }
+
+              Copy-Item -LiteralPath $sourcePath -Destination $packageDirectory
+          }
+
+          $actualPackageFiles = @(Get-ChildItem -LiteralPath $packageDirectory -File | Select-Object -ExpandProperty Name | Sort-Object)
+          if (Compare-Object $expectedPackageFiles $actualPackageFiles) {
+              throw "Auto-update package contents do not match the expected file contract"
+          }
+
+          $archivePath = Join-Path $env:RUNNER_TEMP "SleepHunter-$env:RELEASE_VERSION.zip"
+          Compress-Archive -Path (Join-Path $packageDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal
+
+          Add-Type -AssemblyName System.IO.Compression
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($archivePath)
+          try {
+              $archiveFiles = @($archive.Entries | Where-Object { $_.Name } | Select-Object -ExpandProperty FullName | Sort-Object)
+              if (Compare-Object $expectedPackageFiles $archiveFiles) {
+                  throw "Auto-update archive is not flat or is missing required files"
+              }
+          }
+          finally {
+              $archive.Dispose()
+          }
+
+          "archive_path=$archivePath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_NOTES: ${{ steps.release.outputs.notes_path }}
+          RELEASE_ARCHIVE: ${{ steps.package.outputs.archive_path }}
+        run: |
+          gh release create $env:RELEASE_TAG $env:RELEASE_ARCHIVE `
+              --verify-tag `
+              --latest `
+              --title "$env:RELEASE_TAG Release" `
+              --notes-file $env:RELEASE_NOTES

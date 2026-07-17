@@ -26,6 +26,7 @@ namespace SleepHunter.Settings
         private string windowClassName = DefaultWindowClassName;
         private string windowTitle = DefaultWindowTitle;
         private bool supportsFlowering;
+        private bool supportsLoginNotificationSuppression;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -85,6 +86,13 @@ namespace SleepHunter.Settings
         {
             get => supportsFlowering;
             set => SetProperty(ref supportsFlowering, value);
+        }
+
+        [XmlElement]
+        public bool SupportsLoginNotificationSuppression
+        {
+            get => supportsLoginNotificationSuppression;
+            set => SetProperty(ref supportsLoginNotificationSuppression, value);
         }
 
         [XmlIgnore]

@@ -4,6 +4,26 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.4] - 2026-07-17
+
+### Added
+
+- Added a client option to suppress the login notification and transfer delay, enabled by default for supported clients
+
+### Changed
+
+- Updated `Microsoft.Windows.Compatibility` from 9.0.10 to 9.0.18
+- Completed product, company, author, version, and informational-version metadata for the SleepHunter and Updater assemblies
+
+### Fixed
+
+- Included client versions and other runtime XML data in Debug and published builds
+- Resolved runtime data files relative to the application directory regardless of the launch working directory
+
+### Security
+
+- Updated transitive .NET dependencies to resolve known `System.Security.Cryptography.Xml` vulnerabilities
+
 ## [4.10.3] - 2025-10-26
 
 ### Changed
