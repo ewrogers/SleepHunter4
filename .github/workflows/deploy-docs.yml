@@ -4,12 +4,19 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Deploy Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install mdbook

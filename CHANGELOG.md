@@ -4,6 +4,27 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.4] - 2026-07-17
+
+### Added
+
+- Added a client option to suppress the login notification and transfer delay, enabled by default for supported clients
+
+### Changed
+
+- Removed the unused `Microsoft.Windows.Compatibility` metapackage from SleepHunter and the Updater
+- Completed product, company, author, version, and informational-version metadata for the SleepHunter and Updater assemblies
+
+### Fixed
+
+- Added an enabled-by-default client launch option that clears pressed keys and modifiers when the Dark Ages client loses focus
+- Included client versions and other runtime XML data in Debug and published builds
+- Resolved runtime data files relative to the application directory regardless of the launch working directory
+
+### Security
+
+- Removed vulnerable transitive dependencies previously introduced by `Microsoft.Windows.Compatibility`
+
 ## [4.10.3] - 2025-10-26
 
 ### Changed

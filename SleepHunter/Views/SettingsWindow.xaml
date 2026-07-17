@@ -571,6 +571,24 @@
                             Skip Intro _Video
                         </CheckBox>
 
+                        <!-- Suppress Login Notification CheckBox -->
+                        <CheckBox Name="suppressLoginNotificationCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SuppressLoginNotification}"
+                                  Margin="8"
+                                  ToolTip="This will bypass the login notification and its transfer delay for supported clients.">
+                            Suppress _Login Notification
+                        </CheckBox>
+
+                        <!-- Apply Modifiers Key Fix CheckBox -->
+                        <CheckBox Name="applyModifiersKeyFixCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ApplyModifiersKeyFix}"
+                                  Margin="8"
+                                  ToolTip="This will clear held keys and modifiers when the client loses focus.">
+                            Apply _Modifiers Key Fix
+                        </CheckBox>
+
                         <!-- Patch Walls CheckBox -->
                         <CheckBox Name="patchNoWallsCheckBox"
                                    Style="{StaticResource ObsidianCheckBox}"

@@ -99,6 +99,36 @@ namespace SleepHunter.Win32
         [DllImport("kernel32", EntryPoint = "ResumeThread", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern int ResumeThread(nint threadHandle);
 
+        [DllImport("kernel32", EntryPoint = "TerminateProcess", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool TerminateProcess(nint processHandle, uint exitCode);
+
+        [DllImport("kernel32", EntryPoint = "VirtualAllocEx", SetLastError = true)]
+        internal static extern nint VirtualAllocEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryAllocationType allocationType, VirtualMemoryProtection protection);
+
+        [DllImport("kernel32", EntryPoint = "VirtualProtectEx", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool VirtualProtectEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryProtection newProtection, out VirtualMemoryProtection oldProtection);
+
+        [DllImport("kernel32", EntryPoint = "FlushInstructionCache", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool FlushInstructionCache(nint processHandle, nint baseAddress, nuint size);
+
+        [DllImport("ntdll", EntryPoint = "NtQueryInformationProcess")]
+        internal static extern int NtQueryInformationProcess(nint processHandle,
+            ProcessInformationClass processInformationClass, out nint processInformation,
+            int processInformationLength, out int returnLength);
+
+        [DllImport("ntdll", EntryPoint = "NtQueryInformationProcess")]
+        internal static extern int NtQueryInformationProcess(nint processHandle,
+            ProcessInformationClass processInformationClass, out ProcessBasicInformation processInformation,
+            int processInformationLength, out int returnLength);
+
+        [DllImport("ntdll", EntryPoint = "RtlNtStatusToDosError")]
+        internal static extern uint RtlNtStatusToDosError(int status);
+
         [DllImport("kernel32", EntryPoint = "CloseHandle", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseHandle(nint handle);

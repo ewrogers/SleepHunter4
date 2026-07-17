@@ -37,6 +37,13 @@ namespace SleepHunter.Views
         private const string SleepHunterMacroFileExtension = "sh4";
         private const string SleepHunterMacroFileFilter = "SleepHunter v4 Macro Files (*.sh4)|*.sh4";
 
+        private static readonly (long Address, byte[] Expected, byte[] Replacement)[] SuppressLoginNotificationPatches =
+        {
+            (0x4B897C, new byte[] { 0x75, 0x6C }, new byte[] { 0xEB, 0x6C }),
+            (0x4B8ACF, new byte[] { 0x75, 0x6D }, new byte[] { 0xEB, 0x6D }),
+            (0x564855, new byte[] { 0x68, 0xE8, 0x03, 0x00, 0x00 }, new byte[] { 0x68, 0x00, 0x00, 0x00, 0x00 }),
+        };
+
         private static readonly int IconPadding = 14;
 
         private readonly ILogger logger;
@@ -146,7 +153,7 @@ namespace SleepHunter.Views
                 }
 
                 if (detectedVersion != null)
-                    PatchClient(processInformation, detectedVersion);
+                    PatchClient(processInformation, detectedVersion, clientPath);
                 else
                     logger.LogWarn($"No client version, unable to apply patches to pid {processInformation.ProcessId}");
             }
@@ -206,17 +213,23 @@ namespace SleepHunter.Views
             return processInformation;
         }
 
-        private void PatchClient(ProcessInformation process, ClientVersion version)
+        private void PatchClient(ProcessInformation process, ClientVersion version, string clientPath)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
+            var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
+            var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
             var pid = process.ProcessId;
+            var patchCompleted = false;
             logger.LogInfo($"Attempting to patch client process {pid}, version = {version.Key}");
 
             try
             {
+                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
+                    ClientPatcher.VerifyModifiersKeyFixClient(clientPath);
+
                 // Patch Process
                 using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
                 using var patchStream = accessor.GetWriteableStream();
@@ -246,6 +259,12 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x90);        // NOP
                 }
 
+                if (suppressLoginNotification && version.SupportsLoginNotificationSuppression)
+                {
+                    logger.LogInfo($"Applying suppress login notification patch to process {pid}");
+                    ApplySuppressLoginNotificationPatch(patchStream, writer);
+                }
+
                 if (patchNoWalls && version.NoWallAddress > 0)
                 {
                     logger.LogInfo($"Applying no walls patch to process {pid} (0x{version.NoWallAddress:x8})");
@@ -254,13 +273,52 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x17);        // +0x17
                     writer.Write((byte)0x90);        // NOP
                 }
+
+                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
+                {
+                    logger.LogInfo($"Applying modifiers key fix to process {pid}");
+                    ClientPatcher.ApplyModifiersKeyFix(patchStream, process.ProcessHandle);
+                }
+
+                patchCompleted = true;
             }
             finally
             {
-                // Resume and close handles.
-                NativeMethods.ResumeThread(process.ThreadHandle);
+                if (patchCompleted)
+                {
+                    NativeMethods.ResumeThread(process.ThreadHandle);
+                }
+                else
+                {
+                    logger.LogWarn($"Client patching failed; terminating suspended process {pid}");
+                    NativeMethods.TerminateProcess(process.ProcessHandle, 1);
+                }
+
                 NativeMethods.CloseHandle(process.ThreadHandle);
                 NativeMethods.CloseHandle(process.ProcessHandle);
+            }
+        }
+
+        private static void ApplySuppressLoginNotificationPatch(Stream patchStream, BinaryWriter writer)
+        {
+            foreach (var patch in SuppressLoginNotificationPatches)
+            {
+                patchStream.Position = patch.Address;
+                var actual = new byte[patch.Expected.Length];
+                patchStream.ReadExactly(actual);
+
+                if (!actual.SequenceEqual(patch.Expected))
+                {
+                    throw new InvalidDataException($"Unexpected client bytes at 0x{patch.Address:X}: " +
+                                                   $"expected {Convert.ToHexString(patch.Expected)}, " +
+                                                   $"found {Convert.ToHexString(actual)}.");
+                }
+            }
+
+            foreach (var patch in SuppressLoginNotificationPatches)
+            {
+                patchStream.Position = patch.Address;
+                writer.Write(patch.Replacement);
             }
         }
 

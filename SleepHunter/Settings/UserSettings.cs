@@ -26,6 +26,8 @@ namespace SleepHunter.Settings
         private string selectedTheme;
 
         private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
+        private bool suppressLoginNotification = true;
+        private bool applyModifiersKeyFix = true;
         private double inventoryIconSize = 46;
         private double skillIconSize = 46;
         private int inventoryGridWidth = 12;
@@ -321,6 +323,20 @@ namespace SleepHunter.Settings
             set => SetProperty(ref skipintroVideo, value);
         }
 
+        [XmlElement("SuppressLoginNotification")]
+        public bool SuppressLoginNotification
+        {
+            get => suppressLoginNotification;
+            set => SetProperty(ref suppressLoginNotification, value);
+        }
+
+        [XmlElement("ApplyModifiersKeyFix")]
+        public bool ApplyModifiersKeyFix
+        {
+            get => applyModifiersKeyFix;
+            set => SetProperty(ref applyModifiersKeyFix, value);
+        }
+
         [XmlElement("NoWalls")]
         public bool NoWalls
         {
@@ -559,6 +575,8 @@ namespace SleepHunter.Settings
             SelectedVersion = "Auto-Detect";
             AllowMultipleInstances = true;
             SkipIntroVideo = true;
+            SuppressLoginNotification = true;
+            ApplyModifiersKeyFix = true;
             NoWalls = false;
 
             MapChangeAction = MacroAction.Stop;
