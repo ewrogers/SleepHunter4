@@ -1,53 +1,87 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
-    <!-- Equipment Item Data Template-->
+    <!-- Equipment Item Data Template -->
     <DataTemplate x:Key="EquipmentItemDataTemplate">
-        <Border Name="Border" Margin="16,2" HorizontalAlignment="Center">
+        <Border Name="SlotBorder"
+                MinWidth="58"
+                MinHeight="58"
+                Margin="3"
+                Padding="2"
+                Background="{DynamicResource ObsidianControlBackground}"
+                BorderBrush="{DynamicResource ObsidianSeparatorColor}"
+                BorderThickness="1"
+                CornerRadius="2">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="140"/>
-                    <ColumnDefinition Width="320"/>
-                </Grid.ColumnDefinitions>
+                <Rectangle Name="EmptyRectangle"
+                           Stroke="{DynamicResource ObsidianSeparatorColor}"
+                           StrokeThickness="1"
+                           StrokeDashArray="8,2"
+                           Opacity="0.55"
+                           Margin="1"/>
 
-                <Border Name="SlotBorder"
-                        Background="{DynamicResource ObsidianBackground}"
-                        BorderThickness="0">
-                    <TextBlock Name="SlotText"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="16"
-                               FontWeight="Normal"
-                               TextAlignment="Right"
-                               Text="{Binding Slot, Converter={StaticResource EquipmentSlotConverter}}"/>
-
-                </Border>
-
-                <Border Name="NameBorder"
-                        Grid.Column="1"
-                        Background="{DynamicResource ObsidianControlBackground}"
-                        BorderBrush="{DynamicResource ObsidianSeparatorColor}"
-                        BorderThickness="0,1,1,1">
-                    <TextBlock Name="NameText"
-                               Style="{StaticResource ObsidianText}"
-                               Text="{Binding Name}"
-                               FontSize="16"
-                               FontWeight="Light"
-                               TextWrapping="WrapWithOverflow"/>
-                </Border>
+                <Image Name="Icon"
+                       Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}"
+                       Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       Stretch="None"
+                       Source="{Binding Icon}"
+                       Panel.ZIndex="1"/>
             </Grid>
+            <Border.ToolTip>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Name="ToolTipNameText"
+                               Text="{Binding DisplayName}"
+                               Style="{StaticResource ObsidianText}"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               TextAlignment="Center"
+                               Margin="4,2"/>
+                    <Separator Style="{StaticResource ObsidianSeparator}"
+                               Background="{DynamicResource ObsidianForeground}"
+                               Margin="1,4"/>
+                    <TextBlock Style="{StaticResource ObsidianText}"
+                               Text="{Binding Slot, Converter={StaticResource EquipmentSlotConverter}}"
+                               FontSize="14"
+                               FontWeight="Normal"
+                               TextAlignment="Center"
+                               Margin="4,2"/>
+                    <TextBlock Style="{StaticResource ObsidianText}"
+                               Text="{Binding SpriteNumber, StringFormat=Sprite: {0}}"
+                               FontSize="14"
+                               FontWeight="Normal"
+                               TextAlignment="Center"
+                               Margin="4,2"/>
+                    <TextBlock Name="ToolTipDurabilityText"
+                               Style="{StaticResource ObsidianText}"
+                               Text="{Binding FormattedDurability, StringFormat=Durability: {0}}"
+                               FontSize="14"
+                               FontWeight="Normal"
+                               Foreground="LightBlue"
+                               TextAlignment="Center"
+                               Visibility="Collapsed"
+                               Margin="4,2"/>
+                </StackPanel>
+            </Border.ToolTip>
         </Border>
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True">
-                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+            <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                <Setter TargetName="SlotBorder" Property="ToolTip" Value="{x:Null}"/>
+                <Setter TargetName="Icon" Property="Visibility" Value="Hidden"/>
             </DataTrigger>
 
-            <DataTrigger Binding="{Binding IsEmpty}" Value="True">
-                <Setter TargetName="SlotBorder" Property="Background" Value="{StaticResource ObsidianDisabled}"/>
-                <Setter TargetName="SlotText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
-                <Setter TargetName="NameBorder" Property="Background" Value="{StaticResource ObsidianControlBackground}"/>
-                <Setter TargetName="NameBorder" Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
-                <Setter TargetName="NameText" Property="Text" Value="--"/>
-                <Setter TargetName="NameText" Property="Opacity" Value="0.5"/>
+            <DataTrigger Binding="{Binding IsEmpty}" Value="False">
+                <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Hidden"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding HasDurability}" Value="True">
+                <Setter TargetName="ToolTipDurabilityText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding ElementName=SlotBorder, Path=IsMouseOver}" Value="True">
+                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

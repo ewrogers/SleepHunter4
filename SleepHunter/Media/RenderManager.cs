@@ -25,6 +25,13 @@ namespace SleepHunter.Media
         }
 
         public static RenderedBitmap Render(EpfFrame frame, ColorPalette palette)
+            => Render(frame, palette, makeGrayscale: true, useLuminanceAlpha: false);
+
+        public static RenderedBitmap RenderItem(EpfFrame frame, ColorPalette palette, bool useLuminanceAlpha = false)
+            => Render(frame, palette, makeGrayscale: false, useLuminanceAlpha);
+
+        private static RenderedBitmap Render(EpfFrame frame, ColorPalette palette, bool makeGrayscale,
+            bool useLuminanceAlpha)
         {
             if (frame == null)
                 throw new ArgumentNullException(nameof(frame));
@@ -32,44 +39,47 @@ namespace SleepHunter.Media
             if (palette == null)
                 throw new ArgumentNullException(nameof(palette));
 
-            palette = palette.MakeGrayscale();
+            if (makeGrayscale)
+                palette = palette.MakeGrayscale();
+
             var format = PixelFormats.Bgra32;
 
             var width = frame.Width;
             var height = frame.Height;
-            var stride = (width * 4) + (width % 4);
+            var stride = width * 4;
 
             var bits = new byte[height * stride];
 
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++)
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    var fixedX = x;
-                    var fixedY = y;
-
-                    var threshold = 12;
-
-                    if (fixedX < threshold)
-                    {
-                        if (width >= threshold)
-                            fixedX = width - (threshold - fixedX);
-
-                        if (fixedY > 0)
-                            fixedY--;
-                    }
-                    else
-                        fixedX -= threshold;
-
                     var pixel = frame.RawData[x + y * width];
 
                     if (pixel > 0)
-                        SetPixel(bits, fixedX, fixedY, stride, palette[pixel]);
+                    {
+                        var color = palette[pixel];
+                        if (useLuminanceAlpha)
+                            color = Color.FromArgb(GetLuminanceAlpha(color), color.R, color.G, color.B);
+
+                        SetPixel(bits, x, y, stride, color);
+                    }
                     else
-                        SetPixel(bits, fixedX, fixedY, stride, Colors.Transparent);
+                        SetPixel(bits, x, y, stride, Colors.Transparent);
                 }
 
             var bitmap = new RenderedBitmap(width, height, stride, format, bits);
             return bitmap;
+        }
+
+        private static byte GetLuminanceAlpha(Color color)
+        {
+            const double gamma = 2.0;
+            var linearRed = Math.Pow(color.R / 255.0, gamma);
+            var linearGreen = Math.Pow(color.G / 255.0, gamma);
+            var linearBlue = Math.Pow(color.B / 255.0, gamma);
+            var linearLuminance = 0.299 * linearRed + 0.587 * linearGreen + 0.114 * linearBlue;
+            var luminance = Math.Pow(linearLuminance, 1.0 / gamma) * 255.0;
+            return (byte)Math.Clamp(Math.Round(luminance), byte.MinValue, byte.MaxValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

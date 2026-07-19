@@ -4,6 +4,18 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added an enabled-by-default client option that displays stack quantities greater than one in inventory-based merchant and storage dialogs, truncating long names with two dots to keep the quantity visible
+- Added inventory item icon rendering from client sprite, palette, and dye assets
+- Added a dedicated icon-based equipment tab matching the client pane layout, with item, sprite, slot, and durability tooltips
+
+### Fixed
+
+- Decode compact inventory sprites before rendering, read inventory records as coherent snapshots, preserve digits in item names, display live stack quantities and centered native-size icons without under-slot labels, add sprite/quantity/durability tooltips, and show gold amounts with thousands separators without including the amount in the item name
+
 ## [4.10.4] - 2026-07-17
 
 ### Added

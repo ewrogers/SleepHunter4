@@ -7,6 +7,8 @@ namespace SleepHunter.Media
 {
     public sealed class EpfImage
     {
+        private const int HeaderSize = 12;
+
         private readonly List<EpfFrame> frames = new();
 
         public string Name { get; set; }
@@ -38,40 +40,45 @@ namespace SleepHunter.Media
         {
             frames = new List<EpfFrame>();
 
-            var reader = new BinaryReader(stream);
+            using var reader = new BinaryReader(stream, System.Text.Encoding.ASCII, leaveOpen: true);
+            var streamStart = stream.Position;
 
             var frameCount = reader.ReadUInt16();
 
             Width = reader.ReadInt16();
             Height = reader.ReadInt16();
 
-            var _ = reader.ReadUInt16();
+            reader.ReadUInt16();
             var tableOffset = reader.ReadUInt32();
 
-            reader.BaseStream.Position += tableOffset;
+            var dataStart = checked(streamStart + HeaderSize);
+            reader.BaseStream.Position = checked(dataStart + tableOffset);
 
             for (int i = 0; i < frameCount; i++)
             {
-                var left = reader.ReadInt16();
                 var top = reader.ReadInt16();
-                var right = reader.ReadInt16();
+                var left = reader.ReadInt16();
                 var bottom = reader.ReadInt16();
+                var right = reader.ReadInt16();
 
                 long startAddress = reader.ReadUInt32();
-                long endAddress = reader.ReadUInt32();
+                reader.ReadUInt32();
 
-                var frameWidth = Math.Abs(right - left);
-                var frameHeight = Math.Abs(bottom - top);
+                var frameWidth = right - left;
+                var frameHeight = bottom - top;
 
-                var size = frameWidth * frameHeight;
+                if (left < 0 || top < 0 || frameWidth < 0 || frameHeight < 0)
+                    throw new InvalidDataException($"EPF frame {i} has invalid dimensions.");
+
+                var size = checked(frameWidth * frameHeight);
                 var bits = new byte[size];
 
                 if (size > 0)
                 {
                     long previousPosition = reader.BaseStream.Position;
 
-                    reader.BaseStream.Position = startAddress;
-                    reader.Read(bits, 0, size);
+                    reader.BaseStream.Position = checked(dataStart + startAddress);
+                    reader.BaseStream.ReadExactly(bits);
 
                     reader.BaseStream.Position = previousPosition;
                 }
