@@ -1,4 +1,4 @@
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 using SleepHunter.Settings;
 
@@ -17,6 +17,8 @@ namespace SleepHunter.Tests.Settings
             Assert.That(settings.ApplyModifiersKeyFix, Is.True);
             Assert.That(settings.AllowAltToShowGroundItems, Is.True);
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
+            Assert.That(settings.MakeExchangeDialogDraggable, Is.True);
+            Assert.That(settings.ShowExchangeResultsInMessageBar, Is.False);
         }
 
         [Test]
@@ -44,6 +46,22 @@ namespace SleepHunter.Tests.Settings
                 "<UserSettings><AllowAltToShowGroundItems>false</AllowAltToShowGroundItems></UserSettings>");
 
             Assert.That(settings.AllowAltToShowGroundItems, Is.False);
+        }
+
+        [Test]
+        public void ShouldPreserveExplicitExchangeUiSettings()
+        {
+            var settings = Deserialize(
+                "<UserSettings>" +
+                "<MakeExchangeDialogDraggable>false</MakeExchangeDialogDraggable>" +
+                "<ShowExchangeResultsInMessageBar>true</ShowExchangeResultsInMessageBar>" +
+                "</UserSettings>");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(settings.MakeExchangeDialogDraggable, Is.False);
+                Assert.That(settings.ShowExchangeResultsInMessageBar, Is.True);
+            });
         }
 
         private static UserSettings Deserialize(string xml)

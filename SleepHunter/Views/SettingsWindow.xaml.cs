@@ -21,13 +21,14 @@ namespace SleepHunter.Views
         public static readonly int GeneralTabIndex = 0;
         public static readonly int UserInterfaceTabIndex = 1;
         public static readonly int GameClientTabIndex = 2;
-        public static readonly int AllMacrosTabIndex = 3;
-        public static readonly int SkillMacrosTabIndex = 4;
-        public static readonly int SpellMacrosTabIndex = 5;
-        public static readonly int FloweringTabIndex = 6;
-        public static readonly int UpdatesTabIndex = 7;
-        public static readonly int DebugTabIndex = 8;
-        public static readonly int AboutTabIndex = 9;
+        public static readonly int PatchesTabIndex = 3;
+        public static readonly int AllMacrosTabIndex = 4;
+        public static readonly int SkillMacrosTabIndex = 5;
+        public static readonly int SpellMacrosTabIndex = 6;
+        public static readonly int FloweringTabIndex = 7;
+        public static readonly int UpdatesTabIndex = 8;
+        public static readonly int DebugTabIndex = 9;
+        public static readonly int AboutTabIndex = 10;
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;

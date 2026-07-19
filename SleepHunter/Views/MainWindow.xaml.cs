@@ -221,6 +221,9 @@ namespace SleepHunter.Views
             var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
             var allowAltToShowGroundItems = UserSettingsManager.Instance.Settings.AllowAltToShowGroundItems;
             var showItemQuantitiesInDialogs = UserSettingsManager.Instance.Settings.ShowItemQuantitiesInDialogs;
+            var makeExchangeDialogDraggable = UserSettingsManager.Instance.Settings.MakeExchangeDialogDraggable;
+            var showExchangeResultsInMessageBar =
+                UserSettingsManager.Instance.Settings.ShowExchangeResultsInMessageBar;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
             var pid = process.ProcessId;
@@ -233,7 +236,10 @@ namespace SleepHunter.Views
                 var shouldApplyModifiersKeyFix =
                     (applyModifiersKeyFix || applyAltGroundItemPatch) && version.SupportsModifiersKeyFix;
                 var hasRuntimePatches = shouldApplyModifiersKeyFix || applyAltGroundItemPatch ||
-                                        (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs);
+                                        (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs) ||
+                                        (makeExchangeDialogDraggable && version.SupportsDraggableExchangeDialog) ||
+                                        (showExchangeResultsInMessageBar &&
+                                         version.SupportsExchangeResultsInMessageBar);
                 var hasClientPatches = (patchMultipleInstances && version.MultipleInstanceAddress > 0) ||
                                        (patchIntroVideo && version.IntroVideoAddress > 0) ||
                                        (suppressLoginNotification && version.SupportsLoginNotificationSuppression) ||
@@ -302,6 +308,18 @@ namespace SleepHunter.Views
                 {
                     logger.LogInfo($"Applying item quantities in dialogs patch to process {pid}");
                     ClientPatcher.ApplyShowItemQuantitiesInDialogs(patchStream, process.ProcessHandle);
+                }
+
+                if (makeExchangeDialogDraggable && version.SupportsDraggableExchangeDialog)
+                {
+                    logger.LogInfo($"Applying draggable exchange dialog patch to process {pid}");
+                    ClientPatcher.ApplyMakeExchangeDialogDraggable(patchStream, process.ProcessHandle);
+                }
+
+                if (showExchangeResultsInMessageBar && version.SupportsExchangeResultsInMessageBar)
+                {
+                    logger.LogInfo($"Applying exchange results message bar patch to process {pid}");
+                    ClientPatcher.ApplyShowExchangeResultsInMessageBar(patchStream, process.ProcessHandle);
                 }
 
                 if (hasClientPatches)
