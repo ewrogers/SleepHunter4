@@ -15,6 +15,7 @@ namespace SleepHunter.Tests.Settings
             var settings = Deserialize("<UserSettings />");
 
             Assert.That(settings.ApplyModifiersKeyFix, Is.True);
+            Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
         }
 
         [Test]
@@ -24,6 +25,15 @@ namespace SleepHunter.Tests.Settings
                 "<UserSettings><ApplyModifiersKeyFix>false</ApplyModifiersKeyFix></UserSettings>");
 
             Assert.That(settings.ApplyModifiersKeyFix, Is.False);
+        }
+
+        [Test]
+        public void ShouldPreserveExplicitlyDisabledItemQuantitiesInDialogs()
+        {
+            var settings = Deserialize(
+                "<UserSettings><ShowItemQuantitiesInDialogs>false</ShowItemQuantitiesInDialogs></UserSettings>");
+
+            Assert.That(settings.ShowItemQuantitiesInDialogs, Is.False);
         }
 
         private static UserSettings Deserialize(string xml)

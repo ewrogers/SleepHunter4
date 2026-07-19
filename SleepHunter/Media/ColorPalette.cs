@@ -30,13 +30,20 @@ namespace SleepHunter.Media
 
         public ColorPalette(Stream stream, bool leaveOpen = true)
         {
-            colors = new List<Color>(ColorCount);
+            using var buffer = new MemoryStream();
+            stream.CopyTo(buffer);
+            var bytes = buffer.ToArray();
 
+            if (bytes.Length != ColorCount * 3)
+                bytes = ParseRiffPalette(bytes);
+
+            colors = new List<Color>(ColorCount);
             for (int i = 0; i < ColorCount; i++)
             {
-                var red = (byte)stream.ReadByte();
-                var green = (byte)stream.ReadByte();
-                var blue = (byte)stream.ReadByte();
+                var offset = i * 3;
+                var red = bytes[offset];
+                var green = bytes[offset + 1];
+                var blue = bytes[offset + 2];
 
                 var color = Color.FromRgb(red, green, blue);
                 colors.Add(color);
@@ -68,6 +75,83 @@ namespace SleepHunter.Media
             }
 
             return new ColorPalette(grayColors);
+        }
+
+        internal bool DyeRangeMatches(IReadOnlyList<Color> dyeColors)
+        {
+            if (dyeColors == null || dyeColors.Count > ItemDyeTable.ColorCount)
+                return false;
+
+            for (var index = 0; index < dyeColors.Count; index++)
+            {
+                var color = colors[ItemDyeTable.StartIndex + index];
+                var dyeColor = dyeColors[index];
+                if (color.R != dyeColor.R || color.G != dyeColor.G || color.B != dyeColor.B)
+                    return false;
+            }
+
+            return true;
+        }
+
+        internal ColorPalette WithDye(IReadOnlyList<Color> dyeColors)
+        {
+            var dyedColors = new List<Color>(colors);
+            for (var index = 0; index < Math.Min(dyeColors.Count, ItemDyeTable.ColorCount); index++)
+                dyedColors[ItemDyeTable.StartIndex + index] = dyeColors[index];
+
+            return new ColorPalette(dyedColors);
+        }
+
+        private static byte[] ParseRiffPalette(ReadOnlySpan<byte> bytes)
+        {
+            if (bytes.Length < 12 ||
+                !bytes.Slice(0, 4).SequenceEqual("RIFF"u8) ||
+                !bytes.Slice(8, 4).SequenceEqual("PAL "u8))
+            {
+                throw new InvalidDataException(
+                    $"A palette must contain {ColorCount * 3} RGB bytes or use the RIFF PAL format.");
+            }
+
+            var riffLength = checked((int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(4)) + 8);
+            if (riffLength > bytes.Length)
+                throw new InvalidDataException("The RIFF palette exceeds the file bounds.");
+
+            var offset = 12;
+            while (offset <= riffLength - 8)
+            {
+                var chunkName = bytes.Slice(offset, 4);
+                var chunkLength = checked((int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
+                    bytes.Slice(offset + 4)));
+                var chunkOffset = offset + 8;
+
+                if (chunkOffset > riffLength - chunkLength)
+                    throw new InvalidDataException("A RIFF palette chunk exceeds the file bounds.");
+
+                if (chunkName.SequenceEqual("data"u8))
+                {
+                    if (chunkLength < 4)
+                        throw new InvalidDataException("The RIFF palette data chunk is incomplete.");
+
+                    var colorCount = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(
+                        bytes.Slice(chunkOffset + 2));
+                    var requiredLength = checked(4 + colorCount * 4);
+                    if (colorCount > ColorCount || chunkLength < requiredLength)
+                        throw new InvalidDataException("The RIFF palette contains invalid color data.");
+
+                    var colors = new byte[ColorCount * 3];
+                    for (var index = 0; index < colorCount; index++)
+                    {
+                        var sourceOffset = chunkOffset + 4 + index * 4;
+                        bytes.Slice(sourceOffset, 3).CopyTo(colors.AsSpan(index * 3, 3));
+                    }
+
+                    return colors;
+                }
+
+                offset = checked(chunkOffset + chunkLength + (chunkLength & 1));
+            }
+
+            throw new InvalidDataException("The RIFF palette does not contain a data chunk.");
         }
 
         public IEnumerator<Color> GetEnumerator()

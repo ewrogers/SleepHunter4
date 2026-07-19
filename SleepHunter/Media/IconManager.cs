@@ -18,8 +18,12 @@ namespace SleepHunter.Media
         private IconManager() { }
 
         private TaskScheduler context;
+        private readonly object itemIconLock = new();
+        private readonly ConcurrentDictionary<(int Index, byte Color), BitmapSource> itemIcons = new();
         private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new();
         private readonly ConcurrentDictionary<int, BitmapSource> spellIcons = new();
+        private ItemIconRenderer itemIconRenderer;
+        private string itemIconClientPath;
         private ColorPalette skillIconPalette;
         private ColorPalette spellIconPalette;
         private EpfImage skillIconImage;
@@ -31,9 +35,11 @@ namespace SleepHunter.Media
             set => context = value;
         }
 
+        public int ItemIconCount => itemIcons.Count;
         public int SkillIconCount => skillIcons.Count;
         public int SpellIconCount => spellIcons.Count;
 
+        public IEnumerable<BitmapSource> ItemIcons => from i in itemIcons.Values select i;
         public IEnumerable<BitmapSource> SkillIcons => from s in skillIcons.Values select s;
         public IEnumerable<BitmapSource> SpellIcons => from s in spellIcons.Values select s;
 
@@ -44,6 +50,45 @@ namespace SleepHunter.Media
         public bool ContainsSkillIcon(int index) => skillIcons.ContainsKey(index);
 
         public bool ContainsSpellIcon(int index) => spellIcons.ContainsKey(index);
+
+        public BitmapSource GetItemIcon(int index, byte color = 0)
+        {
+            if (index <= 0 || index > ushort.MaxValue)
+                return null;
+
+            var key = (index, color);
+            if (itemIcons.TryGetValue(key, out var icon))
+                return icon;
+
+            var renderer = GetItemIconRenderer();
+            if (renderer == null)
+                return null;
+
+            try
+            {
+                var bitmap = renderer.Render(index, color);
+                if (bitmap == null)
+                    return null;
+
+                var bitmapSource = bitmap.CreateBitmapSource();
+                bitmapSource.Freeze();
+                itemIcons[key] = bitmapSource;
+                return bitmapSource;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public BitmapSource GetInventoryItemIcon(ushort rawSprite, byte color = 0)
+        {
+            var itemId = DecodeInventorySprite(rawSprite);
+            return itemId == 0 ? null : GetItemIcon(itemId, color);
+        }
+
+        internal static int DecodeInventorySprite(ushort rawSprite) =>
+            rawSprite > 0x8000 ? rawSprite - 0x8000 : 0;
 
         public BitmapSource GetSkillIcon(int index)
         {
@@ -89,6 +134,17 @@ namespace SleepHunter.Media
         public bool RemoveSkillIcon(int index) => skillIcons.TryRemove(index, out _);
 
         public bool RemoveSpellIcon(int index) => spellIcons.TryRemove(index, out _);
+
+        public void ClearItemIcons()
+        {
+            itemIcons.Clear();
+
+            lock (itemIconLock)
+            {
+                itemIconRenderer = null;
+                itemIconClientPath = null;
+            }
+        }
 
         public void ClearSkillIcons() => skillIcons.Clear();
 
@@ -136,11 +192,38 @@ namespace SleepHunter.Media
         {
             var settings = UserSettingsManager.Instance.Settings;
 
+            ClearItemIcons();
+
             skillIconPalette = GetColorPalette(settings.IconDataFile, settings.SkillPaletteFile);
             spellIconPalette = GetColorPalette(settings.IconDataFile, settings.SpellPaletteFile);
 
             skillIconImage = GetEpfImage(settings.IconDataFile, settings.SkillIconFile);
             spellIconImage = GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
+        }
+
+        private ItemIconRenderer GetItemIconRenderer()
+        {
+            var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
+
+            lock (itemIconLock)
+            {
+                if (string.Equals(clientPath, itemIconClientPath, System.StringComparison.OrdinalIgnoreCase))
+                    return itemIconRenderer;
+
+                itemIcons.Clear();
+                itemIconClientPath = clientPath;
+
+                try
+                {
+                    itemIconRenderer = ItemIconRenderer.Load(clientPath);
+                }
+                catch
+                {
+                    itemIconRenderer = null;
+                }
+
+                return itemIconRenderer;
+            }
         }
 
         static string GetRelativePath(string currentDirectory, string filename)

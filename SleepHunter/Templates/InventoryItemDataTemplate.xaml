@@ -5,11 +5,6 @@
     <DataTemplate x:Key="InventoryItemDataTemplate">
         <Border Name="Border" Margin="2">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
                 <Border Name="SlotBorder"
                         BorderBrush="{StaticResource ObsidianSeparatorColor}"
                         BorderThickness="1"
@@ -42,7 +37,7 @@
                         </Border>
 
                         <Border Name="QuantityBorder"
-                                Width="22" Height="14"
+                                MinWidth="22" Height="14"
                                 Background="{StaticResource ObsidianSeparatorColor}"
                                 CornerRadius="4,0,0,0"
                                 HorizontalAlignment="Right"
@@ -53,7 +48,7 @@
                                 Visibility="Collapsed">
                             <TextBlock Name="QuantityText"
                                        Style="{StaticResource ObsidianText}"
-                                       Text="{Binding Quantity}"
+                                       Text="{Binding QuantityBadgeText}"
                                        TextAlignment="Center"
                                        FontSize="10"
                                        FontWeight="Semibold"
@@ -64,14 +59,15 @@
                                Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}" 
                                Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}" 
                                RenderOptions.BitmapScalingMode="NearestNeighbor"
+                               Stretch="None"
                                Source="{Binding Icon}"
                                Panel.ZIndex="0"
-                               Opacity="0.5"
+                               Opacity="1.0"
                                Margin="1,1,-1,-1">
                             <Image.ToolTip>
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock Name="ToolTipNameText"
-                                               Text="{Binding Name}"
+                                               Text="{Binding DisplayName}"
                                                Style="{StaticResource ObsidianText}"
                                                FontSize="16"
                                                FontWeight="SemiBold"
@@ -80,31 +76,36 @@
                                     <Separator Style="{StaticResource ObsidianSeparator}"
                                                Background="{DynamicResource ObsidianForeground}"
                                                Margin="1,4"/>
+                                    <TextBlock Name="ToolTipSpriteText"
+                                               Style="{StaticResource ObsidianText}"
+                                               Text="{Binding SpriteNumber, StringFormat=Sprite: {0}}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               TextAlignment="Center"
+                                               Margin="4,2"/>
                                     <TextBlock Name="ToolTipQuantityText"
                                                Style="{StaticResource ObsidianText}"
-                                               Text="{Binding Quantity, StringFormat=Quantity: {0}}"
+                                               Text="{Binding FormattedQuantity, StringFormat=Quantity: {0}}"
                                                FontSize="14"
                                                FontWeight="Normal"
                                                TextAlignment="Center"
                                                Margin="4,2">
                                     </TextBlock>
+                                    <TextBlock Name="ToolTipDurabilityText"
+                                               Style="{StaticResource ObsidianText}"
+                                               Text="{Binding FormattedDurability, StringFormat=Durability: {0}}"
+                                               FontSize="14"
+                                               FontWeight="Normal"
+                                               Foreground="LightBlue"
+                                               TextAlignment="Center"
+                                               Visibility="Collapsed"
+                                               Margin="4,2"/>
                                 </StackPanel>
                             </Image.ToolTip>
                         </Image>
                     </Grid>
                 </Border>
 
-                <TextBlock Name="NameText"
-                           Grid.Row="1"
-                           MaxWidth="{Binding ElementName=Icon, Path=Width}"
-                           Style="{StaticResource ObsidianText}"
-                           Text="{Binding DisplayName}"
-                           TextWrapping="WrapWithOverflow"
-                           TextAlignment="Center"
-                           FontSize="10"
-                           FontWeight="Normal"
-                           Opacity="0.5"
-                           Margin="2,2"/>
             </Grid>
         </Border>
         <DataTemplate.Triggers>
@@ -115,7 +116,6 @@
                 <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.8"/>
                 <Setter TargetName="QuantityBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="QuantityBorder" Property="Opacity" Value="1.0"/>
-                <Setter TargetName="NameText" Property="Opacity" Value="0.75"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding IsEmpty}" Value="True">
@@ -125,6 +125,14 @@
                 <Setter TargetName="SlotNumberBorder" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="QuantityBorder" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding ShowsQuantity}" Value="True">
+                <Setter TargetName="QuantityBorder" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding HasDurability}" Value="True">
+                <Setter TargetName="ToolTipDurabilityText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

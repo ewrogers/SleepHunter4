@@ -19,6 +19,7 @@
                     <converters:NumericConverter x:Key="NumericConverter"/>
                     <converters:NotNullConverter x:Key="NotNullConverter"/>
                     <converters:EquipmentSlotConverter x:Key="EquipmentSlotConverter"/>
+                    <converters:EquipmentSlotPositionConverter x:Key="EquipmentSlotPositionConverter"/>
                     <converters:PlayerClassConverter x:Key="PlayerClassConverter"/>
                     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
                     <converters:VisibilityConverter x:Key="VisibilityConverter"/>

@@ -9,6 +9,7 @@
       <SupportsFlowering>true</SupportsFlowering>
       <SupportsLoginNotificationSuppression>true</SupportsLoginNotificationSuppression>
       <SupportsModifiersKeyFix>true</SupportsModifiersKeyFix>
+      <SupportsItemQuantitiesInDialogs>true</SupportsItemQuantitiesInDialogs>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>
@@ -64,10 +65,16 @@
             <Offset Value="238" />
           </Offsets>
         </Dynamic>
-        <Dynamic Key="Inventory" Address="882E68" MaxLength="256" Size="261" Count="60">
+        <Dynamic Key="Inventory" Address="882E68" MaxLength="256" Size="262" Count="60">
           <Offsets>
             <Offset Value="2CC" />
             <Offset Value="1092" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="InventoryPanes" Address="82B76C" Size="4" Count="60">
+          <Offsets>
+            <Offset Value="4F88" />
+            <Offset Value="1A0" />
           </Offsets>
         </Dynamic>
         <Dynamic Key="Gold" Address="755AA4">
@@ -75,9 +82,14 @@
                 <Offset Value="198" />
             </Offsets>
         </Dynamic>
-        <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="261" Count="18">
+        <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="128" Count="18">
           <Offsets>
             <Offset Value="1152" />
+          </Offsets>
+        </Dynamic>
+        <Dynamic Key="EquipmentSnapshot" Address="6FC914" Size="2504" Count="18">
+          <Offsets>
+            <Offset Value="111C" />
           </Offsets>
         </Dynamic>
         <Dynamic Key="Skillbook" Address="882E68" MaxLength="256" Size="260" Count="90">
@@ -199,7 +211,7 @@
                     <Offset Value="4CE4" />
                 </Offsets>
             </Dynamic>
-            <Dynamic Key="Inventory" Address="AA3AE8" MaxLength="256" Size="261" Count="60">
+            <Dynamic Key="Inventory" Address="AA3AE8" MaxLength="256" Size="262" Count="60">
                 <Offsets>
                     <Offset Value="2CC" />
                     <Offset Value="1092" />
@@ -210,7 +222,7 @@
                     <Offset Value="198" />
                 </Offsets>
             </Dynamic>
-            <Dynamic Key="Equipment" Address="91E714" MaxLength="128" Size="261" Count="18">
+            <Dynamic Key="Equipment" Address="91E714" MaxLength="128" Size="128" Count="18">
                 <Offsets>
                     <Offset Value="110B" />
                 </Offsets>

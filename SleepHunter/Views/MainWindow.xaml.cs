@@ -219,6 +219,7 @@ namespace SleepHunter.Views
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
             var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
             var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
+            var showItemQuantitiesInDialogs = UserSettingsManager.Instance.Settings.ShowItemQuantitiesInDialogs;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
             var pid = process.ProcessId;
@@ -227,8 +228,15 @@ namespace SleepHunter.Views
 
             try
             {
-                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
-                    ClientPatcher.VerifyModifiersKeyFixClient(clientPath);
+                var hasRuntimePatches = (applyModifiersKeyFix && version.SupportsModifiersKeyFix) ||
+                                        (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs);
+                var hasClientPatches = (patchMultipleInstances && version.MultipleInstanceAddress > 0) ||
+                                       (patchIntroVideo && version.IntroVideoAddress > 0) ||
+                                       (suppressLoginNotification && version.SupportsLoginNotificationSuppression) ||
+                                       (patchNoWalls && version.NoWallAddress > 0) ||
+                                       hasRuntimePatches;
+                if (hasRuntimePatches)
+                    ClientPatcher.VerifyRuntimePatchClient(clientPath);
 
                 // Patch Process
                 using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
@@ -278,6 +286,18 @@ namespace SleepHunter.Views
                 {
                     logger.LogInfo($"Applying modifiers key fix to process {pid}");
                     ClientPatcher.ApplyModifiersKeyFix(patchStream, process.ProcessHandle);
+                }
+
+                if (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs)
+                {
+                    logger.LogInfo($"Applying item quantities in dialogs patch to process {pid}");
+                    ClientPatcher.ApplyShowItemQuantitiesInDialogs(patchStream, process.ProcessHandle);
+                }
+
+                if (hasClientPatches)
+                {
+                    logger.LogInfo($"Flushing instruction cache for process {pid}");
+                    ClientPatcher.FlushInstructionCache(process.ProcessHandle);
                 }
 
                 patchCompleted = true;
@@ -2182,15 +2202,6 @@ namespace SleepHunter.Views
             // Do nothing for now
         }
 
-        private void equipmentListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            // Only handle left-click
-            if (e.ChangedButton != MouseButton.Left)
-                return;
-
-            // Do nothing for now
-        }
-
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Only handle left-click
@@ -2468,7 +2479,7 @@ namespace SleepHunter.Views
         private void ToggleInventory(bool show = true)
         {
             inventoryTab.IsEnabled = show;
-            inventoryEquipmentToggleGroup.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            equipmentTab.IsEnabled = show;
         }
 
         private void ToggleSkills(bool show = true)

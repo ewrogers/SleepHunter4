@@ -28,6 +28,7 @@ namespace SleepHunter.Settings
         private bool supportsFlowering;
         private bool supportsLoginNotificationSuppression;
         private bool supportsModifiersKeyFix;
+        private bool supportsItemQuantitiesInDialogs;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -101,6 +102,13 @@ namespace SleepHunter.Settings
         {
             get => supportsModifiersKeyFix;
             set => SetProperty(ref supportsModifiersKeyFix, value);
+        }
+
+        [XmlElement]
+        public bool SupportsItemQuantitiesInDialogs
+        {
+            get => supportsItemQuantitiesInDialogs;
+            set => SetProperty(ref supportsItemQuantitiesInDialogs, value);
         }
 
         [XmlIgnore]
