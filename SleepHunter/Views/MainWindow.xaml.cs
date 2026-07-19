@@ -219,6 +219,7 @@ namespace SleepHunter.Views
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
             var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
             var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
+            var allowAltToShowGroundItems = UserSettingsManager.Instance.Settings.AllowAltToShowGroundItems;
             var showItemQuantitiesInDialogs = UserSettingsManager.Instance.Settings.ShowItemQuantitiesInDialogs;
             var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
 
@@ -228,7 +229,10 @@ namespace SleepHunter.Views
 
             try
             {
-                var hasRuntimePatches = (applyModifiersKeyFix && version.SupportsModifiersKeyFix) ||
+                var applyAltGroundItemPatch = allowAltToShowGroundItems && version.SupportsAltToShowGroundItems;
+                var shouldApplyModifiersKeyFix =
+                    (applyModifiersKeyFix || applyAltGroundItemPatch) && version.SupportsModifiersKeyFix;
+                var hasRuntimePatches = shouldApplyModifiersKeyFix || applyAltGroundItemPatch ||
                                         (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs);
                 var hasClientPatches = (patchMultipleInstances && version.MultipleInstanceAddress > 0) ||
                                        (patchIntroVideo && version.IntroVideoAddress > 0) ||
@@ -282,10 +286,16 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x90);        // NOP
                 }
 
-                if (applyModifiersKeyFix && version.SupportsModifiersKeyFix)
+                if (shouldApplyModifiersKeyFix)
                 {
                     logger.LogInfo($"Applying modifiers key fix to process {pid}");
                     ClientPatcher.ApplyModifiersKeyFix(patchStream, process.ProcessHandle);
+                }
+
+                if (applyAltGroundItemPatch)
+                {
+                    logger.LogInfo($"Applying Alt ground-item hints patch to process {pid}");
+                    ClientPatcher.ApplyAllowAltToShowGroundItems(patchStream, process.ProcessHandle);
                 }
 
                 if (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs)

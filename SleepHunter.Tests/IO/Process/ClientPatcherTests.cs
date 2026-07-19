@@ -115,6 +115,118 @@ namespace SleepHunter.Tests.IO.Process
             });
         }
 
+        [Test]
+        public void ShouldBuildGroundItemCollectorStubWithResolvedAddresses()
+        {
+            var moduleBaseAddress = (nint)0x00400000;
+            var stubAddress = (nint)0x10000000;
+            var stateAddress = (nint)0x00B70000;
+
+            var stub = ClientPatcher.BuildGroundItemCollectorStub(
+                moduleBaseAddress, stubAddress, stateAddress);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stub, Has.Length.EqualTo(157));
+                Assert.That(stub[0..11], Is.EqualTo(new byte[]
+                {
+                    0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0x53, 0x56, 0x57, 0x89, 0xCE
+                }));
+                Assert.That(BitConverter.ToUInt32(stub, 0x3A), Is.EqualTo(0x0068B1AC));
+                Assert.That(BitConverter.ToUInt32(stub, 0x4A), Is.EqualTo(0x00B70000));
+                Assert.That(stub[0x4E..0x53], Is.EqualTo(new byte[] { 0x3D, 0xFF, 0x00, 0x00, 0x00 }));
+                Assert.That(BitConverter.ToUInt32(stub, 0x5A), Is.EqualTo(0x00B70100));
+                Assert.That(BitConverter.ToUInt32(stub, 0x70), Is.EqualTo(0x00B70000));
+                Assert.That(BitConverter.ToUInt32(stub, 0x76), Is.EqualTo(0x00B70004));
+                Assert.That(BitConverter.ToUInt32(stub, 0x7E), Is.EqualTo(0x00B70008));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0x98), Is.EqualTo(0x005D3745));
+            });
+        }
+
+        [Test]
+        public void ShouldBuildGroundItemFrameStubWithResolvedAddresses()
+        {
+            var moduleBaseAddress = (nint)0x00400000;
+            var stubAddress = (nint)0x20000000;
+            var stateAddress = (nint)0x00B70000;
+
+            var stub = ClientPatcher.BuildGroundItemFrameStub(moduleBaseAddress, stubAddress, stateAddress);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stub, Has.Length.EqualTo(186));
+                Assert.That(BitConverter.ToUInt32(stub, 0x0D), Is.EqualTo(0x00B70028));
+                Assert.That(BitConverter.ToUInt32(stub, 0x13), Is.EqualTo(0x00B70000));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0x25), Is.EqualTo(0x00427380));
+                Assert.That(stub[0x2E..0x35],
+                    Is.EqualTo(new byte[] { 0xF6, 0x80, 0x34, 0x04, 0x00, 0x00, 0x01 }));
+                Assert.That(BitConverter.ToUInt32(stub, 0x3B), Is.EqualTo(0x00B70000));
+                Assert.That(BitConverter.ToUInt32(stub, 0x46), Is.EqualTo(0x00B70100));
+                Assert.That(BitConverter.ToUInt32(stub, 0x52), Is.EqualTo(0x0068B1AC));
+                Assert.That(BitConverter.ToUInt32(stub, 0x79), Is.EqualTo(0x00B70004));
+                Assert.That(BitConverter.ToUInt32(stub, 0x8D), Is.EqualTo(0x00B70008));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0x91), Is.EqualTo(0x005D3190));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0xB5), Is.EqualTo(0x005CE286));
+            });
+        }
+
+        [TestCase(false, 0x00467C15)]
+        [TestCase(true, 0x00467E35)]
+        public void ShouldBuildRawAltKeyInvalidationStubs(bool keyUp, int expectedContinuation)
+        {
+            var moduleBaseAddress = (nint)0x00400000;
+            var stubAddress = (nint)0x20000000;
+            var stateAddress = (nint)0x00B70000;
+
+            var stub = ClientPatcher.BuildGroundItemKeyTransitionStub(
+                moduleBaseAddress, stubAddress, stateAddress, keyUp);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stub, Has.Length.EqualTo(84));
+                Assert.That(stub[0x1F..0x2C], Is.EqualTo(new byte[]
+                {
+                    0x0F, 0xB6, 0x45, 0x08, 0x83, 0xF8, 0x38, 0x74, 0x07, 0x3D, 0xB8, 0x00, 0x00
+                }));
+                Assert.That(BitConverter.ToUInt32(stub, 0x31), Is.EqualTo(0x00B70028));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0x3B), Is.EqualTo(0x00549F60));
+                Assert.That(GetRelativeTarget(stub, stubAddress, 0x4F), Is.EqualTo(expectedContinuation));
+            });
+        }
+
+        [Test]
+        public void ShouldBuildPaddedJumpsToGroundItemStubs()
+        {
+            var hookAddress = (nint)0x005D3740;
+            var stubAddress = (nint)0x10000000;
+
+            var fiveByteHook = ClientPatcher.BuildGroundItemHook(hookAddress, stubAddress, 5);
+            var sixByteHook = ClientPatcher.BuildGroundItemHook(hookAddress, stubAddress, 6);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(fiveByteHook, Has.Length.EqualTo(5));
+                Assert.That(fiveByteHook[0], Is.EqualTo(0xE9));
+                Assert.That(GetRelativeTarget(fiveByteHook, hookAddress, 0), Is.EqualTo(stubAddress.ToInt64()));
+                Assert.That(sixByteHook, Has.Length.EqualTo(6));
+                Assert.That(sixByteHook[5], Is.EqualTo(0x90));
+                Assert.That(GetRelativeTarget(sixByteHook, hookAddress, 0), Is.EqualTo(stubAddress.ToInt64()));
+            });
+        }
+
+        [Test]
+        public void ShouldLeaveStaticRenderModeSelectorUnchanged()
+        {
+            var expected = ClientPatcher.GetExpectedStaticRenderModeSelector();
+
+            Assert.That(expected, Is.EqualTo(new byte[]
+            {
+                0x8B, 0x55, 0xD0, 0x0F, 0xB6, 0x82, 0xB9, 0x00, 0x00, 0x00, 0x25, 0x80, 0x00, 0x00, 0x00, 0x74,
+                0x09, 0xC7, 0x45, 0xE8, 0x6D, 0x00, 0x00, 0x00, 0xEB, 0x16, 0x8B, 0x4D, 0xD0, 0x0F, 0xB6, 0x91,
+                0xB9, 0x00, 0x00, 0x00, 0x83, 0xE2, 0x40, 0x74, 0x07, 0xC7, 0x45, 0xE8, 0x03, 0x00, 0x00, 0x00
+            }));
+        }
+
         private static long GetRelativeTarget(byte[] code, nint codeAddress, int instructionOffset)
         {
             var relativeOffset = BitConverter.ToInt32(code, instructionOffset + 1);

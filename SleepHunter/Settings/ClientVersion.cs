@@ -28,6 +28,7 @@ namespace SleepHunter.Settings
         private bool supportsFlowering;
         private bool supportsLoginNotificationSuppression;
         private bool supportsModifiersKeyFix;
+        private bool supportsAltToShowGroundItems;
         private bool supportsItemQuantitiesInDialogs;
         private long multipleInstanceAddress;
         private long introVideoAddress;
@@ -102,6 +103,13 @@ namespace SleepHunter.Settings
         {
             get => supportsModifiersKeyFix;
             set => SetProperty(ref supportsModifiersKeyFix, value);
+        }
+
+        [XmlElement]
+        public bool SupportsAltToShowGroundItems
+        {
+            get => supportsAltToShowGroundItems;
+            set => SetProperty(ref supportsAltToShowGroundItems, value);
         }
 
         [XmlElement]

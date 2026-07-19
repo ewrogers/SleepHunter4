@@ -17,6 +17,17 @@ By default, characters are sorted by their `Login Time` (oldest to newest).
 The `Max Health & Mana` option will sort characters by their maximum health and mana, similar to the in-game list.
 The total sort value is `Max HP + (Max MP * 2)`.
 
+## Inventory Icon Size
+
+This setting determines the size of item icons in the [Inventory Tab](../main-window/items-tab.md).
+Icons remain centered at their native size instead of being scaled to fill the slot.
+The default size is `Medium`.
+
+## Inventory Items per Row
+
+This setting determines how many item slots are displayed per row in the [Inventory Tab](../main-window/items-tab.md).
+The default is `12`, similar to the game client.
+
 ## Spell/Skill Icon Size
 
 This setting determines the size of the spell and skill icons in the [Spells Tab](../main-window/spells-tab.md) and [Skills Tab](../main-window/skills-tab.md).

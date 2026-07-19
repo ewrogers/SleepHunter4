@@ -6,11 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.11.0] - 2026-07-18
+
 ### Added
 
 - Added an enabled-by-default client option that displays stack quantities greater than one in inventory-based merchant and storage dialogs, truncating long names with two dots to keep the quantity visible
 - Added inventory item icon rendering from client sprite, palette, and dye assets
 - Added a dedicated icon-based equipment tab matching the client pane layout, with item, sprite, slot, and durability tooltips
+- Added an enabled-by-default client patch that reveals up to 255 ground items as translucent hints while either Alt key is held
 
 ### Fixed
 

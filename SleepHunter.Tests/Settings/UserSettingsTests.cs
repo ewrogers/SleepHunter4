@@ -15,6 +15,7 @@ namespace SleepHunter.Tests.Settings
             var settings = Deserialize("<UserSettings />");
 
             Assert.That(settings.ApplyModifiersKeyFix, Is.True);
+            Assert.That(settings.AllowAltToShowGroundItems, Is.True);
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
         }
 
@@ -34,6 +35,15 @@ namespace SleepHunter.Tests.Settings
                 "<UserSettings><ShowItemQuantitiesInDialogs>false</ShowItemQuantitiesInDialogs></UserSettings>");
 
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.False);
+        }
+
+        [Test]
+        public void ShouldPreserveExplicitlyDisabledAltGroundItems()
+        {
+            var settings = Deserialize(
+                "<UserSettings><AllowAltToShowGroundItems>false</AllowAltToShowGroundItems></UserSettings>");
+
+            Assert.That(settings.AllowAltToShowGroundItems, Is.False);
         }
 
         private static UserSettings Deserialize(string xml)
