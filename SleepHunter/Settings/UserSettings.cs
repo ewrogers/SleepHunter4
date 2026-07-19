@@ -30,6 +30,8 @@ namespace SleepHunter.Settings
         private bool applyModifiersKeyFix = true;
         private bool allowAltToShowGroundItems = true;
         private bool showItemQuantitiesInDialogs = true;
+        private bool makeExchangeDialogDraggable = true;
+        private bool showExchangeResultsInMessageBar;
         private double inventoryIconSize = 46;
         private double skillIconSize = 46;
         private int inventoryGridWidth = 12;
@@ -353,6 +355,20 @@ namespace SleepHunter.Settings
             set => SetProperty(ref showItemQuantitiesInDialogs, value);
         }
 
+        [XmlElement("MakeExchangeDialogDraggable")]
+        public bool MakeExchangeDialogDraggable
+        {
+            get => makeExchangeDialogDraggable;
+            set => SetProperty(ref makeExchangeDialogDraggable, value);
+        }
+
+        [XmlElement("ShowExchangeResultsInMessageBar")]
+        public bool ShowExchangeResultsInMessageBar
+        {
+            get => showExchangeResultsInMessageBar;
+            set => SetProperty(ref showExchangeResultsInMessageBar, value);
+        }
+
         [XmlElement("NoWalls")]
         public bool NoWalls
         {
@@ -595,6 +611,8 @@ namespace SleepHunter.Settings
             ApplyModifiersKeyFix = true;
             AllowAltToShowGroundItems = true;
             ShowItemQuantitiesInDialogs = true;
+            MakeExchangeDialogDraggable = true;
+            ShowExchangeResultsInMessageBar = false;
             NoWalls = false;
 
             MapChangeAction = MacroAction.Stop;

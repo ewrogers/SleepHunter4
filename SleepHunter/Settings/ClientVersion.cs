@@ -30,6 +30,8 @@ namespace SleepHunter.Settings
         private bool supportsModifiersKeyFix;
         private bool supportsAltToShowGroundItems;
         private bool supportsItemQuantitiesInDialogs;
+        private bool supportsDraggableExchangeDialog;
+        private bool supportsExchangeResultsInMessageBar;
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
@@ -117,6 +119,20 @@ namespace SleepHunter.Settings
         {
             get => supportsItemQuantitiesInDialogs;
             set => SetProperty(ref supportsItemQuantitiesInDialogs, value);
+        }
+
+        [XmlElement]
+        public bool SupportsDraggableExchangeDialog
+        {
+            get => supportsDraggableExchangeDialog;
+            set => SetProperty(ref supportsDraggableExchangeDialog, value);
+        }
+
+        [XmlElement]
+        public bool SupportsExchangeResultsInMessageBar
+        {
+            get => supportsExchangeResultsInMessageBar;
+            set => SetProperty(ref supportsExchangeResultsInMessageBar, value);
         }
 
         [XmlIgnore]

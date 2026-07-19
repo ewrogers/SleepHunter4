@@ -11,6 +11,8 @@
       <SupportsModifiersKeyFix>true</SupportsModifiersKeyFix>
       <SupportsAltToShowGroundItems>true</SupportsAltToShowGroundItems>
       <SupportsItemQuantitiesInDialogs>true</SupportsItemQuantitiesInDialogs>
+      <SupportsDraggableExchangeDialog>true</SupportsDraggableExchangeDialog>
+      <SupportsExchangeResultsInMessageBar>true</SupportsExchangeResultsInMessageBar>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>
       <NoWallAddress>5FD874</NoWallAddress>

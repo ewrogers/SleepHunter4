@@ -480,7 +480,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
@@ -542,85 +541,130 @@
                                   SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedVersion}"
                                   Margin="0,2"/>
                     </StackPanel>
-
-                    <Separator Grid.Row="2" 
-            		           Style="{StaticResource ObsidianSeparator}"
-            		           Margin="4,6"/>
-
-                    <StackPanel Grid.Row="3"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                Margin="116,8,0,0">
-
-                        <!-- Patch Multiple Instance CheckBox -->
-                        <CheckBox Name="patchMultipleInstanceCheckBox"
-                                    Style="{StaticResource ObsidianCheckBox}"
-                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
-                                    Margin="8"
-                                    ToolTip="This will patch the client to allow multiple instances to be launched.">
-                            Allow _Multiple Instances
-                        </CheckBox>
-
-                        <!-- Patch Intro Video CheckBox -->
-                        <CheckBox Name="patchIntroVideoCheckBox"
-                                    Style="{StaticResource ObsidianCheckBox}"
-                                    IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
-                                    Margin="8"
-                                    ToolTip="This will patch the client to skip the introduction video.">
-                            Skip Intro _Video
-                        </CheckBox>
-
-                        <!-- Suppress Login Notification CheckBox -->
-                        <CheckBox Name="suppressLoginNotificationCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SuppressLoginNotification}"
-                                  Margin="8"
-                                  ToolTip="This will bypass the login notification and its transfer delay for supported clients.">
-                            Suppress _Login Notification
-                        </CheckBox>
-
-                        <!-- Apply Modifiers Key Fix CheckBox -->
-                        <CheckBox Name="applyModifiersKeyFixCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ApplyModifiersKeyFix}"
-                                  Margin="8"
-                                  ToolTip="This will clear held keys and modifiers when the client loses focus.">
-                            Apply _Modifiers Key Fix
-                        </CheckBox>
-
-                        <!-- Allow Alt to Show Ground Items CheckBox -->
-                        <CheckBox Name="allowAltToShowGroundItemsCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowAltToShowGroundItems}"
-                                  Margin="8"
-                                  ToolTip="Hold either Alt key to reveal up to 255 ground items through static map art. This also enables modifier cleanup on focus loss.">
-                            Show Ground Items with _Alt
-                        </CheckBox>
-
-                        <!-- Show Item Quantities in Dialogs CheckBox -->
-                        <CheckBox Name="showItemQuantitiesInDialogsCheckBox"
-                                  Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowItemQuantitiesInDialogs}"
-                                  Margin="8"
-                                  ToolTip="Adds the current quantity in parentheses to stackable item names in inventory-based merchant and storage dialogs.">
-                            Show Item _Quantities in Dialogs
-                        </CheckBox>
-
-                        <!-- Patch Walls CheckBox -->
-                        <CheckBox Name="patchNoWallsCheckBox"
-                                   Style="{StaticResource ObsidianCheckBox}"
-                                   IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
-                                   Margin="8"
-                                   ToolTip="This will patch the client to not render foreground (wall) tiles.">
-                            No Foreground _Walls
-                        </CheckBox>
-                    </StackPanel>
                 </Grid>
             </TabItem>
 
+            <!-- Patches Tab -->
+            <TabItem Header="_Patches" TabIndex="3">
+                <TabControl Style="{StaticResource ObsidianTabControl}"
+                            Margin="24,16,24,24">
+                    <!-- Startup Patches -->
+                    <TabItem Header="_Startup">
+                        <StackPanel Orientation="Vertical"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="24,12,0,0">
+                            <!-- Patch Multiple Instance CheckBox -->
+                            <CheckBox Name="patchMultipleInstanceCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
+                                      Margin="8"
+                                      ToolTip="This will patch the client to allow multiple instances to be launched.">
+                                Allow _Multiple Instances
+                            </CheckBox>
+
+                            <!-- Patch Intro Video CheckBox -->
+                            <CheckBox Name="patchIntroVideoCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
+                                      Margin="8"
+                                      ToolTip="This will patch the client to skip the introduction video.">
+                                Skip Intro _Video
+                            </CheckBox>
+
+                            <!-- Suppress Login Notification CheckBox -->
+                            <CheckBox Name="suppressLoginNotificationCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SuppressLoginNotification}"
+                                      Margin="8"
+                                      ToolTip="This will bypass the login notification and its transfer delay for supported clients.">
+                                Suppress _Login Notification
+                            </CheckBox>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Input Patches -->
+                    <TabItem Header="_Input">
+                        <StackPanel Orientation="Vertical"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="24,12,0,0">
+                            <!-- Apply Modifiers Key Fix CheckBox -->
+                            <CheckBox Name="applyModifiersKeyFixCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ApplyModifiersKeyFix}"
+                                      Margin="8"
+                                      ToolTip="This will clear held keys and modifiers when the client loses focus.">
+                                Apply _Modifiers Key Fix
+                            </CheckBox>
+
+                            <!-- Allow Alt to Show Ground Items CheckBox -->
+                            <CheckBox Name="allowAltToShowGroundItemsCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowAltToShowGroundItems}"
+                                      Margin="8"
+                                      ToolTip="Hold either Alt key to reveal up to 255 ground items through static map art. This also enables modifier cleanup on focus loss.">
+                                Show Ground Items with _Alt
+                            </CheckBox>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Render Patches -->
+                    <TabItem Header="_Render">
+                        <StackPanel Orientation="Vertical"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="24,12,0,0">
+                            <!-- Patch Walls CheckBox -->
+                            <CheckBox Name="patchNoWallsCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
+                                      Margin="8"
+                                      ToolTip="This will patch the client to not render foreground (wall) tiles.">
+                                No Foreground _Walls
+                            </CheckBox>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Interface Patches -->
+                    <TabItem Header="Inter_face">
+                        <StackPanel Orientation="Vertical"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="24,12,0,0">
+                            <!-- Show Item Quantities in Dialogs CheckBox -->
+                            <CheckBox Name="showItemQuantitiesInDialogsCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowItemQuantitiesInDialogs}"
+                                      Margin="8"
+                                      ToolTip="Adds the current quantity in parentheses to stackable item names in inventory-based merchant and storage dialogs.">
+                                Show Item _Quantities in Dialogs
+                            </CheckBox>
+
+                            <!-- Make Exchange Dialog Draggable CheckBox -->
+                            <CheckBox Name="makeExchangeDialogDraggableCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.MakeExchangeDialogDraggable}"
+                                      Margin="8"
+                                      ToolTip="Allows the exchange window to be dragged to a different position.">
+                                Make Exchange Window _Draggable
+                            </CheckBox>
+
+                            <!-- Show Exchange Results in Message Bar CheckBox -->
+                            <CheckBox Name="showExchangeResultsInMessageBarCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowExchangeResultsInMessageBar}"
+                                      Margin="8"
+                                      ToolTip="Shows final accepted and cancelled exchange messages in the floating message bar instead of popups.">
+                                Show Exchange _Results in Message Bar
+                            </CheckBox>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
             <!-- All Macros Tab -->
-            <TabItem Header="_All Macros" TabIndex="3">
+            <TabItem Header="_All Macros" TabIndex="4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -722,7 +766,7 @@
             </TabItem>
 
             <!-- Skill Tab -->
-            <TabItem Header="S_kill Macros" TabIndex="4">
+            <TabItem Header="S_kill Macros" TabIndex="5">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -766,7 +810,7 @@
             </TabItem>
 
             <!-- Spell Tab -->
-            <TabItem Header="S_pell Macros" TabIndex="5">
+            <TabItem Header="_Spell Macros" TabIndex="6">
                 <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                               CanContentScroll="True"
                               HorizontalScrollBarVisibility="Disabled"
@@ -995,7 +1039,7 @@
             </TabItem>
 
             <!-- Flowering Tab -->
-            <TabItem Header="_Flowering" TabIndex="6">
+            <TabItem Header="_Flowering" TabIndex="7">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1065,7 +1109,7 @@
             </TabItem>
 
             <!-- Updates Tab -->
-            <TabItem Header="_Updates" TabIndex="7">
+            <TabItem Header="_Updates" TabIndex="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1198,7 +1242,7 @@
             </TabItem>
 
             <!-- Debug Tab -->
-            <TabItem Header="_Debug" TabIndex="8">
+            <TabItem Header="_Debug" TabIndex="9">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1236,7 +1280,7 @@
             </TabItem>
 
             <!-- About Tab -->
-            <TabItem Header="A_bout" TabIndex="9">
+            <TabItem Header="A_bout" TabIndex="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

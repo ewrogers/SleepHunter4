@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.11.1] - 2026-07-18
+
+### Added
+
+- Added independent client options for a draggable exchange window (enabled by default) and exchange results in the floating message bar (disabled by default)
+- Added a dedicated Patches settings section with Startup, Input, Render, and Interface tabs for organizing client launch patches
+
 ## [4.11.0] - 2026-07-18
 
 ### Added

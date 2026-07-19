@@ -46,6 +46,7 @@
 - [General Settings](./settings/general.md)
 - [User Interface](./settings/user-interface.md)
 - [Game Client](./settings/game-client.md)
+- [Patches](./settings/patches.md)
 - [All Macros](./settings/all-macros.md)
 - [Skill Macros](./settings/skill-macros.md)
 - [Spell Macros](./settings/spell-macros.md)
