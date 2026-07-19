@@ -9,7 +9,7 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.IO.Process
 {
-    internal static class ClientPatcher
+    internal static partial class ClientPatcher
     {
         private const long SupportedClientSize = 3_112_960;
         private const string SupportedClientSha256 =

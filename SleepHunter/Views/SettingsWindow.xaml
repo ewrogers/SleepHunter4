@@ -589,6 +589,15 @@
                             Apply _Modifiers Key Fix
                         </CheckBox>
 
+                        <!-- Allow Alt to Show Ground Items CheckBox -->
+                        <CheckBox Name="allowAltToShowGroundItemsCheckBox"
+                                  Style="{StaticResource ObsidianCheckBox}"
+                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowAltToShowGroundItems}"
+                                  Margin="8"
+                                  ToolTip="Hold either Alt key to reveal up to 255 ground items through static map art. This also enables modifier cleanup on focus loss.">
+                            Show Ground Items with _Alt
+                        </CheckBox>
+
                         <!-- Show Item Quantities in Dialogs CheckBox -->
                         <CheckBox Name="showItemQuantitiesInDialogsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"

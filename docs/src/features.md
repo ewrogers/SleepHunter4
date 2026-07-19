@@ -20,8 +20,12 @@ Uses client signature to differentiate between varying client versions (includin
 
 ### Runtime Patching
 
-SleepHunter can launch new game client instances and patch them at runtime, allowing tweaks such as multiple instances
-and skipping the intro video on startup. This is useful for running multiple characters together.
+SleepHunter can launch new game client instances and patch supported versions at runtime. Available tweaks include allowing
+multiple instances, skipping the intro video, suppressing the login delay, cleaning up stuck modifier keys, showing ground
+items while Alt is held, displaying stack quantities in merchant and storage dialogs, and hiding foreground walls.
+
+Runtime patches are signature-checked and applied before the suspended client is allowed to start. If a required patch
+cannot be verified or applied, SleepHunter stops that launch instead of running a partially patched client.
 
 ### Character State Reading
 

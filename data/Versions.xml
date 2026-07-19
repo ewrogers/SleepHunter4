@@ -9,6 +9,7 @@
       <SupportsFlowering>true</SupportsFlowering>
       <SupportsLoginNotificationSuppression>true</SupportsLoginNotificationSuppression>
       <SupportsModifiersKeyFix>true</SupportsModifiersKeyFix>
+      <SupportsAltToShowGroundItems>true</SupportsAltToShowGroundItems>
       <SupportsItemQuantitiesInDialogs>true</SupportsItemQuantitiesInDialogs>
       <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
       <IntroVideoAddress>42E61F</IntroVideoAddress>

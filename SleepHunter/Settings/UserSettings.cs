@@ -28,6 +28,7 @@ namespace SleepHunter.Settings
         private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
         private bool suppressLoginNotification = true;
         private bool applyModifiersKeyFix = true;
+        private bool allowAltToShowGroundItems = true;
         private bool showItemQuantitiesInDialogs = true;
         private double inventoryIconSize = 46;
         private double skillIconSize = 46;
@@ -338,6 +339,13 @@ namespace SleepHunter.Settings
             set => SetProperty(ref applyModifiersKeyFix, value);
         }
 
+        [XmlElement("AllowAltToShowGroundItems")]
+        public bool AllowAltToShowGroundItems
+        {
+            get => allowAltToShowGroundItems;
+            set => SetProperty(ref allowAltToShowGroundItems, value);
+        }
+
         [XmlElement("ShowItemQuantitiesInDialogs")]
         public bool ShowItemQuantitiesInDialogs
         {
@@ -585,6 +593,7 @@ namespace SleepHunter.Settings
             SkipIntroVideo = true;
             SuppressLoginNotification = true;
             ApplyModifiersKeyFix = true;
+            AllowAltToShowGroundItems = true;
             ShowItemQuantitiesInDialogs = true;
             NoWalls = false;
 

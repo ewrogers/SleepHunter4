@@ -107,6 +107,11 @@ namespace SleepHunter.Win32
         internal static extern nint VirtualAllocEx(nint processHandle, nint baseAddress, nuint size,
             VirtualMemoryAllocationType allocationType, VirtualMemoryProtection protection);
 
+        [DllImport("kernel32", EntryPoint = "VirtualFreeEx", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool VirtualFreeEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryFreeType freeType);
+
         [DllImport("kernel32", EntryPoint = "VirtualProtectEx", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool VirtualProtectEx(nint processHandle, nint baseAddress, nuint size,

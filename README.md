@@ -24,6 +24,24 @@ Dark Ages Automation Tool + Updater
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
 
+### Game Client Launcher Patches
+
+When you start Dark Ages from the SleepHunter toolbar, SleepHunter launches the client in a suspended state and applies the enabled patches from `Settings->Game Client` before allowing it to run. Starting Dark Ages directly does not apply these patches, and changing a patch setting does not affect clients that are already running.
+
+The available launcher patches provide the following benefits:
+
+- **Allow Multiple Instances** lets you run more than one Dark Ages client at the same time.
+- **Skip Intro Video** takes you directly to the login flow.
+- **Suppress Login Notification** removes the login notice and its associated transfer delay.
+- **Apply Modifiers Key Fix** clears held keys when the client loses focus, preventing Alt, Ctrl, or Shift from becoming stuck.
+- **Show Ground Items with Alt** reveals up to 255 ground items as translucent hints while either Alt key is held, including items hidden behind static map art.
+- **Show Item Quantities in Dialogs** adds stack quantities to item names in inventory-based merchant and storage dialogs.
+- **No Foreground Walls** hides foreground wall tiles to make obscured areas and items easier to see.
+
+All quality-of-life patches above are enabled by default except **No Foreground Walls**. Patches are applied only to client versions that explicitly support them. Runtime hooks are signature-checked, and SleepHunter stops the suspended launch if a required patch cannot be verified or applied rather than starting a partially patched client.
+
+See [Game Client Settings](./docs/src/settings/game-client.md) for the full option reference.
+
 ## Zolian Support ⭕
 
 As of version 4.8.0 and newer, SleepHunter now supports the [Zolian 9.1.1+ client](https://www.thebucknetwork.com/Zolian) out of the box.
