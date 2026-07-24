@@ -112,6 +112,12 @@ namespace SleepHunter.Models
             if (snapshot.Length != snapshotLength)
                 throw new EndOfStreamException("The inventory snapshot was incomplete.");
 
+            if (!inventoryVariable.TryDereferenceValue(reader, out var currentBasePointer) ||
+                currentBasePointer != basePointer)
+            {
+                return;
+            }
+
             var records = ParseInventorySnapshot(snapshot, entryCount);
             var paneRecords = ReadInventoryPaneRecords(version, records);
 
@@ -124,13 +130,18 @@ namespace SleepHunter.Models
                 inventory[i].Color = record.DyeColor;
                 inventory[i].IsGold = false;
                 inventory[i].Name = record.Name;
+                var hasMatchingPane = HasMatchingPaneRecord(record, paneRecords[i], i + 1);
+                inventory[i].ClientDisplayName = hasMatchingPane
+                    ? paneRecords[i].DisplayName
+                    : record.Name;
+                inventory[i].CanStack = hasMatchingPane && paneRecords[i].CanStack;
                 inventory[i].Quantity = record.IsPresent
-                    ? GetQuantity(record, paneRecords[i])
+                    ? GetQuantity(record, paneRecords[i], i + 1)
                     : 0;
-                inventory[i].MaximumDurability = HasMatchingPaneRecord(record, paneRecords[i])
+                inventory[i].MaximumDurability = hasMatchingPane
                     ? paneRecords[i].MaximumDurability
                     : 0;
-                inventory[i].Durability = HasMatchingPaneRecord(record, paneRecords[i])
+                inventory[i].Durability = hasMatchingPane
                     ? paneRecords[i].Durability
                     : 0;
                 inventory[i].Icon = record.IsPresent
@@ -181,6 +192,12 @@ namespace SleepHunter.Models
                         // Keep the compact-record fallback for this slot.
                     }
                 }
+
+                if (!panesVariable.TryDereferenceValue(reader, out var currentPanePointersAddress) ||
+                    currentPanePointersAddress != panePointersAddress)
+                {
+                    return new InventoryPaneRecord[inventoryRecords.Count];
+                }
             }
             catch
             {
@@ -190,16 +207,24 @@ namespace SleepHunter.Models
             return paneRecords;
         }
 
-        private static int GetQuantity(InventoryRecord inventoryRecord, InventoryPaneRecord paneRecord)
+        private static int GetQuantity(
+            InventoryRecord inventoryRecord,
+            InventoryPaneRecord paneRecord,
+            int expectedSlot)
         {
-            if (!HasMatchingPaneRecord(inventoryRecord, paneRecord) || paneRecord.Quantity == 0)
+            if (!HasMatchingPaneRecord(inventoryRecord, paneRecord, expectedSlot) || paneRecord.Quantity == 0)
                 return 1;
 
             return paneRecord.Quantity > int.MaxValue ? int.MaxValue : (int)paneRecord.Quantity;
         }
 
-        private static bool HasMatchingPaneRecord(InventoryRecord inventoryRecord, InventoryPaneRecord paneRecord) =>
-            paneRecord.IsValid && paneRecord.RawSprite == inventoryRecord.RawSprite;
+        private static bool HasMatchingPaneRecord(
+            InventoryRecord inventoryRecord,
+            InventoryPaneRecord paneRecord,
+            int expectedSlot) =>
+            paneRecord.IsValid &&
+            paneRecord.Slot == expectedSlot &&
+            paneRecord.RawSprite == inventoryRecord.RawSprite;
 
         internal static InventoryRecord[] ParseInventorySnapshot(ReadOnlySpan<byte> snapshot, int recordCount)
         {
@@ -245,9 +270,11 @@ namespace SleepHunter.Models
             return new InventoryPaneRecord(
                 true,
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(snapshot),
+                ReadNullTerminatedAscii(snapshot.Slice(0x02, 0x80)),
                 snapshot[0x82],
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xAC, 4)),
+                snapshot[0x84],
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
+                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xAC, 4)),
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xB0, 4)),
                 snapshot[0xB4] != 0);
         }
@@ -255,11 +282,22 @@ namespace SleepHunter.Models
         internal readonly record struct InventoryPaneRecord(
             bool IsValid,
             ushort RawSprite,
+            string DisplayName,
             byte DyeColor,
+            byte Slot,
             uint MaximumDurability,
             uint Durability,
             uint Quantity,
             bool CanStack);
+
+        private static string ReadNullTerminatedAscii(ReadOnlySpan<byte> bytes)
+        {
+            var terminator = bytes.IndexOf((byte)0);
+            if (terminator >= 0)
+                bytes = bytes[..terminator];
+
+            return Encoding.ASCII.GetString(bytes);
+        }
 
         private void UpdateGold()
         {
@@ -292,6 +330,8 @@ namespace SleepHunter.Models
             inventory[InventoryCount - 1].Color = 0;
             inventory[InventoryCount - 1].IsGold = true;
             inventory[InventoryCount - 1].Name = "Gold";
+            inventory[InventoryCount - 1].ClientDisplayName = "Gold";
+            inventory[InventoryCount - 1].CanStack = true;
             inventory[InventoryCount - 1].Quantity = Gold;
             inventory[InventoryCount - 1].MaximumDurability = 0;
             inventory[InventoryCount - 1].Durability = 0;
@@ -321,6 +361,8 @@ namespace SleepHunter.Models
                 inventory[i].Color = 0;
                 inventory[i].IsGold = false;
                 inventory[i].Name = null;
+                inventory[i].ClientDisplayName = null;
+                inventory[i].CanStack = false;
                 inventory[i].Quantity = 0;
                 inventory[i].MaximumDurability = 0;
                 inventory[i].Durability = 0;

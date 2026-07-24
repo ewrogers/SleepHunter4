@@ -15,6 +15,25 @@ namespace SleepHunter.Models
         private const string MaximumManaKey = @"MaximumMana";
         private const string LevelKey = @"Level";
         private const string AbilityLevelKey = @"AbilityLevel";
+        private const string TotalExperienceKey = @"TotalExperience";
+        private const string StrengthKey = @"Strength";
+        private const string DexterityKey = @"Dexterity";
+        private const string WisdomKey = @"Wisdom";
+        private const string ConstitutionKey = @"Constitution";
+        private const string IntelligenceKey = @"Intelligence";
+        private const string StatPointsKey = @"StatPoints";
+        private const string ExperienceToNextLevelKey = @"ExperienceToNextLevel";
+        private const string GamePointsKey = @"GamePoints";
+        private const string AbilityToNextLevelKey = @"AbilityToNextLevel";
+        private const string TotalAbilityKey = @"TotalAbility";
+        private const string WeightKey = @"Weight";
+        private const string MaximumWeightKey = @"MaximumWeight";
+        private const string ArmorClassKey = @"ArmorClass";
+        private const string DamageModifierKey = @"DamageModifier";
+        private const string HitModifierKey = @"HitModifier";
+        private const string AttackElementKey = @"AttackElement";
+        private const string DefenseElementKey = @"DefenseElement";
+        private const string MagicResistanceKey = @"MagicResistance";
 
         private readonly Stream stream;
         private readonly BinaryReader reader;
@@ -25,6 +44,25 @@ namespace SleepHunter.Models
         private int maximumMana;
         private int level;
         private int abilityLevel;
+        private long totalExperience;
+        private int strength;
+        private int dexterity;
+        private int wisdom;
+        private int constitution;
+        private int intelligence;
+        private int statPoints;
+        private long experienceToNextLevel;
+        private long gamePoints;
+        private long abilityToNextLevel;
+        private long totalAbility;
+        private int weight;
+        private int maximumWeight;
+        private int armorClass;
+        private int damageModifier;
+        private int hitModifier;
+        private PlayerElement? attackElement;
+        private PlayerElement? defenseElement;
+        private int magicResistanceUnits;
 
         public Player Owner { get; init;  }
 
@@ -96,6 +134,125 @@ namespace SleepHunter.Models
             set => SetProperty(ref abilityLevel, value);
         }
 
+        public long TotalExperience
+        {
+            get => totalExperience;
+            set => SetProperty(ref totalExperience, value);
+        }
+
+        public int Strength
+        {
+            get => strength;
+            set => SetProperty(ref strength, value);
+        }
+
+        public int Dexterity
+        {
+            get => dexterity;
+            set => SetProperty(ref dexterity, value);
+        }
+
+        public int Wisdom
+        {
+            get => wisdom;
+            set => SetProperty(ref wisdom, value);
+        }
+
+        public int Constitution
+        {
+            get => constitution;
+            set => SetProperty(ref constitution, value);
+        }
+
+        public int Intelligence
+        {
+            get => intelligence;
+            set => SetProperty(ref intelligence, value);
+        }
+
+        public int StatPoints
+        {
+            get => statPoints;
+            set => SetProperty(ref statPoints, value);
+        }
+
+        public long ExperienceToNextLevel
+        {
+            get => experienceToNextLevel;
+            set => SetProperty(ref experienceToNextLevel, value);
+        }
+
+        public long GamePoints
+        {
+            get => gamePoints;
+            set => SetProperty(ref gamePoints, value);
+        }
+
+        public long AbilityToNextLevel
+        {
+            get => abilityToNextLevel;
+            set => SetProperty(ref abilityToNextLevel, value);
+        }
+
+        public long TotalAbility
+        {
+            get => totalAbility;
+            set => SetProperty(ref totalAbility, value);
+        }
+
+        public int Weight
+        {
+            get => weight;
+            set => SetProperty(ref weight, value);
+        }
+
+        public int MaximumWeight
+        {
+            get => maximumWeight;
+            set => SetProperty(ref maximumWeight, value);
+        }
+
+        public int ArmorClass
+        {
+            get => armorClass;
+            set => SetProperty(ref armorClass, value);
+        }
+
+        public int DamageModifier
+        {
+            get => damageModifier;
+            set => SetProperty(ref damageModifier, value);
+        }
+
+        public int HitModifier
+        {
+            get => hitModifier;
+            set => SetProperty(ref hitModifier, value);
+        }
+
+        public PlayerElement? AttackElement
+        {
+            get => attackElement;
+            set => SetProperty(ref attackElement, value);
+        }
+
+        public PlayerElement? DefenseElement
+        {
+            get => defenseElement;
+            set => SetProperty(ref defenseElement, value);
+        }
+
+        public int MagicResistanceUnits
+        {
+            get => magicResistanceUnits;
+            set => SetProperty(
+                ref magicResistanceUnits,
+                value,
+                onChanged: (_) => RaisePropertyChanged(nameof(MagicResistancePercent)));
+        }
+
+        public int MagicResistancePercent => MagicResistanceUnits * 10;
+
         public PlayerStats(Player owner)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -115,48 +272,31 @@ namespace SleepHunter.Models
                 return;
             }
 
-            var hpVariable = version.GetVariable(CurrentHealthKey);
-            var maxHpVariable = version.GetVariable(MaximumHealthKey);
-            var mpVariable = version.GetVariable(CurrentManaKey);
-            var maxMpVariable = version.GetVariable(MaximumManaKey);
-            var levelVariable = version.GetVariable(LevelKey);
-            var abVariable = version.GetVariable(AbilityLevelKey);
-
-            // Current Health
-            if (hpVariable != null && hpVariable.TryReadIntegerString(reader, out var currentHealth))
-                CurrentHealth = (int)currentHealth;
-            else
-                CurrentHealth = 0;
-
-            // Max Health
-            if (maxHpVariable != null && maxHpVariable.TryReadIntegerString(reader, out var maximumHealth))
-                MaximumHealth = (int)maximumHealth;
-            else
-                MaximumHealth = 0;
-
-            // Current Mana
-            if (mpVariable != null && mpVariable.TryReadIntegerString(reader, out var currentMana))
-                CurrentMana = (int)currentMana;
-            else
-                CurrentMana = 0;
-
-            // Max Mana
-            if (maxMpVariable != null && maxMpVariable.TryReadIntegerString(reader, out var maximumMana))
-                MaximumMana = (int)maximumMana;
-            else
-                MaximumMana = 0;
-
-            // Level
-            if (levelVariable != null && levelVariable.TryReadIntegerString(reader, out var level))
-                Level = (int)level;
-            else
-                Level = 0;
-
-            // Ability Level
-            if (abVariable != null && abVariable.TryReadIntegerString(reader, out var abilityLevel))
-                AbilityLevel = (int)abilityLevel;
-            else
-                AbilityLevel = 0;
+            CurrentHealth = ReadInt32(version, CurrentHealthKey);
+            MaximumHealth = ReadInt32(version, MaximumHealthKey);
+            CurrentMana = ReadInt32(version, CurrentManaKey);
+            MaximumMana = ReadInt32(version, MaximumManaKey);
+            Level = ReadInt32(version, LevelKey);
+            AbilityLevel = ReadInt32(version, AbilityLevelKey);
+            TotalExperience = ReadInt64(version, TotalExperienceKey);
+            Strength = ReadInt32(version, StrengthKey);
+            Dexterity = ReadInt32(version, DexterityKey);
+            Wisdom = ReadInt32(version, WisdomKey);
+            Constitution = ReadInt32(version, ConstitutionKey);
+            Intelligence = ReadInt32(version, IntelligenceKey);
+            StatPoints = ReadInt32(version, StatPointsKey);
+            ExperienceToNextLevel = ReadInt64(version, ExperienceToNextLevelKey);
+            GamePoints = ReadInt64(version, GamePointsKey);
+            AbilityToNextLevel = ReadInt64(version, AbilityToNextLevelKey);
+            TotalAbility = ReadInt64(version, TotalAbilityKey);
+            Weight = ReadInt32(version, WeightKey);
+            MaximumWeight = ReadInt32(version, MaximumWeightKey);
+            ArmorClass = ReadInt32(version, ArmorClassKey);
+            DamageModifier = ReadInt32(version, DamageModifierKey);
+            HitModifier = ReadInt32(version, HitModifierKey);
+            AttackElement = ReadElement(version, AttackElementKey);
+            DefenseElement = ReadElement(version, DefenseElementKey);
+            MagicResistanceUnits = ReadInt32(version, MagicResistanceKey);
         }
 
         protected override void Dispose(bool isDisposing)
@@ -181,6 +321,60 @@ namespace SleepHunter.Models
             MaximumMana = 0;
             Level = 0;
             AbilityLevel = 0;
+            TotalExperience = 0;
+            Strength = 0;
+            Dexterity = 0;
+            Wisdom = 0;
+            Constitution = 0;
+            Intelligence = 0;
+            StatPoints = 0;
+            ExperienceToNextLevel = 0;
+            GamePoints = 0;
+            AbilityToNextLevel = 0;
+            TotalAbility = 0;
+            Weight = 0;
+            MaximumWeight = 0;
+            ArmorClass = 0;
+            DamageModifier = 0;
+            HitModifier = 0;
+            AttackElement = null;
+            DefenseElement = null;
+            MagicResistanceUnits = 0;
+        }
+
+        private int ReadInt32(Settings.ClientVersion version, string key)
+        {
+            var value = ReadInt64(version, key);
+            if (value < int.MinValue || value > int.MaxValue)
+                return 0;
+
+            return (int)value;
+        }
+
+        private long ReadInt64(Settings.ClientVersion version, string key)
+            => ReadInt64(version, key, out _);
+
+        private long ReadInt64(Settings.ClientVersion version, string key, out bool wasRead)
+        {
+            wasRead = false;
+
+            var variable = version.GetVariable(key);
+            if (variable == null || !variable.TryReadInteger(reader, out var value))
+                return 0;
+
+            wasRead = true;
+            return value;
+        }
+
+        private PlayerElement? ReadElement(Settings.ClientVersion version, string key)
+        {
+            var value = ReadInt64(version, key, out var wasRead);
+            if (!wasRead)
+                return null;
+
+            return value >= (int)PlayerElement.None && value <= (int)PlayerElement.Undead
+                ? (PlayerElement)value
+                : null;
         }
     }
 }

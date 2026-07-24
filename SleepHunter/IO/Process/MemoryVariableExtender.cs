@@ -288,5 +288,88 @@ namespace SleepHunter.IO.Process
             }
             catch { return false; }
         }
+
+        public static bool TryReadSByte(this MemoryVariable variable, BinaryReader reader, out sbyte value)
+        {
+            value = 0;
+
+            try
+            {
+                var address = DereferenceValue(variable, reader);
+
+                if (address == 0)
+                    return false;
+
+                reader.BaseStream.Position = address;
+
+                value = reader.ReadSByte();
+                return true;
+            }
+            catch { return false; }
+        }
+
+        public static bool TryReadInteger(this MemoryVariable variable, BinaryReader reader, out long value)
+        {
+            value = 0;
+
+            if (variable == null)
+                return false;
+
+            switch (variable.ValueType)
+            {
+                case MemoryValueType.Byte:
+                    if (variable.TryReadByte(reader, out var byteValue))
+                    {
+                        value = byteValue;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.SByte:
+                    if (variable.TryReadSByte(reader, out var sbyteValue))
+                    {
+                        value = sbyteValue;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.Int16:
+                    if (variable.TryReadInt16(reader, out var int16Value))
+                    {
+                        value = int16Value;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.UInt16:
+                    if (variable.TryReadUInt16(reader, out var uint16Value))
+                    {
+                        value = uint16Value;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.Int32:
+                    if (variable.TryReadInt32(reader, out var int32Value))
+                    {
+                        value = int32Value;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.UInt32:
+                    if (variable.TryReadUInt32(reader, out var uint32Value))
+                    {
+                        value = uint32Value;
+                        return true;
+                    }
+                    break;
+
+                case MemoryValueType.String:
+                    return variable.TryReadIntegerString(reader, out value);
+            }
+
+            return false;
+        }
     }
 }

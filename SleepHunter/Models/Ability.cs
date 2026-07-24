@@ -27,6 +27,10 @@ namespace SleepHunter.Models
         private int manaCost;
         private bool canImprove;
         private bool isActive;
+        private bool isActionDelayed;
+        private int clientNameSuffixLeft;
+        private int clientNameSuffixRight;
+        private int clientBaseNameLength;
 
         public bool IsEmpty
         {
@@ -81,6 +85,12 @@ namespace SleepHunter.Models
             set => SetProperty(ref isOnCooldown, value);
         }
 
+        public bool IsActionDelayed
+        {
+            get => isActionDelayed;
+            set => SetProperty(ref isActionDelayed, value);
+        }
+
         public TimeSpan Cooldown
         {
             get => cooldown;
@@ -115,6 +125,24 @@ namespace SleepHunter.Models
         {
             get => canImprove;
             set => SetProperty(ref canImprove, value);
+        }
+
+        public int ClientNameSuffixLeft
+        {
+            get => clientNameSuffixLeft;
+            set => SetProperty(ref clientNameSuffixLeft, value);
+        }
+
+        public int ClientNameSuffixRight
+        {
+            get => clientNameSuffixRight;
+            set => SetProperty(ref clientNameSuffixRight, value);
+        }
+
+        public int ClientBaseNameLength
+        {
+            get => clientBaseNameLength;
+            set => SetProperty(ref clientBaseNameLength, value);
         }
 
         public static InterfacePanel GetSkillPanelForSlot(int slot)

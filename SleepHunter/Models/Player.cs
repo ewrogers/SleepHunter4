@@ -11,6 +11,7 @@ namespace SleepHunter.Models
     public sealed class Player : UpdatableObject, IDisposable
     {
         private const string CharacterNameKey = @"CharacterName";
+        private const string WorldUserFuncKey = @"WorldUserFunc";
 
         private readonly ProcessMemoryAccessor accessor;
         private readonly ClientState gameClient;
@@ -19,6 +20,8 @@ namespace SleepHunter.Models
         private readonly Skillbook skillbook;
         private readonly Spellbook spellbook;
         private readonly PlayerStats stats;
+        private readonly CharacterProfile profile;
+        private readonly WorldEntityMap worldEntities;
         private readonly PlayerModifiers modifiers;
         private readonly MapLocation location;
 
@@ -26,6 +29,7 @@ namespace SleepHunter.Models
         private readonly BinaryReader reader;
 
         private ClientVersion version;
+        private long nameSessionAddress;
         
         private string name;
         private DateTime? loginTimestamp;
@@ -73,6 +77,10 @@ namespace SleepHunter.Models
         public Spellbook Spellbook => spellbook;
 
         public PlayerStats Stats => stats;
+
+        public CharacterProfile Profile => profile;
+
+        public WorldEntityMap WorldEntities => worldEntities;
 
         public PlayerModifiers Modifiers => modifiers;
 
@@ -170,6 +178,8 @@ namespace SleepHunter.Models
             skillbook = new Skillbook(this);
             spellbook = new Spellbook(this);
             stats = new PlayerStats(this);
+            profile = new CharacterProfile(this);
+            worldEntities = new WorldEntityMap(this);
             modifiers = new PlayerModifiers(this);
             location = new MapLocation(this);
         }
@@ -189,6 +199,8 @@ namespace SleepHunter.Models
                 skillbook.Dispose();
                 spellbook.Dispose();
                 stats.Dispose();
+                profile.Dispose();
+                worldEntities.Dispose();
                 modifiers.Dispose();
                 location.Dispose();
 
@@ -214,8 +226,10 @@ namespace SleepHunter.Models
             catch { }
 
             stats.TryUpdate();
+            profile.TryUpdate();
             modifiers.TryUpdate();
             location.TryUpdate();
+            worldEntities.TryUpdate();
             inventory.TryUpdate();
             equipment.TryUpdate();
             skillbook.TryUpdate();
@@ -235,13 +249,61 @@ namespace SleepHunter.Models
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
 
-            string name = null;
+            if (version == null)
+            {
+                ClearCharacterNameSession();
+                return;
+            }
 
-            if (version != null && version.TryGetVariable(CharacterNameKey, out var nameVariable))
-                nameVariable.TryReadString(reader, out name);
+            if (version.TryGetVariable(WorldUserFuncKey, out var sessionVariable))
+            {
+                if (!sessionVariable.TryDereferenceValue(reader, out var sessionAddress))
+                {
+                    ClearCharacterNameSession();
+                    return;
+                }
 
-            if (!string.IsNullOrWhiteSpace(name))
-                Name = name;
+                if (nameSessionAddress != sessionAddress)
+                {
+                    Name = null;
+                    nameSessionAddress = sessionAddress;
+                }
+            }
+
+            if (!version.TryGetVariable(CharacterNameKey, out var nameVariable))
+                return;
+
+            string candidateName;
+            if (nameVariable is DynamicMemoryVariable)
+            {
+                if (!nameVariable.TryReadString(reader, out candidateName))
+                    return;
+            }
+            else
+            {
+                var nameAddress = nameVariable.DereferenceValue(reader);
+                if (!RuntimeMemoryReader.TryReadAsciiString(
+                    reader,
+                    nameAddress,
+                    nameVariable.MaxLength,
+                    out candidateName,
+                    requireTerminator: true))
+                {
+                    return;
+                }
+            }
+
+            if (IsValidCharacterName(candidateName))
+                Name = candidateName;
+        }
+
+        internal static bool IsValidCharacterName(string candidateName) =>
+            CharacterProfile.IsValidGroupMemberName(candidateName);
+
+        private void ClearCharacterNameSession()
+        {
+            nameSessionAddress = 0;
+            Name = null;
         }
 
         private void OnLoggedIn()
@@ -254,6 +316,7 @@ namespace SleepHunter.Models
         {
             // This memory gets re-allocated when a new character logs into the same client instance
             skillbook.ResetCooldownPointer();
+            nameSessionAddress = 0;
 
             IsLoggedIn = false;
             LoggedOut?.Invoke(this, EventArgs.Empty);
