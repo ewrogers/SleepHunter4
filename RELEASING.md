@@ -14,8 +14,8 @@ SleepHunter releases are built and published by GitHub Actions from version tags
 Create and push an annotated tag matching the SleepHunter version:
 
 ```powershell
-git tag -a v4.11.1 -m "SleepHunter 4.11.1"
-git push origin v4.11.1
+git tag -a v4.11.2 -m "SleepHunter 4.11.2"
+git push origin v4.11.2
 ```
 
 The Release workflow validates the tag, project metadata, updater metadata, and changelog. It then publishes both applications for `win-x64`, verifies the auto-update archive contract, and creates the GitHub release with a single `SleepHunter-X.Y.Z.zip` asset.

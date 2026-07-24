@@ -606,6 +606,60 @@
                                       ToolTip="Hold either Alt key to reveal up to 255 ground items through static map art. This also enables modifier cleanup on focus loss.">
                                 Show Ground Items with _Alt
                             </CheckBox>
+
+                            <!-- Improved Auto-Follow CheckBox -->
+                            <CheckBox Name="improvedAutoFollowCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollow}"
+                                      Margin="8"
+                                      ToolTip="Shift+right-click a player or monster to follow without attacking, stopping at the selected route distance.">
+                                Improved Auto-_Follow
+                            </CheckBox>
+
+                            <!-- Improved Auto-Follow Minimum Distance -->
+                            <StackPanel Orientation="Horizontal"
+                                        IsEnabled="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollow}"
+                                        Margin="32,0,8,8">
+                                <TextBlock Text="Minimum Distance:"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"
+                                           ToolTip="The shortest route distance at which Shift+right-click following stops.">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock"
+                                               BasedOn="{StaticResource ObsidianText}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.45"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ctl:NumericUpDown x:Name="improvedAutoFollowMinimumDistanceUpDown"
+                                                   Width="80" Height="32"
+                                                   Style="{StaticResource ObsidianNumericUpDown}"
+                                                   Minimum="1"
+                                                   Maximum="10"
+                                                   SmallIncrement="1"
+                                                   LargeIncrement="1"
+                                                   DecimalPlaces="0"
+                                                   Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollowMinimumDistance, Mode=TwoWay}"
+                                                   ToolTip="Choose a minimum follow distance from 1 to 10 route tiles."/>
+                                <TextBlock Text="tiles"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock"
+                                               BasedOn="{StaticResource ObsidianText}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.45"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
                         </StackPanel>
                     </TabItem>
 

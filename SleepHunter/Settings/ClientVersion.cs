@@ -29,6 +29,7 @@ namespace SleepHunter.Settings
         private bool supportsLoginNotificationSuppression;
         private bool supportsModifiersKeyFix;
         private bool supportsAltToShowGroundItems;
+        private bool supportsImprovedAutoFollow;
         private bool supportsItemQuantitiesInDialogs;
         private bool supportsDraggableExchangeDialog;
         private bool supportsExchangeResultsInMessageBar;
@@ -112,6 +113,13 @@ namespace SleepHunter.Settings
         {
             get => supportsAltToShowGroundItems;
             set => SetProperty(ref supportsAltToShowGroundItems, value);
+        }
+
+        [XmlElement]
+        public bool SupportsImprovedAutoFollow
+        {
+            get => supportsImprovedAutoFollow;
+            set => SetProperty(ref supportsImprovedAutoFollow, value);
         }
 
         [XmlElement]

@@ -10,6 +10,7 @@
       <SupportsLoginNotificationSuppression>true</SupportsLoginNotificationSuppression>
       <SupportsModifiersKeyFix>true</SupportsModifiersKeyFix>
       <SupportsAltToShowGroundItems>true</SupportsAltToShowGroundItems>
+      <SupportsImprovedAutoFollow>true</SupportsImprovedAutoFollow>
       <SupportsItemQuantitiesInDialogs>true</SupportsItemQuantitiesInDialogs>
       <SupportsDraggableExchangeDialog>true</SupportsDraggableExchangeDialog>
       <SupportsExchangeResultsInMessageBar>true</SupportsExchangeResultsInMessageBar>

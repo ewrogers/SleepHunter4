@@ -220,6 +220,9 @@ namespace SleepHunter.Views
             var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
             var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
             var allowAltToShowGroundItems = UserSettingsManager.Instance.Settings.AllowAltToShowGroundItems;
+            var improvedAutoFollow = UserSettingsManager.Instance.Settings.ImprovedAutoFollow;
+            var improvedAutoFollowMinimumDistance =
+                UserSettingsManager.Instance.Settings.ImprovedAutoFollowMinimumDistance;
             var showItemQuantitiesInDialogs = UserSettingsManager.Instance.Settings.ShowItemQuantitiesInDialogs;
             var makeExchangeDialogDraggable = UserSettingsManager.Instance.Settings.MakeExchangeDialogDraggable;
             var showExchangeResultsInMessageBar =
@@ -233,9 +236,11 @@ namespace SleepHunter.Views
             try
             {
                 var applyAltGroundItemPatch = allowAltToShowGroundItems && version.SupportsAltToShowGroundItems;
+                var applyImprovedAutoFollow = improvedAutoFollow && version.SupportsImprovedAutoFollow;
                 var shouldApplyModifiersKeyFix =
                     (applyModifiersKeyFix || applyAltGroundItemPatch) && version.SupportsModifiersKeyFix;
                 var hasRuntimePatches = shouldApplyModifiersKeyFix || applyAltGroundItemPatch ||
+                                        applyImprovedAutoFollow ||
                                         (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs) ||
                                         (makeExchangeDialogDraggable && version.SupportsDraggableExchangeDialog) ||
                                         (showExchangeResultsInMessageBar &&
@@ -302,6 +307,13 @@ namespace SleepHunter.Views
                 {
                     logger.LogInfo($"Applying Alt ground-item hints patch to process {pid}");
                     ClientPatcher.ApplyAllowAltToShowGroundItems(patchStream, process.ProcessHandle);
+                }
+
+                if (applyImprovedAutoFollow)
+                {
+                    logger.LogInfo($"Applying improved auto-follow patch to process {pid}");
+                    ClientPatcher.ApplyImprovedAutoFollow(patchStream, process.ProcessHandle,
+                        improvedAutoFollowMinimumDistance);
                 }
 
                 if (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs)

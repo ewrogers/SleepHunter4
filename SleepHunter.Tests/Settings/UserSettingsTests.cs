@@ -16,6 +16,8 @@ namespace SleepHunter.Tests.Settings
 
             Assert.That(settings.ApplyModifiersKeyFix, Is.True);
             Assert.That(settings.AllowAltToShowGroundItems, Is.True);
+            Assert.That(settings.ImprovedAutoFollow, Is.True);
+            Assert.That(settings.ImprovedAutoFollowMinimumDistance, Is.EqualTo(3));
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
             Assert.That(settings.MakeExchangeDialogDraggable, Is.True);
             Assert.That(settings.ShowExchangeResultsInMessageBar, Is.False);
@@ -46,6 +48,33 @@ namespace SleepHunter.Tests.Settings
                 "<UserSettings><AllowAltToShowGroundItems>false</AllowAltToShowGroundItems></UserSettings>");
 
             Assert.That(settings.AllowAltToShowGroundItems, Is.False);
+        }
+
+        [Test]
+        public void ShouldPreserveExplicitlyDisabledImprovedAutoFollow()
+        {
+            var settings = Deserialize(
+                "<UserSettings>" +
+                "<ImprovedAutoFollow>false</ImprovedAutoFollow>" +
+                "<ImprovedAutoFollowMinimumDistance>8</ImprovedAutoFollowMinimumDistance>" +
+                "</UserSettings>");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(settings.ImprovedAutoFollow, Is.False);
+                Assert.That(settings.ImprovedAutoFollowMinimumDistance, Is.EqualTo(8));
+            });
+        }
+
+        [TestCase(0, 1)]
+        [TestCase(11, 10)]
+        public void ShouldClampImprovedAutoFollowMinimumDistance(int configuredDistance, int expectedDistance)
+        {
+            var settings = Deserialize(
+                $"<UserSettings><ImprovedAutoFollowMinimumDistance>{configuredDistance}" +
+                "</ImprovedAutoFollowMinimumDistance></UserSettings>");
+
+            Assert.That(settings.ImprovedAutoFollowMinimumDistance, Is.EqualTo(expectedDistance));
         }
 
         [Test]

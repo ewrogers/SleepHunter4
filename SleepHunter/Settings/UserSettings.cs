@@ -29,6 +29,8 @@ namespace SleepHunter.Settings
         private bool suppressLoginNotification = true;
         private bool applyModifiersKeyFix = true;
         private bool allowAltToShowGroundItems = true;
+        private bool improvedAutoFollow = true;
+        private int improvedAutoFollowMinimumDistance = 3;
         private bool showItemQuantitiesInDialogs = true;
         private bool makeExchangeDialogDraggable = true;
         private bool showExchangeResultsInMessageBar;
@@ -348,6 +350,20 @@ namespace SleepHunter.Settings
             set => SetProperty(ref allowAltToShowGroundItems, value);
         }
 
+        [XmlElement("ImprovedAutoFollow")]
+        public bool ImprovedAutoFollow
+        {
+            get => improvedAutoFollow;
+            set => SetProperty(ref improvedAutoFollow, value);
+        }
+
+        [XmlElement("ImprovedAutoFollowMinimumDistance")]
+        public int ImprovedAutoFollowMinimumDistance
+        {
+            get => improvedAutoFollowMinimumDistance;
+            set => SetProperty(ref improvedAutoFollowMinimumDistance, Math.Clamp(value, 1, 10));
+        }
+
         [XmlElement("ShowItemQuantitiesInDialogs")]
         public bool ShowItemQuantitiesInDialogs
         {
@@ -610,6 +626,8 @@ namespace SleepHunter.Settings
             SuppressLoginNotification = true;
             ApplyModifiersKeyFix = true;
             AllowAltToShowGroundItems = true;
+            ImprovedAutoFollow = true;
+            ImprovedAutoFollowMinimumDistance = 3;
             ShowItemQuantitiesInDialogs = true;
             MakeExchangeDialogDraggable = true;
             ShowExchangeResultsInMessageBar = false;

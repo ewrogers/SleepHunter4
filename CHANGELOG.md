@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.11.2] - 2026-07-24
+
+### Added
+
+- Added an enabled-by-default Improved Auto-Follow input patch for following players and monsters without attacking by holding Shift while right-clicking, with a configurable minimum distance from 1 to 10 tiles
+
 ## [4.11.1] - 2026-07-18
 
 ### Added

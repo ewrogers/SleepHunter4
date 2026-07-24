@@ -43,6 +43,15 @@ By default, this is `Enabled`.
 The patch also enables modifier cleanup on focus loss so the client cannot leave Alt stuck when focus changes.
 The setting has no effect for client versions that do not support the patch.
 
+### Improved Auto-Follow
+
+This setting lets you hold Shift while right-clicking a player or monster to follow the target without attacking.
+The minimum-distance control sets when the client stops, with a valid range of 1 through 10 route tiles.
+The default distance is 3 tiles, while right-clicking without Shift keeps the normal follow-and-attack behavior.
+
+By default, this is `Enabled`.
+The setting has no effect for client versions that do not support the patch.
+
 ## Render
 
 ### No Foreground Walls
