@@ -8,5 +8,7 @@ public enum SnapshotSection
     Vitals,
     ClientState,
     Location,
+    Inventory,
+    Equipment,
     Coherence
 }

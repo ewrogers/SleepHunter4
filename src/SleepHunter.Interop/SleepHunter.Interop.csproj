@@ -6,4 +6,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SleepHunter.Runtime\SleepHunter.Runtime.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SleepHunter.Interop.Tests" />
+  </ItemGroup>
 </Project>

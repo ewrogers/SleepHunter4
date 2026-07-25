@@ -9,7 +9,7 @@ using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Snapshots;
 
-public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
+public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
 {
     public const string SupportedVersion = "USDA 7.41";
 
@@ -28,6 +28,9 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
     private const string MapNameKey = "MapName";
     private const string MapXKey = "MapX";
     private const string MapYKey = "MapY";
+    private const string InventoryKey = "Inventory";
+    private const string EquipmentKey = "Equipment";
+    private const string EquipmentSnapshotKey = "EquipmentSnapshot";
 
     private static readonly Encoding StrictAscii = Encoding.GetEncoding(
         Encoding.ASCII.CodePage,
@@ -50,7 +53,10 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
         new(MapNumberKey, MemoryValueKind.Unsigned32),
         new(MapNameKey, MemoryValueKind.Text),
         new(MapXKey, MemoryValueKind.Signed32),
-        new(MapYKey, MemoryValueKind.Signed32)
+        new(MapYKey, MemoryValueKind.Signed32),
+        new(InventoryKey, MemoryValueKind.Binary),
+        new(EquipmentKey, MemoryValueKind.Binary),
+        new(EquipmentSnapshotKey, MemoryValueKind.Binary)
     ];
 
     private readonly ClientIdentity client;
@@ -111,7 +117,9 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
 
     public ClientIdentity Client => client;
 
-    public SnapshotCaptureResult Capture(SnapshotSequence sequence)
+    public SnapshotCaptureResult Capture(
+        SnapshotSequence sequence,
+        SnapshotCaptureSections sections = SnapshotCaptureSections.Core)
     {
         if (sequence.Value <= 0)
         {
@@ -119,6 +127,14 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
                 nameof(sequence),
                 sequence,
                 "Snapshot sequences must be positive.");
+        }
+
+        if ((sections & ~SnapshotCaptureSections.All) != 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(sections),
+                sections,
+                "The requested snapshot sections are not supported.");
         }
 
         var startedAt = clock.GetCurrentTimestamp();
@@ -145,7 +161,7 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
 
         try
         {
-            return CaptureCore(sequence, startedAt);
+            return CaptureCore(sequence, sections, startedAt);
         }
         finally
         {
@@ -155,6 +171,7 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
 
     private SnapshotCaptureResult CaptureCore(
         SnapshotSequence sequence,
+        SnapshotCaptureSections requestedSections,
         MacroTimestamp startedAt)
     {
         var session = new MemoryReadSession(source, limits);
@@ -310,6 +327,68 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
                 error!);
         }
 
+        InventorySnapshot? inventory = null;
+        if (requestedSections.HasFlag(SnapshotCaptureSections.Inventory))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var inventorySucceeded = TryReadInventory(
+                reader,
+                out inventory,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.Inventory,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                inventorySucceeded);
+            if (!inventorySucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
+        EquipmentSnapshot? equipment = null;
+        if (requestedSections.HasFlag(SnapshotCaptureSections.Equipment))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var equipmentSucceeded = TryReadEquipment(
+                reader,
+                out equipment,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.Equipment,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                equipmentSucceeded);
+            if (!equipmentSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
         sectionStartedAt = clock.GetCurrentTimestamp();
         readsBefore = session.Metrics;
         var coherenceSucceeded = TryValidateCoherence(
@@ -349,7 +428,9 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
             activePanel,
             character,
             vitals,
-            location);
+            location,
+            inventory,
+            equipment);
     }
 
     private SnapshotCaptureResult Success(
@@ -361,7 +442,9 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
         ClientPanel activePanel,
         CharacterSnapshot? character,
         VitalsSnapshot? vitals,
-        MapLocationSnapshot? location)
+        MapLocationSnapshot? location,
+        InventorySnapshot? inventory = null,
+        EquipmentSnapshot? equipment = null)
     {
         var completedAt = clock.GetCurrentTimestamp();
         var snapshot = new ClientSnapshot(
@@ -373,6 +456,8 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
             presence,
             activePanel,
             character,
+            inventory,
+            equipment,
             vitals: vitals,
             location: location);
         var metrics = new SnapshotCaptureMetrics(
@@ -981,8 +1066,14 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
     private static SnapshotCaptureError StateChanged(
         string key,
         string message) =>
+        StateChanged(SnapshotSection.Coherence, key, message);
+
+    private static SnapshotCaptureError StateChanged(
+        SnapshotSection section,
+        string key,
+        string message) =>
         new(
-            SnapshotSection.Coherence,
+            section,
             SnapshotCaptureFailure.StateChanged,
             message,
             key);
@@ -1055,8 +1146,45 @@ public sealed class Usda741SnapshotCapture : IClientSnapshotCapture
             {
                 throw new ArgumentException(
                     $"Client mapping variable '{required.Key}' cannot require address search.",
-                    nameof(map));
+                nameof(map));
             }
+        }
+
+        ValidateBinaryLayout(
+            map,
+            InventoryKey,
+            maximumLength: Usda741InventoryParser.NameLength,
+            recordSize: Usda741InventoryParser.RecordSize,
+            capacity: Usda741InventoryParser.RecordCount);
+        ValidateBinaryLayout(
+            map,
+            EquipmentKey,
+            maximumLength: Usda741EquipmentParser.CompactNameLength,
+            recordSize: Usda741EquipmentParser.CompactNameLength,
+            capacity: Usda741EquipmentParser.RecordCount);
+        ValidateBinaryLayout(
+            map,
+            EquipmentSnapshotKey,
+            maximumLength: 0,
+            recordSize: Usda741EquipmentParser.RichSnapshotSize,
+            capacity: Usda741EquipmentParser.RecordCount);
+    }
+
+    private static void ValidateBinaryLayout(
+        ClientMemoryMap map,
+        string key,
+        int maximumLength,
+        int recordSize,
+        int capacity)
+    {
+        var variable = map.Find(key)!;
+        if (variable.MaximumLength != maximumLength ||
+            variable.RecordSize != recordSize ||
+            variable.Capacity != capacity)
+        {
+            throw new ArgumentException(
+                $"Client mapping variable '{key}' does not match the USDA 7.41 binary layout.",
+                nameof(map));
         }
     }
 

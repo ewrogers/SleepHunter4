@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.Text;
 using SleepHunter.Interop.Mappings;
@@ -19,8 +20,14 @@ public sealed class Usda741SnapshotCaptureTests
     private const ulong PlayerRootAddress = 0x1100;
     private const ulong PlayerAddress = 0x4000;
     private const ulong MapNameRootAddress = 0x1200;
+    private const ulong InventoryRootAddress = 0x1300;
+    private const ulong EquipmentSnapshotRootAddress = 0x1400;
+    private const ulong EquipmentRootAddress = 0x1500;
     private const ulong CharacterNameAddress = 0x5000;
     private const ulong MapNameAddress = 0x5100;
+    private const ulong InventoryAddress = 0x6000;
+    private const ulong EquipmentSnapshotAddress = 0xA000;
+    private const ulong EquipmentAddress = 0xB000;
     private const ulong LevelAddress = PlayerAddress + 0x10;
     private const ulong AbilityLevelAddress = PlayerAddress + 0x11;
     private const ulong CharacterClassAddress = PlayerAddress + 0x12;
@@ -43,7 +50,9 @@ public sealed class Usda741SnapshotCaptureTests
             timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         var capture = CreateCapture(source, timeProvider);
 
-        var result = capture.Capture(new SnapshotSequence(7));
+        var result = capture.Capture(
+            new SnapshotSequence(7),
+            SnapshotCaptureSections.All);
 
         Assert.Multiple(() =>
         {
@@ -73,6 +82,20 @@ public sealed class Usda741SnapshotCaptureTests
                 result.Snapshot?.Location,
                 Is.EqualTo(new MapLocationSnapshot(1, "Mileth", 50, 60)));
             Assert.That(
+                result.Snapshot?.Inventory,
+                Is.EqualTo(
+                    new InventorySnapshot(
+                    [
+                        new InventoryItemSnapshot(1, "Holy Diana"),
+                        new InventoryItemSnapshot(3, "Gnarl")
+                    ])));
+            Assert.That(
+                result.Snapshot?.Equipment,
+                Is.EqualTo(
+                    new EquipmentSnapshot(
+                        "Holy Diana",
+                        "Dragon Shield")));
+            Assert.That(
                 result.Metrics.Sections.Select(section => section.Section),
                 Is.EqualTo(
                     new[]
@@ -82,6 +105,8 @@ public sealed class Usda741SnapshotCaptureTests
                         SnapshotSection.Vitals,
                         SnapshotSection.ClientState,
                         SnapshotSection.Location,
+                        SnapshotSection.Inventory,
+                        SnapshotSection.Equipment,
                         SnapshotSection.Coherence
                     }));
             Assert.That(
@@ -336,6 +361,113 @@ public sealed class Usda741SnapshotCaptureTests
     }
 
     [Test]
+    public void ShouldOmitUnrequestedCollections()
+    {
+        var source = CreateMemoryImage();
+        source.Clear(
+            new MemoryAddress(InventoryRootAddress),
+            sizeof(uint));
+        source.Clear(
+            new MemoryAddress(EquipmentSnapshotRootAddress),
+            sizeof(uint));
+        source.Clear(
+            new MemoryAddress(EquipmentRootAddress),
+            sizeof(uint));
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.Snapshot?.Inventory, Is.Null);
+            Assert.That(result.Snapshot?.Equipment, Is.Null);
+            Assert.That(
+                result.Metrics.Sections.Any(
+                    section =>
+                        section.Section is
+                            SnapshotSection.Inventory or
+                            SnapshotSection.Equipment),
+                Is.False);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectChangedInventoryRoot()
+    {
+        const ulong replacementInventoryAddress = 0xC000;
+
+        var source = CreateMemoryImage();
+        var inventoryRootReads = 0;
+        source.ReadStarting = (address, _) =>
+        {
+            if (address.Value != InventoryRootAddress)
+            {
+                return;
+            }
+
+            inventoryRootReads++;
+            if (inventoryRootReads == 2)
+            {
+                source.WriteUInt32(
+                    address,
+                    (uint)replacementInventoryAddress);
+            }
+        };
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(
+            new SnapshotSequence(1),
+            SnapshotCaptureSections.Inventory);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(result.Quality, Is.EqualTo(SnapshotQuality.Incoherent));
+            Assert.That(
+                result.Error?.Failure,
+                Is.EqualTo(SnapshotCaptureFailure.StateChanged));
+            Assert.That(
+                result.Error?.Section,
+                Is.EqualTo(SnapshotSection.Inventory));
+            Assert.That(result.Error?.VariableKey, Is.EqualTo("Inventory"));
+        });
+    }
+
+    [Test]
+    public void ShouldUseCompactEquipmentFallback()
+    {
+        var source = CreateMemoryImage();
+        source.Clear(
+            new MemoryAddress(EquipmentSnapshotAddress),
+            Usda741EquipmentParser.RichSnapshotSize);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(
+            new SnapshotSequence(1),
+            SnapshotCaptureSections.Equipment);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(
+                result.Snapshot?.Equipment,
+                Is.EqualTo(
+                    new EquipmentSnapshot(
+                        "Holy Diana",
+                        "Dragon Shield")));
+            Assert.That(
+                result.Metrics.Reads.FailedReadCount,
+                Is.EqualTo(1));
+            Assert.That(
+                result.Metrics.Sections.Single(
+                    section => section.Section == SnapshotSection.Equipment)
+                    .Succeeded,
+                Is.True);
+        });
+    }
+
+    [Test]
     public void ShouldRejectUnavailableSessionAsPartialRatherThanLoggedOut()
     {
         var source = CreateMemoryImage();
@@ -432,6 +564,20 @@ public sealed class Usda741SnapshotCaptureTests
             Usda741SnapshotCapture.SupportedVersion,
             PointerWidth.Bit32,
             variables.Where(variable => variable.Key != "CurrentMana"));
+        var invalidLayout = new ClientMemoryMap(
+            Usda741SnapshotCapture.SupportedVersion,
+            PointerWidth.Bit32,
+            variables.Select(
+                variable => variable.Key == "Inventory"
+                    ? new MemoryVariableDefinition(
+                        variable.Key,
+                        variable.Address,
+                        variable.ValueKind,
+                        variable.MaximumLength,
+                        recordSize: variable.RecordSize - 1,
+                        capacity: variable.Capacity,
+                        search: variable.Search)
+                    : variable));
         var client = new ClientIdentity(
             "process:1234",
             Usda741SnapshotCapture.SupportedVersion);
@@ -455,7 +601,25 @@ public sealed class Usda741SnapshotCaptureTests
                     source,
                     limits,
                     clock));
+            Assert.Throws<ArgumentException>(
+                () => _ = new Usda741SnapshotCapture(
+                    client,
+                    invalidLayout,
+                    source,
+                    limits,
+                    clock));
         });
+    }
+
+    [Test]
+    public void ShouldRejectUnsupportedSectionSelection()
+    {
+        var capture = CreateCapture(CreateMemoryImage());
+
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => capture.Capture(
+                new SnapshotSequence(1),
+                (SnapshotCaptureSections)(1 << 10)));
     }
 
     private static Usda741SnapshotCapture CreateCapture(
@@ -491,6 +655,15 @@ public sealed class Usda741SnapshotCaptureTests
         source.WriteUInt32(
             new MemoryAddress(MapNameRootAddress),
             (uint)MapNameAddress);
+        source.WriteUInt32(
+            new MemoryAddress(InventoryRootAddress),
+            (uint)InventoryAddress);
+        source.WriteUInt32(
+            new MemoryAddress(EquipmentSnapshotRootAddress),
+            (uint)EquipmentSnapshotAddress);
+        source.WriteUInt32(
+            new MemoryAddress(EquipmentRootAddress),
+            (uint)EquipmentAddress);
         WriteFixedAscii(
             source,
             new MemoryAddress(CharacterNameAddress),
@@ -513,6 +686,42 @@ public sealed class Usda741SnapshotCaptureTests
         source.WriteUInt32(new MemoryAddress(MapNumberAddress), 1);
         source.WriteInt32(new MemoryAddress(MapXAddress), 50);
         source.WriteInt32(new MemoryAddress(MapYAddress), 60);
+        var inventory = new byte[
+            Usda741InventoryParser.RecordSize *
+            Usda741InventoryParser.RecordCount];
+        WriteInventoryItem(inventory, slot: 1, "Holy Diana");
+        WriteInventoryItem(inventory, slot: 3, "Gnarl");
+        WriteInventoryItem(inventory, slot: 60, "Gold");
+        source.Write(new MemoryAddress(InventoryAddress), inventory);
+
+        var equipment = new byte[
+            Usda741EquipmentParser.RichSnapshotSize];
+        WriteRichEquipmentItem(
+            equipment,
+            slotIndex: 0,
+            rawSprite: 0x8123,
+            "Holy Diana");
+        WriteRichEquipmentItem(
+            equipment,
+            slotIndex: 2,
+            rawSprite: 0x8456,
+            "Dragon Shield");
+        source.Write(
+            new MemoryAddress(EquipmentSnapshotAddress),
+            equipment);
+
+        var compactEquipment = new byte[
+            Usda741EquipmentParser.CompactNameLength *
+            Usda741EquipmentParser.RecordCount];
+        WriteCompactEquipmentItem(
+            compactEquipment,
+            slotIndex: 0,
+            "Holy Diana");
+        WriteCompactEquipmentItem(
+            compactEquipment,
+            slotIndex: 2,
+            "Dragon Shield");
+        source.Write(new MemoryAddress(EquipmentAddress), compactEquipment);
         return source;
     }
 
@@ -549,7 +758,25 @@ public sealed class Usda741SnapshotCaptureTests
                 new MemoryAddress(MapNameRootAddress),
                 ImmutableArray.Create(new PointerOffset(0))),
             MemoryValueKind.Text,
-            maximumLength: 32)
+            maximumLength: 32),
+        Block(
+            "Inventory",
+            InventoryRootAddress,
+            maximumLength: Usda741InventoryParser.NameLength,
+            recordSize: Usda741InventoryParser.RecordSize,
+            capacity: Usda741InventoryParser.RecordCount),
+        Block(
+            "Equipment",
+            EquipmentRootAddress,
+            maximumLength: Usda741EquipmentParser.CompactNameLength,
+            recordSize: Usda741EquipmentParser.CompactNameLength,
+            capacity: Usda741EquipmentParser.RecordCount),
+        Block(
+            "EquipmentSnapshot",
+            EquipmentSnapshotRootAddress,
+            maximumLength: 0,
+            recordSize: Usda741EquipmentParser.RichSnapshotSize,
+            capacity: Usda741EquipmentParser.RecordCount)
     ];
 
     private static MemoryVariableDefinition Dynamic(
@@ -562,6 +789,22 @@ public sealed class Usda741SnapshotCaptureTests
                 new MemoryAddress(PlayerRootAddress),
                 ImmutableArray.Create(new PointerOffset(offset))),
             kind);
+
+    private static MemoryVariableDefinition Block(
+        string key,
+        ulong rootAddress,
+        int maximumLength,
+        int recordSize,
+        int capacity) =>
+        new(
+            key,
+            new PointerChain(
+                new MemoryAddress(rootAddress),
+                ImmutableArray.Create(new PointerOffset(0))),
+            MemoryValueKind.Binary,
+            maximumLength,
+            recordSize,
+            capacity);
 
     private static void WriteFixedAscii(
         MemoryImageSource source,
@@ -581,6 +824,42 @@ public sealed class Usda741SnapshotCaptureTests
         valueBytes.CopyTo(buffer, 0);
         source.Write(address, buffer);
     }
+
+    private static void WriteInventoryItem(
+        Span<byte> snapshot,
+        int slot,
+        string name)
+    {
+        var record = snapshot.Slice(
+            (slot - 1) * Usda741InventoryParser.RecordSize,
+            Usda741InventoryParser.RecordSize);
+        record[0] = 1;
+        Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
+    }
+
+    private static void WriteRichEquipmentItem(
+        Span<byte> snapshot,
+        int slotIndex,
+        ushort rawSprite,
+        string name)
+    {
+        BinaryPrimitives.WriteUInt16LittleEndian(
+            snapshot.Slice(slotIndex * sizeof(ushort)),
+            rawSprite);
+        Encoding.ASCII.GetBytes(name).CopyTo(
+            snapshot.Slice(
+                0x36 +
+                slotIndex * Usda741EquipmentParser.CompactNameLength));
+    }
+
+    private static void WriteCompactEquipmentItem(
+        Span<byte> snapshot,
+        int slotIndex,
+        string name) =>
+        Encoding.ASCII.GetBytes(name).CopyTo(
+            snapshot.Slice(
+                slotIndex *
+                Usda741EquipmentParser.CompactNameLength));
 
     private sealed class BlockingMemorySource : IProcessMemorySource, IDisposable
     {
