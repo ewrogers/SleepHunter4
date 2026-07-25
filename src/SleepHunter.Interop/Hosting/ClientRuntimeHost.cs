@@ -14,6 +14,7 @@ namespace SleepHunter.Interop.Hosting;
 public sealed class ClientRuntimeHost : IClientRuntimeHost
 {
     private readonly CancellationTokenSource disposeCancellation = new();
+    private readonly Channel<SnapshotCaptureObservation> captures;
     private readonly ClientIntentExecutor intentExecutor;
     private readonly MacroSession session;
     private readonly ClientSnapshotScheduler snapshotScheduler;
@@ -48,6 +49,14 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
         Client = snapshotCapture.Client;
         this.intentExecutor = intentExecutor;
         this.targetProvider = targetProvider;
+        captures = Channel.CreateBounded<SnapshotCaptureObservation>(
+            new BoundedChannelOptions(1)
+            {
+                AllowSynchronousContinuations = false,
+                FullMode = BoundedChannelFullMode.DropOldest,
+                SingleReader = true,
+                SingleWriter = true
+            });
         session = new MacroSession(
             new MacroEngine(),
             new MacroClock(timeProvider));
@@ -59,6 +68,9 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
     }
 
     public ClientIdentity Client { get; }
+
+    public ChannelReader<SnapshotCaptureObservation> Captures =>
+        captures.Reader;
 
     public ChannelReader<MacroViewSnapshot> Views => session.Views;
 
@@ -110,6 +122,24 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
 
     private async Task RunAsync()
     {
+        Exception? completionError = null;
+        try
+        {
+            await RunCoreAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            completionError = exception;
+            throw;
+        }
+        finally
+        {
+            captures.Writer.TryComplete(completionError);
+        }
+    }
+
+    private async Task RunCoreAsync()
+    {
         try
         {
             await Task
@@ -137,12 +167,19 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
     {
         try
         {
-            await foreach (var result in snapshotScheduler.Results
+            await foreach (var observation in snapshotScheduler.Results
                                .ReadAllAsync(cancellationToken)
                                .ConfigureAwait(false))
             {
+                var result = observation.Result;
                 Volatile.Write(ref latestSnapshot, result.Snapshot);
                 Volatile.Write(ref latestCaptureResult, result);
+                if (!captures.Writer.TryWrite(observation))
+                {
+                    throw new InvalidOperationException(
+                        "The client capture observation channel is unavailable.");
+                }
+
                 if (result.Snapshot is not { } snapshot)
                 {
                     continue;

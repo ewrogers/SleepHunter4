@@ -335,6 +335,8 @@ public sealed class ClientRuntimeRegistryTests
 
     private sealed class RecordingRuntimeHost : IClientRuntimeHost
     {
+        private readonly Channel<SnapshotCaptureObservation> captures =
+            Channel.CreateUnbounded<SnapshotCaptureObservation>();
         private readonly TaskCompletionSource completion =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly Channel<MacroViewSnapshot> views =
@@ -346,6 +348,9 @@ public sealed class ClientRuntimeRegistryTests
         }
 
         public ClientIdentity Client { get; }
+
+        public ChannelReader<SnapshotCaptureObservation> Captures =>
+            captures.Reader;
 
         public ChannelReader<MacroViewSnapshot> Views => views.Reader;
 
@@ -377,6 +382,7 @@ public sealed class ClientRuntimeRegistryTests
             if (!IsDisposed)
             {
                 IsDisposed = true;
+                captures.Writer.TryComplete();
                 views.Writer.TryComplete();
                 completion.TrySetResult();
             }

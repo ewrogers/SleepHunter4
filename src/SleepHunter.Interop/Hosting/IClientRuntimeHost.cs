@@ -11,6 +11,8 @@ public interface IClientRuntimeHost : IAsyncDisposable
 {
     ClientIdentity Client { get; }
 
+    ChannelReader<SnapshotCaptureObservation> Captures { get; }
+
     ChannelReader<MacroViewSnapshot> Views { get; }
 
     SnapshotCaptureResult? LatestCaptureResult { get; }

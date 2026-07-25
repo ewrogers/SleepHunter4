@@ -32,6 +32,8 @@ public sealed class ClientRuntimeHostTests
             new FixedTargetProvider(Client),
             sink);
 
+        var capture = await host.Captures.ReadUntilAsync(
+            current => current.Result.Metrics.Sequence.Value == 1);
         var view = await host.Views.ReadUntilAsync(
             current => current.LatestSnapshotSequence?.Value == 1);
 
@@ -39,6 +41,8 @@ public sealed class ClientRuntimeHostTests
         {
             Assert.That(view.Presence, Is.EqualTo(ClientPresence.InWorld));
             Assert.That(host.Client, Is.EqualTo(Client));
+            Assert.That(capture.Result.Succeeded, Is.True);
+            Assert.That(capture.Statistics.SucceededCount, Is.EqualTo(1));
             Assert.That(
                 host.LatestCaptureResult?.Metrics.Sequence.Value,
                 Is.EqualTo(1));
@@ -173,19 +177,57 @@ public sealed class ClientRuntimeHostTests
             capture,
             new FixedTargetProvider(Client),
             new RecordingMessageSink());
-        await WaitUntilAsync(
-            () => host.LatestCaptureResult?.Metrics.Sequence.Value == 1);
+        var failed = await host.Captures.ReadUntilAsync(
+            current => current.Result.Metrics.Sequence.Value == 1);
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(100));
+        var recoveredCapture = await host.Captures.ReadUntilAsync(
+            current => current.Result.Metrics.Sequence.Value == 2);
         var recovered = await host.Views.ReadUntilAsync(
             current => current.LatestSnapshotSequence?.Value == 2);
 
         Assert.Multiple(() =>
         {
+            Assert.That(failed.Result.Succeeded, Is.False);
+            Assert.That(recoveredCapture.Result.Succeeded, Is.True);
+            Assert.That(
+                recoveredCapture.Statistics.SampleCount,
+                Is.EqualTo(2));
             Assert.That(recovered.Presence, Is.EqualTo(ClientPresence.InWorld));
             Assert.That(host.CaptureStatistics.SampleCount, Is.EqualTo(2));
             Assert.That(host.CaptureStatistics.SucceededCount, Is.EqualTo(1));
             Assert.That(host.CaptureStatistics.FailedCount, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ShouldCoalesceUnreadCaptureObservations()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var host = CreateHost(
+            timeProvider,
+            new ScriptedCapture(CreateSuccess),
+            new FixedTargetProvider(Client),
+            new RecordingMessageSink());
+        await WaitUntilAsync(
+            () => host.LatestCaptureResult?.Metrics.Sequence.Value == 1);
+
+        for (var sequenceValue = 2; sequenceValue <= 4; sequenceValue++)
+        {
+            timeProvider.Advance(TimeSpan.FromMilliseconds(100));
+            await WaitUntilAsync(
+                () =>
+                    host.LatestCaptureResult?.Metrics.Sequence.Value ==
+                    sequenceValue);
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(host.Captures.TryRead(out var capture), Is.True);
+            Assert.That(
+                capture?.Result.Metrics.Sequence.Value,
+                Is.EqualTo(4));
+            Assert.That(host.Captures.TryRead(out _), Is.False);
         });
     }
 
@@ -296,6 +338,9 @@ public sealed class ClientRuntimeHostTests
 
         await host.Views.Completion.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.That(
+            async () => await host.Captures.Completion,
+            Throws.TypeOf<InvalidOperationException>());
+        Assert.That(
             async () => await host.DisposeAsync(),
             Throws.TypeOf<InvalidOperationException>());
     }
@@ -314,6 +359,17 @@ public sealed class ClientRuntimeHostTests
                 capture,
                 new FixedTargetProvider(otherClient),
                 new RecordingMessageSink()),
+            Throws.TypeOf<ArgumentException>());
+    }
+
+    [Test]
+    public void ShouldRequireCaptureObservationStatistics()
+    {
+        Assert.That(
+            () => _ = new SnapshotCaptureObservation(
+                CreateSuccess(new SnapshotSequence(1)),
+                SnapshotCaptureStatistics.Empty(
+                    windowCapacity: 1)),
             Throws.TypeOf<ArgumentException>());
     }
 

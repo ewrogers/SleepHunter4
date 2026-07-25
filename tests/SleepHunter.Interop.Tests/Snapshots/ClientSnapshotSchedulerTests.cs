@@ -27,15 +27,21 @@ public sealed class ClientSnapshotSchedulerTests
             timeProvider,
             new SnapshotSequence(41));
 
-        var first = await ReadResultAsync(scheduler.Results);
+        var first = await ReadObservationAsync(scheduler.Results);
         timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-        var second = await ReadResultAsync(scheduler.Results);
+        var second = await ReadObservationAsync(scheduler.Results);
         await WaitForSampleCountAsync(scheduler, 2);
 
         Assert.Multiple(() =>
         {
-            Assert.That(first.Metrics.Sequence.Value, Is.EqualTo(41));
-            Assert.That(second.Metrics.Sequence.Value, Is.EqualTo(42));
+            Assert.That(
+                first.Result.Metrics.Sequence.Value,
+                Is.EqualTo(41));
+            Assert.That(
+                second.Result.Metrics.Sequence.Value,
+                Is.EqualTo(42));
+            Assert.That(first.Statistics.SampleCount, Is.EqualTo(1));
+            Assert.That(second.Statistics.SampleCount, Is.EqualTo(2));
             Assert.That(
                 capture.Requests,
                 Is.EqualTo(
@@ -77,7 +83,9 @@ public sealed class ClientSnapshotSchedulerTests
         Assert.Multiple(() =>
         {
             Assert.That(didRead, Is.True);
-            Assert.That(newest!.Metrics.Sequence.Value, Is.EqualTo(3));
+            Assert.That(
+                newest!.Result.Metrics.Sequence.Value,
+                Is.EqualTo(3));
             Assert.That(didReadAgain, Is.False);
             Assert.That(scheduler.Statistics.SampleCount, Is.EqualTo(3));
         });
@@ -140,18 +148,20 @@ public sealed class ClientSnapshotSchedulerTests
             new SnapshotCaptureSchedule(TimeSpan.FromMilliseconds(100)),
             timeProvider);
 
-        var failed = await ReadResultAsync(scheduler.Results);
+        var failed = await ReadObservationAsync(scheduler.Results);
         timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-        var succeeded = await ReadResultAsync(scheduler.Results);
+        var succeeded = await ReadObservationAsync(scheduler.Results);
         await WaitForSampleCountAsync(scheduler, 2);
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.Succeeded, Is.False);
+            Assert.That(failed.Result.Succeeded, Is.False);
             Assert.That(
-                failed.Error?.Failure,
+                failed.Result.Error?.Failure,
                 Is.EqualTo(SnapshotCaptureFailure.MappingReadFailed));
-            Assert.That(succeeded.Succeeded, Is.True);
+            Assert.That(failed.Statistics.FailedCount, Is.EqualTo(1));
+            Assert.That(succeeded.Result.Succeeded, Is.True);
+            Assert.That(succeeded.Statistics.SampleCount, Is.EqualTo(2));
             Assert.That(scheduler.Statistics.SucceededCount, Is.EqualTo(1));
             Assert.That(scheduler.Statistics.FailedCount, Is.EqualTo(1));
             Assert.That(
@@ -250,8 +260,10 @@ public sealed class ClientSnapshotSchedulerTests
                 default));
     }
 
-    private static async Task<SnapshotCaptureResult> ReadResultAsync(
-        System.Threading.Channels.ChannelReader<SnapshotCaptureResult> reader)
+    private static async Task<SnapshotCaptureObservation>
+        ReadObservationAsync(
+            System.Threading.Channels.ChannelReader<
+                SnapshotCaptureObservation> reader)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         try

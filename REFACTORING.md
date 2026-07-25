@@ -652,10 +652,14 @@ snapshots into the runtime, retains failed capture diagnostics, clears the
 executable snapshot when the newest capture fails, executes intents only
 against the newest coherent snapshot, and reliably reports every
 issuance outcome. Capture and intent pumps are cancellable and disposal awaits
-the scheduler, pumps, and runtime session.
+the scheduler, pumps, and runtime session. It also publishes a bounded
+latest-value stream of immutable capture observations. Each observation pairs
+the successful or failed result with its rolling timing and memory-read
+statistics, so slow consumers cannot create an unbounded diagnostics backlog.
 
 The WPF `ClientRuntimeViewModel` owns that host, marshals immutable views through
-an injected UI dispatcher, and exposes lifecycle relay commands. Feature
+an injected UI dispatcher, exposes capture health, errors, snapshots, and
+statistics as bindable state, and exposes lifecycle relay commands. Feature
 ViewModels may forward additional typed runtime commands through the same
 boundary. The legacy engine remains authoritative until client attachment and
 the corresponding UI slices are explicitly cut over.
@@ -1133,6 +1137,10 @@ As of July 24, 2026:
 - Host each client through one Interop-owned runtime host that serializes
   snapshot publication, intent execution, issuance feedback, and awaited
   disposal without depending on WPF.
+- Publish capture diagnostics from each runtime host through a bounded,
+  latest-value observation stream that includes failures and rolling timing
+  statistics. Project that stream into bindable WPF state without adding a
+  polling loop.
 - Attach one read-only shadow runtime to each discovered USDA 7.41 client
   before UI cutover. Use only query and virtual-memory-read process rights,
   reject runtime commands at the shadow host boundary, skip unsupported

@@ -19,6 +19,9 @@ public sealed class ReadOnlyClientRuntimeHost : IClientRuntimeHost
 
     public ClientIdentity Client => host.Client;
 
+    public ChannelReader<SnapshotCaptureObservation> Captures =>
+        host.Captures;
+
     public ChannelReader<MacroViewSnapshot> Views => host.Views;
 
     public SnapshotCaptureResult? LatestCaptureResult =>

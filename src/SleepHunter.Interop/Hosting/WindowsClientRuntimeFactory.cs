@@ -151,6 +151,9 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
 
         public ClientIdentity Client => host.Client;
 
+        public System.Threading.Channels.ChannelReader<
+            SnapshotCaptureObservation> Captures => host.Captures;
+
         public System.Threading.Channels.ChannelReader<MacroViewSnapshot>
             Views => host.Views;
 
