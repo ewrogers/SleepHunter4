@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Characters;
+using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Runtime.Automation.Staves;
 
@@ -64,4 +65,17 @@ public sealed record StaffCandidate
     public int CastLines { get; }
 
     public bool IsClassNeutral => RequiredClass is null;
+
+    public bool IsEligibleFor(CharacterSnapshot character)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var classCompatible = RequiredClass is null ||
+                              (character.Class != CharacterClass.Unknown &&
+                               RequiredClass == character.Class);
+
+        return classCompatible &&
+               RequiredLevel <= character.Level &&
+               RequiredAbilityLevel <= character.AbilityLevel;
+    }
 }

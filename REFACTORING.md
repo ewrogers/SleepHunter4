@@ -821,6 +821,15 @@ As of July 24, 2026:
 - Rank eligible staves by cast lines, keeping an equally good equipped staff,
   then by inventory slot and stable name ordering.
 - Do not equip a staff that provides no improvement over the base spell.
+- Evaluate staff switch commands from the latest coherent character, inventory,
+  and equipment snapshot rather than from command-captured mutable models.
+- Sequence staff equipping through the confirmed inventory panel before
+  emitting a semantic weapon intent.
+- Revalidate the selected class requirement and inventory slot after panel
+  changes and before retries.
+- Confirm weapon changes only from a later coherent equipment snapshot.
+- Publish stable snapshot-unavailable, selection-invalidated,
+  panel-unavailable, timed-out, cancelled, and succeeded staff outcomes.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
@@ -840,6 +849,7 @@ them:
 - Exact WPF hosting and dependency-injection packages.
 - Whether game metadata and persistence need separate assemblies.
 - Timing of patcher extraction.
+- Exact expanded-inventory input sequencing for equipment intents.
 - Legacy macro-state compatibility and migration details.
 - Lua script trust model and capabilities.
 - MoonSharp package and version.

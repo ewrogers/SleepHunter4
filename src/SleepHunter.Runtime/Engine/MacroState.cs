@@ -1,6 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -25,7 +26,8 @@ public sealed record MacroState
         PendingAction? pendingAction,
         SpellQueueState? spellQueue = null,
         PanelTransitionState? panelTransition = null,
-        long nextClientActionId = 1)
+        long nextClientActionId = 1,
+        StaffSwitchState? staffSwitch = null)
     {
         if (revision < 0)
         {
@@ -67,6 +69,7 @@ public sealed record MacroState
         SpellQueue = spellQueue ?? SpellQueueState.Empty;
         PanelTransition = panelTransition;
         NextClientActionId = nextClientActionId;
+        StaffSwitch = staffSwitch;
     }
 
     public long Revision { get; }
@@ -84,6 +87,8 @@ public sealed record MacroState
     public SpellQueueState SpellQueue { get; }
 
     public PanelTransitionState? PanelTransition { get; }
+
+    public StaffSwitchState? StaffSwitch { get; }
 
     internal long NextClientActionId { get; }
 }

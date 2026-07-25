@@ -1,4 +1,6 @@
 ﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Staves;
+using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Hosting;
@@ -161,6 +163,86 @@ public sealed class MacroSessionTests
     }
 
     [Test]
+    public async Task ShouldSequenceAndConfirmStaffSwitchThroughSession()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var session = new MacroSession(
+            new MacroEngine(),
+            new MacroClock(timeProvider));
+        var staff = new StaffCandidate(
+            "staff",
+            CharacterClass.Wizard,
+            requiredLevel: 0,
+            requiredAbilityLevel: 0,
+            castLines: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(7, staff.Name)
+        ]);
+        var character = new CharacterSnapshot(
+            CharacterClass.Wizard,
+            level: 99,
+            abilityLevel: 99);
+
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 1,
+                MacroTimestamp.Zero,
+                ClientPanel.Stats,
+                character,
+                inventory,
+                new EquipmentSnapshot(weaponName: null)));
+        await session.Views.ReadUntilAsync(view => view.Revision == 1);
+        await session.SendCommandAsync(new StartMacroCommand());
+        await session.Views.ReadUntilAsync(view => view.Revision == 2);
+        await session.SendCommandAsync(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                new StaffEquipmentPolicy(
+                    TimeSpan.FromMilliseconds(100),
+                    maximumAttempts: 2)));
+
+        var panelIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+            intent => intent is SwitchPanelIntent);
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var panelTime = new MacroTimestamp(TimeSpan.FromTicks(1));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 2,
+                panelTime,
+                ClientPanel.Inventory,
+                character,
+                inventory,
+                new EquipmentSnapshot(weaponName: null)));
+        var weaponIntent =
+            (SetEquippedWeaponIntent)await session.Intents.ReadUntilAsync(
+                intent => intent is SetEquippedWeaponIntent);
+
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var equippedTime = new MacroTimestamp(TimeSpan.FromTicks(2));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 3,
+                equippedTime,
+                ClientPanel.Inventory,
+                character,
+                InventorySnapshot.Empty,
+                new EquipmentSnapshot(staff.Name)));
+        var confirmed = await session.Views.ReadUntilAsync(
+            view => view.StaffSwitch?.Status == StaffSwitchStatus.Succeeded);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(panelIntent.ActionId.Value, Is.EqualTo(1));
+            Assert.That(weaponIntent.ActionId.Value, Is.EqualTo(2));
+            Assert.That(weaponIntent.StaffName, Is.EqualTo(staff.Name));
+            Assert.That(weaponIntent.InventorySlot, Is.EqualTo(7));
+            Assert.That(confirmed.PendingActionId, Is.Null);
+        });
+    }
+
+    [Test]
     public async Task ShouldAwaitShutdownAndRejectNewInputAfterDisposal()
     {
         var timeProvider = new ManualTimeProvider();
@@ -217,7 +299,10 @@ public sealed class MacroSessionTests
     private static ClientSnapshot CreateSnapshot(
         long sequence,
         MacroTimestamp capturedAt,
-        ClientPanel activePanel = ClientPanel.Unknown) =>
+        ClientPanel activePanel = ClientPanel.Unknown,
+        CharacterSnapshot? character = null,
+        InventorySnapshot? inventory = null,
+        EquipmentSnapshot? equipment = null) =>
         new(
             new SnapshotSequence(sequence),
             capturedAt,
@@ -225,5 +310,8 @@ public sealed class MacroSessionTests
             new ClientIdentity("session-client", "test"),
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
-            activePanel);
+            activePanel,
+            character,
+            inventory,
+            equipment);
 }

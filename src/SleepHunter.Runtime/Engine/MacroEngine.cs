@@ -2,6 +2,7 @@
 using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
@@ -10,7 +11,7 @@ using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
 
-public sealed class MacroEngine : IMacroEngine
+public sealed partial class MacroEngine : IMacroEngine
 {
     public MacroDecision Decide(
         MacroState currentState,
@@ -68,6 +69,11 @@ public sealed class MacroEngine : IMacroEngine
                 RequestPanelTransition(
                     currentState,
                     requestPanel,
+                    currentTime),
+            RequestStaffSwitchCommand requestStaff =>
+                RequestStaffSwitch(
+                    currentState,
+                    requestStaff,
                     currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
@@ -135,7 +141,8 @@ public sealed class MacroEngine : IMacroEngine
             currentState.LatestSnapshot,
             currentTime,
             pendingAction: null,
-            panelTransition: CancelPendingPanelTransition(currentState));
+            panelTransition: CancelPendingPanelTransition(currentState),
+            staffSwitch: CancelPendingStaffSwitch(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -161,7 +168,10 @@ public sealed class MacroEngine : IMacroEngine
                 : null,
             panelTransition: nextLifecycle == MacroLifecycle.Running
                 ? currentState.PanelTransition
-                : CancelPendingPanelTransition(currentState));
+                : CancelPendingPanelTransition(currentState),
+            staffSwitch: nextLifecycle == MacroLifecycle.Running
+                ? currentState.StaffSwitch
+                : CancelPendingStaffSwitch(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -202,6 +212,9 @@ public sealed class MacroEngine : IMacroEngine
         var panelTransition = clientLoggedOut
             ? CancelPendingPanelTransition(currentState)
             : currentState.PanelTransition;
+        var staffSwitch = clientLoggedOut
+            ? CancelPendingStaffSwitch(currentState)
+            : currentState.StaffSwitch;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -213,6 +226,44 @@ public sealed class MacroEngine : IMacroEngine
                 currentState.PendingAction.MaximumAttempts,
                 switchIntent.ActionId);
             pendingAction = null;
+
+            if (staffSwitch is
+                {
+                    Status: StaffSwitchStatus.WaitingForInventory,
+                    Selection: { } selection
+                } &&
+                switchIntent.TargetPanel == ClientPanel.Inventory)
+            {
+                if (!IsStaffSelectionStillValid(selection, snapshot))
+                {
+                    return Changed(
+                        currentState,
+                        lifecycle,
+                        stopReason,
+                        snapshot,
+                        lastTransitionAt,
+                        pendingAction: null,
+                        panelTransition: panelTransition,
+                        staffSwitch: staffSwitch.SelectionInvalidated());
+                }
+
+                return IssueStaffEquipmentAttempt(
+                    currentState,
+                    selection,
+                    staffSwitch.AttemptTimeout,
+                    checked(staffSwitch.Attempt + 1),
+                    staffSwitch.MaximumAttempts,
+                    currentTime,
+                    snapshot,
+                    panelTransition);
+            }
+        }
+
+        if (!clientLoggedOut &&
+            CanConfirmStaffEquipment(currentState.PendingAction, snapshot))
+        {
+            pendingAction = null;
+            staffSwitch = currentState.StaffSwitch?.Succeeded();
         }
 
         return Changed(
@@ -222,7 +273,8 @@ public sealed class MacroEngine : IMacroEngine
             snapshot,
             lastTransitionAt,
             pendingAction,
-            panelTransition: panelTransition);
+            panelTransition: panelTransition,
+            staffSwitch: staffSwitch);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -295,15 +347,47 @@ public sealed class MacroEngine : IMacroEngine
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not { } pendingAction ||
             pendingAction.Intent.ActionId != deadlineElapsed.ActionId ||
-            currentTime < pendingAction.Deadline ||
-            pendingAction.Intent is not SwitchPanelIntent switchIntent ||
-            currentState.PanelTransition is not { } panelTransition)
+            currentTime < pendingAction.Deadline)
+        {
+            return Unchanged(currentState);
+        }
+
+        return pendingAction.Intent switch
+        {
+            SwitchPanelIntent switchIntent => HandlePanelDeadline(
+                currentState,
+                pendingAction,
+                switchIntent,
+                currentTime),
+            SetEquippedWeaponIntent weaponIntent => HandleStaffEquipmentDeadline(
+                currentState,
+                pendingAction,
+                weaponIntent,
+                currentTime),
+            _ => Unchanged(currentState)
+        };
+    }
+
+    private static MacroDecision HandlePanelDeadline(
+        MacroState currentState,
+        PendingAction pendingAction,
+        SwitchPanelIntent switchIntent,
+        MacroTimestamp currentTime)
+    {
+        if (currentState.PanelTransition is not { } panelTransition)
         {
             return Unchanged(currentState);
         }
 
         if (pendingAction.Attempt >= pendingAction.MaximumAttempts)
         {
+            var staffSwitch = currentState.StaffSwitch is
+            {
+                Status: StaffSwitchStatus.WaitingForInventory
+            } waiting
+                ? waiting.PanelUnavailable()
+                : currentState.StaffSwitch;
+
             return Changed(
                 currentState,
                 currentState.Lifecycle,
@@ -311,7 +395,8 @@ public sealed class MacroEngine : IMacroEngine
                 currentState.LatestSnapshot,
                 currentState.LastTransitionAt,
                 pendingAction: null,
-                panelTransition: panelTransition.TimedOut());
+                panelTransition: panelTransition.TimedOut(),
+                staffSwitch: staffSwitch);
         }
 
         return IssuePanelTransitionAttempt(
@@ -320,7 +405,8 @@ public sealed class MacroEngine : IMacroEngine
             pendingAction.AttemptTimeout,
             checked(pendingAction.Attempt + 1),
             pendingAction.MaximumAttempts,
-            currentTime);
+            currentTime,
+            currentState.StaffSwitch);
     }
 
     private static MacroDecision IssuePanelTransitionAttempt(
@@ -329,7 +415,8 @@ public sealed class MacroEngine : IMacroEngine
         TimeSpan attemptTimeout,
         int attempt,
         int maximumAttempts,
-        MacroTimestamp currentTime)
+        MacroTimestamp currentTime,
+        StaffSwitchState? staffSwitch = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new SwitchPanelIntent(actionId, targetPanel);
@@ -355,6 +442,7 @@ public sealed class MacroEngine : IMacroEngine
             currentState.LastTransitionAt,
             pendingAction,
             panelTransition: transition,
+            staffSwitch: staffSwitch,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -370,8 +458,19 @@ public sealed class MacroEngine : IMacroEngine
         ClientSnapshot snapshot)
     {
         if (pendingAction?.Intent is not SwitchPanelIntent switchIntent ||
-            !snapshot.ActivePanel.IsEquivalentTo(switchIntent.TargetPanel) ||
-            snapshot.CaptureStartedAt <= pendingAction.IssuedAt)
+            !snapshot.ActivePanel.IsEquivalentTo(switchIntent.TargetPanel))
+        {
+            return false;
+        }
+
+        return CanSnapshotConfirmAction(pendingAction, snapshot);
+    }
+
+    private static bool CanSnapshotConfirmAction(
+        PendingAction pendingAction,
+        ClientSnapshot snapshot)
+    {
+        if (snapshot.CaptureStartedAt <= pendingAction.IssuedAt)
         {
             return false;
         }
@@ -420,7 +519,8 @@ public sealed class MacroEngine : IMacroEngine
         PanelTransitionState? panelTransition = null,
         long? nextClientActionId = null,
         MacroIntent? intent = null,
-        ImmutableArray<ScheduledMacroEvent> scheduledEvents = default)
+        ImmutableArray<ScheduledMacroEvent> scheduledEvents = default,
+        StaffSwitchState? staffSwitch = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -436,7 +536,8 @@ public sealed class MacroEngine : IMacroEngine
             pendingAction,
             spellQueue ?? currentState.SpellQueue,
             panelTransition ?? currentState.PanelTransition,
-            nextClientActionId ?? currentState.NextClientActionId);
+            nextClientActionId ?? currentState.NextClientActionId,
+            staffSwitch ?? currentState.StaffSwitch);
 
         return new MacroDecision(
             nextState,
