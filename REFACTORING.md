@@ -645,6 +645,21 @@ ViewModels consume:
 - Async commands that post reliable runtime commands.
 - Application services for dialogs, navigation, persistence, and updates.
 
+`SleepHunter.Interop` provides one `ClientRuntimeHost` per attached client. The
+host composes a runtime session, independent snapshot scheduler, semantic
+intent executor, and guarded window-target provider. It forwards only complete
+snapshots into the runtime, retains failed capture diagnostics, clears the
+executable snapshot when the newest capture fails, executes intents only
+against the newest coherent snapshot, and reliably reports every
+issuance outcome. Capture and intent pumps are cancellable and disposal awaits
+the scheduler, pumps, and runtime session.
+
+The WPF `ClientRuntimeViewModel` owns that host, marshals immutable views through
+an injected UI dispatcher, and exposes lifecycle relay commands. Feature
+ViewModels may forward additional typed runtime commands through the same
+boundary. The legacy engine remains authoritative until client attachment and
+the corresponding UI slices are explicitly cut over.
+
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:
 
@@ -675,8 +690,12 @@ need to be converted before they are replaced. Runtime state and services must
 not depend on the toolkit. Messenger-based communication will be used only when
 direct command, snapshot, or service relationships are insufficient.
 
-The exact package version will be selected and centrally pinned when WPF
-implementation begins.
+`CommunityToolkit.Mvvm` 8.4.2 is centrally pinned and referenced only by the WPF
+application. The July 25, 2026 package audit identified it as the current,
+non-deprecated MIT release. Its purpose is observable ViewModels and relay
+commands. Runtime, Interop, and Persistence remain independent of it. It can be
+removed if the WPF layer is replaced or the small ViewModel surface no longer
+benefits from the package.
 
 ## Future Lua Scripting
 
@@ -1098,6 +1117,11 @@ As of July 24, 2026:
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
+- Pin CommunityToolkit.Mvvm 8.4.2 centrally and keep it scoped to the WPF
+  application.
+- Host each client through one Interop-owned runtime host that serializes
+  snapshot publication, intent execution, issuance feedback, and awaited
+  disposal without depending on WPF.
 - Design a scripting-compatible intent boundary without adding scripting now.
 - Treat MoonSharp as a future optional adapter, not a runtime dependency.
 - Keep patching isolated from automation decisions.
@@ -1110,7 +1134,6 @@ them:
 - Exact snapshot cadence and adaptive observation policy.
 - Whether snapshot sections need independent capture rates.
 - Final runtime type names.
-- Exact CommunityToolkit.Mvvm version.
 - Exact WPF hosting and dependency-injection packages.
 - Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
