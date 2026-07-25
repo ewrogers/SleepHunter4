@@ -796,6 +796,9 @@ As of July 24, 2026:
 - Use `IMacroEngine.Decide` as the pure state-transition contract.
 - Name requested external operations `MacroIntent` values so execution remains
   separate from deterministic decisions.
+- Name intent types with concise verb-and-noun forms such as
+  `EquipWeaponIntent`. Use setter-style prefixes only when they add necessary
+  meaning.
 - Represent spell queue edits as reliable, identifier-based runtime commands.
 - Preserve the logical spell queue cursor across insert, move, update, and
   non-current removal operations.
@@ -830,6 +833,15 @@ As of July 24, 2026:
 - Confirm weapon changes only from a later coherent equipment snapshot.
 - Publish stable snapshot-unavailable, selection-invalidated,
   panel-unavailable, timed-out, cancelled, and succeeded staff outcomes.
+- Capture vitals and spellbook entries as immutable snapshot sections. Keep
+  observed client action-delay flags separate from runtime-owned cooldown
+  deadlines.
+- Derive spell readiness from queue target level, observed spell availability,
+  current mana policy, client action delay, and local cooldown state.
+- Treat an unreachable target level as a stable unavailable result rather than
+  retrying it indefinitely.
+- Calculate cast duration from configurable zero-line, single-line, and
+  multi-line timing plus a positive completion margin.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

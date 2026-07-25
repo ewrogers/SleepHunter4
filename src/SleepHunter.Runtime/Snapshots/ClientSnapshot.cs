@@ -15,7 +15,9 @@ public sealed record ClientSnapshot
         ClientPanel activePanel = ClientPanel.Unknown,
         CharacterSnapshot? character = null,
         InventorySnapshot? inventory = null,
-        EquipmentSnapshot? equipment = null)
+        EquipmentSnapshot? equipment = null,
+        VitalsSnapshot? vitals = null,
+        SpellbookSnapshot? spellbook = null)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -52,6 +54,8 @@ public sealed record ClientSnapshot
         Character = character;
         Inventory = inventory;
         Equipment = equipment;
+        Vitals = vitals;
+        Spellbook = spellbook;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -73,6 +77,10 @@ public sealed record ClientSnapshot
     public InventorySnapshot? Inventory { get; }
 
     public EquipmentSnapshot? Equipment { get; }
+
+    public VitalsSnapshot? Vitals { get; }
+
+    public SpellbookSnapshot? Spellbook { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }

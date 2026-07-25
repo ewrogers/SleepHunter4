@@ -65,7 +65,7 @@ public sealed class ClientSnapshotTests
     }
 
     [Test]
-    public void ShouldPreserveCharacterInventoryAndEquipmentSections()
+    public void ShouldPreserveOptionalSnapshotSections()
     {
         var character = new CharacterSnapshot(
             CharacterClass.Wizard,
@@ -76,6 +76,22 @@ public sealed class ClientSnapshotTests
             new InventoryItemSnapshot(1, "staff")
         ]);
         var equipment = new EquipmentSnapshot("weapon");
+        var vitals = new VitalsSnapshot(
+            currentHealth: 100,
+            maximumHealth: 100,
+            currentMana: 50,
+            maximumMana: 100);
+        var spellbook = new SpellbookSnapshot(
+        [
+            new SpellSnapshot(
+                "spell",
+                slot: 1,
+                currentLevel: 1,
+                maximumLevel: 100,
+                castLines: 1,
+                manaCost: 10,
+                cooldown: TimeSpan.Zero)
+        ]);
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -86,13 +102,17 @@ public sealed class ClientSnapshotTests
             ClientPanel.Inventory,
             character,
             inventory,
-            equipment);
+            equipment,
+            vitals,
+            spellbook);
 
         Assert.Multiple(() =>
         {
             Assert.That(snapshot.Character, Is.EqualTo(character));
             Assert.That(snapshot.Inventory, Is.EqualTo(inventory));
             Assert.That(snapshot.Equipment, Is.EqualTo(equipment));
+            Assert.That(snapshot.Vitals, Is.EqualTo(vitals));
+            Assert.That(snapshot.Spellbook, Is.EqualTo(spellbook));
         });
     }
 }
