@@ -15,7 +15,9 @@ namespace SleepHunter.Models
         private byte color;
         private bool isGold;
         private string name;
+        private string clientDisplayName;
         private int quantity;
+        private bool canStack;
         private uint durability;
         private uint maximumDurability;
         private ImageSource icon;
@@ -66,6 +68,12 @@ namespace SleepHunter.Models
 
         public string DisplayName => ColorTextRegex.Replace(Name ?? string.Empty, string.Empty);
 
+        public string ClientDisplayName
+        {
+            get => clientDisplayName;
+            set => SetProperty(ref clientDisplayName, value);
+        }
+
         public int Quantity
         {
             get => quantity;
@@ -83,6 +91,12 @@ namespace SleepHunter.Models
         public string QuantityBadgeText => IsGold ? FormattedQuantity : $"x{FormattedQuantity}";
 
         public bool ShowsQuantity => IsGold || Quantity > 1;
+
+        public bool CanStack
+        {
+            get => canStack;
+            set => SetProperty(ref canStack, value);
+        }
 
         public uint Durability
         {

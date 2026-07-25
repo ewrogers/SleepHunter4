@@ -81,6 +81,46 @@ These are likely to change each client version and must be re-located with new o
 
 These are defined in the `Versions.xml` file, and are mostly either `StaticVariable` or `DynamicVariable` types.
 
+Numeric variables can declare their in-memory representation with the `Type` attribute (`Byte`, `SByte`,
+`Int16`, `UInt16`, `Int32`, or `UInt32`). Omitting it preserves the legacy behavior of reading a formatted decimal
+string. The USDA 7.41 profile uses the client's documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`,
+and `EquipPane` roots instead of deriving character stats from UI text.
+
+For 7.41, `Player.Stats` exposes direct level, ability level, progression, attributes, vitals, weight,
+armor class, combat modifiers, elements, and magic resistance. `Player.Profile` exposes the raw base class
+as `CharacterClass` plus the separately retained
+`DisplayClass` string used for advanced classes such as Summoner. It also includes the character ID,
+user state, action lock, nation, title, guild, guild rank, group-member text, and the two self-look
+metadata flags. The parsed `GroupMemberNames` cache is also available for matching live players.
+
+Inventory keeps its compact session record for stable item identity and enriches it from the live item pane
+with the display label, stack flag, quantity, and correctly ordered current/maximum durability. Equipment
+reads all 18 sprite, dye, name, and durability entries from the complete `EquipPane`.
+
+The skillbook and spellbook prefer the UI's 90-slot pointer arrays, exposing action-delay state, client
+name-suffix fields, spell cast lines, and skill cooldown progress/start/end timestamps. Their original
+compact session mappings—and the legacy skill cooldown scan—remain as fallbacks if a pane snapshot cannot
+be read safely.
+
+`Player.WorldEntities.KnownEntities` is an ID-keyed snapshot of the living objects currently known to the
+client, including name (when the server supplied one), ID, map X/Y, direction, runtime kind, local-player
+state, and group membership. It includes nearest-player, nearest-monster, and nearest-group-member queries.
+This is the client's known-object collection, not a promise that every object survived the renderer's
+viewport culling for the latest frame.
+
+The 7.41 character-name buffer is only accepted while the corresponding `WorldUserFunc` generation is
+live and the bounded name is structurally valid. Chat typing detection now looks for a visible, registered
+chat/tell input pane and retains the older flag as a compatibility fallback.
+
+The 7.41 roots and layouts were reconciled against the
+[`darkages-741-re` runtime state guide](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/state-walking.md)
+and its
+[`WorldUserFunc` character layout](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/session.md),
+[`inventory and character panes`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/inventory-ui.md),
+and [`world-object layouts`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/world.md).
+One executable-verified exception is the `EquipPane` singleton: the signed `7D4E--1K` USDA client uses
+`0x006FC914`; the nearby `0x006FC8EC` global listed in the reference is null in the live client.
+
 ### Static Variables
 
 You can think of a `StaticVariable` as one that is always located in the same spot in memory.
@@ -128,8 +168,8 @@ Now that Auto-Update is functional, it should be much easier to distribute these
 It is recommended that you use [Visual Studio 2022+](https://visualstudio.microsoft.com/vs/0) for developing on Windows.
 I am not sure of WPF support within other IDEs.
 
-Unfortunately this repository does not have *any* unit tests, so you will have to test for regressions manually.
-Please be mindful of the users of this application, and thoroughly test any functionality for breaking changes.
+The repository includes focused unit tests for memory pointer walking and snapshot parsing. Live-client
+validation is still important for version-specific pointer or lifecycle changes.
 
 ## Packaging 📦
 

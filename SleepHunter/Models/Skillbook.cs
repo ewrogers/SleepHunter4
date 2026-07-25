@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -20,7 +21,10 @@ namespace SleepHunter.Models
     public sealed class Skillbook : UpdatableObject, IEnumerable<Skill>, IDisposable
     {
         private const string SkillbookKey = @"Skillbook";
+        private const string SkillbookPanesKey = @"SkillbookPanes";
+        private const string SkillbookPaneCapacityKey = @"SkillbookPaneCapacity";
         private const string SkillCooldownsKey = "SkillCooldowns";
+        private const int SkillPaneSnapshotSize = 0x1B8;
 
         public const int TemuairSkillCount = 36;
         public const int MedeniaSkillCount = 36;
@@ -41,13 +45,13 @@ namespace SleepHunter.Models
             from s in skills select s;
 
         public IEnumerable<Skill> TemuairSkills => 
-            from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot < TemuairSkillCount select s;
+            from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot <= TemuairSkillCount select s;
 
         public IEnumerable<Skill> MedeniaSkills => 
-            from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount) select s;
+            from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot <= (TemuairSkillCount + MedeniaSkillCount) select s;
 
         public IEnumerable<Skill> WorldSkills => 
-            from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot < (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s;
+            from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot <= (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s;
 
         public IEnumerable<string> ActiveSkills => 
             from a in activeSkills where a.Value select a.Key;
@@ -128,6 +132,9 @@ namespace SleepHunter.Models
                 return;
             }
 
+            if (TryUpdateFromPanes(version))
+                return;
+
             if (!version.TryGetVariable(SkillbookKey, out var skillbookVariable))
             {
                 ResetDefaults();
@@ -152,12 +159,14 @@ namespace SleepHunter.Models
                 {
                     var hasSkill = reader.ReadInt16() != 0;
                     var iconIndex = reader.ReadUInt16();
-                    var name = reader.ReadFixedString(skillbookVariable.MaxLength);
+                    var rawName = reader.ReadFixedString(skillbookVariable.MaxLength);
+                    var name = rawName;
 
-                    if (!Ability.TryParseLevels(name, out name, out var currentLevel, out var maximumLevel))
+                    if (!Ability.TryParseLevels(rawName, out name, out var currentLevel, out var maximumLevel))
                     {
-                        if (!string.IsNullOrWhiteSpace(name))
-                            skills[i].Name = name.Trim();
+                        name = rawName.Trim();
+                        currentLevel = 0;
+                        maximumLevel = 0;
                     }
 
                     skills[i].IsEmpty = !hasSkill;
@@ -166,6 +175,7 @@ namespace SleepHunter.Models
                     skills[i].Name = name;
                     skills[i].CurrentLevel = currentLevel;
                     skills[i].MaximumLevel = maximumLevel;
+                    ResetClientPaneState(skills[i]);
 
                     if (!skills[i].IsEmpty && !string.IsNullOrWhiteSpace(skills[i].Name))
                         metadata = SkillMetadataManager.Instance.GetSkill(name);
@@ -200,6 +210,243 @@ namespace SleepHunter.Models
                 }
                 catch { }
             }
+
+            for (var i = entryCount; i < skills.Length; i++)
+                ResetSkill(skills[i]);
+        }
+
+        private bool TryUpdateFromPanes(ClientVersion version)
+        {
+            if (!version.TryGetVariable(SkillbookPanesKey, out var panesVariable) ||
+                !version.TryGetVariable(SkillbookPaneCapacityKey, out var capacityVariable) ||
+                !capacityVariable.TryReadInt32(reader, out var capacity) ||
+                capacity <= 0 ||
+                capacity > skills.Length ||
+                !panesVariable.TryDereferenceValue(reader, out var panePointersAddress))
+            {
+                return false;
+            }
+
+            var pointerCount = Math.Min(capacity, panesVariable.Count);
+            if (!RuntimeMemoryReader.TryReadBytes(
+                reader,
+                panePointersAddress,
+                checked(pointerCount * sizeof(uint)),
+                out var pointers))
+            {
+                return false;
+            }
+
+            var records = new SkillPaneRecord?[skills.Length];
+            var populatedPointerCount = 0;
+            for (var index = 0; index < pointerCount; index++)
+            {
+                var paneAddress = BinaryPrimitives.ReadUInt32LittleEndian(
+                    pointers.AsSpan(index * sizeof(uint), sizeof(uint)));
+                if (paneAddress == 0)
+                    continue;
+
+                populatedPointerCount++;
+                if (!RuntimeMemoryReader.TryReadBytes(
+                    reader,
+                    paneAddress + 0x190,
+                    SkillPaneSnapshotSize,
+                    out var snapshot))
+                {
+                    return false;
+                }
+
+                var record = ParseSkillPaneSnapshot(snapshot);
+                if (record.Slot == 0 || record.Slot > skills.Length || records[record.Slot - 1].HasValue)
+                    return false;
+
+                records[record.Slot - 1] = record;
+            }
+
+            if (populatedPointerCount == 0)
+                return false;
+
+            if (!capacityVariable.TryReadInt32(reader, out var currentCapacity) ||
+                currentCapacity != capacity ||
+                !panesVariable.TryDereferenceValue(reader, out var currentPanePointersAddress) ||
+                currentPanePointersAddress != panePointersAddress)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < skills.Length; index++)
+            {
+                if (!records[index].HasValue)
+                {
+                    ResetSkill(skills[index]);
+                    continue;
+                }
+
+                var record = records[index].Value;
+                var skill = skills[index];
+                ParsePaneAbilityName(
+                    record.Name,
+                    record.NameSuffixLeft,
+                    record.BaseNameLength,
+                    out var name,
+                    out var currentLevel,
+                    out var maximumLevel);
+
+                skill.IsEmpty = string.IsNullOrWhiteSpace(name);
+                skill.IconIndex = record.IconIndex;
+                skill.Icon = skill.IsEmpty ? null : IconManager.Instance.GetSkillIcon(record.IconIndex);
+                skill.Name = name;
+                skill.CurrentLevel = currentLevel;
+                skill.MaximumLevel = maximumLevel;
+                skill.CooldownProgress = record.CooldownProgress;
+                skill.HasClientCooldownProgress = true;
+                skill.CooldownStartMilliseconds = record.CooldownStartMilliseconds;
+                skill.CooldownEndMilliseconds = record.CooldownEndMilliseconds;
+                skill.IsOnCooldown = record.IsCooldownActive;
+                skill.IsActionDelayed = record.ActionDelayActive;
+                skill.ClientNameSuffixLeft = record.NameSuffixLeft;
+                skill.ClientNameSuffixRight = record.NameSuffixRight;
+                skill.ClientBaseNameLength = record.BaseNameLength;
+
+                var isActive = IsActive(skill.Name);
+                skill.IsActive = isActive.HasValue && isActive.Value;
+                ApplyMetadata(skill);
+            }
+
+            return true;
+        }
+
+        internal static SkillPaneRecord ParseSkillPaneSnapshot(ReadOnlySpan<byte> snapshot)
+        {
+            if (snapshot.Length != SkillPaneSnapshotSize)
+                throw new InvalidDataException(
+                    $"A skill pane snapshot must contain {SkillPaneSnapshotSize} bytes.");
+
+            return new SkillPaneRecord(
+                BinaryPrimitives.ReadUInt16LittleEndian(snapshot),
+                ReadNullTerminatedAscii(snapshot.Slice(0x02, 0x80)),
+                snapshot[0x182],
+                BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0x184, 4)),
+                BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0x188, 4)),
+                BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0x18C, 4)),
+                snapshot[0x190] != 0,
+                snapshot[0x192] != 0,
+                BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x1AC, 4)),
+                BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x1B0, 4)),
+                BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x1B4, 4)));
+        }
+
+        internal readonly record struct SkillPaneRecord(
+            ushort IconIndex,
+            string Name,
+            byte Slot,
+            uint CooldownProgress,
+            uint CooldownStartMilliseconds,
+            uint CooldownEndMilliseconds,
+            bool CooldownVisualActive,
+            bool ActionDelayActive,
+            int NameSuffixLeft,
+            int NameSuffixRight,
+            int BaseNameLength)
+        {
+            // The progress counter is retained after the owning timer clears. The
+            // separate visual-active byte is the client's cooldown lifecycle flag.
+            public bool IsCooldownActive => CooldownVisualActive;
+        }
+
+        private static string ReadNullTerminatedAscii(ReadOnlySpan<byte> bytes)
+        {
+            var terminator = bytes.IndexOf((byte)0);
+            if (terminator >= 0)
+                bytes = bytes[..terminator];
+
+            return Encoding.ASCII.GetString(bytes);
+        }
+
+        private static void ParsePaneAbilityName(
+            string rawName,
+            int suffixLeft,
+            int baseNameLength,
+            out string name,
+            out int currentLevel,
+            out int maximumLevel)
+        {
+            if (Ability.TryParseLevels(rawName, out name, out currentLevel, out maximumLevel))
+                return;
+
+            name = rawName?.Trim();
+            currentLevel = 0;
+            maximumLevel = 0;
+
+            if (baseNameLength > 0 && rawName != null && baseNameLength <= rawName.Length)
+            {
+                name = rawName[..baseNameLength].Trim();
+                if (suffixLeft > 0)
+                    currentLevel = suffixLeft;
+            }
+        }
+
+        private void ApplyMetadata(Skill skill)
+        {
+            var metadata = !skill.IsEmpty && !string.IsNullOrWhiteSpace(skill.Name)
+                ? SkillMetadataManager.Instance.GetSkill(skill.Name)
+                : null;
+
+            if (metadata != null)
+            {
+                skill.Cooldown = metadata.Cooldown;
+                skill.ManaCost = metadata.ManaCost;
+                skill.CanImprove = metadata.CanImprove;
+                skill.IsAssail = metadata.IsAssail;
+                skill.OpensDialog = metadata.OpensDialog;
+                skill.RequiresDisarm = metadata.RequiresDisarm;
+                skill.MinHealthPercent = metadata.MinHealthPercent > 0 ? metadata.MinHealthPercent : null;
+                skill.MaxHealthPercent = metadata.MaxHealthPercent > 0 ? metadata.MaxHealthPercent : null;
+            }
+            else
+            {
+                skill.Cooldown = TimeSpan.Zero;
+                skill.ManaCost = 0;
+                skill.CanImprove = true;
+                skill.IsAssail = false;
+                skill.OpensDialog = false;
+                skill.RequiresDisarm = false;
+                skill.MinHealthPercent = null;
+                skill.MaxHealthPercent = null;
+            }
+        }
+
+        private static void ResetClientPaneState(Skill skill)
+        {
+            skill.CooldownProgress = 0;
+            skill.HasClientCooldownProgress = false;
+            skill.CooldownStartMilliseconds = 0;
+            skill.CooldownEndMilliseconds = 0;
+            skill.IsActionDelayed = false;
+            skill.ClientNameSuffixLeft = 0;
+            skill.ClientNameSuffixRight = 0;
+            skill.ClientBaseNameLength = 0;
+        }
+
+        private static void ResetSkill(Skill skill)
+        {
+            skill.IsEmpty = true;
+            skill.IconIndex = 0;
+            skill.Icon = null;
+            skill.Name = null;
+            skill.CurrentLevel = 0;
+            skill.MaximumLevel = 0;
+            skill.IsActive = false;
+            skill.IsOnCooldown = false;
+            skill.Cooldown = TimeSpan.Zero;
+            skill.ManaCost = 0;
+            skill.CanImprove = true;
+            skill.IsAssail = false;
+            skill.OpensDialog = false;
+            skill.RequiresDisarm = false;
+            skill.MinHealthPercent = null;
+            skill.MaxHealthPercent = null;
+            ResetClientPaneState(skill);
         }
 
         protected override void Dispose(bool isDisposing)
@@ -222,10 +469,7 @@ namespace SleepHunter.Models
             activeSkills.Clear();
 
             for (int i = 0; i < skills.Length; i++)
-            {
-                skills[i].IsEmpty = true;
-                skills[i].Name = null;
-            }
+                ResetSkill(skills[i]);
         }
 
         private bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, nint processHandle)

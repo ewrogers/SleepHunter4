@@ -250,6 +250,8 @@ namespace SleepHunter.Models
                 equipment[i].Color = 0;
                 equipment[i].IsGold = false;
                 equipment[i].Name = name;
+                equipment[i].ClientDisplayName = name;
+                equipment[i].CanStack = false;
                 equipment[i].Quantity = isEmpty ? 0 : 1;
                 equipment[i].Durability = 0;
                 equipment[i].MaximumDurability = 0;
@@ -272,6 +274,12 @@ namespace SleepHunter.Models
             if (snapshot.Length != EquipmentSnapshotSize)
                 throw new EndOfStreamException("The equipment snapshot was incomplete.");
 
+            if (!snapshotVariable.TryDereferenceValue(reader, out var currentSnapshotAddress) ||
+                currentSnapshotAddress != snapshotAddress)
+            {
+                return false;
+            }
+
             var entryCount = Math.Min(equipment.Length, snapshotVariable.Count);
             var records = ParseEquipmentSnapshot(snapshot, entryCount);
             for (var index = 0; index < entryCount; index++)
@@ -282,6 +290,8 @@ namespace SleepHunter.Models
                 equipment[index].Color = record.DyeColor;
                 equipment[index].IsGold = false;
                 equipment[index].Name = record.Name;
+                equipment[index].ClientDisplayName = record.Name;
+                equipment[index].CanStack = false;
                 equipment[index].Quantity = record.IsPresent ? 1 : 0;
                 equipment[index].Durability = record.Durability;
                 equipment[index].MaximumDurability = record.MaximumDurability;
@@ -312,9 +322,9 @@ namespace SleepHunter.Models
                 var name = ReadNullTerminatedAscii(
                     snapshot.Slice(NameArrayOffset + index * EquipmentNameLength, EquipmentNameLength));
                 var durabilityOffset = DurabilityArrayOffset + index * DurabilityRecordSize;
-                var durability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
-                    snapshot.Slice(durabilityOffset, sizeof(uint)));
                 var maximumDurability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
+                    snapshot.Slice(durabilityOffset, sizeof(uint)));
+                var durability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
                     snapshot.Slice(durabilityOffset + sizeof(uint), sizeof(uint)));
 
                 records[index] = new EquipmentRecord(
@@ -370,6 +380,8 @@ namespace SleepHunter.Models
                 equipment[i].Color = 0;
                 equipment[i].IsGold = false;
                 equipment[i].Name = null;
+                equipment[i].ClientDisplayName = null;
+                equipment[i].CanStack = false;
                 equipment[i].Quantity = 0;
                 equipment[i].Durability = 0;
                 equipment[i].MaximumDurability = 0;

@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
+using SleepHunter.Extensions;
+using SleepHunter.Models;
+
 namespace SleepHunter.Metadata
 {
     public sealed class StaffMetadataManager
@@ -125,10 +128,27 @@ namespace SleepHunter.Metadata
             return spellLines.GetLines(spellName);
         }
 
-        public StaffMetadata GetBestStaffForSpell(string spellName, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
-            => GetBestStaffForSpell(spellName, out var numberOfLines, possibleStaves, maximumLevel, maximumAbilityLevel);
+        public StaffMetadata GetBestStaffForSpell(
+            string spellName,
+            IEnumerable<string> possibleStaves = null,
+            int maximumLevel = 0,
+            int maximumAbilityLevel = 0,
+            PlayerClass? playerClass = null)
+            => GetBestStaffForSpell(
+                spellName,
+                out var numberOfLines,
+                possibleStaves,
+                maximumLevel,
+                maximumAbilityLevel,
+                playerClass);
 
-        public StaffMetadata GetBestStaffForSpell(string spellName, out int? numberOfLines, IEnumerable<string> possibleStaves = null, int maximumLevel = 0, int maximumAbilityLevel = 0)
+        public StaffMetadata GetBestStaffForSpell(
+            string spellName,
+            out int? numberOfLines,
+            IEnumerable<string> possibleStaves = null,
+            int maximumLevel = 0,
+            int maximumAbilityLevel = 0,
+            PlayerClass? playerClass = null)
         {
             numberOfLines = null;
 
@@ -147,6 +167,9 @@ namespace SleepHunter.Metadata
                     continue;
 
                 if (staff.Level > maximumLevel || staff.AbilityLevel > maximumAbilityLevel)
+                    continue;
+
+                if (playerClass.HasValue && !staff.Class.Includes(playerClass.Value))
                     continue;
 
                 var spellLines = lines.Value.GetLines(spellName);

@@ -151,6 +151,19 @@
                                 </StackPanel>
                             </Image.ToolTip>
                         </Image>
+
+                        <Rectangle Name="CooldownProgressRectangle"
+                                   Fill="{DynamicResource ObsidianBackground}"
+                                   Opacity="0.55"
+                                   Margin="1,1,0,0"
+                                   RenderTransformOrigin="0.5,1"
+                                   IsHitTestVisible="False"
+                                   Panel.ZIndex="0"
+                                   Visibility="Collapsed">
+                            <Rectangle.RenderTransform>
+                                <ScaleTransform ScaleY="{Binding CooldownRemainingFraction}"/>
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
                     </Grid>
                 </Border>
 
@@ -278,6 +291,17 @@
                 <Setter TargetName="CooldownRectangle" Property="Visibility" Value="Visible"/>
             </DataTrigger>
 
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSkill}" Value="True"/>
+                    <Condition Binding="{Binding IsOnCooldown}" Value="True"/>
+                    <Condition Binding="{Binding HasClientCooldownProgress}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="CooldownProgressRectangle" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+
             <DataTrigger Binding="{Binding IsEmpty}" Value="True">
                 <Setter TargetName="Icon" Property="ToolTip" Value="{x:Null}"/>
                 <Setter TargetName="Icon" Property="Visibility" Value="Hidden"/>
@@ -286,6 +310,7 @@
                 <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="LevelBorder" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="CooldownRectangle" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="CooldownProgressRectangle" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

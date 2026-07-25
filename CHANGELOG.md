@@ -6,6 +6,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added typed numeric memory variables for byte, signed-byte, 16-bit, and 32-bit values while preserving legacy formatted-string mappings for older client profiles
+- Expanded USDA 7.41 character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
+- Added the parsed 64-entry group-member cache, including names and starred state
+- Added an ID-keyed USDA 7.41 known-living-entity snapshot with player, monster, Mundane, passable, and solid classifications; name, X/Y, direction, local-player, and group-member state; and nearest-player, nearest-monster, and nearest-group-member queries
+- Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
+- Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
+- Added inventory pane display names and stackability alongside the existing stable compact inventory identity
+- Added focused tests for pointer walking, typed values, memory mappings, pane layouts, character classes and names, inventory and equipment snapshots, cooldown wraparound, and world-entity traversal
+
+### Changed
+
+- Reconciled USDA 7.41 memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
+- Kept compact inventory, skillbook, spellbook, and legacy cooldown paths as compatibility fallbacks when richer pane snapshots are unavailable or change during a read
+- Made automatic staff selection aware of the character's base class
+- Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
+- Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
+
+### Fixed
+
+- Prevented stale or unallocated USDA 7.41 character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
+- Kept the executable-verified USDA 7.41 `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
+- Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown
+- Show pane-backed spell cooldowns in the UI by combining the client's live action-delay state with SleepHunter's local cooldown timestamps
+- Corrected inventory and equipment durability ordering so the documented maximum value is no longer interpreted as current durability and vice versa
+- Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
+- Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available
+
 ## [4.11.2] - 2026-07-24
 
 ### Added

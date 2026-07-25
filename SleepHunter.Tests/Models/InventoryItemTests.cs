@@ -64,9 +64,11 @@ namespace SleepHunter.Tests.Models
         {
             var snapshot = new byte[Inventory.InventoryPaneSnapshotSize];
             BinaryPrimitives.WriteUInt16LittleEndian(snapshot, 0x8123);
+            Encoding.ASCII.GetBytes("Viper's Gland [ 12 ]").CopyTo(snapshot.AsSpan(0x02));
             snapshot[0x82] = 6;
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xA8), 12345);
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xAC), 15000);
+            snapshot[0x84] = 7;
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xA8), 15000);
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xAC), 12345);
             BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xB0), 1234567);
             snapshot[0xB4] = 1;
 
@@ -76,7 +78,9 @@ namespace SleepHunter.Tests.Models
             {
                 Assert.That(record.IsValid, Is.True);
                 Assert.That(record.RawSprite, Is.EqualTo(0x8123));
+                Assert.That(record.DisplayName, Is.EqualTo("Viper's Gland [ 12 ]"));
                 Assert.That(record.DyeColor, Is.EqualTo(6));
+                Assert.That(record.Slot, Is.EqualTo(7));
                 Assert.That(record.MaximumDurability, Is.EqualTo(15000));
                 Assert.That(record.Durability, Is.EqualTo(12345));
                 Assert.That(record.Quantity, Is.EqualTo(1234567));

@@ -1279,7 +1279,13 @@ namespace SleepHunter.Macro
             else
                 currentNumberOfLines = null;
 
-            var staffToUse = StaffMetadataManager.Instance.GetBestStaffForSpell(item.Name, out numberOfLines, availableList, client.Stats.Level, client.Stats.AbilityLevel);
+            var staffToUse = StaffMetadataManager.Instance.GetBestStaffForSpell(
+                item.Name,
+                out numberOfLines,
+                availableList,
+                client.Stats.Level,
+                client.Stats.AbilityLevel,
+                client.Profile.CharacterClass);
             if (staffToUse == null)
                 return true;
 
