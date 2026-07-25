@@ -1,4 +1,4 @@
-# SleepHunter Repository Guidance
+﻿# SleepHunter Repository Guidance
 
 ## Scope
 
@@ -23,7 +23,7 @@ speculative behavior.
 
 ## Repository Layout
 
-- `SleepHunter/` contains the main .NET 9 WPF application.
+- `SleepHunter/` contains the main .NET 10 WPF application.
 - `SleepHunter.Updater/` contains the Windows updater.
 - `SleepHunter.Tests/` contains NUnit tests.
 - `data/` contains runtime XML data, including client versions, themes, skills,
@@ -70,7 +70,7 @@ dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj `
     --filter "FullyQualifiedName~TestClassOrMethod"
 ```
 
-The WPF projects require Windows and the .NET 9 SDK. When a running SleepHunter
+The WPF projects require Windows and the .NET 10 SDK. When a running SleepHunter
 process locks Debug output, use a Release build for verification and do not stop
 the user's process without permission.
 

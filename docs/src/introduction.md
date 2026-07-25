@@ -1,4 +1,4 @@
-# Introduction
+﻿# Introduction
 
 ## What is SleepHunter?
 
@@ -13,9 +13,9 @@ You can view the [release notes](./CHANGELOG.md) to see what has changed in each
 
 ## What was it made using?
 
-SleepHunter is written in C# using the [Windows Presentation Foundation](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/overview/?view=netdesktop-7.0) (WPF) framework.
+SleepHunter is written in C# using the [Windows Presentation Foundation](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/overview/) (WPF) framework.
 
-It is built using the [Visual Studio](https://visualstudio.microsoft.com/) IDE, and now targets .NET 7.0 as of 2023.
+It is built using the [Visual Studio](https://visualstudio.microsoft.com/) IDE and targets .NET 10 LTS.
 
 The user interface is designed using custom XAML styles and templates.
 

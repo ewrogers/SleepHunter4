@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reconciled USDA 7.41 memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
 - Kept compact inventory, skillbook, spellbook, and legacy cooldown paths as compatibility fallbacks when richer pane snapshots are unavailable or change during a read
 - Made automatic staff selection aware of the character's base class
+- Updated the test SDK, NUnit framework, NUnit analyzers, and NUnit adapter to their latest .NET 10-compatible stable releases
+- Upgraded the application, updater, runtime, interop, persistence, and test projects to .NET 10 LTS
 - Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
 - Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures

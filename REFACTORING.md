@@ -113,7 +113,7 @@ Avoid generic dumping-ground projects such as `Common`, `Shared`, or
 
 ### SleepHunter.Runtime
 
-`SleepHunter.Runtime` targets plain `net9.0` and has no dependency on another
+`SleepHunter.Runtime` targets plain `net10.0` and has no dependency on another
 SleepHunter project. It contains both the pure engine and its asynchronous host,
 organized by responsibility:
 
@@ -163,7 +163,7 @@ between raw client data and runtime observation or action types.
 
 ### SleepHunter.Persistence
 
-`SleepHunter.Persistence` targets plain `net9.0`, depends only on
+`SleepHunter.Persistence` targets plain `net10.0`, depends only on
 `SleepHunter.Runtime`, and owns:
 
 - The immutable persisted macro configuration boundary.
@@ -229,33 +229,43 @@ projects where possible.
 The July 24, 2026 baseline audit found six distinct direct NuGet packages and
 eight project-level package references across the real projects.
 
-`SleepHunter` and `SleepHunter.Updater` each reference:
+`SleepHunter` and `SleepHunter.Updater` previously each referenced:
 
 - `Microsoft.CSharp` 4.7.0.
 - `System.Data.DataSetExtensions` 4.5.0.
 
 No source usage of `dynamic`, the C# runtime binder, `System.Data`, `DataSet`,
-`DataTable`, or the DataSet extension APIs was found. Both packages are strong
-removal candidates because the projects target .NET 9 and the relevant
-framework surface is supplied by the platform. Their removal must still be
-proved by restoring, building, testing, and publishing both applications.
+`DataTable`, or the DataSet extension APIs was found. Both packages were
+removed because the relevant framework surface is supplied by the platform.
+The complete solution and both published executables verified their removal.
 
 `SleepHunter.Tests` directly references:
 
-- `Microsoft.NET.Test.Sdk` 18.0.1.
-- `NUnit` 4.4.0.
-- `NUnit.Analyzers` 4.11.2.
-- `NUnit3TestAdapter` 5.2.0.
+- `Microsoft.NET.Test.Sdk` 18.8.1.
+- `NUnit` 4.6.1.
+- `NUnit.Analyzers` 4.14.0.
+- `NUnit3TestAdapter` 6.2.0.
 
 These packages have active and distinct test execution, framework, analysis,
-and adapter responsibilities. Newer versions were available at audit time.
-They should be updated together in a focused change after compatibility is
-verified, rather than mixed into engine behavior work.
+and adapter responsibilities. They were updated together during the .NET 10
+migration and verified across every test project. All four use the MIT license
+and are actively maintained by Microsoft or the NUnit project. The test SDK and
+adapter are required for test discovery and execution, NUnit owns the test API,
+and the analyzers enforce NUnit correctness. They can be removed only if the
+test stack is replaced, except that the analyzer can be removed independently
+if its build-time checks no longer provide value.
 
 The transitive test packages, including test-platform telemetry, coverage,
 Application Insights, and Newtonsoft.Json components, arrive through the test
 SDK and adapter. They are not application runtime dependencies and should not
 be referenced directly unless a future feature independently requires them.
+
+The July 25, 2026 .NET 10 audit retained
+`CommunityToolkit.Mvvm` 8.4.2 as the latest stable release and updated all four
+test packages to the latest stable versions listed above. A solution-wide
+NuGet audit then reported no outdated, vulnerable, or deprecated direct
+packages. Runtime, Interop, Persistence, and Updater continue to have no direct
+NuGet dependencies.
 
 `Microsoft.NET.ILLink.Tasks` is automatically supplied by the SDK for the
 single-file publish configuration. It is not an explicit application package.
@@ -263,23 +273,24 @@ single-file publish configuration. It is not an explicit application package.
 The current NuGet sources reported no known vulnerable direct or transitive
 packages and no deprecated direct packages at audit time.
 
-The only current project reference is from `SleepHunter.Tests` to
-`SleepHunter`. The new project graph will replace that broad testing boundary
-with focused runtime and interop test projects.
+The current project graph follows the dependency direction documented above.
+The WPF application references Runtime and Interop, Interop and Persistence
+each reference Runtime, and every test project references only its system under
+test.
 
-A tracked generated file,
-`SleepHunter.Updater/SleepHunter.Updater_0ypjaz0w_wpftmp.csproj`, contains stale
+A previously tracked generated file,
+`SleepHunter.Updater/SleepHunter.Updater_0ypjaz0w_wpftmp.csproj`, contained stale
 machine-specific .NET 7 reference paths and an apparent
 `Microsoft.Windows.Compatibility` dependency. It is not part of the solution or
-the real updater dependency graph. Remove it and add an ignore rule for WPF
-temporary project files during repository scaffolding.
+the real updater dependency graph. It was removed, and WPF temporary project
+files are ignored.
 
-GitHub Dependabot reports that generated project as the source of an open
+GitHub Dependabot previously reported that generated project as the source of a
 high-severity `GHSA-555c-2p6r-68mm` alert because it references
 `Microsoft.Windows.Compatibility` 7.0.1. The real solution restore does not
 include that project, which is why the solution-level NuGet vulnerability audit
-does not report the package. Delete the generated project rather than updating
-and preserving a dependency that the real updater does not use.
+did not report the package. Removing the generated project avoided preserving a
+dependency that the real updater does not use.
 
 ### Audit Procedure
 
