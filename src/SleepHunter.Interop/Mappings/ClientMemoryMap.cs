@@ -9,11 +9,9 @@ public sealed class ClientMemoryMap
         variables;
 
     public ClientMemoryMap(
-        string versionKey,
         PointerWidth pointerWidth,
         IEnumerable<MemoryVariableDefinition> variables)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(versionKey);
         ArgumentNullException.ThrowIfNull(variables);
 
         if (!Enum.IsDefined(pointerWidth))
@@ -38,12 +36,9 @@ public sealed class ClientMemoryMap
             }
         }
 
-        VersionKey = versionKey.Trim();
         PointerWidth = pointerWidth;
         this.variables = builder.ToImmutable();
     }
-
-    public string VersionKey { get; }
 
     public PointerWidth PointerWidth { get; }
 

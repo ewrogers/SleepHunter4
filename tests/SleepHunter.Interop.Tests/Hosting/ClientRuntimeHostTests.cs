@@ -17,9 +17,7 @@ namespace SleepHunter.Interop.Tests.Hosting;
 
 public sealed class ClientRuntimeHostTests
 {
-    private static readonly ClientIdentity Client = new(
-        "process:1234",
-        Usda741ClientIntentPlanner.SupportedVersion);
+    private static readonly ClientIdentity Client = new("process:1234");
 
     [Test]
     public async Task ShouldPublishSuccessfulCapturesIntoRuntimeViews()
@@ -349,9 +347,7 @@ public sealed class ClientRuntimeHostTests
     public void ShouldRequireSnapshotAndInputToTargetTheSameClient()
     {
         var capture = new ScriptedCapture(CreateSuccess);
-        var otherClient = new ClientIdentity(
-            "process:5678",
-            Client.Version);
+        var otherClient = new ClientIdentity("process:5678");
 
         Assert.That(
             () => _ = CreateHost(
@@ -406,7 +402,7 @@ public sealed class ClientRuntimeHostTests
         RecordingMessageSink sink)
     {
         var executor = new ClientIntentExecutor(
-            new Usda741ClientIntentPlanner(
+            new ClientIntentPlanner(
                 new FixedVirtualKeyMapper()),
             new WindowInputDispatcher(
                 new ValidWindowGuard(),

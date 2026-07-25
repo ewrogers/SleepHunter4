@@ -69,7 +69,7 @@ public sealed class ClientRosterSnapshotTests
         string clientId,
         string characterName) =>
         new(
-            new ClientIdentity(clientId, "test"),
+            new ClientIdentity(clientId),
             characterName,
             ClientPresence.InWorld,
             isMacroRunning: true,

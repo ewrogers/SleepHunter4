@@ -5,7 +5,7 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Snapshots;
 
-internal static partial class Usda741AbilityParser
+internal static partial class ClientAbilityParser
 {
     public const int CompactSkillRecordSize = 0x104;
     public const int CompactSpellRecordSize = 0x206;
@@ -42,7 +42,7 @@ internal static partial class Usda741AbilityParser
                 continue;
             }
 
-            var rawName = Usda741Text.ReadNullTerminatedAscii(
+            var rawName = ClientText.ReadNullTerminatedAscii(
                 record.Slice(4, NameLength));
             var name = ParseName(
                 rawName,
@@ -86,7 +86,7 @@ internal static partial class Usda741AbilityParser
                 continue;
             }
 
-            var rawName = Usda741Text.ReadNullTerminatedAscii(
+            var rawName = ClientText.ReadNullTerminatedAscii(
                 record.Slice(5, NameLength));
             var name = ParseName(
                 rawName,
@@ -118,7 +118,7 @@ internal static partial class Usda741AbilityParser
         }
 
         return new SkillPaneRecord(
-            Usda741Text.ReadNullTerminatedAscii(
+            ClientText.ReadNullTerminatedAscii(
                 snapshot.Slice(0x02, PaneNameLength)),
             snapshot[0x182],
             snapshot[0x192] != 0,
@@ -136,7 +136,7 @@ internal static partial class Usda741AbilityParser
         }
 
         return new SpellPaneRecord(
-            Usda741Text.ReadNullTerminatedAscii(
+            ClientText.ReadNullTerminatedAscii(
                 snapshot.Slice(0x05, PaneNameLength)),
             snapshot[0x00],
             snapshot[0x105],

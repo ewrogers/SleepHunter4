@@ -9,10 +9,8 @@ using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Snapshots;
 
-public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
+public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
 {
-    public const string SupportedVersion = "USDA 7.41";
-
     private const string WorldUserFuncKey = "WorldUserFunc";
     private const string CharacterNameKey = "CharacterName";
     private const string CharacterIdKey = "CharacterId";
@@ -81,7 +79,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
     private readonly AbilitySnapshotCatalog abilityCatalog;
     private int captureInProgress;
 
-    public Usda741SnapshotCapture(
+    public ClientSnapshotCapture(
         ClientIdentity client,
         ClientMemoryMap map,
         IProcessMemorySource source,
@@ -94,26 +92,6 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(limits);
         ArgumentNullException.ThrowIfNull(clock);
-
-        if (!string.Equals(
-                map.VersionKey,
-                SupportedVersion,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException(
-                $"This snapshot parser supports only '{SupportedVersion}'.",
-                nameof(map));
-        }
-
-        if (!string.Equals(
-                client.Version,
-                map.VersionKey,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException(
-                "The client identity and memory map versions must match.",
-                nameof(client));
-        }
 
         if (map.PointerWidth != limits.PointerWidth)
         {
@@ -1249,7 +1227,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             if (variable is null)
             {
                 throw new ArgumentException(
-                    $"Client mapping '{map.VersionKey}' is missing required variable '{required.Key}'.",
+                    $"The client mapping is missing required variable '{required.Key}'.",
                     nameof(map));
             }
 
@@ -1271,45 +1249,45 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         ValidateBinaryLayout(
             map,
             InventoryKey,
-            maximumLength: Usda741InventoryParser.NameLength,
-            recordSize: Usda741InventoryParser.RecordSize,
-            capacity: Usda741InventoryParser.RecordCount);
+            maximumLength: ClientInventoryParser.NameLength,
+            recordSize: ClientInventoryParser.RecordSize,
+            capacity: ClientInventoryParser.RecordCount);
         ValidateBinaryLayout(
             map,
             EquipmentKey,
-            maximumLength: Usda741EquipmentParser.CompactNameLength,
-            recordSize: Usda741EquipmentParser.CompactNameLength,
-            capacity: Usda741EquipmentParser.RecordCount);
+            maximumLength: ClientEquipmentParser.CompactNameLength,
+            recordSize: ClientEquipmentParser.CompactNameLength,
+            capacity: ClientEquipmentParser.RecordCount);
         ValidateBinaryLayout(
             map,
             EquipmentSnapshotKey,
             maximumLength: 0,
-            recordSize: Usda741EquipmentParser.RichSnapshotSize,
-            capacity: Usda741EquipmentParser.RecordCount);
+            recordSize: ClientEquipmentParser.RichSnapshotSize,
+            capacity: ClientEquipmentParser.RecordCount);
         ValidateBinaryLayout(
             map,
             SkillbookKey,
-            maximumLength: Usda741AbilityParser.NameLength,
-            recordSize: Usda741AbilityParser.CompactSkillRecordSize,
-            capacity: Usda741AbilityParser.CompactRecordCount);
+            maximumLength: ClientAbilityParser.NameLength,
+            recordSize: ClientAbilityParser.CompactSkillRecordSize,
+            capacity: ClientAbilityParser.CompactRecordCount);
         ValidateBinaryLayout(
             map,
             SpellbookKey,
-            maximumLength: Usda741AbilityParser.NameLength,
-            recordSize: Usda741AbilityParser.CompactSpellRecordSize,
-            capacity: Usda741AbilityParser.CompactRecordCount);
+            maximumLength: ClientAbilityParser.NameLength,
+            recordSize: ClientAbilityParser.CompactSpellRecordSize,
+            capacity: ClientAbilityParser.CompactRecordCount);
         ValidateBinaryLayout(
             map,
             SkillbookPanesKey,
             maximumLength: 0,
-            recordSize: Usda741AbilityParser.PanePointerSize,
-            capacity: Usda741AbilityParser.PaneRecordCount);
+            recordSize: ClientAbilityParser.PanePointerSize,
+            capacity: ClientAbilityParser.PaneRecordCount);
         ValidateBinaryLayout(
             map,
             SpellbookPanesKey,
             maximumLength: 0,
-            recordSize: Usda741AbilityParser.PanePointerSize,
-            capacity: Usda741AbilityParser.PaneRecordCount);
+            recordSize: ClientAbilityParser.PanePointerSize,
+            capacity: ClientAbilityParser.PaneRecordCount);
     }
 
     private static void ValidateBinaryLayout(
@@ -1325,7 +1303,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             variable.Capacity != capacity)
         {
             throw new ArgumentException(
-                $"Client mapping variable '{key}' does not match the USDA 7.41 binary layout.",
+                $"Client mapping variable '{key}' does not match the supported binary layout.",
                 nameof(map));
         }
     }

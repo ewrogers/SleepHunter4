@@ -1,4 +1,4 @@
-# Debug Settings
+﻿# Debug Settings
 
 ![image](../screenshots/settings-debug.png)
 
@@ -10,7 +10,8 @@ This setting determines whether the application will show all running Dark Ages 
 By default, this is `Disabled`.
 
 This is useful for debugging the application when client instances are not being detected properly.
-Typically, this is used with custom Dark Ages clients testing client version variations.
+Typically, this is used while testing process detection for a compatible custom
+Dark Ages client.
 
 ## Enable Debug Logging
 

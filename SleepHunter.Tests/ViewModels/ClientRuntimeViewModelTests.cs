@@ -18,9 +18,7 @@ namespace SleepHunter.Tests.ViewModels;
 
 public sealed class ClientRuntimeViewModelTests
 {
-    private static readonly ClientIdentity Client = new(
-        "process:1234",
-        "USDA 7.41");
+    private static readonly ClientIdentity Client = new("process:1234");
 
     [Test]
     public void ShouldKeepRuntimeFedPropertiesPrivatelyWritable()

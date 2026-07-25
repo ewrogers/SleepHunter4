@@ -44,18 +44,7 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
                 "The client window handle cannot be zero.");
         }
 
-        if (!string.Equals(
-                client.Version,
-                Usda741SnapshotCapture.SupportedVersion,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new NotSupportedException(
-                $"Client runtime attachment does not support version '{client.Version}'.");
-        }
-
-        var map = ClientMemoryMapLoader.Load(
-            mappingStream,
-            client.Version);
+        var map = ClientMemoryMapLoader.Load(mappingStream);
         if (map.PointerWidth != PointerWidth.Bit32)
         {
             throw new NotSupportedException(
@@ -66,7 +55,7 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
         try
         {
             var clock = new MacroClock(timeProvider);
-            var capture = new Usda741SnapshotCapture(
+            var capture = new ClientSnapshotCapture(
                 client,
                 map,
                 new WindowsProcessMemorySource(processHandle),
@@ -74,7 +63,7 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
                 clock,
                 abilityCatalog);
             var executor = new ClientIntentExecutor(
-                new Usda741ClientIntentPlanner(
+                new ClientIntentPlanner(
                     new WindowsVirtualKeyMapper()),
                 new WindowInputDispatcher(
                     new WindowsClientWindowGuard(),

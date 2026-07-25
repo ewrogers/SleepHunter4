@@ -14,13 +14,11 @@ public sealed class ClientMemoryMapTests
             MemoryValueKind.Text,
             maximumLength: 16);
         var map = new ClientMemoryMap(
-            "  USDA 7.41  ",
             PointerWidth.Bit32,
             [variable]);
 
         Assert.Multiple(() =>
         {
-            Assert.That(map.VersionKey, Is.EqualTo("USDA 7.41"));
             Assert.That(map.PointerWidth, Is.EqualTo(PointerWidth.Bit32));
             Assert.That(map.Find("charactername"), Is.SameAs(variable));
             Assert.That(map.Find("missing"), Is.Null);
@@ -44,7 +42,6 @@ public sealed class ClientMemoryMapTests
         {
             Assert.Throws<ArgumentException>(
                 () => _ = new ClientMemoryMap(
-                    "version",
                     PointerWidth.Bit32,
                     [first, duplicate]));
             Assert.Throws<ArgumentException>(

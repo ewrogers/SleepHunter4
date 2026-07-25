@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added typed numeric memory variables for byte, signed-byte, 16-bit, and 32-bit values while preserving legacy formatted-string mappings for older client profiles
-- Expanded USDA 7.41 character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
+- Expanded supported-client character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
 - Added the parsed 64-entry group-member cache, including names and starred state
-- Added an ID-keyed USDA 7.41 known-living-entity snapshot with player, monster, Mundane, passable, and solid classifications; name, X/Y, direction, local-player, and group-member state; and nearest-player, nearest-monster, and nearest-group-member queries
+- Added an ID-keyed known-living-entity snapshot for the supported client layout with player, monster, Mundane, passable, and solid classifications; name, X/Y, direction, local-player, and group-member state; and nearest-player, nearest-monster, and nearest-group-member queries
 - Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
 - Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
 - Added inventory pane display names and stackability alongside the existing stable compact inventory identity
@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Reconciled USDA 7.41 memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
+- Reconciled the supported client memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
+- Collapsed Runtime and Interop onto one configurable client layout, removed version routing from client identities, and renamed client parsers, capture, and input planning types to generic names
 - Kept compact inventory, skillbook, spellbook, and legacy cooldown paths as compatibility fallbacks when richer pane snapshots are unavailable or change during a read
 - Made automatic staff selection aware of the character's base class
 - Updated the test SDK, NUnit framework, NUnit analyzers, and NUnit adapter to their latest .NET 10-compatible stable releases
@@ -31,11 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed the Zolian-only Water & Beds automation, its feature tab, client feature flag, and private macro-state storage
+- Removed legacy Zolian and XML `Auto-Detect` mapping profiles so `Versions.xml` contains exactly one configurable client layout
 
 ### Fixed
 
-- Prevented stale or unallocated USDA 7.41 character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
-- Kept the executable-verified USDA 7.41 `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
+- Prevented stale or unallocated supported-client character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
+- Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown
 - Show pane-backed spell cooldowns in the UI by combining the client's live action-delay state with SleepHunter's local cooldown timestamps
 - Corrected inventory and equipment durability ordering so the documented maximum value is no longer interpreted as current durability and vice versa

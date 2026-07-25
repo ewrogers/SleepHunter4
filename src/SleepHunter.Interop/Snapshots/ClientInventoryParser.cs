@@ -1,8 +1,8 @@
-using SleepHunter.Runtime.Snapshots;
+﻿using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Snapshots;
 
-internal static class Usda741InventoryParser
+internal static class ClientInventoryParser
 {
     public const int RecordSize = 0x106;
     public const int RecordCount = 60;
@@ -45,7 +45,7 @@ internal static class Usda741InventoryParser
                 continue;
             }
 
-            var name = Usda741Text.ReadNullTerminatedAscii(
+            var name = ClientText.ReadNullTerminatedAscii(
                 record.Slice(NameOffset, NameLength));
             if (string.IsNullOrWhiteSpace(name))
             {

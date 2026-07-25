@@ -93,7 +93,7 @@ public sealed class PendingActionTests
     public void ShouldClearPendingActionWhenPaused()
     {
         var engine = new MacroEngine();
-        var client = new ClientIdentity("client", "test");
+        var client = new ClientIdentity("client");
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,

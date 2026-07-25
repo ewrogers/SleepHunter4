@@ -2,7 +2,8 @@
 
 ## Requirements
 
-- [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
+- A 32-bit [Dark Ages](https://www.darkages.com) client compatible with the
+  configured client layout
 - .NET 10.0 Desktop Runtime
     - Windows arm64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-arm64-installer)
     - Windows x64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-x64-installer)

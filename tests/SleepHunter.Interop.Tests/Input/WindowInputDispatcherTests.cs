@@ -6,7 +6,7 @@ namespace SleepHunter.Interop.Tests.Input;
 public sealed class WindowInputDispatcherTests
 {
     private static readonly ClientWindowTarget Target = new(
-        new ClientIdentity("process:1234", "USDA 7.41"),
+        new ClientIdentity("process:1234"),
         processId: 1234,
         windowHandle: new nint(0x1234),
         clientWidth: 640,

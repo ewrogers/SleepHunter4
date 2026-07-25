@@ -22,7 +22,7 @@ internal sealed class MacroScenario
         bool issueActions = true)
     {
         this.engine = engine ?? new MacroEngine();
-        Client = client ?? new ClientIdentity("scenario-client", "test");
+        Client = client ?? new ClientIdentity("scenario-client");
         this.issueActions = issueActions;
     }
 

@@ -1,4 +1,4 @@
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 using SleepHunter.IO.Process;
 using SleepHunter.Settings;
@@ -18,7 +18,8 @@ namespace SleepHunter.Tests.Settings
 
             using var stream = File.OpenRead(versionsPath);
             var collection = (ClientVersionCollection)serializer.Deserialize(stream)!;
-            version = collection.Versions.Single(candidate => candidate.Key == "USDA 7.41");
+            version = collection.Versions.Single(
+                candidate => candidate.Key == "Dark Ages Client");
         }
 
         [Test]

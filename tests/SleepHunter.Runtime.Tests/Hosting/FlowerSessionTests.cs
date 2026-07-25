@@ -109,7 +109,7 @@ public sealed class FlowerSessionTests
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
             MacroTimestamp.Zero,
-            new ClientIdentity("source", "test"),
+            new ClientIdentity("source"),
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
             ClientPanel.TemuairSpells,
@@ -124,7 +124,7 @@ public sealed class FlowerSessionTests
 
     private static ClientRosterEntry WaitingClient() =>
         new(
-            new ClientIdentity("waiting", "test"),
+            new ClientIdentity("waiting"),
             "waiting",
             ClientPresence.InWorld,
             isMacroRunning: true,
@@ -138,7 +138,7 @@ public sealed class FlowerSessionTests
 
     private static ClientRosterEntry SourceClient() =>
         new(
-            new ClientIdentity("source", "test"),
+            new ClientIdentity("source"),
             "source",
             ClientPresence.InWorld,
             isMacroRunning: true,

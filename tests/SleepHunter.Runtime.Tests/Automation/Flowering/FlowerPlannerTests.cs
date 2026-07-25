@@ -8,7 +8,7 @@ namespace SleepHunter.Runtime.Tests.Automation.Flowering;
 public sealed class FlowerPlannerTests
 {
     private static readonly ClientIdentity SourceClient =
-        new("source", "test");
+        new("source");
 
     private static readonly MapLocationSnapshot SourceLocation =
         new(
@@ -328,9 +328,7 @@ public sealed class FlowerPlannerTests
             currentMana: 0,
             location: SourceLocation,
             isWaitingForMana: true,
-            client: new ClientIdentity(
-                SourceClient.InstanceId,
-                "different version"));
+            client: new ClientIdentity(SourceClient.InstanceId));
         var policy = new FlowerTargetPolicy(
             autoFlowerWaitingCharacters: true);
 
@@ -372,7 +370,7 @@ public sealed class FlowerPlannerTests
             "SAME",
             currentMana: 0,
             location: NearbyLocation(),
-            client: new ClientIdentity("other", "test"));
+            client: new ClientIdentity("other"));
 
         Assert.That(
             () => new FlowerPlanningRequest(
@@ -418,7 +416,7 @@ public sealed class FlowerPlannerTests
         MacroTimestamp? lastFloweredAt = null,
         ClientIdentity? client = null) =>
         new(
-            client ?? new ClientIdentity(characterName, "test"),
+            client ?? new ClientIdentity(characterName),
             characterName,
             ClientPresence.InWorld,
             isMacroRunning,

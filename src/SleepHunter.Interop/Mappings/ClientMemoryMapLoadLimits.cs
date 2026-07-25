@@ -6,7 +6,6 @@ public sealed record ClientMemoryMapLoadLimits
 
     public ClientMemoryMapLoadLimits(
         long maximumCharacters = 1024 * 1024,
-        int maximumClients = 64,
         int maximumVariables = 2048,
         int maximumOffsetsPerVariable = 16)
     {
@@ -16,14 +15,6 @@ public sealed record ClientMemoryMapLoadLimits
                 nameof(maximumCharacters),
                 maximumCharacters,
                 "The mapping document character limit must be positive.");
-        }
-
-        if (maximumClients <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(maximumClients),
-                maximumClients,
-                "The client limit must be positive.");
         }
 
         if (maximumVariables <= 0)
@@ -43,14 +34,11 @@ public sealed record ClientMemoryMapLoadLimits
         }
 
         MaximumCharacters = maximumCharacters;
-        MaximumClients = maximumClients;
         MaximumVariables = maximumVariables;
         MaximumOffsetsPerVariable = maximumOffsetsPerVariable;
     }
 
     public long MaximumCharacters { get; }
-
-    public int MaximumClients { get; }
 
     public int MaximumVariables { get; }
 

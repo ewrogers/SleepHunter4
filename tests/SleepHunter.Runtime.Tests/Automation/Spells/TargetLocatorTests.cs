@@ -7,13 +7,9 @@ namespace SleepHunter.Runtime.Tests.Automation.Spells;
 
 public sealed class TargetLocatorTests
 {
-    private static readonly ClientIdentity SourceClient = new(
-        "source",
-        "USDA 7.41");
+    private static readonly ClientIdentity SourceClient = new("source");
 
-    private static readonly ClientIdentity TargetClient = new(
-        "target",
-        "USDA 7.41");
+    private static readonly ClientIdentity TargetClient = new("target");
 
     private static readonly MapLocationSnapshot SourceLocation = new(
         100,

@@ -1,4 +1,4 @@
-# Features
+﻿# Features
 
 SleepHunter is an incredibly powerful automation tool for [Dark Ages](https://www.darkages.com).
 
@@ -16,11 +16,12 @@ No errant mouse clicks or keyboard presses in other applications will occur whil
 SleepHunter scans all running processes to find Dark Ages game clients automatically.
 It can detect multiple game clients running on the same computer at the same time.
 
-Uses client signature to differentiate between varying client versions (including modified clients).
+It uses the configured signature and window metadata to recognize compatible
+clients without selecting among alternate runtime layouts.
 
 ### Runtime Patching
 
-SleepHunter can launch new game client instances and patch supported versions at runtime. Available tweaks include allowing
+SleepHunter can launch new game client instances and patch the configured client at runtime. Available tweaks include allowing
 multiple instances, skipping the intro video, suppressing the login delay, cleaning up stuck modifier keys, showing ground
 items while Alt is held, displaying stack quantities in merchant and storage dialogs, and hiding foreground walls.
 

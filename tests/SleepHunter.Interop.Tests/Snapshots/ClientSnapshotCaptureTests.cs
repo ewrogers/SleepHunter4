@@ -12,7 +12,7 @@ using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Tests.Snapshots;
 
-public sealed class Usda741SnapshotCaptureTests
+public sealed class ClientSnapshotCaptureTests
 {
     private const ulong SessionRootAddress = 0x1000;
     private const ulong SessionLinkAddress = 0x2000;
@@ -594,7 +594,7 @@ public sealed class Usda741SnapshotCaptureTests
         var source = CreateMemoryImage();
         source.Clear(
             new MemoryAddress(EquipmentSnapshotAddress),
-            Usda741EquipmentParser.RichSnapshotSize);
+            ClientEquipmentParser.RichSnapshotSize);
         var capture = CreateCapture(source);
 
         var result = capture.Capture(
@@ -683,22 +683,18 @@ public sealed class Usda741SnapshotCaptureTests
     }
 
     [Test]
-    public void ShouldValidateCheckedInUsdaSchema()
+    public void ShouldValidateCheckedInClientSchema()
     {
         var path = Path.Combine(
             TestContext.CurrentContext.TestDirectory,
             "Data",
             "Versions.xml");
         using var stream = File.OpenRead(path);
-        var map = ClientMemoryMapLoader.Load(
-            stream,
-            Usda741SnapshotCapture.SupportedVersion);
-        var client = new ClientIdentity(
-            "process:1234",
-            Usda741SnapshotCapture.SupportedVersion);
+        var map = ClientMemoryMapLoader.Load(stream);
+        var client = new ClientIdentity("process:1234");
 
         Assert.DoesNotThrow(
-            () => _ = new Usda741SnapshotCapture(
+            () => _ = new ClientSnapshotCapture(
                 client,
                 map,
                 new MemoryImageSource(),
@@ -707,19 +703,13 @@ public sealed class Usda741SnapshotCaptureTests
     }
 
     [Test]
-    public void ShouldRejectWrongOrIncompleteSchemaAtComposition()
+    public void ShouldRejectIncompleteOrInvalidSchemaAtComposition()
     {
         var variables = CreateVariables();
-        var wrongVersion = new ClientMemoryMap(
-            "Other",
-            PointerWidth.Bit32,
-            variables);
         var incomplete = new ClientMemoryMap(
-            Usda741SnapshotCapture.SupportedVersion,
             PointerWidth.Bit32,
             variables.Where(variable => variable.Key != "CurrentMana"));
         var invalidLayout = new ClientMemoryMap(
-            Usda741SnapshotCapture.SupportedVersion,
             PointerWidth.Bit32,
             variables.Select(
                 variable => variable.Key == "Inventory"
@@ -733,7 +723,6 @@ public sealed class Usda741SnapshotCaptureTests
                         search: variable.Search)
                     : variable));
         var invalidAbilityLayout = new ClientMemoryMap(
-            Usda741SnapshotCapture.SupportedVersion,
             PointerWidth.Bit32,
             variables.Select(
                 variable => variable.Key == "Spellbook"
@@ -746,9 +735,7 @@ public sealed class Usda741SnapshotCaptureTests
                         capacity: variable.Capacity,
                         search: variable.Search)
                     : variable));
-        var client = new ClientIdentity(
-            "process:1234",
-            Usda741SnapshotCapture.SupportedVersion);
+        var client = new ClientIdentity("process:1234");
         var source = new MemoryImageSource();
         var limits = MemoryReadLimits.Client32Bit;
         var clock = new MacroClock(new ManualTimeProvider());
@@ -756,28 +743,21 @@ public sealed class Usda741SnapshotCaptureTests
         Assert.Multiple(() =>
         {
             Assert.Throws<ArgumentException>(
-                () => _ = new Usda741SnapshotCapture(
-                    client,
-                    wrongVersion,
-                    source,
-                    limits,
-                    clock));
-            Assert.Throws<ArgumentException>(
-                () => _ = new Usda741SnapshotCapture(
+                () => _ = new ClientSnapshotCapture(
                     client,
                     incomplete,
                     source,
                     limits,
                     clock));
             Assert.Throws<ArgumentException>(
-                () => _ = new Usda741SnapshotCapture(
+                () => _ = new ClientSnapshotCapture(
                     client,
                     invalidLayout,
                     source,
                     limits,
                     clock));
             Assert.Throws<ArgumentException>(
-                () => _ = new Usda741SnapshotCapture(
+                () => _ = new ClientSnapshotCapture(
                     client,
                     invalidAbilityLayout,
                     source,
@@ -797,17 +777,14 @@ public sealed class Usda741SnapshotCaptureTests
                 (SnapshotCaptureSections)(1 << 10)));
     }
 
-    private static Usda741SnapshotCapture CreateCapture(
+    private static ClientSnapshotCapture CreateCapture(
         IProcessMemorySource source,
         ManualTimeProvider? timeProvider = null)
     {
-        var client = new ClientIdentity(
-            "process:1234",
-            Usda741SnapshotCapture.SupportedVersion);
-        return new Usda741SnapshotCapture(
+        var client = new ClientIdentity("process:1234");
+        return new ClientSnapshotCapture(
             client,
             new ClientMemoryMap(
-                Usda741SnapshotCapture.SupportedVersion,
                 PointerWidth.Bit32,
                 CreateVariables()),
             source,
@@ -888,15 +865,15 @@ public sealed class Usda741SnapshotCaptureTests
         source.WriteInt32(new MemoryAddress(MapXAddress), 50);
         source.WriteInt32(new MemoryAddress(MapYAddress), 60);
         var inventory = new byte[
-            Usda741InventoryParser.RecordSize *
-            Usda741InventoryParser.RecordCount];
+            ClientInventoryParser.RecordSize *
+            ClientInventoryParser.RecordCount];
         WriteInventoryItem(inventory, slot: 1, "Holy Diana");
         WriteInventoryItem(inventory, slot: 3, "Gnarl");
         WriteInventoryItem(inventory, slot: 60, "Gold");
         source.Write(new MemoryAddress(InventoryAddress), inventory);
 
         var equipment = new byte[
-            Usda741EquipmentParser.RichSnapshotSize];
+            ClientEquipmentParser.RichSnapshotSize];
         WriteRichEquipmentItem(
             equipment,
             slotIndex: 0,
@@ -912,8 +889,8 @@ public sealed class Usda741SnapshotCaptureTests
             equipment);
 
         var compactEquipment = new byte[
-            Usda741EquipmentParser.CompactNameLength *
-            Usda741EquipmentParser.RecordCount];
+            ClientEquipmentParser.CompactNameLength *
+            ClientEquipmentParser.RecordCount];
         WriteCompactEquipmentItem(
             compactEquipment,
             slotIndex: 0,
@@ -925,8 +902,8 @@ public sealed class Usda741SnapshotCaptureTests
         source.Write(new MemoryAddress(EquipmentAddress), compactEquipment);
 
         var compactSkills = new byte[
-            Usda741AbilityParser.CompactSkillRecordSize *
-            Usda741AbilityParser.CompactRecordCount];
+            ClientAbilityParser.CompactSkillRecordSize *
+            ClientAbilityParser.CompactRecordCount];
         WriteCompactSkill(
             compactSkills,
             slot: 1,
@@ -934,8 +911,8 @@ public sealed class Usda741SnapshotCaptureTests
         source.Write(new MemoryAddress(SkillbookAddress), compactSkills);
 
         var compactSpells = new byte[
-            Usda741AbilityParser.CompactSpellRecordSize *
-            Usda741AbilityParser.CompactRecordCount];
+            ClientAbilityParser.CompactSpellRecordSize *
+            ClientAbilityParser.CompactRecordCount];
         WriteCompactSpell(
             compactSpells,
             slot: 73,
@@ -943,7 +920,7 @@ public sealed class Usda741SnapshotCaptureTests
         source.Write(new MemoryAddress(SpellbookAddress), compactSpells);
 
         var skillPane = new byte[
-            Usda741AbilityParser.SkillPaneSnapshotSize];
+            ClientAbilityParser.SkillPaneSnapshotSize];
         Encoding.ASCII.GetBytes("Assail (Lev:3/100)").CopyTo(
             skillPane.AsSpan(0x02));
         skillPane[0x182] = 1;
@@ -951,11 +928,11 @@ public sealed class Usda741SnapshotCaptureTests
         source.Write(
             new MemoryAddress(
                 SkillPaneAddress +
-                Usda741AbilityParser.PaneSnapshotOffset),
+                ClientAbilityParser.PaneSnapshotOffset),
             skillPane);
 
         var spellPane = new byte[
-            Usda741AbilityParser.SpellPaneSnapshotSize];
+            ClientAbilityParser.SpellPaneSnapshotSize];
         spellPane[0] = 73;
         Encoding.ASCII.GetBytes("ard cradh (Lev:7/100)").CopyTo(
             spellPane.AsSpan(0x05));
@@ -964,7 +941,7 @@ public sealed class Usda741SnapshotCaptureTests
         source.Write(
             new MemoryAddress(
                 SpellPaneAddress +
-                Usda741AbilityParser.PaneSnapshotOffset),
+                ClientAbilityParser.PaneSnapshotOffset),
             spellPane);
         return source;
     }
@@ -1007,39 +984,39 @@ public sealed class Usda741SnapshotCaptureTests
         Block(
             "Inventory",
             InventoryRootAddress,
-            maximumLength: Usda741InventoryParser.NameLength,
-            recordSize: Usda741InventoryParser.RecordSize,
-            capacity: Usda741InventoryParser.RecordCount),
+            maximumLength: ClientInventoryParser.NameLength,
+            recordSize: ClientInventoryParser.RecordSize,
+            capacity: ClientInventoryParser.RecordCount),
         Block(
             "Equipment",
             EquipmentRootAddress,
-            maximumLength: Usda741EquipmentParser.CompactNameLength,
-            recordSize: Usda741EquipmentParser.CompactNameLength,
-            capacity: Usda741EquipmentParser.RecordCount),
+            maximumLength: ClientEquipmentParser.CompactNameLength,
+            recordSize: ClientEquipmentParser.CompactNameLength,
+            capacity: ClientEquipmentParser.RecordCount),
         Block(
             "EquipmentSnapshot",
             EquipmentSnapshotRootAddress,
             maximumLength: 0,
-            recordSize: Usda741EquipmentParser.RichSnapshotSize,
-            capacity: Usda741EquipmentParser.RecordCount),
+            recordSize: ClientEquipmentParser.RichSnapshotSize,
+            capacity: ClientEquipmentParser.RecordCount),
         Block(
             "Skillbook",
             SkillbookRootAddress,
-            maximumLength: Usda741AbilityParser.NameLength,
-            recordSize: Usda741AbilityParser.CompactSkillRecordSize,
-            capacity: Usda741AbilityParser.CompactRecordCount),
+            maximumLength: ClientAbilityParser.NameLength,
+            recordSize: ClientAbilityParser.CompactSkillRecordSize,
+            capacity: ClientAbilityParser.CompactRecordCount),
         Block(
             "Spellbook",
             SpellbookRootAddress,
-            maximumLength: Usda741AbilityParser.NameLength,
-            recordSize: Usda741AbilityParser.CompactSpellRecordSize,
-            capacity: Usda741AbilityParser.CompactRecordCount),
+            maximumLength: ClientAbilityParser.NameLength,
+            recordSize: ClientAbilityParser.CompactSpellRecordSize,
+            capacity: ClientAbilityParser.CompactRecordCount),
         Block(
             "SkillbookPanes",
             SkillbookPanesRootAddress,
             maximumLength: 0,
-            recordSize: Usda741AbilityParser.PanePointerSize,
-            capacity: Usda741AbilityParser.PaneRecordCount),
+            recordSize: ClientAbilityParser.PanePointerSize,
+            capacity: ClientAbilityParser.PaneRecordCount),
         new(
             "SkillbookPaneCapacity",
             new PointerChain(
@@ -1049,8 +1026,8 @@ public sealed class Usda741SnapshotCaptureTests
             "SpellbookPanes",
             SpellbookPanesRootAddress,
             maximumLength: 0,
-            recordSize: Usda741AbilityParser.PanePointerSize,
-            capacity: Usda741AbilityParser.PaneRecordCount),
+            recordSize: ClientAbilityParser.PanePointerSize,
+            capacity: ClientAbilityParser.PaneRecordCount),
         new(
             "SpellbookPaneCapacity",
             new PointerChain(
@@ -1127,8 +1104,8 @@ public sealed class Usda741SnapshotCaptureTests
         string name)
     {
         var record = snapshot.Slice(
-            (slot - 1) * Usda741InventoryParser.RecordSize,
-            Usda741InventoryParser.RecordSize);
+            (slot - 1) * ClientInventoryParser.RecordSize,
+            ClientInventoryParser.RecordSize);
         record[0] = 1;
         Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
     }
@@ -1145,7 +1122,7 @@ public sealed class Usda741SnapshotCaptureTests
         Encoding.ASCII.GetBytes(name).CopyTo(
             snapshot.Slice(
                 0x36 +
-                slotIndex * Usda741EquipmentParser.CompactNameLength));
+                slotIndex * ClientEquipmentParser.CompactNameLength));
     }
 
     private static void WriteCompactEquipmentItem(
@@ -1155,7 +1132,7 @@ public sealed class Usda741SnapshotCaptureTests
         Encoding.ASCII.GetBytes(name).CopyTo(
             snapshot.Slice(
                 slotIndex *
-                Usda741EquipmentParser.CompactNameLength));
+                ClientEquipmentParser.CompactNameLength));
 
     private static void WriteCompactSkill(
         Span<byte> snapshot,
@@ -1163,8 +1140,8 @@ public sealed class Usda741SnapshotCaptureTests
         string name)
     {
         var record = snapshot.Slice(
-            (slot - 1) * Usda741AbilityParser.CompactSkillRecordSize,
-            Usda741AbilityParser.CompactSkillRecordSize);
+            (slot - 1) * ClientAbilityParser.CompactSkillRecordSize,
+            ClientAbilityParser.CompactSkillRecordSize);
         BinaryPrimitives.WriteInt16LittleEndian(record, 1);
         Encoding.ASCII.GetBytes(name).CopyTo(record[4..]);
     }
@@ -1175,8 +1152,8 @@ public sealed class Usda741SnapshotCaptureTests
         string name)
     {
         var record = snapshot.Slice(
-            (slot - 1) * Usda741AbilityParser.CompactSpellRecordSize,
-            Usda741AbilityParser.CompactSpellRecordSize);
+            (slot - 1) * ClientAbilityParser.CompactSpellRecordSize,
+            ClientAbilityParser.CompactSpellRecordSize);
         BinaryPrimitives.WriteInt16LittleEndian(record, 1);
         Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
     }

@@ -18,7 +18,7 @@ public sealed class ClientSnapshotTests
     [Test]
     public void ShouldRejectDefaultSequence()
     {
-        var client = new ClientIdentity("client", "test");
+        var client = new ClientIdentity("client");
 
         Assert.That(
             () => new ClientSnapshot(
@@ -34,7 +34,7 @@ public sealed class ClientSnapshotTests
     [Test]
     public void ShouldRejectCaptureThatCompletesBeforeItStarts()
     {
-        var client = new ClientIdentity("client", "test");
+        var client = new ClientIdentity("client");
 
         Assert.That(
             () => new ClientSnapshot(
@@ -50,7 +50,7 @@ public sealed class ClientSnapshotTests
     [Test]
     public void ShouldRejectUnsupportedObservedPanel()
     {
-        var client = new ClientIdentity("client", "test");
+        var client = new ClientIdentity("client");
 
         Assert.That(
             () => new ClientSnapshot(
@@ -111,7 +111,7 @@ public sealed class ClientSnapshotTests
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
             MacroTimestamp.Zero,
-            new ClientIdentity("client", "test"),
+            new ClientIdentity("client"),
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
             ClientPanel.Inventory,

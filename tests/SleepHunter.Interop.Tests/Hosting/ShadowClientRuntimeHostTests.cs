@@ -92,7 +92,7 @@ public sealed class ShadowClientRuntimeHostTests
             Channel.CreateUnbounded<MacroViewSnapshot>();
 
         public ClientIdentity Client { get; } =
-            new("process:1234", "7.41");
+            new("process:1234");
 
         public ChannelReader<SnapshotCaptureObservation> Captures =>
             captures.Reader;

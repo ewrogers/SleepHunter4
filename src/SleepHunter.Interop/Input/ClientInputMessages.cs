@@ -1,6 +1,6 @@
 ﻿namespace SleepHunter.Interop.Input;
 
-internal static class Usda741InputMessages
+internal static class ClientInputMessages
 {
     private const nuint LeftButton = 0x0001;
 

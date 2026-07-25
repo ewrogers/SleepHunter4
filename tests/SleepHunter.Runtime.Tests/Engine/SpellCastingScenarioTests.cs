@@ -132,7 +132,7 @@ public sealed class SpellCastingScenarioTests
             [
                 Client(scenario.Client, "Caster", sourceLocation),
                 Client(
-                    new ClientIdentity("alt-client", "test"),
+                    new ClientIdentity("alt-client"),
                     "Alt",
                     targetLocation)
             ]);
@@ -178,7 +178,7 @@ public sealed class SpellCastingScenarioTests
             [
                 Client(scenario.Client, "Caster", sourceLocation),
                 Client(
-                    new ClientIdentity("alt-client", "test"),
+                    new ClientIdentity("alt-client"),
                     "Alt",
                     new MapLocationSnapshot(1, "Mileth", 51, 60))
             ]);

@@ -9,7 +9,8 @@ Dark Ages Automation Tool + Updater
 
 ## Requirements ✅
 
-- [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
+- A 32-bit [Dark Ages](https://www.darkages.com) client compatible with the
+  configured client layout
 - .NET 10.0 Desktop Runtime
     - Windows arm64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-arm64-installer)
     - Windows x64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-x64-installer)
@@ -38,20 +39,9 @@ The available launcher patches provide the following benefits:
 - **Show Item Quantities in Dialogs** adds stack quantities to item names in inventory-based merchant and storage dialogs.
 - **No Foreground Walls** hides foreground wall tiles to make obscured areas and items easier to see.
 
-All quality-of-life patches above are enabled by default except **No Foreground Walls**. Patches are applied only to client versions that explicitly support them. Runtime hooks are signature-checked, and SleepHunter stops the suspended launch if a required patch cannot be verified or applied rather than starting a partially patched client.
+All quality-of-life patches above are enabled by default except **No Foreground Walls**. Patches are applied only when the configured client layout explicitly supports them. Runtime hooks are signature-checked, and SleepHunter stops the suspended launch if a required patch cannot be verified or applied rather than starting a partially patched client.
 
 See [Game Client Settings](./docs/src/settings/game-client.md) for the full option reference.
-
-## Zolian Support ⭕
-
-As of version 4.8.0 and newer, SleepHunter now supports the [Zolian 9.1.1+ client](https://www.thebucknetwork.com/Zolian) out of the box.
-
-You will need to configure the `Settings->Game Client` path to point to your Zolian installation.
-For example `C:\Zolian\Zolian 9.1.1.exe`.
-
-Restart SleepHunter once and you should see the proper skill/spell icons displayed.
-
-**NOTE:** While the client is supported, you will need custom metadata files for skills, spells, and staves.
 
 ## Documentation 📚
 
@@ -77,16 +67,19 @@ If there is a new version available, you can update to it which will download, i
 SleepHunter relies on reverse-engineered memory addresses that point to game data within the client.
 These are read at runtime which allow the application to be aware of character location, stats, inventory, skills, spells, and UI state.
 
-These are likely to change each client version and must be re-located with new offsets to continue functioning properly.
+Custom executables can relocate these addresses even when the UI layout and
+ASCII data representation remain compatible.
 
-These are defined in the `Versions.xml` file, and are mostly either `StaticVariable` or `DynamicVariable` types.
+The single supported mapping is defined in `Versions.xml`, so address changes
+do not require code changes. Its entries are mostly `StaticVariable` or
+`DynamicVariable` types.
 
 Numeric variables can declare their in-memory representation with the `Type` attribute (`Byte`, `SByte`,
 `Int16`, `UInt16`, `Int32`, or `UInt32`). Omitting it preserves the legacy behavior of reading a formatted decimal
-string. The USDA 7.41 profile uses the client's documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`,
+string. The supported layout uses the client's documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`,
 and `EquipPane` roots instead of deriving character stats from UI text.
 
-For 7.41, `Player.Stats` exposes direct level, ability level, progression, attributes, vitals, weight,
+For the supported layout, `Player.Stats` exposes direct level, ability level, progression, attributes, vitals, weight,
 armor class, combat modifiers, elements, and magic resistance. `Player.Profile` exposes the raw base class
 as `CharacterClass` plus the separately retained
 `DisplayClass` string used for advanced classes such as Summoner. It also includes the character ID,
@@ -108,17 +101,17 @@ state, and group membership. It includes nearest-player, nearest-monster, and ne
 This is the client's known-object collection, not a promise that every object survived the renderer's
 viewport culling for the latest frame.
 
-The 7.41 character-name buffer is only accepted while the corresponding `WorldUserFunc` generation is
+The character-name buffer is only accepted while the corresponding `WorldUserFunc` generation is
 live and the bounded name is structurally valid. Chat typing detection now looks for a visible, registered
 chat/tell input pane and retains the older flag as a compatibility fallback.
 
-The 7.41 roots and layouts were reconciled against the
+The configured roots and layouts were reconciled against the
 [`darkages-741-re` runtime state guide](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/state-walking.md)
 and its
 [`WorldUserFunc` character layout](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/session.md),
 [`inventory and character panes`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/inventory-ui.md),
 and [`world-object layouts`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/world.md).
-One executable-verified exception is the `EquipPane` singleton: the signed `7D4E--1K` USDA client uses
+One executable-verified exception is the `EquipPane` singleton: the signed `7D4E--1K` client uses
 `0x006FC914`; the nearby `0x006FC8EC` global listed in the reference is null in the live client.
 
 ### Static Variables
@@ -154,11 +147,10 @@ You will be using many of them when working to get memory offsets from the Dark 
 
 ### Why would I need to do this?
 
-If you are using a custom client or a client version that is not currently supported, you will need to do this to retain SleepHunter functionality.
-
-Some examples may be getting this to work with the Korean Legends of Darkness (LoD) client or a previous client version like 7.18 or older.
-
-Or if in the random event that a new client version is released after years of no updates, who knows!
+If a custom client keeps the supported UI and data representation but relocates
+memory, update the single mapping in `Versions.xml`. A client with a different
+binary layout requires code changes and parser tests rather than another runtime
+version profile.
 
 ## Contributing 👨🏻‍💻
 
@@ -169,7 +161,7 @@ It is recommended that you use [Visual Studio 2022+](https://visualstudio.micros
 I am not sure of WPF support within other IDEs.
 
 The repository includes focused unit tests for memory pointer walking and snapshot parsing. Live-client
-validation is still important for version-specific pointer or lifecycle changes.
+validation is still important for pointer or lifecycle changes.
 
 ## Packaging 📦
 

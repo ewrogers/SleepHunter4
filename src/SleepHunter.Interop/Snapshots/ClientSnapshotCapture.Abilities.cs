@@ -5,7 +5,7 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Snapshots;
 
-public sealed partial class Usda741SnapshotCapture
+public sealed partial class ClientSnapshotCapture
 {
     private bool TryReadSkillbook(
         MappedMemoryReader reader,
@@ -37,7 +37,7 @@ public sealed partial class Usda741SnapshotCapture
 
         try
         {
-            skillbook = Usda741AbilityParser.ParseCompactSkills(
+            skillbook = ClientAbilityParser.ParseCompactSkills(
                 bytes,
                 definition.Capacity,
                 abilityCatalog);
@@ -87,7 +87,7 @@ public sealed partial class Usda741SnapshotCapture
 
         try
         {
-            spellbook = Usda741AbilityParser.ParseCompactSpells(
+            spellbook = ClientAbilityParser.ParseCompactSpells(
                 bytes,
                 definition.Capacity,
                 abilityCatalog);
@@ -135,14 +135,14 @@ public sealed partial class Usda741SnapshotCapture
                 if (!TryReadPaneSnapshot(
                         reader.Session,
                         paneAddress,
-                        Usda741AbilityParser.SkillPaneSnapshotSize,
+                        ClientAbilityParser.SkillPaneSnapshotSize,
                         out var bytes))
                 {
                     skillbook = null;
                     return false;
                 }
 
-                var record = Usda741AbilityParser.ParseSkillPane(bytes);
+                var record = ClientAbilityParser.ParseSkillPane(bytes);
                 if (record.Slot is <= 0 or > SkillSnapshot.MaximumSlot ||
                     !slots.Add(record.Slot))
                 {
@@ -151,7 +151,7 @@ public sealed partial class Usda741SnapshotCapture
                 }
 
                 skills.Add(
-                    Usda741AbilityParser.CreateSkill(
+                    ClientAbilityParser.CreateSkill(
                         record,
                         abilityCatalog));
             }
@@ -167,7 +167,7 @@ public sealed partial class Usda741SnapshotCapture
                 return false;
             }
 
-            skillbook = Usda741AbilityParser.CreateSkillbook(skills);
+            skillbook = ClientAbilityParser.CreateSkillbook(skills);
             return true;
         }
         catch (InvalidDataException)
@@ -205,14 +205,14 @@ public sealed partial class Usda741SnapshotCapture
                 if (!TryReadPaneSnapshot(
                         reader.Session,
                         paneAddress,
-                        Usda741AbilityParser.SpellPaneSnapshotSize,
+                        ClientAbilityParser.SpellPaneSnapshotSize,
                         out var bytes))
                 {
                     spellbook = null;
                     return false;
                 }
 
-                var record = Usda741AbilityParser.ParseSpellPane(bytes);
+                var record = ClientAbilityParser.ParseSpellPane(bytes);
                 if (record.Slot is <= 0 or > SpellSnapshot.MaximumSlot ||
                     !slots.Add(record.Slot))
                 {
@@ -221,7 +221,7 @@ public sealed partial class Usda741SnapshotCapture
                 }
 
                 spells.Add(
-                    Usda741AbilityParser.CreateSpell(
+                    ClientAbilityParser.CreateSpell(
                         record,
                         abilityCatalog));
             }
@@ -237,7 +237,7 @@ public sealed partial class Usda741SnapshotCapture
                 return false;
             }
 
-            spellbook = Usda741AbilityParser.CreateSpellbook(spells);
+            spellbook = ClientAbilityParser.CreateSpellbook(spells);
             return true;
         }
         catch (InvalidDataException)
@@ -261,7 +261,7 @@ public sealed partial class Usda741SnapshotCapture
                 capacityAddress,
                 out var capacity,
                 out _) ||
-            capacity is <= 0 or > Usda741AbilityParser.PaneRecordCount ||
+            capacity is <= 0 or > ClientAbilityParser.PaneRecordCount ||
             !reader.TryResolveAddress(
                 panesKey,
                 out var pointerTableAddress,
@@ -276,7 +276,7 @@ public sealed partial class Usda741SnapshotCapture
         var pointers = new byte[
             checked(
                 pointerCount *
-                Usda741AbilityParser.PanePointerSize)];
+                ClientAbilityParser.PanePointerSize)];
         if (!reader.Session.TryRead(
                 pointerTableAddress,
                 pointers,
@@ -292,8 +292,8 @@ public sealed partial class Usda741SnapshotCapture
             paneAddresses[index] = new MemoryAddress(
                 BinaryPrimitives.ReadUInt32LittleEndian(
                     pointers.AsSpan(
-                        index * Usda741AbilityParser.PanePointerSize,
-                        Usda741AbilityParser.PanePointerSize)));
+                        index * ClientAbilityParser.PanePointerSize,
+                        ClientAbilityParser.PanePointerSize)));
         }
 
         observation = new PaneTableObservation(
@@ -345,7 +345,7 @@ public sealed partial class Usda741SnapshotCapture
         out byte[] snapshot)
     {
         if (!paneAddress.TryOffset(
-                Usda741AbilityParser.PaneSnapshotOffset,
+                ClientAbilityParser.PaneSnapshotOffset,
                 out var snapshotAddress))
         {
             snapshot = [];

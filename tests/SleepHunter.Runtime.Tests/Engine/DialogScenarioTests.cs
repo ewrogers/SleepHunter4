@@ -341,7 +341,7 @@ public sealed class DialogScenarioTests
             new SnapshotSequence(sequence),
             capturedAt,
             capturedAt,
-            new ClientIdentity("dialog-session-client", "test"),
+            new ClientIdentity("dialog-session-client"),
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
             ClientPanel.TemuairSkills,
