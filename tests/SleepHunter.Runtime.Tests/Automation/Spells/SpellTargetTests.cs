@@ -14,6 +14,17 @@ public sealed class SpellTargetTests
         var relative = SpellTarget.RelativeTile(-2, 3);
         var absolute = SpellTarget.AbsoluteTile(100, 200);
         var screen = SpellTarget.ScreenPoint(315, 160);
+        var relativeArea = SpellTarget.RelativeArea(
+            -1,
+            2,
+            innerRadius: 1,
+            outerRadius: 3,
+            new TargetOffset(4, -5));
+        var absoluteArea = SpellTarget.AbsoluteArea(
+            100,
+            200,
+            innerRadius: 0,
+            outerRadius: 2);
 
         Assert.Multiple(() =>
         {
@@ -27,6 +38,14 @@ public sealed class SpellTargetTests
             Assert.That(relative.Y, Is.EqualTo(3));
             Assert.That(absolute.Kind, Is.EqualTo(SpellTargetKind.AbsoluteTile));
             Assert.That(screen.Kind, Is.EqualTo(SpellTargetKind.ScreenPoint));
+            Assert.That(relativeArea.IsArea, Is.True);
+            Assert.That(relativeArea.InnerRadius, Is.EqualTo(1));
+            Assert.That(relativeArea.OuterRadius, Is.EqualTo(3));
+            Assert.That(relativeArea.Offset, Is.EqualTo(new TargetOffset(4, -5)));
+            Assert.That(absoluteArea.Kind, Is.EqualTo(SpellTargetKind.AbsoluteArea));
+            Assert.That(
+                SpellTarget.Self.WithOffset(8, 9).Offset,
+                Is.EqualTo(new TargetOffset(8, 9)));
         });
     }
 
@@ -65,6 +84,24 @@ public sealed class SpellTargetTests
                 () => SpellTarget.ScreenPoint(-1, 0));
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => SpellTarget.ScreenPoint(0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => SpellTarget.RelativeArea(0, 0, -1, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => SpellTarget.RelativeArea(0, 0, 0, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => SpellTarget.RelativeArea(
+                    0,
+                    0,
+                    0,
+                    SpellTarget.MaximumAreaRadius + 1));
+            Assert.Throws<ArgumentException>(
+                () => SpellTarget.RelativeArea(0, 0, 2, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => SpellTarget.AbsoluteArea(-1, 0, 0, 1));
+            Assert.Throws<InvalidOperationException>(
+                () => SpellTarget.None.WithOffset(1, 1));
+            Assert.Throws<InvalidOperationException>(
+                () => SpellTarget.ScreenPoint(1, 1).WithOffset(1, 1));
             Assert.Throws<ArgumentException>(
                 () => _ = new CastSpellIntent(
                     new ClientActionId(1),

@@ -798,7 +798,11 @@ public sealed partial class MacroEngine : IMacroEngine
         MacroState currentState,
         SpellQueueState spellQueue)
     {
-        if (currentState.SpellQueue.Equals(spellQueue))
+        var targetRotations = currentState.SpellTargetRotations.Synchronize(
+            spellQueue.Entries.Select(entry =>
+                KeyValuePair.Create(entry.Id.Value, entry.Target)));
+        if (currentState.SpellQueue.Equals(spellQueue) &&
+            currentState.SpellTargetRotations.Equals(targetRotations))
         {
             return Unchanged(currentState);
         }
@@ -810,7 +814,8 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
             currentState.PendingAction,
-            spellQueue);
+            spellQueue,
+            spellTargetRotations: targetRotations);
     }
 
     private static MacroDecision ChangeSkillQueue(
@@ -855,7 +860,9 @@ public sealed partial class MacroEngine : IMacroEngine
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
         FlowerClientSetSnapshot? flowerClients = null,
-        FlowerState? flower = null)
+        FlowerState? flower = null,
+        TargetRotationState? spellTargetRotations = null,
+        TargetRotationState? flowerTargetRotations = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -883,7 +890,9 @@ public sealed partial class MacroEngine : IMacroEngine
             flowerQueue ?? currentState.FlowerQueue,
             flowerSchedules ?? currentState.FlowerSchedules,
             flowerClients ?? currentState.FlowerClients,
-            flower ?? currentState.Flower);
+            flower ?? currentState.Flower,
+            spellTargetRotations ?? currentState.SpellTargetRotations,
+            flowerTargetRotations ?? currentState.FlowerTargetRotations);
 
         return new MacroDecision(
             nextState,

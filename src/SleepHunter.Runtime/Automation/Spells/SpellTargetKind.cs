@@ -7,5 +7,7 @@ public enum SpellTargetKind
     Character,
     RelativeTile,
     AbsoluteTile,
-    ScreenPoint
+    ScreenPoint,
+    RelativeArea,
+    AbsoluteArea
 }

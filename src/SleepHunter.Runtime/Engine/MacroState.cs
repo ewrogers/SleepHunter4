@@ -42,7 +42,9 @@ public sealed record MacroState
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
         FlowerClientSetSnapshot? flowerClients = null,
-        FlowerState? flower = null)
+        FlowerState? flower = null,
+        TargetRotationState? spellTargetRotations = null,
+        TargetRotationState? flowerTargetRotations = null)
     {
         if (revision < 0)
         {
@@ -96,6 +98,10 @@ public sealed record MacroState
         FlowerSchedules = flowerSchedules ?? FlowerScheduleState.Empty;
         FlowerClients = flowerClients ?? FlowerClientSetSnapshot.Empty;
         Flower = flower;
+        SpellTargetRotations =
+            spellTargetRotations ?? TargetRotationState.Empty;
+        FlowerTargetRotations =
+            flowerTargetRotations ?? TargetRotationState.Empty;
     }
 
     public long Revision { get; }
@@ -137,6 +143,10 @@ public sealed record MacroState
     public FlowerClientSetSnapshot FlowerClients { get; }
 
     public FlowerState? Flower { get; }
+
+    public TargetRotationState SpellTargetRotations { get; }
+
+    public TargetRotationState FlowerTargetRotations { get; }
 
     internal long NextClientActionId { get; }
 }

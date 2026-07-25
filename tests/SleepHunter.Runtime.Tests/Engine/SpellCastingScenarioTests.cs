@@ -378,6 +378,76 @@ public sealed class SpellCastingScenarioTests
     }
 
     [Test]
+    public void ShouldAdvanceAreaTargetOnlyWhenCastIsIssued()
+    {
+        var area = SpellTarget.RelativeArea(0, 0, 0, 1);
+        var entry = Entry("spell", area);
+        var spell = Spell("spell", slot: 1);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Stats,
+            entry,
+            spell);
+
+        var waiting = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var casting = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(spell));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(waiting.Intent, Is.TypeOf<SwitchPanelIntent>());
+            Assert.That(waiting.State.SpellTargetRotations.GetCursor(1), Is.Zero);
+            Assert.That(
+                ((CastSpellIntent)casting.Intent!).Target,
+                Is.EqualTo(SpellTarget.RelativeTile(0, 0)));
+            Assert.That(
+                casting.State.SpellTargetRotations.GetCursor(1),
+                Is.EqualTo(1));
+            Assert.That(
+                casting.State.SpellCast?.ResolvedTarget,
+                Is.EqualTo(SpellTarget.RelativeTile(0, 0)));
+        });
+    }
+
+    [Test]
+    public void ShouldResolveNextAreaPointOnNextCast()
+    {
+        var area = SpellTarget.RelativeArea(0, 0, 0, 1);
+        var spell = Spell("spell", slot: 1);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            Entry("spell", area),
+            spell);
+        var first = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        scenario.AdvanceBy(first.State.SpellCast!.CastDuration!.Value);
+        scenario.Dispatch(first.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(spell));
+
+        var second = scenario.Send(new CastNextSpellCommand(TestPolicy));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)first.Intent!).Target,
+                Is.EqualTo(SpellTarget.RelativeTile(0, 0)));
+            Assert.That(
+                ((CastSpellIntent)second.Intent!).Target,
+                Is.EqualTo(SpellTarget.RelativeTile(0, -1)));
+            Assert.That(
+                second.State.SpellTargetRotations.GetCursor(1),
+                Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public void ShouldInvalidateSelectionWhenSpellSlotChangesDuringPanelTransition()
     {
         var entry = Entry("spell");

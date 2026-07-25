@@ -152,7 +152,7 @@ internal static class MacroDecisionInvariants
              decision.State.PendingAction.MaximumAttempts != 1 ||
              !DoesCastIntentMatchPlan(
                  pendingCastIntent,
-                 decision.State.SpellCast.Plan)))
+                 decision.State.SpellCast)))
         {
             throw new InvalidOperationException(
                 "Pending spell cast metadata must match its client action.");
@@ -404,10 +404,9 @@ internal static class MacroDecisionInvariants
 
     private static bool DoesCastIntentMatchPlan(
         CastSpellIntent intent,
-        SpellCastPlan plan) =>
-        plan is
+        SpellCastState state) =>
+        state.Plan is
         {
-            SelectedEntry: { } entry,
             SelectedSpell: { } spell
         } &&
         string.Equals(
@@ -416,7 +415,7 @@ internal static class MacroDecisionInvariants
             StringComparison.OrdinalIgnoreCase) &&
         spell.Slot == intent.Slot &&
         spell.Panel == intent.Panel &&
-        entry.Target == intent.Target;
+        state.ResolvedTarget == intent.Target;
 
     private static bool DoesSkillIntentMatchPlan(
         ClientActionIntent intent,
