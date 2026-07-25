@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Models;
+using SleepHunter.Services.Configuration;
+using SleepHunter.Services.Logging;
 
 namespace SleepHunter.ViewModels
 {
@@ -36,16 +38,33 @@ namespace SleepHunter.ViewModels
             Func<
                 Player,
                 ClientRuntimeViewModel,
-                ClientListItemViewModel> createItem)
+                ClientListItemViewModel> createItem,
+            IMacroConfigurationPersistenceService
+                macroPersistence = null,
+            IMacroConfigurationInteraction
+                macroInteraction = null,
+            ILogger logger = null)
         {
             this.createItem = createItem ??
                 throw new ArgumentNullException(nameof(createItem));
             readOnlyClients = new ReadOnlyObservableCollection<
                 ClientListItemViewModel>(clients);
+            if (macroPersistence is not null &&
+                macroInteraction is not null &&
+                logger is not null)
+            {
+                MacroPersistence = new MacroPersistenceViewModel(
+                    () => SelectedClient,
+                    macroPersistence,
+                    macroInteraction,
+                    logger);
+            }
         }
 
         public ReadOnlyObservableCollection<ClientListItemViewModel>
             Clients => readOnlyClients;
+
+        public MacroPersistenceViewModel MacroPersistence { get; }
 
         [ObservableProperty]
         public partial ClientListItemViewModel SelectedClient
@@ -139,6 +158,7 @@ namespace SleepHunter.ViewModels
                 return;
 
             StopAllMacrosCommand.Cancel();
+            MacroPersistence?.Dispose();
             SelectedClient = null;
 
             foreach (var client in clients)
@@ -173,6 +193,8 @@ namespace SleepHunter.ViewModels
             object sender,
             PropertyChangedEventArgs e)
         {
+            MacroPersistence?.NotifyStateChanged();
+
             if (string.Equals(
                     e.PropertyName,
                     nameof(ClientListItemViewModel.IsMacroRunning),
@@ -199,6 +221,12 @@ namespace SleepHunter.ViewModels
                     "The selected client must belong to the client list.",
                     nameof(value));
             }
+        }
+
+        partial void OnSelectedClientChanged(
+            ClientListItemViewModel value)
+        {
+            MacroPersistence?.NotifyStateChanged();
         }
     }
 }

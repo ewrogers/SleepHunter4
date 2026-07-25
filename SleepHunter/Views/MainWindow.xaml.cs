@@ -13,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using Microsoft.Win32;
 using SleepHunter.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.Interop.Hosting;
@@ -23,7 +22,6 @@ using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
-using SleepHunter.Persistence.Serialization;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
@@ -39,17 +37,6 @@ namespace SleepHunter.Views
     public partial class MainWindow : Window, IDisposable
     {
         private const int WM_HOTKEY = 0x312;
-        private static readonly string CurrentMacroFileExtension =
-            MacroConfigurationSerializer.CurrentFileExtension
-                .TrimStart('.');
-        private static readonly string LegacyMacroFileExtension =
-            MacroConfigurationSerializer.LegacyFileExtension
-                .TrimStart('.');
-        private static readonly string MacroLoadFileFilter =
-            $"SleepHunter Macro Configurations (*.{CurrentMacroFileExtension})|*.{CurrentMacroFileExtension}|" +
-            $"SleepHunter v4 Macro Files (*.{LegacyMacroFileExtension})|*.{LegacyMacroFileExtension}";
-        private static readonly string MacroSaveFileFilter =
-            $"SleepHunter Macro Configurations (*.{CurrentMacroFileExtension})|*.{CurrentMacroFileExtension}";
 
         private static readonly (long Address, byte[] Expected, byte[] Replacement)[] SuppressLoginNotificationPatches =
         {
@@ -62,8 +49,6 @@ namespace SleepHunter.Views
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
-        private readonly IMacroConfigurationReader
-            macroConfigurationReader;
         private readonly IPlayerMacroConfigurationMapper
             macroConfigurationMapper;
         private readonly PlayerMacroConfigurationManager
@@ -89,9 +74,12 @@ namespace SleepHunter.Views
         {
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
-            macroConfigurationReader =
+            var macroConfigurationReader =
                 App.Current.Services.GetService<
                     IMacroConfigurationReader>();
+            var macroConfigurationWriter =
+                App.Current.Services.GetService<
+                    IMacroConfigurationWriter>();
             macroConfigurationMapper =
                 App.Current.Services.GetService<
                     IPlayerMacroConfigurationMapper>();
@@ -112,6 +100,15 @@ namespace SleepHunter.Views
                 () => AbilitySnapshotCatalogFactory.Create(
                     SkillMetadataManager.Instance.Skills,
                     SpellMetadataManager.Instance.Spells));
+            var macroPersistence =
+                new MacroConfigurationPersistenceService(
+                    macroConfigurationReader,
+                    macroConfigurationWriter,
+                    macroConfigurationMapper,
+                    new WindowHotkeyRegistrationService(
+                        () => new WindowInteropHelper(this).Handle),
+                    logger,
+                    Environment.CurrentDirectory);
             clientList = new ClientListViewModel(
                 (player, runtime) =>
                     new ClientListItemViewModel(
@@ -120,7 +117,10 @@ namespace SleepHunter.Views
                         runtime,
                         macroConfigurationMapper,
                         runtimeSetupFactory,
-                        () => UserSettingsManager.Instance.Settings));
+                        () => UserSettingsManager.Instance.Settings),
+                macroPersistence,
+                new WpfMacroConfigurationInteraction(this),
+                logger);
             DataContext = clientList;
 
             InitializeLogger();
@@ -145,7 +145,7 @@ namespace SleepHunter.Views
             ToggleInventory(false);
             ToggleSkills(false);
             ToggleSpells(false);
-            ToggleSpellQueue(false);
+            clientList.MacroPersistence.IsSpellQueueVisible = false;
 
             StartUpdateTimers();
         }
@@ -567,7 +567,8 @@ namespace SleepHunter.Views
             {
                 logger.LogInfo(
                     $"Auto-loading {configuration.Client.Name} macro configuration...");
-                await AutoLoadMacroConfigurationAsync(configuration);
+                await clientList.MacroPersistence.AutoLoadMacroAsync(
+                    configuration);
             }
 
             UpdateWindowTitle();
@@ -607,7 +608,8 @@ namespace SleepHunter.Views
             {
                 logger.LogInfo(
                     $"Auto-saving {configuration.Client.Name} macro configuration...");
-                AutoSaveMacroConfiguration(configuration);
+                await clientList.MacroPersistence.AutoSaveMacroAsync(
+                    configuration);
             }
 
             if (player.HasHotkey)
@@ -632,7 +634,8 @@ namespace SleepHunter.Views
                 SelectNextAvailablePlayer();
 
             if (!PlayerManager.Instance.LoggedInPlayers.Any())
-                ToggleSpellQueue(false);
+                clientList.MacroPersistence.IsSpellQueueVisible =
+                    false;
         }
 
         private void SelectNextAvailablePlayer()
@@ -642,7 +645,8 @@ namespace SleepHunter.Views
                 clientListBox.SelectedItem = null;
                 UpdateToolbarState();
                 UpdateWindowTitle();
-                ToggleSpellQueue(false);
+                clientList.MacroPersistence.IsSpellQueueVisible =
+                    false;
             }
         }
 
@@ -1076,23 +1080,6 @@ namespace SleepHunter.Views
 
         private void ToggleModalOverlay(bool showHide) => modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
 
-        private void ToggleSpellQueue(bool showQueue)
-        {
-            if (spellQueueListBox == null)
-                return;
-
-            if (showQueue)
-            {
-                Grid.SetColumnSpan(tabControl, 1);
-                spellQueueListBox.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                Grid.SetColumnSpan(tabControl, 2);
-                spellQueueListBox.Visibility = Visibility.Collapsed;
-            }
-        }
-
         public void ShowMetadataWindow(int selectedTabIndex = -1)
         {
             if (metadataWindow == null || !metadataWindow.IsLoaded)
@@ -1304,7 +1291,8 @@ namespace SleepHunter.Views
                 {
                     logger.LogInfo(
                         $"Auto-saving {configuration.Client.Name} macro configuration...");
-                    AutoSaveMacroConfiguration(
+                    await clientList.MacroPersistence
+                        .AutoSaveMacroAsync(
                         configuration,
                         showError: false);
                 }
@@ -1366,352 +1354,9 @@ namespace SleepHunter.Views
             }
         }
 
-        private void AutoSaveMacroConfiguration(
-            PlayerMacroConfiguration configuration,
-            bool showError = true)
-        {
-            var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
-            try
-            {
-                if (!Directory.Exists(autosaveDirectory))
-                {
-                    logger.LogInfo($"Creating autosave directory: {autosaveDirectory}");
-                    Directory.CreateDirectory(autosaveDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogException(ex);
-                logger.LogError($"Unable to create autosave directory: {autosaveDirectory}");
-
-                if (showError)
-                {
-                    this.ShowMessageBox(
-                        "Failed to Autosave",
-                        $"Unable to save macro configuration for {configuration.Client.Name}.",
-                        ex.Message);
-                    return;
-                }
-            }
-
-            var autosaveFile =
-                $"{configuration.Client.Name}-Autosave.{CurrentMacroFileExtension}";
-            var autosaveFilePath = Path.Combine(autosaveDirectory, autosaveFile);
-
-            SaveMacroConfiguration(
-                configuration,
-                autosaveFilePath,
-                showError);
-        }
-
-        private void SaveMacroConfiguration(
-            PlayerMacroConfiguration configuration,
-            string filename,
-            bool showError = true)
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(configuration));
-            }
-
-            if (filename == null)
-                throw new ArgumentNullException(nameof(filename));
-
-            try
-            {
-                logger.LogInfo(
-                    $"Saving {configuration.Client.Name} macro configuration into {filename}...");
-                var snapshot =
-                    macroConfigurationMapper.CreateSnapshot(
-                        configuration);
-                MacroConfigurationSerializer.Save(
-                    snapshot,
-                    filename);
-                logger.LogInfo("Serialized successfully");
-            }
-            catch (Exception ex)
-            {
-                logger.LogException(ex);
-                logger.LogError(
-                    $"Unable to save macro configuration file: {filename}");
-
-                if (showError)
-                {
-                    this.ShowMessageBox(
-                        "Failed to Save Macro",
-                        $"Unable to save the macro configuration for {configuration.Client.Name}.",
-                        ex.Message);
-                }
-            }
-        }
-
-        private async Task AutoLoadMacroConfigurationAsync(
-            PlayerMacroConfiguration configuration,
-            bool showError = true)
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(configuration));
-            }
-
-            var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
-            if (!Directory.Exists(autosaveDirectory))
-            {
-                logger.LogInfo($"Auto-save directory does not exist: {autosaveDirectory}");
-                return;
-            }
-
-            var currentAutosavePath = Path.Combine(
-                autosaveDirectory,
-                $"{configuration.Client.Name}-Autosave.{CurrentMacroFileExtension}");
-            var legacyAutosavePath = Path.Combine(
-                autosaveDirectory,
-                $"{configuration.Client.Name}-Autosave.{LegacyMacroFileExtension}");
-            var autosaveFilePath = File.Exists(currentAutosavePath)
-                ? currentAutosavePath
-                : legacyAutosavePath;
-            if (!File.Exists(autosaveFilePath))
-            {
-                logger.LogInfo(
-                    $"Auto-save file does not exist: {currentAutosavePath}");
-                return;
-            }
-
-            var loaded = await LoadMacroConfigurationAsync(
-                configuration,
-                autosaveFilePath,
-                showError);
-            if (loaded is not null)
-            {
-                if (loaded.Format ==
-                    MacroConfigurationFormat.LegacyV4)
-                {
-                    SaveMacroConfiguration(
-                        configuration,
-                        currentAutosavePath,
-                        showError: false);
-                }
-            }
-
-            // File is probably broken, delete it
-            if (loaded is null && File.Exists(autosaveFilePath))
-            {
-                try
-                {
-                    File.Delete(autosaveFilePath);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogException(ex);
-                    logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
-                }
-            }
-        }
-
-        private async Task<MacroConfigurationLoadResult>
-            LoadMacroConfigurationAsync(
-            PlayerMacroConfiguration configuration,
-            string filename,
-            bool showError = true)
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(configuration));
-            }
-
-            if (filename == null)
-                throw new ArgumentNullException(nameof(filename));
-
-            MacroConfigurationLoadResult loaded;
-
-            try
-            {
-                logger.LogInfo(
-                    $"Loading {configuration.Client.Name} macro configuration from {filename}...");
-                loaded = await macroConfigurationReader.LoadAsync(
-                    filename);
-                logger.LogInfo("Deserialized successfully");
-            }
-            catch (Exception ex)
-            {
-                logger.LogException(ex);
-                logger.LogError(
-                    $"Unable to load macro configuration file: {filename}");
-
-                if (showError)
-                {
-                    this.ShowMessageBox(
-                        "Failed to Load Macro",
-                        $"Unable to load the macro configuration for {configuration.Client.Name}.",
-                        ex.Message);
-                }
-
-                return null;
-            }
-
-            try
-            {
-                logger.LogInfo(
-                    $"Updating {configuration.Client.Name} macro configuration from {loaded.Format} data...");
-
-                var process = Process.GetCurrentProcess();
-                var previousHotkey = configuration.Client.Hotkey;
-
-                macroConfigurationMapper.Apply(
-                    configuration,
-                    loaded);
-
-                if (previousHotkey is not null)
-                {
-                    HotkeyManager.Instance.UnregisterHotkey(
-                        process.MainWindowHandle,
-                        previousHotkey);
-                }
-
-                if (configuration.Client.HasHotkey)
-                {
-                    var registered =
-                        HotkeyManager.Instance.RegisterHotkey(
-                        process.MainWindowHandle,
-                        configuration.Client.Hotkey);
-                    if (!registered)
-                    {
-                        logger.LogWarn(
-                            $"Unable to register the imported macro hotkey for {configuration.Client.Name}.");
-                        configuration.Client.Hotkey = null;
-                        if (showError)
-                        {
-                            this.ShowMessageBox(
-                                "Macro Hotkey Unavailable",
-                                "The macro configuration was loaded, but its hotkey could not be registered.",
-                                "Choose another hotkey before starting the macro.");
-                        }
-                    }
-                }
-
-                foreach (var warning in loaded.Warnings)
-                {
-                    logger.LogWarn(
-                        $"Macro configuration migration warning {warning.Code}: {warning.Message}");
-                }
-
-                return loaded;
-            }
-            catch (Exception ex)
-            {
-                logger.LogException(ex);
-                logger.LogError(
-                    $"Unable to update {configuration.Client.Name} macro configuration from deserialized data");
-
-                if (showError)
-                {
-                    this.ShowMessageBox(
-                        "Failed to Load Macro",
-                        "Unable to load the macro configuration.",
-                        ex.Message);
-                }
-                return null;
-            }
-            finally
-            {
-                UpdateToolbarState();
-
-                if (selectedMacro != null &&
-                    selectedMacro == configuration)
-                {
-                    ToggleSpellQueue(
-                        configuration.QueuedSpells.Count > 0);
-                }
-            }
-        }
-
         #region Toolbar Button Click Methods
         private void launchClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
 
-        private async void loadStateButton_Click(
-            object sender,
-            RoutedEventArgs e)
-        {
-            if (selectedMacro?.Client is not { IsLoggedIn: true })
-                return;
-
-            var defaultFilename =
-                $"{selectedMacro.Client.Name}.{CurrentMacroFileExtension}";
-            var savesDirectory = Path.Combine(Environment.CurrentDirectory, "saves");
-
-            var dialog = new OpenFileDialog
-            {
-                Title = "Load Macro Configuration",
-                Filter = MacroLoadFileFilter,
-                DefaultExt = CurrentMacroFileExtension,
-                FileName = defaultFilename,
-                InitialDirectory = savesDirectory,
-                Multiselect = false,
-                CheckPathExists = true,
-                CheckFileExists = true
-            };
-
-            logger.LogInfo(
-                $"User has requested to load the macro configuration for character: {selectedMacro.Client.Name}");
-
-            if (!dialog.ShowDialog(this).GetValueOrDefault())
-            {
-                logger.LogInfo("User has cancelled the load macro dialog");
-                return;
-            }
-
-            if (selectedMacro != null)
-            {
-                await LoadMacroConfigurationAsync(
-                    selectedMacro,
-                    dialog.FileName);
-            }
-        }
-
-        private void saveStateButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro?.Client is not { IsLoggedIn: true })
-                return;
-
-            var defaultFilename =
-                $"{selectedMacro.Client.Name}.{CurrentMacroFileExtension}";
-            var savesDirectory = Path.Combine(Environment.CurrentDirectory, "saves");
-
-            var dialog = new SaveFileDialog
-            {
-                Title = "Save Macro Configuration",
-                Filter = MacroSaveFileFilter,
-                DefaultExt = CurrentMacroFileExtension,
-                FileName = defaultFilename,
-                InitialDirectory = savesDirectory,
-                OverwritePrompt = true,
-                AddExtension = true,
-                CheckPathExists = true,
-                ValidateNames = true,
-            };
-
-            logger.LogInfo(
-                $"User has requested to save the macro configuration for character: {selectedMacro.Client.Name}");
-
-            if (!dialog.ShowDialog(this).GetValueOrDefault())
-            {
-                logger.LogInfo("User has cancelled the save macro dialog");
-                return;
-            }
-
-            if (selectedMacro != null)
-            {
-                SaveMacroConfiguration(
-                    selectedMacro,
-                    dialog.FileName);
-            }
-        }
-
-        private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
-        private void hideSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(false);
         private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
@@ -1888,6 +1533,8 @@ namespace SleepHunter.Views
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower(false);
+                clientList.MacroPersistence.IsSpellQueueVisible =
+                    false;
                 UpdateToolbarState();
                 return;
             }
@@ -1905,7 +1552,8 @@ namespace SleepHunter.Views
             tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
 
             if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
-                ToggleSpellQueue(true);
+                clientList.MacroPersistence.IsSpellQueueVisible =
+                    true;
 
             var supportsFlowering = player.Version?.SupportsFlowering ?? false;
 
@@ -1919,11 +1567,13 @@ namespace SleepHunter.Views
                 RefreshInventory();
 
                 if (selectedMacro.QueuedSpells.Count > 0)
-                    ToggleSpellQueue(true);
+                    clientList.MacroPersistence.IsSpellQueueVisible =
+                        true;
             }
             else
             {
-                ToggleSpellQueue(false);
+                clientList.MacroPersistence.IsSpellQueueVisible =
+                    false;
             }
         }
 
@@ -2160,7 +1810,7 @@ namespace SleepHunter.Views
             }
 
             selectedMacro.AddToSpellQueue(queueItem);
-            ToggleSpellQueue(true);
+            clientList.MacroPersistence.IsSpellQueueVisible = true;
 
             logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
         }
@@ -2250,9 +1900,6 @@ namespace SleepHunter.Views
             await Dispatcher.SwitchToUIThread();
 
             launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
-            saveStateButton.IsEnabled =
-                selectedMacro != null &&
-                selectedMacro.Client.IsLoggedIn;
         }
 
         private void ToggleInventory(bool show = true)

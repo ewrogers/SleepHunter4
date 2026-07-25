@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced the legacy executable macro state with a DI-owned Community Toolkit observable editor configuration, and projected queued spell levels and readiness from immutable runtime snapshots
 - Changed current macro saves and autosaves to bounded, versioned `.sh4x` JSON while retaining XML `.sh4` files as import-only legacy configurations
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
+- Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 
 ### Removed
 

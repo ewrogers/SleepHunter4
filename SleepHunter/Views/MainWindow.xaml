@@ -64,10 +64,8 @@
                         </DockPanel>
                     </Button>
                     <!-- Load Macro State Button -->
-                    <Button Name="loadStateButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
-                            Click="loadStateButton_Click"
-                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding MacroPersistence.LoadMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -85,9 +83,8 @@
                         </DockPanel>
                     </Button>
                     <!-- Save Macro State Button -->
-                    <Button Name="saveStateButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
-                            Click="saveStateButton_Click"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding MacroPersistence.SaveMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -266,7 +263,7 @@
         <!-- Spell/Skills/Flower Tabs -->
         <TabControl Name="tabControl"
                     Grid.Row="1" Grid.Column="1"
-                    Grid.ColumnSpan="2"
+                    Grid.ColumnSpan="{Binding MacroPersistence.MacroContentColumnSpan}"
                     Style="{StaticResource ObsidianTabControl}"
                     SelectedIndex="0"
                     SelectionChanged="tabControl_SelectionChanged"
@@ -561,7 +558,7 @@
                         Margin="0"
                         Padding="4,4"
                         ToolTip="Shows the spell queue."
-                        Click="showSpellQueueButton_Click">
+                        Command="{Binding MacroPersistence.ShowSpellQueueCommand}">
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{StaticResource ObsidianSymbolText}"
                                    Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -625,7 +622,7 @@
                             Content="&#xE126;"
                             Padding="2,1"
                             ToolTip="Hides the spell queue."
-                            Click="hideSpellQueueButton_Click"/>
+                            Command="{Binding MacroPersistence.HideSpellQueueCommand}"/>
                 </Grid>
             </Border>
 
@@ -669,7 +666,7 @@
                      ItemsSource="{Binding SelectedClient.MacroEditor.QueuedSpells}"
                      SelectedItem="{Binding SelectedClient.MacroEditor.SelectedSpell, Mode=TwoWay}"
                      SelectionMode="Single"
-                     Visibility="Collapsed"
+                     Visibility="{Binding MacroPersistence.IsSpellQueueVisible, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}"
                      GiveFeedback="spellQueueListBox_GiveFeedback">
                 <ListBox.InputBindings>
                     <KeyBinding Key="Delete"
