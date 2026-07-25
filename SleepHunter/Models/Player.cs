@@ -30,14 +30,11 @@ namespace SleepHunter.Models
 
         private ClientVersion version;
         private long nameSessionAddress;
-        
+
         private string name;
         private DateTime? loginTimestamp;
         private bool isLoggedIn;
         private string status;
-        private bool isMacroRunning;
-        private bool isMacroPaused;
-        private bool isMacroStopped;
         private Hotkey hotkey;
         private int selectedTabIndex;
         private bool hasLyliacPlant;
@@ -85,7 +82,7 @@ namespace SleepHunter.Models
         public PlayerModifiers Modifiers => modifiers;
 
         public MapLocation Location => location;
-        
+
         public bool IsLoggedIn
         {
             get => isLoggedIn;
@@ -102,24 +99,6 @@ namespace SleepHunter.Models
         {
             get => status;
             set => SetProperty(ref status, value);
-        }
-
-        public bool IsMacroRunning
-        {
-            get => isMacroRunning;
-            set => SetProperty(ref isMacroRunning, value);
-        }
-
-        public bool IsMacroPaused
-        {
-            get => isMacroPaused;
-            set => SetProperty(ref isMacroPaused, value);
-        }
-
-        public bool IsMacroStopped
-        {
-            get => isMacroStopped;
-            set => SetProperty(ref isMacroStopped, value);
         }
 
         public string HotkeyString => hotkey?.ToString();
@@ -237,7 +216,7 @@ namespace SleepHunter.Models
 
             var wasLoggedIn = IsLoggedIn;
             var isNowLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
-            
+
             if (isNowLoggedIn && !wasLoggedIn)
                 OnLoggedIn();
             else if (wasLoggedIn && !isNowLoggedIn)

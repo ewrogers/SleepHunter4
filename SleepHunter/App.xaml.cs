@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
+using SleepHunter.Macro;
 using SleepHunter.Services;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
@@ -61,6 +62,7 @@ namespace SleepHunter
             // Services
             services.AddSingleton<ILogger, Logger>();
             services.AddSingleton<IReleaseService, ReleaseService>();
+            services.AddSingleton<PlayerMacroConfigurationManager>();
             services.AddSingleton<
                 IMacroConfigurationReader,
                 FileMacroConfigurationReader>();
@@ -71,7 +73,7 @@ namespace SleepHunter
                 IRuntimeAutomationSetupFactory,
                 RuntimeAutomationSetupFactory>();
 
-            services.AddTransient<IMacroStateSerializer, MacroStateSerializer>();
+            services.AddTransient<ILegacyMacroConfigurationSerializer, LegacyMacroConfigurationSerializer>();
             services.AddTransient<
                 IRuntimeMacroConfigurationAdapter,
                 RuntimeMacroConfigurationAdapter>();

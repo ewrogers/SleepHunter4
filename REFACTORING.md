@@ -1170,12 +1170,14 @@ As of July 24, 2026:
   not emit a process-termination intent.
 - Route toolbar, hotkey, and stop-all lifecycle changes through the same
   Community Toolkit command surface. Project running and paused state from the
-  runtime whenever a host exists, with legacy player state used only when no
-  runtime is attached.
-- Until the legacy macro editor is replaced, serialize its current state in
-  memory and import it through the tested legacy configuration reader before
-  every start or resume. Send queue replacement and immutable configuration
-  before the lifecycle command.
+  runtime, which is the only automation lifecycle authority.
+- Keep the transitional macro editor as a Community Toolkit observable
+  `PlayerMacroConfiguration` with no execution state, locks, threads, timers, or
+  input authority. Give each process one DI-owned configuration and mutate it on
+  the UI thread.
+- Snapshot the editable configuration in memory and import it through the tested
+  legacy configuration reader before every start or resume. Send queue
+  replacement and immutable configuration before the lifecycle command.
 - Treat each running configuration as immutable. Disable macro editor mutation
   while running, allow edits while paused, and recompose the complete setup on
   resume so a live runtime never silently diverges from the editor.
@@ -1217,6 +1219,9 @@ As of July 24, 2026:
   uncertain cast can spend mana or affect a target twice.
 - Isolate macro configuration in `SleepHunter.Persistence`, which depends only
   on `SleepHunter.Runtime`. Do not serialize transient `MacroState`.
+- Remove the legacy `MacroState` executor, its lock-protected queues, deferred
+  dispatcher, execution status flags, and 16 ms flower worker once the
+  deterministic runtime owns every lifecycle command and observation.
 - Write new macro configurations as schema version 1 using the `.shmacro`
   extension. Treat `.sh4` as an import-only legacy format.
 - Preserve an unresolved legacy default spell rotation so application settings

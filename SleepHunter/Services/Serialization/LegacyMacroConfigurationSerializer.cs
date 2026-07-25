@@ -7,23 +7,24 @@ using SleepHunter.Macro;
 
 namespace SleepHunter.Services.Serialization
 {
-    public sealed class MacroStateSerializer : IMacroStateSerializer
+    public sealed class LegacyMacroConfigurationSerializer :
+        ILegacyMacroConfigurationSerializer
     {
         private const int DefaultBufferSize = 4096;
 
-        public void Serialize(PlayerMacroState state, string file)
+        public void Serialize(
+            PlayerMacroConfiguration configuration,
+            string file)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            ArgumentNullException.ThrowIfNull(configuration);
 
-            if (file == null)
-                throw new ArgumentNullException(nameof(file));
+            ArgumentException.ThrowIfNullOrWhiteSpace(file);
 
             var tempFile = Path.GetTempFileName();
             using var stream = File.Create(tempFile);
             using var writer = new StreamWriter(stream, Encoding.UTF8, DefaultBufferSize, false);
 
-            Serialize(state, writer);
+            Serialize(configuration, writer);
 
             writer.Flush();
             writer.Close();
@@ -38,91 +39,87 @@ namespace SleepHunter.Services.Serialization
             }
         }
 
-        public void Serialize(PlayerMacroState state, Stream stream, bool leaveOpen = true)
+        public void Serialize(
+            PlayerMacroConfiguration configuration,
+            Stream stream,
+            bool leaveOpen = true)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(stream);
 
             using var writer = new StreamWriter(stream, Encoding.UTF8, DefaultBufferSize, leaveOpen);
-            Serialize(state, writer);
+            Serialize(configuration, writer);
             writer.Flush();
         }
 
-        public void Serialize(PlayerMacroState state, TextWriter writer)
+        public void Serialize(
+            PlayerMacroConfiguration configuration,
+            TextWriter writer)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(writer);
 
-            if (writer == null)
-                throw new ArgumentNullException(nameof(writer));
-
-            var serializedState = SerializeState(state);
+            var serializedState = SerializeConfiguration(
+                configuration);
 
             var xs = new XmlSerializer(typeof(SerializedMacroState), string.Empty);
             xs.Serialize(writer, serializedState);
         }
 
-        public SerializedMacroState Deserialize(PlayerMacroState state, string file)
+        public SerializedMacroState Deserialize(string file)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-
-            if (file == null)
-                throw new ArgumentNullException(nameof(file));
+            ArgumentException.ThrowIfNullOrWhiteSpace(file);
 
             using var stream = File.OpenRead(file);
             using var reader = new StreamReader(stream, Encoding.UTF8);
 
-            return Deserialize(state, reader);
+            return Deserialize(reader);
         }
 
-        public SerializedMacroState Deserialize(PlayerMacroState state, Stream stream, bool leaveOpen = true)
+        public SerializedMacroState Deserialize(
+            Stream stream,
+            bool leaveOpen = true)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
+            ArgumentNullException.ThrowIfNull(stream);
 
             using var reader = new StreamReader(stream, Encoding.UTF8, false, DefaultBufferSize, leaveOpen);
 
-            return Deserialize(state, reader);
+            return Deserialize(reader);
         }
 
-        public SerializedMacroState Deserialize(PlayerMacroState state, TextReader reader)
+        public SerializedMacroState Deserialize(TextReader reader)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
-
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
+            ArgumentNullException.ThrowIfNull(reader);
 
             var xs = new XmlSerializer(typeof(SerializedMacroState), string.Empty);
             var result = xs.Deserialize(reader);
 
             if (result is not SerializedMacroState deserializedState)
-                throw new InvalidOperationException("Unable to parse macro state");
+            {
+                throw new InvalidOperationException(
+                    "Unable to parse the legacy macro configuration.");
+            }
 
             return deserializedState;
         }
 
-        private static SerializedMacroState SerializeState(PlayerMacroState state)
+        private static SerializedMacroState SerializeConfiguration(
+            PlayerMacroConfiguration configuration)
         {
-            var client = state.Client;
+            var client = configuration.Client;
 
             var serialized = new SerializedMacroState
             {
                 Name = client.Name,
                 Description = string.Empty,
-                SpellRotation = state.SpellQueueRotation,
-                UseLyliacVineyard = state.UseLyliacVineyard,
-                FlowerAlternateCharacters = state.FlowerAlternateCharacters
+                SpellRotation = configuration.SpellQueueRotation,
+                UseLyliacVineyard =
+                    configuration.UseLyliacVineyard,
+                FlowerAlternateCharacters =
+                    configuration.FlowerAlternateCharacters
             };
 
-            if (state.Client.HasHotkey)
+            if (client.HasHotkey)
             {
                 serialized.Hotkey = new SerializedHotkey
                 {
@@ -134,7 +131,8 @@ namespace SleepHunter.Services.Serialization
             foreach (var skillName in client.Skillbook.ActiveSkills)
                 serialized.Skills.Add(new SerializedSkillState { SkillName = skillName });
 
-            var queuedSpellsSnapshot = state.GetSpellQueueSnapshot();
+            var queuedSpellsSnapshot =
+                configuration.GetSpellQueueSnapshot();
             foreach (var spell in queuedSpellsSnapshot)
             {
                 serialized.Spells.Add(new SerializedSpellState
@@ -152,7 +150,8 @@ namespace SleepHunter.Services.Serialization
                 });
             }
 
-            var flowerTargetsSnapshot = state.GetFlowerQueueSnapshot();
+            var flowerTargetsSnapshot =
+                configuration.GetFlowerQueueSnapshot();
             foreach (var flower in flowerTargetsSnapshot)
             {
                 serialized.FlowerTargets.Add(new SerializedFlowerState
