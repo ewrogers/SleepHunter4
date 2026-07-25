@@ -1,4 +1,5 @@
-﻿using SleepHunter.Macro;
+﻿using System.Collections.Specialized;
+using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Automation.Skills;
 
@@ -20,18 +21,16 @@ public sealed class PlayerMacroConfigurationTests
                 Mode = SpellTargetMode.Self
             }
         };
-        var addedSpells = new List<SpellQueueItem>();
-        var removedSpells = new List<SpellQueueItem>();
-        var addedFlowers = new List<FlowerQueueItem>();
-        var removedFlowers = new List<FlowerQueueItem>();
-        configuration.SpellAdded +=
-            (_, args) => addedSpells.Add(args.Spell);
-        configuration.SpellRemoved +=
-            (_, args) => removedSpells.Add(args.Spell);
-        configuration.FlowerTargetAdded +=
-            (_, args) => addedFlowers.Add(args.Flower);
-        configuration.FlowerTargetRemoved +=
-            (_, args) => removedFlowers.Add(args.Flower);
+        var spellChanges =
+            new List<NotifyCollectionChangedAction>();
+        var flowerChanges =
+            new List<NotifyCollectionChangedAction>();
+        ((INotifyCollectionChanged)configuration.QueuedSpells)
+            .CollectionChanged +=
+            (_, args) => spellChanges.Add(args.Action);
+        ((INotifyCollectionChanged)configuration.FlowerTargets)
+            .CollectionChanged +=
+            (_, args) => flowerChanges.Add(args.Action);
 
         configuration.AddToSpellQueue(firstSpell);
         configuration.AddToSpellQueue(secondSpell, index: 0);
@@ -58,16 +57,21 @@ public sealed class PlayerMacroConfigurationTests
                 configuration.IsSpellInQueue(" FIRST "),
                 Is.True);
             Assert.That(
-                addedSpells,
-                Is.EqualTo(new[] { firstSpell, secondSpell }));
+                spellChanges,
+                Is.EqualTo(
+                    new[]
+                    {
+                        NotifyCollectionChangedAction.Add,
+                        NotifyCollectionChangedAction.Add
+                    }));
             Assert.That(
-                addedFlowers,
-                Is.EqualTo(new[] { flower }));
+                flowerChanges,
+                Is.EqualTo(
+                    new[] { NotifyCollectionChangedAction.Add }));
             Assert.That(
                 configuration.RemoveFromSpellQueue(
                     new SpellQueueItem { Name = "missing" }),
                 Is.False);
-            Assert.That(removedSpells, Is.Empty);
         });
 
         configuration.ClearSpellQueue();
@@ -78,11 +82,66 @@ public sealed class PlayerMacroConfigurationTests
             Assert.That(configuration.QueuedSpells, Is.Empty);
             Assert.That(configuration.FlowerTargets, Is.Empty);
             Assert.That(
-                removedSpells,
+                spellChanges.Last(),
+                Is.EqualTo(NotifyCollectionChangedAction.Reset));
+            Assert.That(
+                flowerChanges.Last(),
+                Is.EqualTo(NotifyCollectionChangedAction.Reset));
+        });
+    }
+
+    [Test]
+    public void ShouldMoveObservableQueueEntriesByDropTarget()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+        var firstSpell = new SpellQueueItem { Name = "first" };
+        var secondSpell = new SpellQueueItem { Name = "second" };
+        var firstFlower = Flower();
+        var secondFlower = Flower();
+        configuration.AddToSpellQueue(firstSpell);
+        configuration.AddToSpellQueue(secondSpell);
+        configuration.AddToFlowerQueue(firstFlower);
+        configuration.AddToFlowerQueue(secondFlower);
+        var spellActions =
+            new List<NotifyCollectionChangedAction>();
+        var flowerActions =
+            new List<NotifyCollectionChangedAction>();
+        ((INotifyCollectionChanged)configuration.QueuedSpells)
+            .CollectionChanged +=
+            (_, args) => spellActions.Add(args.Action);
+        ((INotifyCollectionChanged)configuration.FlowerTargets)
+            .CollectionChanged +=
+            (_, args) => flowerActions.Add(args.Action);
+
+        var movedSpell =
+            configuration.MoveSpell(firstSpell, secondSpell);
+        var movedFlower =
+            configuration.MoveFlower(secondFlower, firstFlower);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(movedSpell, Is.True);
+            Assert.That(
+                configuration.QueuedSpells,
                 Is.EqualTo(new[] { secondSpell, firstSpell }));
             Assert.That(
-                removedFlowers,
-                Is.EqualTo(new[] { flower }));
+                spellActions,
+                Is.EqualTo(
+                    new[] { NotifyCollectionChangedAction.Move }));
+            Assert.That(movedFlower, Is.True);
+            Assert.That(
+                configuration.FlowerTargets,
+                Is.EqualTo(new[] { secondFlower, firstFlower }));
+            Assert.That(
+                flowerActions,
+                Is.EqualTo(
+                    new[] { NotifyCollectionChangedAction.Move }));
+            Assert.That(
+                configuration.MoveSpell(
+                    new SpellQueueItem { Name = "missing" },
+                    firstSpell),
+                Is.False);
         });
     }
 
@@ -200,5 +259,14 @@ public sealed class PlayerMacroConfigurationTests
         {
             Name = "Test",
             IsLoggedIn = true
+        };
+
+    private static FlowerQueueItem Flower() =>
+        new()
+        {
+            Target = new SpellTarget
+            {
+                Mode = SpellTargetMode.Self
+            }
         };
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Metadata;
@@ -11,38 +12,38 @@ namespace SleepHunter.Macro
     public sealed partial class PlayerMacroConfiguration :
         ObservableObject
     {
-        private readonly List<FlowerQueueItem> flowers = new();
+        private readonly ObservableCollection<FlowerQueueItem> flowers = new();
+        private readonly ReadOnlyObservableCollection<FlowerQueueItem>
+            readOnlyFlowers;
         private readonly List<SkillQueueEntry> skills = new();
-        private readonly List<SpellQueueItem> spells = new();
+        private readonly ObservableCollection<SpellQueueItem> spells = new();
+        private readonly ReadOnlyObservableCollection<SpellQueueItem>
+            readOnlySpells;
 
         public PlayerMacroConfiguration(Player client)
         {
             Client = client ??
                 throw new ArgumentNullException(nameof(client));
+            readOnlyFlowers = new ReadOnlyObservableCollection<
+                FlowerQueueItem>(flowers);
+            readOnlySpells = new ReadOnlyObservableCollection<
+                SpellQueueItem>(spells);
             PrioritizeAlternateCharacters = true;
             MaximumFlowerXDistance = 10;
             MaximumFlowerYDistance = 10;
         }
 
-        public event SpellQueueItemEventHandler SpellAdded;
-
-        public event SpellQueueItemEventHandler SpellRemoved;
-
-        public event FlowerQueueItemEventHandler FlowerTargetAdded;
-
-        public event FlowerQueueItemEventHandler FlowerTargetRemoved;
-
         public Player Client { get; }
 
         public string Name => Client.Name;
 
-        public IReadOnlyList<SpellQueueItem> QueuedSpells => spells;
+        public ReadOnlyObservableCollection<SpellQueueItem>
+            QueuedSpells => readOnlySpells;
 
-        public IReadOnlyList<FlowerQueueItem> FlowerTargets => flowers;
+        public ReadOnlyObservableCollection<FlowerQueueItem>
+            FlowerTargets => readOnlyFlowers;
 
         public IReadOnlyList<SkillQueueEntry> Skills => skills;
-
-        public int FlowerQueueCount => flowers.Count;
 
         [ObservableProperty]
         public partial string Description { get; set; }
@@ -87,10 +88,6 @@ namespace SleepHunter.Macro
                 spells.Add(spell);
             else
                 spells.Insert(index, spell);
-
-            SpellAdded?.Invoke(
-                this,
-                new SpellQueueItemEventArgs(spell));
         }
 
         public void AddToFlowerQueue(
@@ -104,17 +101,13 @@ namespace SleepHunter.Macro
                 flowers.Add(flower);
             else
                 flowers.Insert(index, flower);
-
-            FlowerTargetAdded?.Invoke(
-                this,
-                new FlowerQueueItemEventArgs(flower));
         }
 
         public bool IsSpellInQueue(string spellName)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(spellName);
 
-            return spells.Exists(
+            return spells.Any(
                 spell => string.Equals(
                     spell.Name,
                     spellName.Trim(),
@@ -188,71 +181,59 @@ namespace SleepHunter.Macro
         {
             ArgumentNullException.ThrowIfNull(spell);
 
-            if (!spells.Remove(spell))
-                return false;
-
-            SpellRemoved?.Invoke(
-                this,
-                new SpellQueueItemEventArgs(spell));
-            return true;
-        }
-
-        public void RemoveFromSpellQueueAtIndex(int index)
-        {
-            var spell = spells[index];
-            spells.RemoveAt(index);
-            SpellRemoved?.Invoke(
-                this,
-                new SpellQueueItemEventArgs(spell));
+            return spells.Remove(spell);
         }
 
         public bool RemoveFromFlowerQueue(FlowerQueueItem flower)
         {
             ArgumentNullException.ThrowIfNull(flower);
 
-            if (!flowers.Remove(flower))
-                return false;
+            return flowers.Remove(flower);
+        }
 
-            FlowerTargetRemoved?.Invoke(
-                this,
-                new FlowerQueueItemEventArgs(flower));
+        public bool MoveSpell(
+            SpellQueueItem spell,
+            SpellQueueItem target)
+        {
+            ArgumentNullException.ThrowIfNull(spell);
+            ArgumentNullException.ThrowIfNull(target);
+
+            var oldIndex = spells.IndexOf(spell);
+            var newIndex = spells.IndexOf(target);
+            if (oldIndex < 0 ||
+                newIndex < 0 ||
+                oldIndex == newIndex)
+            {
+                return false;
+            }
+
+            spells.Move(oldIndex, newIndex);
             return true;
         }
 
-        public void RemoveFromFlowerQueueAtIndex(int index)
+        public bool MoveFlower(
+            FlowerQueueItem flower,
+            FlowerQueueItem target)
         {
-            var flower = flowers[index];
-            flowers.RemoveAt(index);
-            FlowerTargetRemoved?.Invoke(
-                this,
-                new FlowerQueueItemEventArgs(flower));
-        }
+            ArgumentNullException.ThrowIfNull(flower);
+            ArgumentNullException.ThrowIfNull(target);
 
-        public void ClearSpellQueue()
-        {
-            var removed = spells.ToArray();
-            spells.Clear();
-
-            foreach (var spell in removed)
+            var oldIndex = flowers.IndexOf(flower);
+            var newIndex = flowers.IndexOf(target);
+            if (oldIndex < 0 ||
+                newIndex < 0 ||
+                oldIndex == newIndex)
             {
-                SpellRemoved?.Invoke(
-                    this,
-                    new SpellQueueItemEventArgs(spell));
+                return false;
             }
+
+            flowers.Move(oldIndex, newIndex);
+            return true;
         }
 
-        public void ClearFlowerQueue()
-        {
-            var removed = flowers.ToArray();
-            flowers.Clear();
+        public void ClearSpellQueue() => spells.Clear();
 
-            foreach (var flower in removed)
-            {
-                FlowerTargetRemoved?.Invoke(
-                    this,
-                    new FlowerQueueItemEventArgs(flower));
-            }
-        }
+        public void ClearFlowerQueue() => flowers.Clear();
 
         private void EnsureSpellIdentifier(SpellQueueItem spell)
         {
