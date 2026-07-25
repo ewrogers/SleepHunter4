@@ -78,6 +78,12 @@ namespace SleepHunter.Views
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
             macroStateSerializer = App.Current.Services.GetService<IMacroStateSerializer>();
+            var runtimeConfigurationAdapter =
+                App.Current.Services.GetService<
+                    IRuntimeMacroConfigurationAdapter>();
+            var runtimeSetupFactory =
+                App.Current.Services.GetService<
+                    IRuntimeAutomationSetupFactory>();
             runtimeClients = new ClientRuntimeRegistry(
                 new WindowsClientRuntimeFactory(),
                 logger,
@@ -94,7 +100,15 @@ namespace SleepHunter.Views
                 () => LegacySpellQueueRotationMapper.Map(
                     UserSettingsManager.Instance.Settings
                         .SpellRotationMode));
-            clientList = new ClientListViewModel();
+            clientList = new ClientListViewModel(
+                (player, runtime) =>
+                    new ClientListItemViewModel(
+                        player,
+                        MacroManager.Instance.GetMacroState(player),
+                        runtime,
+                        runtimeConfigurationAdapter,
+                        runtimeSetupFactory,
+                        () => UserSettingsManager.Instance.Settings));
             DataContext = clientList;
 
             InitializeLogger();
@@ -539,10 +553,7 @@ namespace SleepHunter.Views
             var state = MacroManager.Instance.GetMacroState(player);
 
             if (state != null)
-            {
-                state.StatusChanged += HandleMacroStatusChanged;
                 state.Client.Updated += HandleClientUpdateTick;
-            }
 
             if (autosaveEnabled && state != null)
             {
@@ -589,7 +600,6 @@ namespace SleepHunter.Views
 
             if (state != null)
             {
-                state.StatusChanged -= HandleMacroStatusChanged;
                 state.Client.Updated -= HandleClientUpdateTick;
 
                 state.ClearSpellQueue();
@@ -609,8 +619,6 @@ namespace SleepHunter.Views
             if (!PlayerManager.Instance.LoggedInPlayers.Any())
                 ToggleSpellQueue(false);
         }
-
-        private void HandleMacroStatusChanged(object sender, MacroStatusEventArgs e) => UpdateToolbarState();
 
         private void HandleClientUpdateTick(object sender, EventArgs e)
         {
@@ -1025,7 +1033,9 @@ namespace SleepHunter.Views
             ColorThemeManager.Instance.ApplyTheme(themeName);
         }
 
-        private void ActivateHotkey(Key key, ModifierKeys modifiers)
+        private async void ActivateHotkey(
+            Key key,
+            ModifierKeys modifiers)
         {
             var hotkey = HotkeyManager.Instance.GetHotkey(key, modifiers);
 
@@ -1046,21 +1056,31 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated for character: {hotkeyPlayer.Name}");
 
-            var macroState = MacroManager.Instance.GetMacroState(hotkeyPlayer);
-
-            if (macroState == null)
+            var client = clientList.Clients.FirstOrDefault(
+                item => ReferenceEquals(item.Player, hotkeyPlayer));
+            if (client is null ||
+                !client.ToggleMacroCommand.CanExecute(null))
+            {
+                logger.LogWarn(
+                    $"Runtime automation is unavailable for character: {hotkeyPlayer.Name} (hotkey)");
                 return;
+            }
 
-            if (macroState.Status == MacroStatus.Running)
+            var wasRunning = client.IsMacroRunning;
+            await client.ToggleMacroCommand.ExecuteAsync(null);
+            if (client.LastAutomationError is { } error)
             {
-                macroState.Pause();
-                logger.LogInfo($"Paused macro state for character: {hotkeyPlayer.Name} (hotkey)");
+                logger.LogError(
+                    $"Unable to change runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
+                logger.LogException(error);
+                return;
             }
-            else
-            {
-                macroState.Start();
-                logger.LogInfo($"Started macro state for character: {hotkeyPlayer.Name} (hotkey)");
-            }
+
+            var action = wasRunning
+                ? "Paused"
+                : "Started";
+            logger.LogInfo(
+                $"{action} runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
         }
 
         private void UpdateListBoxGridWidths()
@@ -1132,35 +1152,6 @@ namespace SleepHunter.Views
 
             var iconSize = UserSettingsManager.Instance.Settings.SkillIconSize;
             worldSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
-        }
-
-        private async void UpdateUIForMacroStatus(MacroStatus status)
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            switch (status)
-            {
-                case MacroStatus.Running:
-                    startMacroButton.Tag = "Start Macro";
-                    startMacroButton.IsEnabled = false;
-                    pauseMacroButton.IsEnabled = true;
-                    stopMacroButton.IsEnabled = true;
-                    break;
-
-                case MacroStatus.Paused:
-                    startMacroButton.Tag = "Resume Macro";
-                    startMacroButton.IsEnabled = true;
-                    pauseMacroButton.IsEnabled = false;
-                    stopMacroButton.IsEnabled = true;
-                    break;
-
-                default:
-                    startMacroButton.Tag = "Start Macro";
-                    startMacroButton.IsEnabled = true;
-                    pauseMacroButton.IsEnabled = false;
-                    stopMacroButton.IsEnabled = false;
-                    break;
-            }
         }
 
         private void ToggleModalOverlay(bool showHide) => modalOverlay.Visibility = showHide ? Visibility.Visible : Visibility.Hidden;
@@ -1561,7 +1552,7 @@ namespace SleepHunter.Views
                     out var configuration))
             {
                 logger.LogWarn(
-                    $"No shadow runtime is available for {state.Client.Name}; skipped deterministic configuration synchronization.");
+                    $"No runtime is available for {state.Client.Name}; skipped deterministic configuration synchronization.");
                 return;
             }
 
@@ -1570,7 +1561,7 @@ namespace SleepHunter.Views
             if (configuration.LastError is { } error)
             {
                 logger.LogError(
-                    $"Unable to synchronize {state.Client.Name} macro configuration with the shadow runtime.");
+                    $"Unable to synchronize {state.Client.Name} macro configuration with the runtime.");
                 logger.LogException(error);
                 return;
             }
@@ -1579,7 +1570,7 @@ namespace SleepHunter.Views
                 return;
 
             logger.LogInfo(
-                $"Synchronized {state.Client.Name} shadow runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
+                $"Synchronized {state.Client.Name} runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
             foreach (var warning in loaded.Warnings)
             {
                 logger.LogWarn(
@@ -1807,48 +1798,6 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
                 SaveMacroState(selectedMacro, dialog.FileName);
-        }
-
-        private void startMacroButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro?.Client is not { IsLoggedIn: true })
-                return;
-
-            selectedMacro.Client.Update();
-            selectedMacro.Start();
-            UpdateToolbarState();
-
-            logger.LogInfo($"Started macro state for character: {selectedMacro.Client.Name} (toolbar)");
-        }
-
-        private void pauseMacroButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            selectedMacro.Pause();
-            UpdateToolbarState();
-
-            logger.LogInfo($"Paused macro state for character {selectedMacro.Client.Name} (toolbar)");
-        }
-
-        private void stopMacroButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            selectedMacro.Stop();
-            UpdateToolbarState();
-
-            logger.LogInfo($"Stopped macro state for character {selectedMacro.Client.Name} (toolbar)");
-        }
-
-        private void stopAllMacrosButton_Click(object sender, RoutedEventArgs e)
-        {
-            MacroManager.Instance.StopAll();
-            UpdateToolbarState();
-
-            logger.LogInfo("Stopped all macro states (toolbar)");
         }
 
         private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
@@ -2152,7 +2101,7 @@ namespace SleepHunter.Views
 
         private void SubscribeMacroHandlers(PlayerMacroState state)
         {
-            if (state != null)
+            if (state == null)
                 return;
 
             state.PropertyChanged += SelectedMacro_PropertyChanged;
@@ -2554,9 +2503,6 @@ namespace SleepHunter.Views
             if (sender is not PlayerMacroState macro)
                 return;
 
-            if (string.Equals(nameof(macro.Status), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                UpdateUIForMacroStatus(macro.Status);
-
             // Update Spell Queue Rotation
             if (string.Equals(nameof(macro.SpellQueueRotation), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 spellQueueRotationComboBox.SelectedValue = macro.SpellQueueRotation;
@@ -2610,14 +2556,9 @@ namespace SleepHunter.Views
             await Dispatcher.SwitchToUIThread();
 
             launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
-            loadStateButton.IsEnabled = saveStateButton.IsEnabled = selectedMacro != null && selectedMacro.Client.IsLoggedIn;
-
-            stopAllMacrosButton.IsEnabled = MacroManager.Instance.Macros.Any(macro => macro.Status == MacroStatus.Running || macro.Status == MacroStatus.Paused);
-
-            if (selectedMacro == null)
-                startMacroButton.IsEnabled = pauseMacroButton.IsEnabled = stopMacroButton.IsEnabled = false;
-            else
-                UpdateUIForMacroStatus(selectedMacro.Status);
+            saveStateButton.IsEnabled =
+                selectedMacro != null &&
+                selectedMacro.Client.IsLoggedIn;
         }
 
         private void ToggleInventory(bool show = true)

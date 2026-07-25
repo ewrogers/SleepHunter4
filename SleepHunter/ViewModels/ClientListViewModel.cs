@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Models;
 
 namespace SleepHunter.ViewModels
@@ -13,12 +17,29 @@ namespace SleepHunter.ViewModels
     {
         private readonly ObservableCollection<
             ClientListItemViewModel> clients = new();
+        private readonly Func<
+            Player,
+            ClientRuntimeViewModel,
+            ClientListItemViewModel> createItem;
         private readonly ReadOnlyObservableCollection<
             ClientListItemViewModel> readOnlyClients;
         private bool isDisposed;
 
         public ClientListViewModel()
+            : this(
+                (player, runtime) =>
+                    new ClientListItemViewModel(player, runtime))
         {
+        }
+
+        internal ClientListViewModel(
+            Func<
+                Player,
+                ClientRuntimeViewModel,
+                ClientListItemViewModel> createItem)
+        {
+            this.createItem = createItem ??
+                throw new ArgumentNullException(nameof(createItem));
             readOnlyClients = new ReadOnlyObservableCollection<
                 ClientListItemViewModel>(clients);
         }
@@ -71,6 +92,7 @@ namespace SleepHunter.ViewModels
                 if (ReferenceEquals(SelectedClient, removed))
                     SelectedClient = null;
 
+                removed.PropertyChanged -= OnClientPropertyChanged;
                 clients.RemoveAt(index);
                 removed.Dispose();
             }
@@ -86,9 +108,12 @@ namespace SleepHunter.ViewModels
                         current.Process.ProcessId == processId);
                 if (item is null)
                 {
-                    item = new ClientListItemViewModel(
+                    item = createItem(
                         player,
-                        findRuntime(processId));
+                        findRuntime(processId)) ??
+                        throw new InvalidOperationException(
+                            "The client-list item factory returned no item.");
+                    item.PropertyChanged += OnClientPropertyChanged;
                     clients.Insert(desiredIndex, item);
                     continue;
                 }
@@ -104,6 +129,8 @@ namespace SleepHunter.ViewModels
                 if (currentIndex != desiredIndex)
                     clients.Move(currentIndex, desiredIndex);
             }
+
+            StopAllMacrosCommand.NotifyCanExecuteChanged();
         }
 
         public void Dispose()
@@ -111,13 +138,56 @@ namespace SleepHunter.ViewModels
             if (isDisposed)
                 return;
 
+            StopAllMacrosCommand.Cancel();
             SelectedClient = null;
 
             foreach (var client in clients)
+            {
+                client.PropertyChanged -= OnClientPropertyChanged;
                 client.Dispose();
+            }
 
             clients.Clear();
             isDisposed = true;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStopAllMacros))]
+        private async Task StopAllMacrosAsync(
+            CancellationToken cancellationToken)
+        {
+            foreach (var client in clients.ToArray())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (client.StopMacroCommand.CanExecute(null))
+                    await client.StopMacroCommand.ExecuteAsync(null);
+            }
+        }
+
+        private bool CanStopAllMacros() =>
+            !isDisposed &&
+            clients.Any(
+                client =>
+                    client.StopMacroCommand.CanExecute(null));
+
+        private void OnClientPropertyChanged(
+            object sender,
+            PropertyChangedEventArgs e)
+        {
+            if (string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.IsMacroRunning),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.IsMacroPaused),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.IsAutomationCommandRunning),
+                    StringComparison.Ordinal))
+            {
+                StopAllMacrosCommand.NotifyCanExecuteChanged();
+            }
         }
 
         partial void OnSelectedClientChanging(
