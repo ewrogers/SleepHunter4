@@ -1,4 +1,6 @@
-﻿using SleepHunter.Runtime.Actions;
+﻿using System.Collections.Immutable;
+using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -286,6 +288,24 @@ public sealed partial class MacroEngine
             maximumAttempts: 1,
             snapshot.Sequence);
         var acting = skillUse.Acting(plan, actionId, deadline);
+        var actionDeadline = new ScheduledMacroEvent(
+            new ClientActionDeadlineElapsed(actionId),
+            deadline);
+        var dialog = currentState.Dialog;
+        var scheduledEvents = ImmutableArray.Create(actionDeadline);
+
+        if (selectedSkill.OpensDialog)
+        {
+            var dialogDueAt =
+                currentTime.Add(skillUse.Policy.Dialog.CloseDelay);
+            dialog = DialogState.Scheduled(
+                skillUse.Policy.Dialog,
+                dialogDueAt);
+            scheduledEvents = scheduledEvents.Add(
+                new ScheduledMacroEvent(
+                    new DialogCloseDue(dialogDueAt),
+                    dialogDueAt));
+        }
 
         return Changed(
             currentState,
@@ -299,14 +319,10 @@ public sealed partial class MacroEngine
             skillCooldowns: plan.Cooldowns,
             skillUse: acting,
             disarm: disarm,
+            dialog: dialog,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
-            scheduledEvents:
-            [
-                new ScheduledMacroEvent(
-                    new ClientActionDeadlineElapsed(actionId),
-                    deadline)
-            ]);
+            scheduledEvents: scheduledEvents);
     }
 
     private static MacroDecision HandleDisarmDeadline(

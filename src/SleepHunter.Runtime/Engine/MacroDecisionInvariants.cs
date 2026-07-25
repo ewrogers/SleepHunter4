@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Equipment;
+﻿using SleepHunter.Runtime.Automation.Dialogs;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -268,6 +269,55 @@ internal static class MacroDecisionInvariants
         {
             throw new InvalidOperationException(
                 "Skill use can wait only on its pending disarm action.");
+        }
+
+        var pendingDialogIntent =
+            decision.State.PendingAction?.Intent as CancelDialogIntent;
+        var closingDialog = decision.State.Dialog is
+        {
+            Status: DialogStatus.Closing
+        };
+
+        if ((pendingDialogIntent is not null) != closingDialog)
+        {
+            throw new InvalidOperationException(
+                "Pending dialog state must match its client action.");
+        }
+
+        if (pendingDialogIntent is not null &&
+            (decision.State.Dialog!.ActionId != pendingDialogIntent.ActionId ||
+             decision.State.Dialog.CompletesAt !=
+             decision.State.PendingAction!.Deadline ||
+             decision.State.PendingAction.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1))
+        {
+            throw new InvalidOperationException(
+                "Pending dialog metadata must match its client action.");
+        }
+
+        if (decision.State.Dialog is
+            {
+                Status: DialogStatus.Scheduled,
+                DueAt: { } dialogDueAt
+            } &&
+            (previousState.Dialog is not
+            {
+                Status: DialogStatus.Scheduled,
+                DueAt: { } previousDialogDueAt
+            } ||
+             previousDialogDueAt != dialogDueAt))
+        {
+            var matchingDialogEvents = decision.ScheduledEvents.Count(
+                scheduledEvent =>
+                    scheduledEvent.Input is DialogCloseDue closeDue &&
+                    closeDue.DueAt == dialogDueAt &&
+                    scheduledEvent.DueAt == dialogDueAt);
+
+            if (matchingDialogEvents != 1)
+            {
+                throw new InvalidOperationException(
+                    "Scheduled dialog state requires exactly one matching close event.");
+            }
         }
 
         if (decision.ScheduledEvents.Any(

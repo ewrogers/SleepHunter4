@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -25,7 +26,8 @@ public sealed record MacroViewSnapshot(
     SkillQueueState SkillQueue,
     SkillCooldownState SkillCooldowns,
     SkillUseState? SkillUse,
-    DisarmState? Disarm)
+    DisarmState? Disarm,
+    DialogState? Dialog)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -47,6 +49,7 @@ public sealed record MacroViewSnapshot(
             state.SkillQueue,
             state.SkillCooldowns,
             state.SkillUse,
-            state.Disarm);
+            state.Disarm,
+            state.Dialog);
     }
 }

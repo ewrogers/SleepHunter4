@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Equipment;
+﻿using SleepHunter.Runtime.Automation.Dialogs;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 
 namespace SleepHunter.Runtime.Automation.Skills;
@@ -11,7 +12,8 @@ public sealed record SkillExecutionPolicy
         SkillUsePolicy? planning = null,
         PanelTransitionPolicy? panelTransition = null,
         DisarmPolicy? disarm = null,
-        TimeSpan? actionDuration = null)
+        TimeSpan? actionDuration = null,
+        DialogPolicy? dialog = null)
     {
         var resolvedActionDuration =
             actionDuration ?? TimeSpan.FromMilliseconds(100);
@@ -27,6 +29,7 @@ public sealed record SkillExecutionPolicy
         PanelTransition = panelTransition ?? PanelTransitionPolicy.Default;
         Disarm = disarm ?? DisarmPolicy.Default;
         ActionDuration = resolvedActionDuration;
+        Dialog = dialog ?? DialogPolicy.Default;
     }
 
     public SkillUsePolicy Planning { get; }
@@ -36,4 +39,6 @@ public sealed record SkillExecutionPolicy
     public DisarmPolicy Disarm { get; }
 
     public TimeSpan ActionDuration { get; }
+
+    public DialogPolicy Dialog { get; }
 }

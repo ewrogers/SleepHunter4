@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -33,6 +34,11 @@ public sealed partial class MacroEngine : IMacroEngine
                 HandleClientActionDeadline(
                     currentState,
                     deadlineElapsed,
+                    currentTime),
+            DialogCloseDue dialogCloseDue =>
+                HandleDialogCloseDue(
+                    currentState,
+                    dialogCloseDue,
                     currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
@@ -174,7 +180,8 @@ public sealed partial class MacroEngine : IMacroEngine
             staffSwitch: CancelPendingStaffSwitch(currentState),
             spellCast: CancelPendingSpellCast(currentState),
             skillUse: CancelPendingSkillUse(currentState),
-            disarm: CancelPendingDisarm(currentState));
+            disarm: CancelPendingDisarm(currentState),
+            dialog: CancelPendingDialog(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -212,7 +219,10 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingSkillUse(currentState),
             disarm: nextLifecycle == MacroLifecycle.Running
                 ? currentState.Disarm
-                : CancelPendingDisarm(currentState));
+                : CancelPendingDisarm(currentState),
+            dialog: nextLifecycle == MacroLifecycle.Running
+                ? currentState.Dialog
+                : CancelPendingDialog(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -265,6 +275,9 @@ public sealed partial class MacroEngine : IMacroEngine
         var disarm = clientLoggedOut
             ? CancelPendingDisarm(currentState)
             : currentState.Disarm;
+        var dialog = clientLoggedOut
+            ? CancelPendingDialog(currentState)
+            : currentState.Dialog;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -441,7 +454,8 @@ public sealed partial class MacroEngine : IMacroEngine
             staffSwitch: staffSwitch,
             spellCast: spellCast,
             skillUse: skillUse,
-            disarm: disarm);
+            disarm: disarm,
+            dialog: dialog);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -567,6 +581,11 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction,
                 assailIntent,
                 currentTime),
+            CancelDialogIntent cancelDialogIntent =>
+                HandleDialogCloseDeadline(
+                    currentState,
+                    pendingAction,
+                    cancelDialogIntent),
             _ => Unchanged(currentState)
         };
     }
@@ -781,7 +800,8 @@ public sealed partial class MacroEngine : IMacroEngine
         SkillQueueState? skillQueue = null,
         SkillCooldownState? skillCooldowns = null,
         SkillUseState? skillUse = null,
-        DisarmState? disarm = null)
+        DisarmState? disarm = null,
+        DialogState? dialog = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -804,7 +824,8 @@ public sealed partial class MacroEngine : IMacroEngine
             skillQueue ?? currentState.SkillQueue,
             skillCooldowns ?? currentState.SkillCooldowns,
             skillUse ?? currentState.SkillUse,
-            disarm ?? currentState.Disarm);
+            disarm ?? currentState.Disarm,
+            dialog ?? currentState.Dialog);
 
         return new MacroDecision(
             nextState,

@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -35,7 +36,8 @@ public sealed record MacroState
         SkillQueueState? skillQueue = null,
         SkillCooldownState? skillCooldowns = null,
         SkillUseState? skillUse = null,
-        DisarmState? disarm = null)
+        DisarmState? disarm = null,
+        DialogState? dialog = null)
     {
         if (revision < 0)
         {
@@ -84,6 +86,7 @@ public sealed record MacroState
         SkillCooldowns = skillCooldowns ?? SkillCooldownState.Empty;
         SkillUse = skillUse;
         Disarm = disarm;
+        Dialog = dialog;
     }
 
     public long Revision { get; }
@@ -115,6 +118,8 @@ public sealed record MacroState
     public SkillUseState? SkillUse { get; }
 
     public DisarmState? Disarm { get; }
+
+    public DialogState? Dialog { get; }
 
     internal long NextClientActionId { get; }
 }
