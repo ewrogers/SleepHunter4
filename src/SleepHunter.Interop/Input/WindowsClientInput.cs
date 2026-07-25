@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace SleepHunter.Interop.Input;
 
@@ -109,6 +109,11 @@ internal static partial class NativeMethods
         uint message,
         nuint wParam,
         nint lParam);
+
+    [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
+    internal static partial uint MapVirtualKey(
+        uint code,
+        uint mapType);
 }
 
 [StructLayout(LayoutKind.Sequential)]

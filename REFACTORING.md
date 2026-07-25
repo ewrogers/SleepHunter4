@@ -450,6 +450,24 @@ release cleanup, but still remain uncertain and must never be reported as
 success. A successfully posted plan means only that Windows accepted the
 messages, not that the client completed the action.
 
+For USDA 7.41, basic client actions are translated from semantic intents into
+version-specific input plans. Cancel dialog uses Escape, disarm uses the OEM
+tilde key, and assail uses Space. Panel changes and skill activation use the
+documented 640 by 480 client coordinates, scaled independently to the guarded
+client width and height. Panel changes preserve the Temuair and Medenia Shift
+selection behavior. Skill slots are normalized with
+`((absoluteSlot - 1) % panelCapacity) + 1`, which keeps exact capacity
+boundaries in the final visible slot. Mouse button-up messages use a zero
+button-state parameter.
+
+Intent planning reports planned, rejected, or unsupported before native input
+is attempted. Issuance then reports issued, rejected, failed, or partially
+issued and retains the planning result. A rejection may therefore identify
+either invalid snapshot context with no dispatch, or a valid input plan rejected
+by the HWND guard with dispatch diagnostics. Cast-spell and equipment input
+translation remain explicitly unsupported until their targeting and expanded
+inventory workflows are implemented.
+
 Pending actions contain enough information to diagnose and test behavior:
 
 - Action identifier and kind.
@@ -1068,8 +1086,6 @@ them:
 - Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
 - Exact expanded-inventory input sequencing for equipment intents.
-- Exact intent issuance-result protocol between the session and interop
-  executors.
 - Exact client-coordinate projection for semantic targets and pixel offsets.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.
