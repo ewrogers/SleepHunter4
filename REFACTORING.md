@@ -767,6 +767,12 @@ reconciliation to the UI dispatcher. Cancellation replaces
 `BackgroundWorker` recursion and `Thread.Sleep`, and shutdown awaits both loops
 before saving macro state or disposing runtime hosts.
 
+Global hotkey editing now follows the same boundary. WPF translates a key
+gesture and reports errors, while a tested application service owns uniqueness,
+native registration transfer, model updates, and rollback. A failed assignment
+retains the previous character binding, and a failed transfer attempts to
+restore the displaced registration before returning control to the view.
+
 The pre-runtime `PlayerInterfaceExtender` and `WindowAutomator` have no remaining
 callers and are removed instead of being converted to async polling. Semantic
 input planning and execution now belong exclusively to `SleepHunter.Interop`,

@@ -5,6 +5,7 @@ using SleepHunter.Models;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Persistence.Serialization;
 using SleepHunter.Services.Configuration;
+using SleepHunter.Services.Hotkeys;
 using SleepHunter.Tests.Support;
 
 namespace SleepHunter.Tests.Services.Configuration;
@@ -312,6 +313,11 @@ public sealed class MacroConfigurationPersistenceServiceTests
         public List<Hotkey> Registered { get; } = [];
 
         public List<Hotkey> Unregistered { get; } = [];
+
+        public Hotkey Find(
+            Key key,
+            ModifierKeys modifiers) =>
+            null!;
 
         public bool Register(Hotkey hotkey)
         {
