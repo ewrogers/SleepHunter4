@@ -7,11 +7,11 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Hosting;
 
-public sealed class ReadOnlyClientRuntimeHost : IClientRuntimeHost
+public sealed class ShadowClientRuntimeHost : IClientRuntimeHost
 {
     private readonly IClientRuntimeHost host;
 
-    public ReadOnlyClientRuntimeHost(IClientRuntimeHost host)
+    public ShadowClientRuntimeHost(IClientRuntimeHost host)
     {
         ArgumentNullException.ThrowIfNull(host);
         this.host = host;
@@ -41,9 +41,17 @@ public sealed class ReadOnlyClientRuntimeHost : IClientRuntimeHost
     {
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (command is ReplaceSpellQueueCommand or
+            ReplaceSkillQueueCommand or
+            ReplaceFlowerQueueCommand)
+        {
+            return host.SendCommandAsync(command, cancellationToken);
+        }
+
         return ValueTask.FromException(
             new InvalidOperationException(
-                "A read-only client runtime host cannot accept commands."));
+                "A shadow client runtime host accepts only atomic queue replacement commands."));
     }
 
     public bool PublishClientRoster(ClientRosterSnapshot snapshot)
