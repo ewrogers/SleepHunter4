@@ -173,6 +173,7 @@ public static class FlowerPlanner
                     : FlowerReadinessStatus.OutOfRange;
 
             case SpellTargetKind.RelativeTile:
+            case SpellTargetKind.RelativeArea:
                 if (sourceLocation is null)
                 {
                     return FlowerReadinessStatus.LocationUnavailable;
@@ -186,6 +187,7 @@ public static class FlowerPlanner
                     : FlowerReadinessStatus.OutOfRange;
 
             case SpellTargetKind.AbsoluteTile:
+            case SpellTargetKind.AbsoluteArea:
                 if (sourceLocation is null)
                 {
                     return FlowerReadinessStatus.LocationUnavailable;

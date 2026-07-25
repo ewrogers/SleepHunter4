@@ -194,7 +194,11 @@ public sealed class MacroDecisionInvariantTests
             attempt: 1);
         var spellCast = SpellCastState
             .FromPlan(plan, SpellExecutionPolicy.Default)
-            .Casting(plan, new ClientActionId(2), deadline);
+            .Casting(
+                plan,
+                new ClientActionId(2),
+                deadline,
+                entry.Target);
         var state = new MacroState(
             revision: 1,
             MacroLifecycle.Running,

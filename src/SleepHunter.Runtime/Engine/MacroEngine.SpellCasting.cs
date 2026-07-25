@@ -371,13 +371,43 @@ public sealed partial class MacroEngine
     {
         var selectedEntry = plan.SelectedEntry!;
         var selectedSpell = plan.SelectedSpell!;
+        var targetResolution = ResolveCastTarget(
+            currentState,
+            spellCast,
+            selectedEntry.Target,
+            flower);
+        var spellTargetRotations = currentState.SpellTargetRotations;
+        var flowerTargetRotations = currentState.FlowerTargetRotations;
+        if (spellCast.Origin == SpellCastOrigin.SpellQueue)
+        {
+            spellTargetRotations = spellTargetRotations.Advance(
+                selectedEntry.Id.Value,
+                selectedEntry.Target,
+                targetResolution);
+        }
+        else if (flower is
+            {
+                Action: FlowerActionKind.Plant,
+                Plan:
+                {
+                    SelectionKind: FlowerSelectionKind.QueueEntry,
+                    SelectedEntry: { } selectedFlowerEntry
+                }
+            })
+        {
+            flowerTargetRotations = flowerTargetRotations.Advance(
+                selectedFlowerEntry.Id.Value,
+                selectedFlowerEntry.Target,
+                targetResolution);
+        }
+
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new CastSpellIntent(
             actionId,
             selectedSpell.Name,
             selectedSpell.Slot,
             selectedSpell.Panel,
-            selectedEntry.Target);
+            targetResolution.Target);
         var deadline = currentTime.Add(spellCast.CastDuration!.Value);
         var pendingAction = new PendingAction(
             intent,
@@ -386,7 +416,11 @@ public sealed partial class MacroEngine
             attempt: 1,
             maximumAttempts: 1,
             snapshot.Sequence);
-        var casting = spellCast.Casting(plan, actionId, deadline);
+        var casting = spellCast.Casting(
+            plan,
+            actionId,
+            deadline,
+            targetResolution.Target);
         var nextFlower = flower?.WithSpellCast(casting);
         var flowerQueue = currentState.FlowerQueue;
         var flowerSchedules =
@@ -426,6 +460,8 @@ public sealed partial class MacroEngine
             flowerQueue: flowerQueue,
             flowerSchedules: flowerSchedules,
             flower: nextFlower,
+            spellTargetRotations: spellTargetRotations,
+            flowerTargetRotations: flowerTargetRotations,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -434,6 +470,37 @@ public sealed partial class MacroEngine
                     new ClientActionDeadlineElapsed(actionId),
                     deadline)
             ]);
+    }
+
+    private static TargetResolution ResolveCastTarget(
+        MacroState currentState,
+        SpellCastState spellCast,
+        SpellTarget target,
+        FlowerState? flower)
+    {
+        if (spellCast.Origin == SpellCastOrigin.SpellQueue)
+        {
+            return currentState.SpellTargetRotations.Resolve(
+                spellCast.Plan.SelectedEntry!.Id.Value,
+                target);
+        }
+
+        if (flower is
+            {
+                Action: FlowerActionKind.Plant,
+                Plan:
+                {
+                    SelectionKind: FlowerSelectionKind.QueueEntry,
+                    SelectedEntry: { } selectedFlowerEntry
+                }
+            })
+        {
+            return currentState.FlowerTargetRotations.Resolve(
+                selectedFlowerEntry.Id.Value,
+                target);
+        }
+
+        return TargetResolver.Resolve(target);
     }
 
     private static MacroDecision HandleSpellCastDeadline(

@@ -854,6 +854,16 @@ As of July 24, 2026:
   multi-line timing plus a positive completion margin.
 - Represent spell targets as immutable semantic values. Keep screen-coordinate
   translation and character lookup in the future client action adapter.
+- Represent relative and absolute target areas as immutable center, inner
+  radius, outer radius, and pixel-offset values. Generate the integer points in
+  a Euclidean circle, ordered by increasing distance and then clockwise from
+  the upward direction.
+- Keep target-area cursors in `MacroState`, keyed separately by stable spell and
+  flower queue entry identifiers. Reordering a queue preserves its target
+  cursor, while changing or removing a target resets or removes the cursor.
+- Resolve an area to one exact tile before emitting `CastSpellIntent`. Advance
+  its cursor only when that final cast intent is issued, so panel changes, staff
+  changes, planning, vineyard, and mana restoration do not consume a point.
 - Revalidate the selected queue entry, spell observation, mana, and cooldown
   after a spell-panel transition before emitting `CastSpellIntent`.
 - Advance round-robin selection only when the cast intent is issued, not while
@@ -963,7 +973,7 @@ them:
 - Exact expanded-inventory input sequencing for equipment intents.
 - Exact intent issuance-result protocol between the session and interop
   executors.
-- Radius-target progression and client-coordinate projection.
+- Exact client-coordinate projection for semantic targets and pixel offsets.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.
 - Legacy macro-state compatibility and migration details.

@@ -32,7 +32,9 @@ public sealed record MacroViewSnapshot(
     FlowerQueueState FlowerQueue,
     FlowerScheduleState FlowerSchedules,
     FlowerObservationSequence? FlowerObservationSequence,
-    FlowerState? Flower)
+    FlowerState? Flower,
+    TargetRotationState SpellTargetRotations,
+    TargetRotationState FlowerTargetRotations)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -59,6 +61,8 @@ public sealed record MacroViewSnapshot(
             state.FlowerQueue,
             state.FlowerSchedules,
             state.FlowerClients.Sequence,
-            state.Flower);
+            state.Flower,
+            state.SpellTargetRotations,
+            state.FlowerTargetRotations);
     }
 }

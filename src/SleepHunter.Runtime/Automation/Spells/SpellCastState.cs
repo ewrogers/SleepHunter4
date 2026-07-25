@@ -16,7 +16,8 @@ public sealed record SpellCastState
         ClientActionId? actionId,
         MacroTimestamp? completesAt,
         MacroTimestamp? snapshotRequiredAfter,
-        SpellCastOrigin origin)
+        SpellCastOrigin origin,
+        SpellTarget? resolvedTarget)
     {
         Plan = plan;
         Policy = policy;
@@ -28,6 +29,7 @@ public sealed record SpellCastState
         CompletesAt = completesAt;
         SnapshotRequiredAfter = snapshotRequiredAfter;
         Origin = origin;
+        ResolvedTarget = resolvedTarget;
     }
 
     public SpellCastPlan Plan { get; private init; }
@@ -50,6 +52,8 @@ public sealed record SpellCastState
 
     public SpellCastOrigin Origin { get; }
 
+    public SpellTarget? ResolvedTarget { get; private init; }
+
     internal static SpellCastState FromPlan(
         SpellCastPlan plan,
         SpellExecutionPolicy policy,
@@ -69,7 +73,8 @@ public sealed record SpellCastState
             actionId: null,
             completesAt: null,
             snapshotRequiredAfter,
-            origin);
+            origin,
+            resolvedTarget: null);
     }
 
     internal SpellCastState WaitingForStaff(
@@ -87,7 +92,8 @@ public sealed record SpellCastState
             CastLines = castLines,
             CastDuration = Policy.Cast.Timing.CalculateDuration(castLines),
             ActionId = null,
-            CompletesAt = null
+            CompletesAt = null,
+            ResolvedTarget = null
         };
     }
 
@@ -114,20 +120,23 @@ public sealed record SpellCastState
             Plan = plan ?? Plan,
             Status = SpellCastStatus.WaitingForPanel,
             ActionId = null,
-            CompletesAt = null
+            CompletesAt = null,
+            ResolvedTarget = null
         };
 
     internal SpellCastState Casting(
         SpellCastPlan plan,
         ClientActionId actionId,
-        MacroTimestamp completesAt) =>
+        MacroTimestamp completesAt,
+        SpellTarget resolvedTarget) =>
         this with
         {
             Plan = plan,
             Status = SpellCastStatus.Casting,
             ActionId = actionId,
             CompletesAt = completesAt,
-            SnapshotRequiredAfter = completesAt
+            SnapshotRequiredAfter = completesAt,
+            ResolvedTarget = resolvedTarget
         };
 
     internal SpellCastState Replanned(SpellCastPlan plan) =>

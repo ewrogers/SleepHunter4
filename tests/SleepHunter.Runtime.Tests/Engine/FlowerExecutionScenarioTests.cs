@@ -88,6 +88,42 @@ public sealed class FlowerExecutionScenarioTests
     }
 
     [Test]
+    public void ShouldRotateConfiguredFlowerAreaOnlyWhenPlantIsIssued()
+    {
+        var area = SpellTarget.RelativeArea(0, 0, 0, 1);
+        var entry = Entry(1, area);
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var scenario = CreateRunningScenario([plant]);
+        scenario.Send(new AddFlowerQueueEntryCommand(entry));
+
+        var first = scenario.Send(new FlowerCommand(TestPolicy));
+        scenario.AdvanceBy(first.State.SpellCast!.CastDuration!.Value);
+        scenario.Dispatch(first.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([plant]),
+            location: SourceLocation());
+        var second = scenario.Send(new FlowerCommand(TestPolicy));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)first.Intent!).Target,
+                Is.EqualTo(SpellTarget.RelativeTile(0, 0)));
+            Assert.That(
+                ((CastSpellIntent)second.Intent!).Target,
+                Is.EqualTo(SpellTarget.RelativeTile(0, -1)));
+            Assert.That(
+                second.State.FlowerTargetRotations.GetCursor(entry.Id.Value),
+                Is.EqualTo(2));
+            Assert.That(second.State.SpellTargetRotations.Count, Is.Zero);
+        });
+    }
+
+    [Test]
     public void ShouldFlowerAutomaticWaitingCharacterBeforeVineyard()
     {
         var plant = Spell(FlowerSpellNames.Plant, slot: 1);
@@ -151,6 +187,7 @@ public sealed class FlowerExecutionScenarioTests
             Assert.That(
                 decision.State.FlowerSchedules.GetReadyAt(entry.Id),
                 Is.EqualTo(MacroTimestamp.Zero));
+            Assert.That(decision.State.FlowerTargetRotations.GetCursor(1), Is.Zero);
         });
     }
 

@@ -384,8 +384,12 @@ public sealed partial class MacroEngine
         var schedules = currentState.FlowerSchedules.Synchronize(
             flowerQueue,
             currentTime);
+        var targetRotations = currentState.FlowerTargetRotations.Synchronize(
+            flowerQueue.Entries.Select(entry =>
+                KeyValuePair.Create(entry.Id.Value, entry.Target)));
         if (currentState.FlowerQueue.Equals(flowerQueue) &&
-            currentState.FlowerSchedules.Equals(schedules))
+            currentState.FlowerSchedules.Equals(schedules) &&
+            currentState.FlowerTargetRotations.Equals(targetRotations))
         {
             return Unchanged(currentState);
         }
@@ -398,7 +402,8 @@ public sealed partial class MacroEngine
             currentState.LastTransitionAt,
             currentState.PendingAction,
             flowerQueue: flowerQueue,
-            flowerSchedules: schedules);
+            flowerSchedules: schedules,
+            flowerTargetRotations: targetRotations);
     }
 
     private static FlowerState? CancelPendingFlower(
