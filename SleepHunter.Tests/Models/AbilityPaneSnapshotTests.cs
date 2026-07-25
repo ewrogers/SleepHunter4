@@ -88,6 +88,7 @@ namespace SleepHunter.Tests.Models
             Assert.Multiple(() =>
             {
                 Assert.That(skill.CooldownProgressPercent, Is.EqualTo(0.5));
+                Assert.That(skill.CooldownRemainingFraction, Is.EqualTo(0.5));
                 Assert.That(skill.CooldownDurationMilliseconds, Is.EqualTo(200));
                 Assert.That(skill.GetRemainingCooldownMilliseconds(0), Is.EqualTo(100));
             });
@@ -122,6 +123,23 @@ namespace SleepHunter.Tests.Models
             var record = Skillbook.ParseSkillPaneSnapshot(snapshot);
 
             Assert.That(record.IsCooldownActive, Is.True);
+        }
+
+        [TestCase(0u, 1.0)]
+        [TestCase(1u, 29.0 / 30.0)]
+        [TestCase(15u, 0.5)]
+        [TestCase(29u, 1.0 / 30.0)]
+        [TestCase(30u, 0.0)]
+        [TestCase(31u, 0.0)]
+        public void ShouldConvertCooldownStepsIntoARemainingOverlay(
+            uint progress,
+            double expectedRemainingFraction)
+        {
+            var skill = new Skill { CooldownProgress = progress };
+
+            Assert.That(
+                skill.CooldownRemainingFraction,
+                Is.EqualTo(expectedRemainingFraction).Within(0.000001));
         }
     }
 }

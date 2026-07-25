@@ -46,7 +46,11 @@ namespace SleepHunter.Models
         {
             get => cooldownProgress;
             set => SetProperty(ref cooldownProgress, value,
-                onChanged: (_) => RaisePropertyChanged(nameof(CooldownProgressPercent)));
+                onChanged: (_) =>
+                {
+                    RaisePropertyChanged(nameof(CooldownProgressPercent));
+                    CooldownRemainingFraction = 1.0 - System.Math.Clamp(CooldownProgress / 30.0, 0.0, 1.0);
+                });
         }
 
         public double CooldownProgressPercent => System.Math.Clamp(CooldownProgress / 30.0, 0.0, 1.0);

@@ -31,6 +31,8 @@ namespace SleepHunter.Models
         private int clientNameSuffixLeft;
         private int clientNameSuffixRight;
         private int clientBaseNameLength;
+        private bool hasClientCooldownProgress;
+        private double cooldownRemainingFraction = 1.0;
 
         public bool IsEmpty
         {
@@ -89,6 +91,18 @@ namespace SleepHunter.Models
         {
             get => isActionDelayed;
             set => SetProperty(ref isActionDelayed, value);
+        }
+
+        public bool HasClientCooldownProgress
+        {
+            get => hasClientCooldownProgress;
+            set => SetProperty(ref hasClientCooldownProgress, value);
+        }
+
+        public double CooldownRemainingFraction
+        {
+            get => cooldownRemainingFraction;
+            protected set => SetProperty(ref cooldownRemainingFraction, value);
         }
 
         public TimeSpan Cooldown

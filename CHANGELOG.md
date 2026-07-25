@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the parsed 64-entry group-member cache, including names and starred state
 - Added an ID-keyed USDA 7.41 known-living-entity snapshot with player, monster, Mundane, passable, and solid classifications; name, X/Y, direction, local-player, and group-member state; and nearest-player, nearest-monster, and nearest-group-member queries
 - Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
+- Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
 - Added inventory pane display names and stackability alongside the existing stable compact inventory identity
 - Added focused tests for pointer walking, typed values, memory mappings, pane layouts, character classes and names, inventory and equipment snapshots, cooldown wraparound, and world-entity traversal
 

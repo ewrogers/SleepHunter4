@@ -299,6 +299,7 @@ namespace SleepHunter.Models
                 skill.CurrentLevel = currentLevel;
                 skill.MaximumLevel = maximumLevel;
                 skill.CooldownProgress = record.CooldownProgress;
+                skill.HasClientCooldownProgress = true;
                 skill.CooldownStartMilliseconds = record.CooldownStartMilliseconds;
                 skill.CooldownEndMilliseconds = record.CooldownEndMilliseconds;
                 skill.IsOnCooldown = record.IsCooldownActive;
@@ -418,6 +419,7 @@ namespace SleepHunter.Models
         private static void ResetClientPaneState(Skill skill)
         {
             skill.CooldownProgress = 0;
+            skill.HasClientCooldownProgress = false;
             skill.CooldownStartMilliseconds = 0;
             skill.CooldownEndMilliseconds = 0;
             skill.IsActionDelayed = false;
