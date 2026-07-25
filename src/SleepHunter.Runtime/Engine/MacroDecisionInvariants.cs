@@ -5,6 +5,7 @@ using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
+using SleepHunter.Runtime.Automation.WaterBeds;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Time;
@@ -345,6 +346,33 @@ internal static class MacroDecisionInvariants
         {
             throw new InvalidOperationException(
                 "Pending dialog metadata must match its client action.");
+        }
+
+        var pendingTileIntent =
+            decision.State.PendingAction?.Intent as ClickTileIntent;
+        var clickingWaterBed = decision.State.WaterBed is
+        {
+            Status: WaterBedStatus.Clicking
+        };
+
+        if ((pendingTileIntent is not null) != clickingWaterBed)
+        {
+            throw new InvalidOperationException(
+                "Pending water and bed state must match its client action.");
+        }
+
+        if (pendingTileIntent is not null &&
+            (decision.State.WaterBed!.ActionId !=
+             pendingTileIntent.ActionId ||
+             decision.State.WaterBed.CompletesAt !=
+             decision.State.PendingAction!.Deadline ||
+             decision.State.WaterBed.Plan.Target !=
+             pendingTileIntent.Target ||
+             decision.State.PendingAction.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1))
+        {
+            throw new InvalidOperationException(
+                "Pending water and bed metadata must match its client action.");
         }
 
         if (decision.State.Dialog is
