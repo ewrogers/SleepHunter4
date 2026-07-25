@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.Text;
 using SleepHunter.Interop.Mappings;
@@ -23,11 +23,23 @@ public sealed class Usda741SnapshotCaptureTests
     private const ulong InventoryRootAddress = 0x1300;
     private const ulong EquipmentSnapshotRootAddress = 0x1400;
     private const ulong EquipmentRootAddress = 0x1500;
+    private const ulong SkillbookRootAddress = 0x1600;
+    private const ulong SpellbookRootAddress = 0x1700;
+    private const ulong SkillbookPanesRootAddress = 0x1800;
+    private const ulong SpellbookPanesRootAddress = 0x1900;
+    private const ulong SkillbookPaneCapacityAddress = 0x1A00;
+    private const ulong SpellbookPaneCapacityAddress = 0x1A04;
     private const ulong CharacterNameAddress = 0x5000;
     private const ulong MapNameAddress = 0x5100;
     private const ulong InventoryAddress = 0x6000;
     private const ulong EquipmentSnapshotAddress = 0xA000;
     private const ulong EquipmentAddress = 0xB000;
+    private const ulong SkillbookAddress = 0xC000;
+    private const ulong SpellbookAddress = 0x18000;
+    private const ulong SkillbookPaneTableAddress = 0x24000;
+    private const ulong SpellbookPaneTableAddress = 0x24200;
+    private const ulong SkillPaneAddress = 0x25000;
+    private const ulong SpellPaneAddress = 0x26000;
     private const ulong LevelAddress = PlayerAddress + 0x10;
     private const ulong AbilityLevelAddress = PlayerAddress + 0x11;
     private const ulong CharacterClassAddress = PlayerAddress + 0x12;
@@ -96,6 +108,36 @@ public sealed class Usda741SnapshotCaptureTests
                         "Holy Diana",
                         "Dragon Shield")));
             Assert.That(
+                result.Snapshot?.Skillbook,
+                Is.EqualTo(
+                    new SkillbookSnapshot(
+                    [
+                        new SkillSnapshot(
+                            "Assail",
+                            slot: 1,
+                            currentLevel: 3,
+                            maximumLevel: 100,
+                            manaCost: 0,
+                            TimeSpan.Zero,
+                            isAssail: true,
+                            isActionDelayed: true)
+                    ])));
+            Assert.That(
+                result.Snapshot?.Spellbook,
+                Is.EqualTo(
+                    new SpellbookSnapshot(
+                    [
+                        new SpellSnapshot(
+                            "ard cradh",
+                            slot: 73,
+                            currentLevel: 7,
+                            maximumLevel: 100,
+                            castLines: 4,
+                            manaCost: 500,
+                            TimeSpan.Zero,
+                            isActionDelayed: true)
+                    ])));
+            Assert.That(
                 result.Metrics.Sections.Select(section => section.Section),
                 Is.EqualTo(
                     new[]
@@ -107,6 +149,8 @@ public sealed class Usda741SnapshotCaptureTests
                         SnapshotSection.Location,
                         SnapshotSection.Inventory,
                         SnapshotSection.Equipment,
+                        SnapshotSection.Skillbook,
+                        SnapshotSection.Spellbook,
                         SnapshotSection.Coherence
                     }));
             Assert.That(
@@ -382,13 +426,57 @@ public sealed class Usda741SnapshotCaptureTests
             Assert.That(result.Succeeded, Is.True);
             Assert.That(result.Snapshot?.Inventory, Is.Null);
             Assert.That(result.Snapshot?.Equipment, Is.Null);
+            Assert.That(result.Snapshot?.Skillbook, Is.Null);
+            Assert.That(result.Snapshot?.Spellbook, Is.Null);
             Assert.That(
                 result.Metrics.Sections.Any(
                     section =>
                         section.Section is
                             SnapshotSection.Inventory or
-                            SnapshotSection.Equipment),
+                            SnapshotSection.Equipment or
+                            SnapshotSection.Skillbook or
+                            SnapshotSection.Spellbook),
                 Is.False);
+        });
+    }
+
+    [Test]
+    public void ShouldUseCompactAbilityFallbackWhenPaneTableChanges()
+    {
+        var source = CreateMemoryImage();
+        var skillPointerReads = 0;
+        source.ReadStarting = (address, _) =>
+        {
+            if (address.Value != SkillbookPaneTableAddress)
+            {
+                return;
+            }
+
+            skillPointerReads++;
+            if (skillPointerReads == 2)
+            {
+                source.WriteUInt32(address, 0);
+            }
+        };
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(
+            new SnapshotSequence(1),
+            SnapshotCaptureSections.Skillbook);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(
+                result.Snapshot?.Skillbook?.Skills.Length,
+                Is.EqualTo(1));
+            Assert.That(
+                result.Snapshot?.Skillbook?.Skills[0].Name,
+                Is.EqualTo("Assail"));
+            Assert.That(
+                result.Snapshot?.Skillbook?.Skills[0].IsActionDelayed,
+                Is.False);
+            Assert.That(skillPointerReads, Is.EqualTo(2));
         });
     }
 
@@ -578,6 +666,20 @@ public sealed class Usda741SnapshotCaptureTests
                         capacity: variable.Capacity,
                         search: variable.Search)
                     : variable));
+        var invalidAbilityLayout = new ClientMemoryMap(
+            Usda741SnapshotCapture.SupportedVersion,
+            PointerWidth.Bit32,
+            variables.Select(
+                variable => variable.Key == "Spellbook"
+                    ? new MemoryVariableDefinition(
+                        variable.Key,
+                        variable.Address,
+                        variable.ValueKind,
+                        variable.MaximumLength,
+                        recordSize: variable.RecordSize - 1,
+                        capacity: variable.Capacity,
+                        search: variable.Search)
+                    : variable));
         var client = new ClientIdentity(
             "process:1234",
             Usda741SnapshotCapture.SupportedVersion);
@@ -605,6 +707,13 @@ public sealed class Usda741SnapshotCaptureTests
                 () => _ = new Usda741SnapshotCapture(
                     client,
                     invalidLayout,
+                    source,
+                    limits,
+                    clock));
+            Assert.Throws<ArgumentException>(
+                () => _ = new Usda741SnapshotCapture(
+                    client,
+                    invalidAbilityLayout,
                     source,
                     limits,
                     clock));
@@ -637,7 +746,8 @@ public sealed class Usda741SnapshotCaptureTests
                 CreateVariables()),
             source,
             MemoryReadLimits.Client32Bit,
-            new MacroClock(timeProvider ?? new ManualTimeProvider()));
+            new MacroClock(timeProvider ?? new ManualTimeProvider()),
+            CreateAbilityCatalog());
     }
 
     private static MemoryImageSource CreateMemoryImage()
@@ -664,6 +774,30 @@ public sealed class Usda741SnapshotCaptureTests
         source.WriteUInt32(
             new MemoryAddress(EquipmentRootAddress),
             (uint)EquipmentAddress);
+        source.WriteUInt32(
+            new MemoryAddress(SkillbookRootAddress),
+            (uint)SkillbookAddress);
+        source.WriteUInt32(
+            new MemoryAddress(SpellbookRootAddress),
+            (uint)SpellbookAddress);
+        source.WriteUInt32(
+            new MemoryAddress(SkillbookPanesRootAddress),
+            (uint)SkillbookPaneTableAddress);
+        source.WriteUInt32(
+            new MemoryAddress(SpellbookPanesRootAddress),
+            (uint)SpellbookPaneTableAddress);
+        source.WriteInt32(
+            new MemoryAddress(SkillbookPaneCapacityAddress),
+            1);
+        source.WriteInt32(
+            new MemoryAddress(SpellbookPaneCapacityAddress),
+            1);
+        source.WriteUInt32(
+            new MemoryAddress(SkillbookPaneTableAddress),
+            (uint)SkillPaneAddress);
+        source.WriteUInt32(
+            new MemoryAddress(SpellbookPaneTableAddress),
+            (uint)SpellPaneAddress);
         WriteFixedAscii(
             source,
             new MemoryAddress(CharacterNameAddress),
@@ -722,6 +856,49 @@ public sealed class Usda741SnapshotCaptureTests
             slotIndex: 2,
             "Dragon Shield");
         source.Write(new MemoryAddress(EquipmentAddress), compactEquipment);
+
+        var compactSkills = new byte[
+            Usda741AbilityParser.CompactSkillRecordSize *
+            Usda741AbilityParser.CompactRecordCount];
+        WriteCompactSkill(
+            compactSkills,
+            slot: 1,
+            "Assail (Lev:3/100)");
+        source.Write(new MemoryAddress(SkillbookAddress), compactSkills);
+
+        var compactSpells = new byte[
+            Usda741AbilityParser.CompactSpellRecordSize *
+            Usda741AbilityParser.CompactRecordCount];
+        WriteCompactSpell(
+            compactSpells,
+            slot: 73,
+            "ard cradh (Lev:7/100)");
+        source.Write(new MemoryAddress(SpellbookAddress), compactSpells);
+
+        var skillPane = new byte[
+            Usda741AbilityParser.SkillPaneSnapshotSize];
+        Encoding.ASCII.GetBytes("Assail (Lev:3/100)").CopyTo(
+            skillPane.AsSpan(0x02));
+        skillPane[0x182] = 1;
+        skillPane[0x192] = 1;
+        source.Write(
+            new MemoryAddress(
+                SkillPaneAddress +
+                Usda741AbilityParser.PaneSnapshotOffset),
+            skillPane);
+
+        var spellPane = new byte[
+            Usda741AbilityParser.SpellPaneSnapshotSize];
+        spellPane[0] = 73;
+        Encoding.ASCII.GetBytes("ard cradh (Lev:7/100)").CopyTo(
+            spellPane.AsSpan(0x05));
+        spellPane[0x105] = 4;
+        spellPane[0x107] = 1;
+        source.Write(
+            new MemoryAddress(
+                SpellPaneAddress +
+                Usda741AbilityParser.PaneSnapshotOffset),
+            spellPane);
         return source;
     }
 
@@ -776,8 +953,59 @@ public sealed class Usda741SnapshotCaptureTests
             EquipmentSnapshotRootAddress,
             maximumLength: 0,
             recordSize: Usda741EquipmentParser.RichSnapshotSize,
-            capacity: Usda741EquipmentParser.RecordCount)
+            capacity: Usda741EquipmentParser.RecordCount),
+        Block(
+            "Skillbook",
+            SkillbookRootAddress,
+            maximumLength: Usda741AbilityParser.NameLength,
+            recordSize: Usda741AbilityParser.CompactSkillRecordSize,
+            capacity: Usda741AbilityParser.CompactRecordCount),
+        Block(
+            "Spellbook",
+            SpellbookRootAddress,
+            maximumLength: Usda741AbilityParser.NameLength,
+            recordSize: Usda741AbilityParser.CompactSpellRecordSize,
+            capacity: Usda741AbilityParser.CompactRecordCount),
+        Block(
+            "SkillbookPanes",
+            SkillbookPanesRootAddress,
+            maximumLength: 0,
+            recordSize: Usda741AbilityParser.PanePointerSize,
+            capacity: Usda741AbilityParser.PaneRecordCount),
+        new(
+            "SkillbookPaneCapacity",
+            new PointerChain(
+                new MemoryAddress(SkillbookPaneCapacityAddress)),
+            MemoryValueKind.Signed32),
+        Block(
+            "SpellbookPanes",
+            SpellbookPanesRootAddress,
+            maximumLength: 0,
+            recordSize: Usda741AbilityParser.PanePointerSize,
+            capacity: Usda741AbilityParser.PaneRecordCount),
+        new(
+            "SpellbookPaneCapacity",
+            new PointerChain(
+                new MemoryAddress(SpellbookPaneCapacityAddress)),
+            MemoryValueKind.Signed32)
     ];
+
+    private static AbilitySnapshotCatalog CreateAbilityCatalog() =>
+        new(
+            [
+                new SkillSnapshotMetadata(
+                    "Assail",
+                    manaCost: 0,
+                    TimeSpan.Zero,
+                    isAssail: true)
+            ],
+            [
+                new SpellSnapshotMetadata(
+                    "ard cradh",
+                    castLines: 3,
+                    manaCost: 500,
+                    TimeSpan.Zero)
+            ]);
 
     private static MemoryVariableDefinition Dynamic(
         string key,
@@ -860,6 +1088,30 @@ public sealed class Usda741SnapshotCaptureTests
             snapshot.Slice(
                 slotIndex *
                 Usda741EquipmentParser.CompactNameLength));
+
+    private static void WriteCompactSkill(
+        Span<byte> snapshot,
+        int slot,
+        string name)
+    {
+        var record = snapshot.Slice(
+            (slot - 1) * Usda741AbilityParser.CompactSkillRecordSize,
+            Usda741AbilityParser.CompactSkillRecordSize);
+        BinaryPrimitives.WriteInt16LittleEndian(record, 1);
+        Encoding.ASCII.GetBytes(name).CopyTo(record[4..]);
+    }
+
+    private static void WriteCompactSpell(
+        Span<byte> snapshot,
+        int slot,
+        string name)
+    {
+        var record = snapshot.Slice(
+            (slot - 1) * Usda741AbilityParser.CompactSpellRecordSize,
+            Usda741AbilityParser.CompactSpellRecordSize);
+        BinaryPrimitives.WriteInt16LittleEndian(record, 1);
+        Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
+    }
 
     private sealed class BlockingMemorySource : IProcessMemorySource, IDisposable
     {

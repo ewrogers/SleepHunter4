@@ -1,4 +1,4 @@
-namespace SleepHunter.Interop.Snapshots;
+﻿namespace SleepHunter.Interop.Snapshots;
 
 public enum SnapshotSection
 {
@@ -10,5 +10,7 @@ public enum SnapshotSection
     Location,
     Inventory,
     Equipment,
+    Skillbook,
+    Spellbook,
     Coherence
 }
