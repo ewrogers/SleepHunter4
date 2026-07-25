@@ -19,7 +19,8 @@ public sealed record ClientSnapshot
         VitalsSnapshot? vitals = null,
         SpellbookSnapshot? spellbook = null,
         SkillbookSnapshot? skillbook = null,
-        MapLocationSnapshot? location = null)
+        MapLocationSnapshot? location = null,
+        bool isInventoryExpanded = false)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -60,6 +61,7 @@ public sealed record ClientSnapshot
         Spellbook = spellbook;
         Skillbook = skillbook;
         Location = location;
+        IsInventoryExpanded = isInventoryExpanded;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -89,6 +91,8 @@ public sealed record ClientSnapshot
     public SkillbookSnapshot? Skillbook { get; }
 
     public MapLocationSnapshot? Location { get; }
+
+    public bool IsInventoryExpanded { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }

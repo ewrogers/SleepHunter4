@@ -24,6 +24,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
     private const string CurrentManaKey = "CurrentMana";
     private const string MaximumManaKey = "MaximumMana";
     private const string ActivePanelKey = "ActivePanel";
+    private const string InventoryExpandedKey = "InventoryExpanded";
     private const string MapNumberKey = "MapNumber";
     private const string MapNameKey = "MapName";
     private const string MapXKey = "MapX";
@@ -56,6 +57,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         new(CurrentManaKey, MemoryValueKind.Unsigned32),
         new(MaximumManaKey, MemoryValueKind.Unsigned32),
         new(ActivePanelKey, MemoryValueKind.Byte),
+        new(InventoryExpandedKey, MemoryValueKind.Byte),
         new(MapNumberKey, MemoryValueKind.Unsigned32),
         new(MapNameKey, MemoryValueKind.Text),
         new(MapXKey, MemoryValueKind.Signed32),
@@ -294,6 +296,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         var clientStateSucceeded = TryReadClientState(
             reader,
             out var activePanel,
+            out var isInventoryExpanded,
             out error);
         sectionCompletedAt = clock.GetCurrentTimestamp();
         AddSection(
@@ -473,6 +476,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             presence.SessionAddress,
             character!.CharacterId,
             activePanel,
+            isInventoryExpanded,
             location!,
             out error,
             out failureQuality);
@@ -509,7 +513,8 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             inventory,
             equipment,
             skillbook,
-            spellbook);
+            spellbook,
+            isInventoryExpanded);
     }
 
     private SnapshotCaptureResult Success(
@@ -525,7 +530,8 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         InventorySnapshot? inventory = null,
         EquipmentSnapshot? equipment = null,
         SkillbookSnapshot? skillbook = null,
-        SpellbookSnapshot? spellbook = null)
+        SpellbookSnapshot? spellbook = null,
+        bool isInventoryExpanded = false)
     {
         var completedAt = clock.GetCurrentTimestamp();
         var snapshot = new ClientSnapshot(
@@ -542,7 +548,8 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             vitals: vitals,
             spellbook: spellbook,
             skillbook: skillbook,
-            location: location);
+            location: location,
+            isInventoryExpanded: isInventoryExpanded);
         var metrics = new SnapshotCaptureMetrics(
             sequence,
             startedAt,
@@ -787,6 +794,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
     private static bool TryReadClientState(
         MappedMemoryReader reader,
         out ClientPanel activePanel,
+        out bool isInventoryExpanded,
         out SnapshotCaptureError? error)
     {
         if (!reader.TryReadByte(
@@ -795,6 +803,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
                 out var panelError))
         {
             activePanel = ClientPanel.Unknown;
+            isInventoryExpanded = false;
             error = MappingFailure(
                 SnapshotSection.ClientState,
                 ActivePanelKey,
@@ -817,6 +826,21 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             10 => ClientPanel.WorldSpells,
             _ => ClientPanel.Unknown
         };
+
+        if (!reader.TryReadByte(
+                InventoryExpandedKey,
+                out var rawInventoryExpanded,
+                out var inventoryExpandedError))
+        {
+            isInventoryExpanded = false;
+            error = MappingFailure(
+                SnapshotSection.ClientState,
+                InventoryExpandedKey,
+                inventoryExpandedError);
+            return false;
+        }
+
+        isInventoryExpanded = rawInventoryExpanded != 0;
         error = null;
         return true;
     }
@@ -938,6 +962,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         MemoryAddress expectedSessionAddress,
         uint expectedCharacterId,
         ClientPanel expectedActivePanel,
+        bool expectedInventoryExpanded,
         MapLocationSnapshot expectedLocation,
         out SnapshotCaptureError? error,
         out SnapshotQuality failureQuality)
@@ -945,12 +970,22 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         if (!TryReadClientState(
                 reader,
                 out var activePanel,
+                out var isInventoryExpanded,
                 out var clientStateError))
         {
             error = ReassignSection(
                 clientStateError!,
                 SnapshotSection.Coherence);
             failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (isInventoryExpanded != expectedInventoryExpanded)
+        {
+            error = StateChanged(
+                InventoryExpandedKey,
+                "The inventory display mode changed during snapshot capture.");
+            failureQuality = SnapshotQuality.Incoherent;
             return false;
         }
 

@@ -851,10 +851,10 @@ As of July 24, 2026:
   Preserve search-based mappings as explicit metadata and require a dedicated
   bounded search resolver before reading them.
 - Publish a USDA 7.41 core snapshot only after the client session root,
-  character ownership, active panel, and map location remain stable across the
-  capture. A null session is a complete logged-out observation. Transport
-  failures, invalid field values, and changed state or ownership produce
-  diagnostics and metrics, but never a partial snapshot.
+  character ownership, active panel, inventory display mode, and map location
+  remain stable across the capture. A null session is a complete logged-out
+  observation. Transport failures, invalid field values, and changed state or
+  ownership produce diagnostics and metrics, but never a partial snapshot.
 - Read the bounded USDA 7.41 compact inventory table for deterministic
   slot/name observations, excluding the synthetic gold slot. Prefer the
   coherent equipment snapshot for weapon and shield observations, but preserve
