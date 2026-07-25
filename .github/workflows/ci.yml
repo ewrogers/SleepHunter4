@@ -25,10 +25,10 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Restore
-        run: dotnet restore SleepHunter/SleepHunter.sln
+        run: dotnet restore SleepHunter.sln
 
       - name: Build Release configuration
-        run: dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
+        run: dotnet build SleepHunter.sln --configuration Release --no-restore
 
       - name: Test Release configuration
-        run: dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj --configuration Release --no-build
+        run: dotnet test SleepHunter.sln --configuration Release --no-build

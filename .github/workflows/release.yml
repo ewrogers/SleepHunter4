@@ -74,13 +74,13 @@ jobs:
           "notes_path=$notesPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Restore
-        run: dotnet restore SleepHunter/SleepHunter.sln
+        run: dotnet restore SleepHunter.sln
 
       - name: Build Release configuration
-        run: dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
+        run: dotnet build SleepHunter.sln --configuration Release --no-restore
 
       - name: Test Release configuration
-        run: dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj --configuration Release --no-build
+        run: dotnet test SleepHunter.sln --configuration Release --no-build
 
       - name: Publish SleepHunter
         shell: pwsh
