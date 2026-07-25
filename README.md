@@ -118,6 +118,8 @@ and its
 [`WorldUserFunc` character layout](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/session.md),
 [`inventory and character panes`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/inventory-ui.md),
 and [`world-object layouts`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/world.md).
+One executable-verified exception is the `EquipPane` singleton: the signed `7D4E--1K` USDA client uses
+`0x006FC914`; the nearby `0x006FC8EC` global listed in the reference is null in the live client.
 
 ### Static Variables
 

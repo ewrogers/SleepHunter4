@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Prevented stale or unallocated USDA 7.41 character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
+- Kept the executable-verified USDA 7.41 `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Corrected inventory and equipment durability ordering so the documented maximum value is no longer interpreted as current durability and vice versa
 - Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
 - Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available

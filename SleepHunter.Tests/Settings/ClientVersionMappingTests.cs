@@ -47,22 +47,36 @@ namespace SleepHunter.Tests.Settings
             {
                 Assert.That(characterClass.ValueType, Is.EqualTo(MemoryValueType.Byte));
                 Assert.That(characterClass.Offsets[1].Offset, Is.EqualTo(0x1089));
-                Assert.That(displayClass.Address, Is.EqualTo(0x6FC8EC));
+                Assert.That(displayClass.Address, Is.EqualTo(0x6FC914));
                 Assert.That(displayClass.MaxLength, Is.EqualTo(128));
                 Assert.That(displayClass.Offsets.Single().Offset, Is.EqualTo(0xBDC));
             });
         }
 
         [Test]
-        public void ShouldUseTheCompleteEquipmentPaneRoot()
+        public void ShouldUseTheExecutableVerifiedEquipmentPaneRoot()
         {
             var equipment = (DynamicMemoryVariable)version.GetVariable("EquipmentSnapshot");
+            var equipPaneVariables = new[]
+            {
+                "Nation",
+                "Title",
+                "DisplayClass",
+                "Guild",
+                "GuildRank",
+                "GroupMembers",
+                "Equipment",
+                "EquipmentSnapshot"
+            };
 
             Assert.Multiple(() =>
             {
-                Assert.That(equipment.Address, Is.EqualTo(0x6FC8EC));
+                Assert.That(equipment.Address, Is.EqualTo(0x6FC914));
                 Assert.That(equipment.Offsets.Single().Offset, Is.EqualTo(0x111C));
                 Assert.That(equipment.Count, Is.EqualTo(18));
+                Assert.That(
+                    equipPaneVariables.Select(key => version.GetVariable(key).Address),
+                    Is.All.EqualTo(0x6FC914));
             });
         }
 
