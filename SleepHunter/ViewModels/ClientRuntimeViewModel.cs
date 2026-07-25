@@ -11,7 +11,7 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.ViewModels
 {
-    public sealed class ClientRuntimeViewModel :
+    public sealed partial class ClientRuntimeViewModel :
         ObservableObject,
         IAsyncDisposable
     {
@@ -34,27 +34,6 @@ namespace SleepHunter.ViewModels
                 throw new ArgumentNullException(nameof(host));
             this.uiDispatcher = uiDispatcher ??
                 throw new ArgumentNullException(nameof(uiDispatcher));
-
-            StartCommand = new AsyncRelayCommand(
-                cancellationToken => SendAsync(
-                    new StartMacroCommand(),
-                    cancellationToken),
-                () => CanChangeLifecycle(MacroLifecycle.Stopped));
-            PauseCommand = new AsyncRelayCommand(
-                cancellationToken => SendAsync(
-                    new PauseMacroCommand(),
-                    cancellationToken),
-                () => CanChangeLifecycle(MacroLifecycle.Running));
-            ResumeCommand = new AsyncRelayCommand(
-                cancellationToken => SendAsync(
-                    new ResumeMacroCommand(),
-                    cancellationToken),
-                () => CanChangeLifecycle(MacroLifecycle.Paused));
-            StopCommand = new AsyncRelayCommand(
-                cancellationToken => SendAsync(
-                    new StopMacroCommand(),
-                    cancellationToken),
-                CanStop);
 
             capturePump = PumpCapturesAsync(disposeCancellation.Token);
             viewPump = PumpViewsAsync(disposeCancellation.Token);
@@ -111,14 +90,6 @@ namespace SleepHunter.ViewModels
         public ClientSnapshot LatestSnapshot =>
             LatestCapture?.Result.Snapshot;
 
-        public IAsyncRelayCommand StartCommand { get; }
-
-        public IAsyncRelayCommand PauseCommand { get; }
-
-        public IAsyncRelayCommand ResumeCommand { get; }
-
-        public IAsyncRelayCommand StopCommand { get; }
-
         public ValueTask SendCommandAsync(
             MacroCommand command,
             CancellationToken cancellationToken = default)
@@ -161,15 +132,21 @@ namespace SleepHunter.ViewModels
             }
         }
 
-        private Task SendAsync(
-            MacroCommand command,
-            CancellationToken cancellationToken)
-        {
-            ThrowIfDisposing();
-            return host
-                .SendCommandAsync(command, cancellationToken)
-                .AsTask();
-        }
+        [RelayCommand(CanExecute = nameof(CanStart))]
+        private Task StartAsync(CancellationToken cancellationToken) =>
+            SendAsync(new StartMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanPause))]
+        private Task PauseAsync(CancellationToken cancellationToken) =>
+            SendAsync(new PauseMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanResume))]
+        private Task ResumeAsync(CancellationToken cancellationToken) =>
+            SendAsync(new ResumeMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanStop))]
+        private Task StopAsync(CancellationToken cancellationToken) =>
+            SendAsync(new StopMacroCommand(), cancellationToken);
 
         private async Task PumpCapturesAsync(
             CancellationToken cancellationToken)
@@ -235,6 +212,15 @@ namespace SleepHunter.ViewModels
             isHostAvailable &&
             Current?.Lifecycle == lifecycle;
 
+        private bool CanStart() =>
+            CanChangeLifecycle(MacroLifecycle.Stopped);
+
+        private bool CanPause() =>
+            CanChangeLifecycle(MacroLifecycle.Running);
+
+        private bool CanResume() =>
+            CanChangeLifecycle(MacroLifecycle.Paused);
+
         private bool CanStop() =>
             Volatile.Read(ref disposeState) == 0 &&
             isHostAvailable &&
@@ -247,6 +233,16 @@ namespace SleepHunter.ViewModels
             PauseCommand.NotifyCanExecuteChanged();
             ResumeCommand.NotifyCanExecuteChanged();
             StopCommand.NotifyCanExecuteChanged();
+        }
+
+        private Task SendAsync(
+            MacroCommand command,
+            CancellationToken cancellationToken)
+        {
+            ThrowIfDisposing();
+            return host
+                .SendCommandAsync(command, cancellationToken)
+                .AsTask();
         }
 
         private void ThrowIfDisposing()

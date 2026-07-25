@@ -659,10 +659,12 @@ statistics, so slow consumers cannot create an unbounded diagnostics backlog.
 
 The WPF `ClientRuntimeViewModel` owns that host, marshals immutable views through
 an injected UI dispatcher, exposes capture health, errors, snapshots, and
-statistics as bindable state, and exposes lifecycle relay commands. Feature
-ViewModels may forward additional typed runtime commands through the same
-boundary. The legacy engine remains authoritative until client attachment and
-the corresponding UI slices are explicitly cut over.
+statistics as bindable state, and exposes source-generated Toolkit async relay
+commands for macro lifecycle changes. Runtime-fed properties keep private
+setters so only the host pumps can publish them. Feature ViewModels may forward
+additional typed runtime commands through the same boundary. The legacy engine
+remains authoritative until client attachment and the corresponding UI slices
+are explicitly cut over.
 
 `ClientRuntimeRegistry` now attaches a read-only shadow host for each supported
 USDA 7.41 process discovered by the legacy client scanner. The Windows factory
