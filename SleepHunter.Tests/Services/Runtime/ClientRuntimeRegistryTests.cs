@@ -1,11 +1,16 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Persistence.Configuration;
+using SleepHunter.Persistence.Serialization;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Runtime;
 using SleepHunter.ViewModels;
@@ -32,12 +37,17 @@ public sealed class ClientRuntimeRegistryTests
         var wasFound = registry.TryFind(
             descriptor.ProcessId,
             out var viewModel);
+        var configurationWasFound = registry.TryFindConfiguration(
+            descriptor.ProcessId,
+            out var configuration);
 
         Assert.Multiple(() =>
         {
             Assert.That(attached, Is.True);
             Assert.That(duplicate, Is.False);
             Assert.That(wasFound, Is.True);
+            Assert.That(configurationWasFound, Is.True);
+            Assert.That(configuration, Is.Not.Null);
             Assert.That(viewModel.Client, Is.EqualTo(descriptor.Client));
             Assert.That(registry.Count, Is.EqualTo(1));
             Assert.That(factory.AttachCount, Is.EqualTo(1));
@@ -259,7 +269,9 @@ public sealed class ClientRuntimeRegistryTests
             logger,
             new InlineUiDispatcher(),
             MappingPath,
-            TimeProvider.System);
+            TimeProvider.System,
+            new EmptyMacroConfigurationReader(),
+            () => SpellQueueRotation.Priority);
 
     private static string FindVersionsFile()
     {
@@ -401,6 +413,21 @@ public sealed class ClientRuntimeRegistryTests
             action();
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class EmptyMacroConfigurationReader :
+        IMacroConfigurationReader
+    {
+        private static readonly MacroConfigurationLoadResult Result = new(
+            MacroConfiguration.Empty,
+            MacroConfigurationFormat.Current,
+            MacroConfigurationSerializer.CurrentVersion,
+            ImmutableArray<MacroConfigurationWarning>.Empty);
+
+        public Task<MacroConfigurationLoadResult> LoadAsync(
+            string filePath,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(Result);
     }
 
     private sealed class RecordingLogger : ILogger

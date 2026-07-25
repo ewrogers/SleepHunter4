@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.ViewModels;
 
@@ -16,8 +18,10 @@ namespace SleepHunter.Services.Runtime
     {
         private readonly ConcurrentDictionary<
             int,
-            ClientRuntimeViewModel> clients = new();
+            ClientRuntimeEntry> clients = new();
+        private readonly IMacroConfigurationReader configurationReader;
         private readonly IClientRuntimeFactory factory;
+        private readonly Func<SpellQueueRotation> fallbackRotation;
         private readonly ILogger logger;
         private readonly string mappingPath;
         private readonly TimeProvider timeProvider;
@@ -30,7 +34,9 @@ namespace SleepHunter.Services.Runtime
             ILogger logger,
             IUiDispatcher uiDispatcher,
             string mappingPath,
-            TimeProvider timeProvider)
+            TimeProvider timeProvider,
+            IMacroConfigurationReader configurationReader,
+            Func<SpellQueueRotation> fallbackRotation)
         {
             this.factory = factory ??
                 throw new ArgumentNullException(nameof(factory));
@@ -42,12 +48,18 @@ namespace SleepHunter.Services.Runtime
             this.mappingPath = Path.GetFullPath(mappingPath);
             this.timeProvider = timeProvider ??
                 throw new ArgumentNullException(nameof(timeProvider));
+            this.configurationReader = configurationReader ??
+                throw new ArgumentNullException(nameof(configurationReader));
+            this.fallbackRotation = fallbackRotation ??
+                throw new ArgumentNullException(nameof(fallbackRotation));
         }
 
         public int Count => clients.Count;
 
         public IReadOnlyCollection<ClientRuntimeViewModel> Clients =>
-            clients.Values.ToArray();
+            clients.Values
+                .Select(entry => entry.Runtime)
+                .ToArray();
 
         public async ValueTask<bool> AttachAsync(
             ClientRuntimeDescriptor descriptor,
@@ -102,13 +114,20 @@ namespace SleepHunter.Services.Runtime
             var viewModel = new ClientRuntimeViewModel(
                 host,
                 uiDispatcher);
+            var configuration = new MacroConfigurationViewModel(
+                configurationReader,
+                fallbackRotation,
+                viewModel.SendCommandAsync);
+            var entry = new ClientRuntimeEntry(
+                viewModel,
+                configuration);
             if (cancellationToken.IsCancellationRequested)
             {
                 await viewModel.DisposeAsync().ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            if (!clients.TryAdd(descriptor.ProcessId, viewModel))
+            if (!clients.TryAdd(descriptor.ProcessId, entry))
             {
                 await viewModel.DisposeAsync().ConfigureAwait(false);
                 return false;
@@ -118,9 +137,9 @@ namespace SleepHunter.Services.Runtime
             {
                 if (clients.TryRemove(
                         descriptor.ProcessId,
-                        out var attachedViewModel))
+                        out var attachedEntry))
                 {
-                    await attachedViewModel
+                    await attachedEntry.Runtime
                         .DisposeAsync()
                         .ConfigureAwait(false);
                 }
@@ -136,16 +155,30 @@ namespace SleepHunter.Services.Runtime
         public bool TryFind(
             int processId,
             out ClientRuntimeViewModel viewModel) =>
-            clients.TryGetValue(processId, out viewModel);
+            TryFindRuntime(processId, out viewModel);
+
+        public bool TryFindConfiguration(
+            int processId,
+            out MacroConfigurationViewModel viewModel)
+        {
+            if (clients.TryGetValue(processId, out var entry))
+            {
+                viewModel = entry.Configuration;
+                return true;
+            }
+
+            viewModel = null;
+            return false;
+        }
 
         public async ValueTask<bool> DetachAsync(int processId)
         {
-            if (!clients.TryRemove(processId, out var viewModel))
+            if (!clients.TryRemove(processId, out var entry))
                 return false;
 
             try
             {
-                await viewModel.DisposeAsync().ConfigureAwait(false);
+                await entry.Runtime.DisposeAsync().ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -177,5 +210,23 @@ namespace SleepHunter.Services.Runtime
                 Volatile.Read(ref disposeState) != 0,
                 this);
         }
+
+        private bool TryFindRuntime(
+            int processId,
+            out ClientRuntimeViewModel viewModel)
+        {
+            if (clients.TryGetValue(processId, out var entry))
+            {
+                viewModel = entry.Runtime;
+                return true;
+            }
+
+            viewModel = null;
+            return false;
+        }
+
+        private sealed record ClientRuntimeEntry(
+            ClientRuntimeViewModel Runtime,
+            MacroConfigurationViewModel Configuration);
     }
 }

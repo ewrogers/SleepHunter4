@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\SleepHunter.Interop\SleepHunter.Interop.csproj" />
+    <ProjectReference Include="..\src\SleepHunter.Persistence\SleepHunter.Persistence.csproj" />
     <ProjectReference Include="..\src\SleepHunter.Runtime\SleepHunter.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
