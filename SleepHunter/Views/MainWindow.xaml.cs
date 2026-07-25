@@ -16,16 +16,20 @@ using System.Windows.Interop;
 using Microsoft.Win32;
 using SleepHunter.Controls;
 using SleepHunter.Extensions;
+using SleepHunter.Interop.Hosting;
 using SleepHunter.IO;
 using SleepHunter.IO.Process;
 using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
+using SleepHunter.Services.Runtime;
 using SleepHunter.Services.Serialization;
 using SleepHunter.Settings;
+using SleepHunter.ViewModels;
 using SleepHunter.Win32;
 using Path = System.IO.Path;
 
@@ -49,11 +53,14 @@ namespace SleepHunter.Views
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
         private readonly IMacroStateSerializer macroStateSerializer;
+        private readonly ClientRuntimeRegistry runtimeClients;
 
         private bool isDisposed;
         private HwndSource windowSource;
 
         private bool isFirstRun;
+        private bool isShutdownInProgress;
+        private bool isShutdownPrepared;
         private int recentSettingsTabIndex;
         private MetadataEditorWindow metadataWindow;
         private SettingsWindow settingsWindow;
@@ -69,6 +76,14 @@ namespace SleepHunter.Views
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
             macroStateSerializer = App.Current.Services.GetService<IMacroStateSerializer>();
+            runtimeClients = new ClientRuntimeRegistry(
+                new WindowsClientRuntimeFactory(),
+                logger,
+                new WpfUiDispatcher(Dispatcher),
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    ClientVersionManager.VersionsFile),
+                TimeProvider.System);
 
             InitializeLogger();
             InitializeComponent();
@@ -425,15 +440,27 @@ namespace SleepHunter.Views
                 spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
         }
 
-        private void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
+        private async void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
         {
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
             UpdateToolbarState();
             UpdateClientList();
+
+            if (e.Player.Version is { } version)
+            {
+                await runtimeClients.AttachAsync(
+                    new ClientRuntimeDescriptor(
+                        new ClientIdentity(
+                            $"process:{e.Player.Process.ProcessId}",
+                            version.Key),
+                        e.Player.Process.ProcessId,
+                        e.Player.Process.WindowHandle),
+                    UserSettingsManager.Instance.Settings.ClientUpdateInterval);
+            }
         }
 
-        private void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
+        private async void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
         {
             logger.LogInfo($"Game client process removed with pid: {e.Player.Process.ProcessId}");
 
@@ -444,6 +471,8 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
+
+            await runtimeClients.DetachAsync(e.Player.Process.ProcessId);
         }
 
         private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1291,8 +1320,17 @@ namespace SleepHunter.Views
                 CheckForNewVersion();
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (isShutdownPrepared)
+                return;
+
+            if (isShutdownInProgress)
+            {
+                e.Cancel = true;
+                return;
+            }
+
             logger.LogInfo("Application is shutting down");
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
@@ -1349,7 +1387,26 @@ namespace SleepHunter.Views
                 }
             }
 
+            PlayerManager.Instance.PlayerAdded -= OnPlayerCollectionAdd;
+            PlayerManager.Instance.PlayerRemoved -= OnPlayerCollectionRemove;
+            PlayerManager.Instance.PlayerPropertyChanged -= OnPlayerPropertyChanged;
+
+            e.Cancel = true;
+            isShutdownInProgress = true;
+            try
+            {
+                await runtimeClients.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Unable to stop all shadow runtime clients");
+                logger.LogException(ex);
+            }
+
             logger.LogInfo("Application shutdown tasks have completed");
+            isShutdownPrepared = true;
+            isShutdownInProgress = false;
+            Close();
         }
 
         private void Window_Closed(object sender, EventArgs e)
