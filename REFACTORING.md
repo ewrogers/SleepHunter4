@@ -466,8 +466,18 @@ issued and retains the planning result. A rejection may therefore identify
 either invalid snapshot context with no dispatch, or a valid input plan rejected
 by the HWND guard with dispatch diagnostics. Equipment input additionally
 requires the inventory panel, the correct observed inventory display mode, and
-the expected staff name in the requested slot. Cast-spell input remains
-explicitly unsupported until its targeting workflow is implemented.
+the expected staff name in the requested slot.
+
+Cast-spell input requires the expected panel and spell name in the requested
+slot. USDA 7.41 spell input double-clicks the verified spell slot, then
+immediately clicks a projected target when one is required. Self, logical
+screen-point, relative-tile, and absolute-tile targets use the legacy 640 by 480
+projection. The logical target is scaled to the guarded client dimensions
+before its pixel offset is applied. Absolute targets additionally require an
+observed map location and remain bounded to the supported local tile range.
+Character targets remain explicitly unsupported until a coherent cross-client
+location observation is available. Area targets must be resolved to one tile by
+the deterministic runtime before input planning.
 
 Pending actions contain enough information to diagnose and test behavior:
 
@@ -1093,7 +1103,7 @@ them:
 - Exact WPF hosting and dependency-injection packages.
 - Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
-- Exact client-coordinate projection for semantic targets and pixel offsets.
+- Coherent cross-client location observation for character spell targets.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.
 - Legacy macro-state compatibility and migration details.
