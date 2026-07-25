@@ -1,9 +1,10 @@
-﻿using SleepHunter.Runtime.Time;
+﻿using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Automation.Flowering;
 
 public sealed record FlowerReadiness(
     FlowerQueueEntry Entry,
-    FlowerClientObservation? TargetClient,
+    ClientRosterEntry? TargetClient,
     FlowerReadinessStatus Status,
     MacroTimestamp? ReadyAt);

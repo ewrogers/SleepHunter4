@@ -41,7 +41,7 @@ public sealed record MacroState
         DialogState? dialog = null,
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
-        FlowerClientSetSnapshot? flowerClients = null,
+        ClientRosterSnapshot? clientRoster = null,
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null)
@@ -96,7 +96,7 @@ public sealed record MacroState
         Dialog = dialog;
         FlowerQueue = flowerQueue ?? FlowerQueueState.Empty;
         FlowerSchedules = flowerSchedules ?? FlowerScheduleState.Empty;
-        FlowerClients = flowerClients ?? FlowerClientSetSnapshot.Empty;
+        ClientRoster = clientRoster ?? ClientRosterSnapshot.Empty;
         Flower = flower;
         SpellTargetRotations =
             spellTargetRotations ?? TargetRotationState.Empty;
@@ -140,7 +140,7 @@ public sealed record MacroState
 
     public FlowerScheduleState FlowerSchedules { get; }
 
-    public FlowerClientSetSnapshot FlowerClients { get; }
+    public ClientRosterSnapshot ClientRoster { get; }
 
     public FlowerState? Flower { get; }
 

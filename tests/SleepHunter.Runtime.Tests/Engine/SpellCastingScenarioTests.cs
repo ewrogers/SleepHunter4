@@ -30,7 +30,7 @@ public sealed class SpellCastingScenarioTests
     [Test]
     public void ShouldCastFromActivePanelAndRecordCooldownAtDeadline()
     {
-        var target = SpellTarget.Character("Alt");
+        var target = SpellTarget.Self;
         var entry = new SpellQueueEntry(
             new SpellQueueEntryId(1),
             "spell",
@@ -81,6 +81,93 @@ public sealed class SpellCastingScenarioTests
                     scenario.CurrentTime),
                 Is.EqualTo(
                     new MacroTimestamp(TimeSpan.FromMilliseconds(5021))));
+        });
+    }
+
+    [Test]
+    public void ShouldResolveCharacterTargetBeforeIssuingCast()
+    {
+        var sourceLocation = new MapLocationSnapshot(1, "Mileth", 50, 60);
+        var targetLocation = new MapLocationSnapshot(1, "Mileth", 53, 58);
+        var characterTarget =
+            SpellTarget.Character("Alt", new TargetOffset(4, -5));
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            Entry("spell", characterTarget),
+            Spell("spell", slot: 1),
+            location: sourceLocation);
+        scenario.ObserveClientRoster(
+            sequence: 1,
+            [
+                Client(scenario.Client, "Caster", sourceLocation),
+                Client(
+                    new ClientIdentity("alt-client", "test"),
+                    "Alt",
+                    targetLocation)
+            ]);
+
+        var decision = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        var intent = (CastSpellIntent)decision.Intent!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                intent.Target,
+                Is.EqualTo(
+                    SpellTarget.RelativeTile(
+                        3,
+                        -2,
+                        new TargetOffset(4, -5))));
+            Assert.That(
+                decision.State.SpellCast?.ResolvedTarget,
+                Is.EqualTo(intent.Target));
+            Assert.That(
+                decision.State.SpellCast?.TargetStatus,
+                Is.EqualTo(TargetLocationStatus.Resolved));
+            Assert.That(
+                decision.State.SpellQueue.Entries.Single().Target,
+                Is.EqualTo(characterTarget));
+        });
+    }
+
+    [Test]
+    public void ShouldRetryCharacterTargetWithoutConsumingActionId()
+    {
+        var sourceLocation = new MapLocationSnapshot(1, "Mileth", 50, 60);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            Entry("spell", SpellTarget.Character("Alt")),
+            Spell("spell", slot: 1),
+            location: sourceLocation);
+
+        var unavailable = scenario.Send(
+            new CastNextSpellCommand(TestPolicy));
+        scenario.ObserveClientRoster(
+            sequence: 1,
+            [
+                Client(scenario.Client, "Caster", sourceLocation),
+                Client(
+                    new ClientIdentity("alt-client", "test"),
+                    "Alt",
+                    new MapLocationSnapshot(1, "Mileth", 51, 60))
+            ]);
+        var retried = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        var intent = (CastSpellIntent)retried.Intent!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(unavailable.Intent, Is.Null);
+            Assert.That(unavailable.State.PendingAction, Is.Null);
+            Assert.That(
+                unavailable.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.TargetUnavailable));
+            Assert.That(
+                unavailable.State.SpellCast?.TargetStatus,
+                Is.EqualTo(TargetLocationStatus.RosterUnavailable));
+            Assert.That(intent.ActionId.Value, Is.EqualTo(1));
+            Assert.That(
+                intent.Target,
+                Is.EqualTo(SpellTarget.RelativeTile(1, 0)));
         });
     }
 
@@ -610,7 +697,8 @@ public sealed class SpellCastingScenarioTests
         ClientPanel activePanel,
         SpellQueueEntry entry,
         SpellSnapshot spell,
-        int mana = 100)
+        int mana = 100,
+        MapLocationSnapshot? location = null)
     {
         var scenario = new MacroScenario();
         scenario.Send(new AddSpellQueueEntryCommand(entry));
@@ -618,7 +706,8 @@ public sealed class SpellCastingScenarioTests
             sequence: 1,
             activePanel: activePanel,
             vitals: Vitals(mana),
-            spellbook: Spellbook(spell));
+            spellbook: Spellbook(spell),
+            location: location);
         scenario.Start();
         return scenario;
     }
@@ -662,4 +751,17 @@ public sealed class SpellCastingScenarioTests
     private static SpellbookSnapshot Spellbook(
         params SpellSnapshot[] spells) =>
         new(spells);
+
+    private static ClientRosterEntry Client(
+        ClientIdentity client,
+        string characterName,
+        MapLocationSnapshot location) =>
+        new(
+            client,
+            characterName,
+            ClientPresence.InWorld,
+            isMacroRunning: true,
+            isWaitingForMana: false,
+            location,
+            vitals: null);
 }

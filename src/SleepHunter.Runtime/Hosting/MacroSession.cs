@@ -21,7 +21,7 @@ public sealed class MacroSession : IAsyncDisposable
     private readonly IMacroEngine engine;
     private readonly Channel<MacroIntent> intents;
     private readonly Queue<MacroEvent> immediateEvents = new();
-    private readonly LatestValueMailbox<FlowerClientSetSnapshot> flowerClients =
+    private readonly LatestValueMailbox<ClientRosterSnapshot> clientRoster =
         new();
     private readonly LatestValueMailbox<ClientSnapshot> snapshots = new();
     private readonly PriorityQueue<
@@ -114,13 +114,13 @@ public sealed class MacroSession : IAsyncDisposable
         return true;
     }
 
-    public bool PublishFlowerClients(FlowerClientSetSnapshot snapshot)
+    public bool PublishClientRoster(ClientRosterSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ThrowIfDisposing();
 
         ObjectDisposedException.ThrowIf(
-            !flowerClients.TryWrite(snapshot),
+            !clientRoster.TryWrite(snapshot),
             this);
 
         SignalWorker();
@@ -134,7 +134,7 @@ public sealed class MacroSession : IAsyncDisposable
         {
             commands.Writer.TryComplete();
             snapshots.Complete();
-            flowerClients.Complete();
+            clientRoster.Complete();
             disposeCancellation.Cancel();
             SignalWorker();
         }
@@ -165,7 +165,7 @@ public sealed class MacroSession : IAsyncDisposable
 
                 var didWork = ProcessCommands();
                 didWork |= ProcessLatestSnapshot();
-                didWork |= ProcessLatestFlowerClients();
+                didWork |= ProcessLatestClientRoster();
                 didWork |= ProcessDueEvents();
 
                 if (didWork)
@@ -219,14 +219,14 @@ public sealed class MacroSession : IAsyncDisposable
         return true;
     }
 
-    private bool ProcessLatestFlowerClients()
+    private bool ProcessLatestClientRoster()
     {
-        if (!flowerClients.TryReadLatest(out var snapshot))
+        if (!clientRoster.TryReadLatest(out var snapshot))
         {
             return false;
         }
 
-        ProcessInput(new FlowerClientsObserved(snapshot));
+        ProcessInput(new ClientRosterObserved(snapshot));
         return true;
     }
 

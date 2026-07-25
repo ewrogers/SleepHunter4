@@ -31,13 +31,13 @@ public sealed partial class MacroEngine
                 snapshot.Location,
                 currentState.FlowerQueue,
                 currentState.FlowerSchedules,
-                currentState.FlowerClients.Clients,
+                currentState.ClientRoster.Clients,
                 currentTime,
                 command.Policy.Target));
         var flower = FlowerState.FromPlan(
             targetPlan,
             command.Policy,
-            currentState.FlowerClients.Sequence);
+            currentState.ClientRoster.Sequence);
         var snapshotIsFresh =
             currentState.SpellCast?.SnapshotRequiredAfter is not
             { } requiredAfter ||
@@ -277,7 +277,7 @@ public sealed partial class MacroEngine
                 snapshot.Location,
                 currentState.FlowerQueue,
                 currentState.FlowerSchedules,
-                currentState.FlowerClients.Clients,
+                currentState.ClientRoster.Clients,
                 currentTime,
                 flower.Policy.Target));
 
@@ -324,7 +324,7 @@ public sealed partial class MacroEngine
             flowerSchedules: plan.Schedules,
             flower: flower.SelectionInvalidated(
                 plan,
-                currentState.FlowerClients.Sequence));
+                currentState.ClientRoster.Sequence));
     }
 
     private static MacroDecision FinishInvalidFlowerSpell(
@@ -353,14 +353,14 @@ public sealed partial class MacroEngine
             flower: flower.WithSpellCast(nextSpellCast));
     }
 
-    private static MacroDecision HandleFlowerClients(
+    private static MacroDecision HandleClientRoster(
         MacroState currentState,
-        FlowerClientSetSnapshot snapshot,
+        ClientRosterSnapshot snapshot,
         MacroTimestamp currentTime)
     {
         if (snapshot.Sequence is not { } sequence ||
             snapshot.CapturedAt > currentTime ||
-            currentState.FlowerClients.Sequence is { } currentSequence &&
+            currentState.ClientRoster.Sequence is { } currentSequence &&
             sequence.Value <= currentSequence.Value)
         {
             return Unchanged(currentState);
@@ -373,7 +373,7 @@ public sealed partial class MacroEngine
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
             currentState.PendingAction,
-            flowerClients: snapshot);
+            clientRoster: snapshot);
     }
 
     private static MacroDecision ChangeFlowerQueue(

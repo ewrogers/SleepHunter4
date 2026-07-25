@@ -10,6 +10,7 @@ public enum FlowerStatus
     CoolingDown,
     WaitingForStaff,
     WaitingForPanel,
+    TargetUnavailable,
     Casting,
     Succeeded,
     SelectionInvalidated,

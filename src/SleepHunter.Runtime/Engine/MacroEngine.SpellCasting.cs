@@ -212,7 +212,7 @@ public sealed partial class MacroEngine
 
             flower = flower.WithPlan(
                 flowerPlan,
-                currentState.FlowerClients.Sequence);
+                currentState.ClientRoster.Sequence);
         }
 
         var plan = ReplanSelectedSpell(
@@ -303,7 +303,7 @@ public sealed partial class MacroEngine
 
             flower = flower.WithPlan(
                 flowerPlan,
-                currentState.FlowerClients.Sequence);
+                currentState.ClientRoster.Sequence);
         }
 
         var plan = ReplanSelectedSpell(
@@ -376,6 +376,29 @@ public sealed partial class MacroEngine
             spellCast,
             selectedEntry.Target,
             flower);
+        var targetLocation = TargetLocator.Locate(
+            targetResolution.Target,
+            snapshot,
+            currentState.ClientRoster);
+        if (!targetLocation.IsResolved)
+        {
+            var unavailable =
+                spellCast.TargetUnavailable(targetLocation.Status);
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                snapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                panelTransition: panelTransition,
+                staffSwitch: staffSwitch,
+                spellCooldowns: plan.Cooldowns,
+                spellCast: unavailable,
+                flower: flower?.WithSpellCast(unavailable));
+        }
+
+        var locatedTarget = targetLocation.Target!;
         var spellTargetRotations = currentState.SpellTargetRotations;
         var flowerTargetRotations = currentState.FlowerTargetRotations;
         if (spellCast.Origin == SpellCastOrigin.SpellQueue)
@@ -386,14 +409,14 @@ public sealed partial class MacroEngine
                 targetResolution);
         }
         else if (flower is
+        {
+            Action: FlowerActionKind.Plant,
+            Plan:
             {
-                Action: FlowerActionKind.Plant,
-                Plan:
-                {
-                    SelectionKind: FlowerSelectionKind.QueueEntry,
-                    SelectedEntry: { } selectedFlowerEntry
-                }
-            })
+                SelectionKind: FlowerSelectionKind.QueueEntry,
+                SelectedEntry: { } selectedFlowerEntry
+            }
+        })
         {
             flowerTargetRotations = flowerTargetRotations.Advance(
                 selectedFlowerEntry.Id.Value,
@@ -407,7 +430,7 @@ public sealed partial class MacroEngine
             selectedSpell.Name,
             selectedSpell.Slot,
             selectedSpell.Panel,
-            targetResolution.Target);
+            locatedTarget);
         var deadline = currentTime.Add(spellCast.CastDuration!.Value);
         var pendingAction = new PendingAction(
             intent,
@@ -420,7 +443,7 @@ public sealed partial class MacroEngine
             plan,
             actionId,
             deadline,
-            targetResolution.Target);
+            locatedTarget);
         var nextFlower = flower?.WithSpellCast(casting);
         var flowerQueue = currentState.FlowerQueue;
         var flowerSchedules =

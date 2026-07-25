@@ -17,7 +17,8 @@ public sealed record SpellCastState
         MacroTimestamp? completesAt,
         MacroTimestamp? snapshotRequiredAfter,
         SpellCastOrigin origin,
-        SpellTarget? resolvedTarget)
+        SpellTarget? resolvedTarget,
+        TargetLocationStatus? targetStatus)
     {
         Plan = plan;
         Policy = policy;
@@ -30,6 +31,7 @@ public sealed record SpellCastState
         SnapshotRequiredAfter = snapshotRequiredAfter;
         Origin = origin;
         ResolvedTarget = resolvedTarget;
+        TargetStatus = targetStatus;
     }
 
     public SpellCastPlan Plan { get; private init; }
@@ -54,6 +56,8 @@ public sealed record SpellCastState
 
     public SpellTarget? ResolvedTarget { get; private init; }
 
+    public TargetLocationStatus? TargetStatus { get; private init; }
+
     internal static SpellCastState FromPlan(
         SpellCastPlan plan,
         SpellExecutionPolicy policy,
@@ -74,7 +78,8 @@ public sealed record SpellCastState
             completesAt: null,
             snapshotRequiredAfter,
             origin,
-            resolvedTarget: null);
+            resolvedTarget: null,
+            targetStatus: null);
     }
 
     internal SpellCastState WaitingForStaff(
@@ -93,7 +98,8 @@ public sealed record SpellCastState
             CastDuration = Policy.Cast.Timing.CalculateDuration(castLines),
             ActionId = null,
             CompletesAt = null,
-            ResolvedTarget = null
+            ResolvedTarget = null,
+            TargetStatus = null
         };
     }
 
@@ -121,8 +127,30 @@ public sealed record SpellCastState
             Status = SpellCastStatus.WaitingForPanel,
             ActionId = null,
             CompletesAt = null,
-            ResolvedTarget = null
+            ResolvedTarget = null,
+            TargetStatus = null
         };
+
+    internal SpellCastState TargetUnavailable(
+        TargetLocationStatus targetStatus)
+    {
+        if (targetStatus == TargetLocationStatus.Resolved)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(targetStatus),
+                targetStatus,
+                "A resolved target cannot be reported as unavailable.");
+        }
+
+        return this with
+        {
+            Status = SpellCastStatus.TargetUnavailable,
+            ActionId = null,
+            CompletesAt = null,
+            ResolvedTarget = null,
+            TargetStatus = targetStatus
+        };
+    }
 
     internal SpellCastState Casting(
         SpellCastPlan plan,
@@ -136,7 +164,8 @@ public sealed record SpellCastState
             ActionId = actionId,
             CompletesAt = completesAt,
             SnapshotRequiredAfter = completesAt,
-            ResolvedTarget = resolvedTarget
+            ResolvedTarget = resolvedTarget,
+            TargetStatus = TargetLocationStatus.Resolved
         };
 
     internal SpellCastState Replanned(SpellCastPlan plan) =>
