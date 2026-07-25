@@ -81,7 +81,7 @@ rather than repaired in the legacy engine.
 
 ## Initial Project Structure
 
-The refactor starts with two new production projects and their matching test
+The refactor started with two production projects and their matching test
 projects:
 
 ```text
@@ -91,6 +91,11 @@ SleepHunter.Interop
 SleepHunter.Runtime.Tests
 SleepHunter.Interop.Tests
 ```
+
+`SleepHunter.Persistence` and `SleepHunter.Persistence.Tests` are added when
+versioned macro configuration and legacy migration become active work. Keeping
+that adapter separate prevents XML, file-system, and format-version concerns
+from entering the deterministic runtime.
 
 The existing `SleepHunter` WPF application and `SleepHunter.Updater` remain in
 place during development.
@@ -156,14 +161,32 @@ between raw client data and runtime observation or action types.
 
 `SleepHunter.Interop` targets Windows and depends on `SleepHunter.Runtime`.
 
+### SleepHunter.Persistence
+
+`SleepHunter.Persistence` targets plain `net9.0`, depends only on
+`SleepHunter.Runtime`, and owns:
+
+- The immutable persisted macro configuration boundary.
+- The current versioned macro file schema.
+- Bounded and DTD-prohibited XML reading.
+- Atomic current-format file replacement.
+- Legacy `.sh4` import and explicit migration diagnostics.
+
+It does not persist transient engine state such as pending actions, cooldowns,
+snapshot observations, or target rotation cursors.
+
 ### Dependency Direction
 
 ```text
 SleepHunter
   -> SleepHunter.Runtime
   -> SleepHunter.Interop
+  -> SleepHunter.Persistence
 
 SleepHunter.Interop
+  -> SleepHunter.Runtime
+
+SleepHunter.Persistence
   -> SleepHunter.Runtime
 
 SleepHunter.Runtime
@@ -723,7 +746,7 @@ request.
 
 ### PR 7: Persistence and Compatibility
 
-- Define versioned runtime state persistence.
+- Define versioned macro configuration persistence.
 - Import supported legacy macro-state files or document a deliberate migration.
 - Add round-trip and migration tests.
 
@@ -864,6 +887,8 @@ As of July 24, 2026:
 - Resolve an area to one exact tile before emitting `CastSpellIntent`. Advance
   its cursor only when that final cast intent is issued, so panel changes, staff
   changes, planning, vineyard, and mana restoration do not consume a point.
+- Keep screen-coordinate pixel offsets distinct from their base point because
+  legacy behavior applies window scaling before applying the offset.
 - Revalidate the selected queue entry, spell observation, mana, and cooldown
   after a spell-panel transition before emitting `CastSpellIntent`.
 - Advance round-robin selection only when the cast intent is issued, not while
@@ -951,6 +976,19 @@ As of July 24, 2026:
   actions do not consume the selected target.
 - Do not automatically retry a flower cast intent because replaying an
   uncertain cast can spend mana or affect a target twice.
+- Isolate macro configuration in `SleepHunter.Persistence`, which depends only
+  on `SleepHunter.Runtime`. Do not serialize transient `MacroState`.
+- Write new macro configurations as schema version 1 using the `.shmacro`
+  extension. Treat `.sh4` as an import-only legacy format.
+- Preserve an unresolved legacy default spell rotation so application settings
+  can supply the fallback. Map legacy singular and round-robin modes to their
+  deterministic equivalents, and map legacy none to priority order with a
+  migration warning.
+- Reconstruct stable queue entry identifiers from legacy order and report
+  duplicate, unusable, normalized, or behavior-modernized legacy data through
+  structured migration warnings.
+- Recover a nonzero legacy flower interval when the saved `HasInterval` marker
+  contradicts it, and report that repair as a migration warning.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
@@ -968,7 +1006,7 @@ them:
 - Final runtime type names.
 - Exact CommunityToolkit.Mvvm version.
 - Exact WPF hosting and dependency-injection packages.
-- Whether game metadata and persistence need separate assemblies.
+- Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
 - Exact expanded-inventory input sequencing for equipment intents.
 - Exact intent issuance-result protocol between the session and interop

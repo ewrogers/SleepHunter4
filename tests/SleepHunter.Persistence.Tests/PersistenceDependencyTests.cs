@@ -1,22 +1,23 @@
 ﻿using System.Reflection;
 
-namespace SleepHunter.Runtime.Tests;
+namespace SleepHunter.Persistence.Tests;
 
-public sealed class RuntimeDependencyTests
+public sealed class PersistenceDependencyTests
 {
     [Test]
-    public void ShouldRemainIndependentOfPlatformAndApplicationAssemblies()
+    public void ShouldDependOnlyOnRuntimeAndFrameworkAssemblies()
     {
-        var references = Assembly.Load("SleepHunter.Runtime")
+        var references = Assembly.Load("SleepHunter.Persistence")
             .GetReferencedAssemblies()
             .Select(reference => reference.Name)
             .ToArray();
 
         Assert.Multiple(() =>
         {
+            Assert.That(references, Does.Contain("SleepHunter.Runtime"));
             Assert.That(references, Does.Not.Contain("SleepHunter"));
             Assert.That(references, Does.Not.Contain("SleepHunter.Interop"));
-            Assert.That(references, Does.Not.Contain("SleepHunter.Persistence"));
+            Assert.That(references, Does.Not.Contain("SleepHunter.Updater"));
             Assert.That(references, Does.Not.Contain("PresentationCore"));
             Assert.That(references, Does.Not.Contain("PresentationFramework"));
             Assert.That(references, Does.Not.Contain("WindowsBase"));

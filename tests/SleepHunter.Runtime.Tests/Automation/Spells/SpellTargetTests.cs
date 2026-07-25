@@ -100,8 +100,9 @@ public sealed class SpellTargetTests
                 () => SpellTarget.AbsoluteArea(-1, 0, 0, 1));
             Assert.Throws<InvalidOperationException>(
                 () => SpellTarget.None.WithOffset(1, 1));
-            Assert.Throws<InvalidOperationException>(
-                () => SpellTarget.ScreenPoint(1, 1).WithOffset(1, 1));
+            Assert.That(
+                SpellTarget.ScreenPoint(1, 1).WithOffset(2, 3).Offset,
+                Is.EqualTo(new TargetOffset(2, 3)));
             Assert.Throws<ArgumentException>(
                 () => _ = new CastSpellIntent(
                     new ClientActionId(1),
