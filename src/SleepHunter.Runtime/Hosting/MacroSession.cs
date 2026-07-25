@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Channels;
 
+using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
@@ -13,8 +14,10 @@ namespace SleepHunter.Runtime.Hosting;
 
 public sealed class MacroSession : IAsyncDisposable
 {
+    private const int MaximumActionIssuesPerIteration = 256;
     private const int MaximumCommandsPerIteration = 256;
 
+    private readonly Channel<ClientActionIssueObserved> actionIssues;
     private readonly MacroClock clock;
     private readonly Channel<MacroCommand> commands;
     private readonly CancellationTokenSource disposeCancellation = new();
@@ -42,6 +45,13 @@ public sealed class MacroSession : IAsyncDisposable
 
         this.engine = engine;
         this.clock = clock;
+        actionIssues = Channel.CreateUnbounded<ClientActionIssueObserved>(
+            new UnboundedChannelOptions
+            {
+                AllowSynchronousContinuations = false,
+                SingleReader = true,
+                SingleWriter = false
+            });
         commands = Channel.CreateUnbounded<MacroCommand>(
             new UnboundedChannelOptions
             {
@@ -103,6 +113,30 @@ public sealed class MacroSession : IAsyncDisposable
         SignalWorker();
     }
 
+    public async ValueTask ReportActionIssueAsync(
+        ClientActionIssue issue,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(issue);
+        ThrowIfDisposing();
+
+        try
+        {
+            var observed = new ClientActionIssueObserved(
+                issue,
+                clock.GetCurrentTimestamp());
+            await actionIssues.Writer
+                .WriteAsync(observed, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (ChannelClosedException) when (Volatile.Read(ref disposeState) != 0)
+        {
+            throw new ObjectDisposedException(nameof(MacroSession));
+        }
+
+        SignalWorker();
+    }
+
     public bool PublishSnapshot(ClientSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -132,6 +166,7 @@ public sealed class MacroSession : IAsyncDisposable
         var isFirstDispose = Interlocked.Exchange(ref disposeState, 1) == 0;
         if (isFirstDispose)
         {
+            actionIssues.Writer.TryComplete();
             commands.Writer.TryComplete();
             snapshots.Complete();
             clientRoster.Complete();
@@ -164,6 +199,7 @@ public sealed class MacroSession : IAsyncDisposable
                 DrainWakeSignals();
 
                 var didWork = ProcessCommands();
+                didWork |= ProcessActionIssues();
                 didWork |= ProcessLatestSnapshot();
                 didWork |= ProcessLatestClientRoster();
                 didWork |= ProcessDueEvents();
@@ -202,6 +238,22 @@ public sealed class MacroSession : IAsyncDisposable
              index++)
         {
             ProcessInput(new MacroCommandReceived(command));
+            processed = true;
+        }
+
+        return processed;
+    }
+
+    private bool ProcessActionIssues()
+    {
+        var processed = false;
+
+        for (var index = 0;
+             index < MaximumActionIssuesPerIteration &&
+             actionIssues.Reader.TryRead(out var observed);
+             index++)
+        {
+            ProcessInput(observed);
             processed = true;
         }
 

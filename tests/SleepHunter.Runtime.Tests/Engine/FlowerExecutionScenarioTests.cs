@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Equipment;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
@@ -84,6 +85,35 @@ public sealed class FlowerExecutionScenarioTests
                     scenario.CurrentTime),
                 Is.EqualTo(
                     scenario.CurrentTime.Add(plant.Cooldown)));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseFlowerWhenSpellIssuanceFails()
+    {
+        var scenario = CreateRunningScenario(
+            [Spell(FlowerSpellNames.Plant, slot: 1)],
+            issueActions: false);
+        scenario.Send(
+            new AddFlowerQueueEntryCommand(
+                Entry(1, SpellTarget.Self)));
+        var requested = scenario.Send(new FlowerCommand(TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((CastSpellIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.PartiallyIssued)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.IssueFailed));
+            Assert.That(
+                failed.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.IssueFailed));
         });
     }
 
@@ -523,9 +553,10 @@ public sealed class FlowerExecutionScenarioTests
     private static MacroScenario CreateRunningScenario(
         IEnumerable<SpellSnapshot> spells,
         int currentMana = 500,
-        ClientPanel activePanel = ClientPanel.TemuairSpells)
+        ClientPanel activePanel = ClientPanel.TemuairSpells,
+        bool issueActions = true)
     {
-        var scenario = new MacroScenario();
+        var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Observe(
             sequence: 1,
             activePanel: activePanel,

@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Dialogs;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
@@ -53,6 +54,12 @@ internal static class MacroDecisionInvariants
             }
 
             var pendingAction = decision.State.PendingAction!;
+            if (pendingAction.IsIssued)
+            {
+                throw new InvalidOperationException(
+                    "New client action intents must await issuance feedback.");
+            }
+
             var matchingDeadlines = decision.ScheduledEvents.Count(
                 scheduledEvent =>
                     scheduledEvent.Input is ClientActionDeadlineElapsed deadline &&
@@ -63,6 +70,39 @@ internal static class MacroDecisionInvariants
             {
                 throw new InvalidOperationException(
                     "Client action intents require exactly one matching deadline event.");
+            }
+        }
+
+        if (decision.State.PendingAction is { } observedPendingAction)
+        {
+            var matchingIssue =
+                decision.State.LastActionIssue?.ActionId ==
+                observedPendingAction.Intent.ActionId
+                    ? decision.State.LastActionIssue
+                    : null;
+            if (observedPendingAction.IsIssued !=
+                (matchingIssue?.Status == ClientActionIssueStatus.Issued))
+            {
+                throw new InvalidOperationException(
+                    "Pending client action issuance state must match its observed issue.");
+            }
+        }
+
+        if (decision.State.LastActionIssue is { WasIssued: false } failedIssue &&
+            previousState.LastActionIssue != decision.State.LastActionIssue)
+        {
+            if (decision.State.Lifecycle != MacroLifecycle.Paused ||
+                decision.State.PendingAction is not null)
+            {
+                throw new InvalidOperationException(
+                    "Failed client action issuance must pause and clear pending work.");
+            }
+
+            if (previousState.PendingAction?.Intent.ActionId !=
+                failedIssue.ActionId)
+            {
+                throw new InvalidOperationException(
+                    "Failed client action issuance must match the pending action.");
             }
         }
 
@@ -281,6 +321,8 @@ internal static class MacroDecisionInvariants
                 flowerSpellCast?.Status == SpellCastStatus.WaitingForPanel,
             FlowerStatus.TargetUnavailable =>
                 flowerSpellCast?.Status == SpellCastStatus.TargetUnavailable,
+            FlowerStatus.IssueFailed =>
+                flowerSpellCast?.Status == SpellCastStatus.IssueFailed,
             FlowerStatus.Casting =>
                 flowerSpellCast?.Status == SpellCastStatus.Casting,
             FlowerStatus.Succeeded =>

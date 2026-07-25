@@ -18,5 +18,6 @@ public enum SpellCastStatus
     SelectionInvalidated,
     StaffUnavailable,
     PanelUnavailable,
+    IssueFailed,
     Cancelled
 }

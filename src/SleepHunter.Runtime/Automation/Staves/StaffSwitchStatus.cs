@@ -11,5 +11,6 @@ public enum StaffSwitchStatus
     SelectionInvalidated,
     PanelUnavailable,
     TimedOut,
+    IssueFailed,
     Cancelled
 }

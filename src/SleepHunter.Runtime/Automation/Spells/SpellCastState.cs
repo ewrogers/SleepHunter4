@@ -190,6 +190,9 @@ public sealed record SpellCastState
     internal SpellCastState PanelUnavailable() =>
         this with { Status = SpellCastStatus.PanelUnavailable };
 
+    internal SpellCastState IssueFailed() =>
+        this with { Status = SpellCastStatus.IssueFailed };
+
     internal SpellCastState Cancelled() =>
         this with { Status = SpellCastStatus.Cancelled };
 

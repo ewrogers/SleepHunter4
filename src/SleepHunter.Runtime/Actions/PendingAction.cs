@@ -8,7 +8,7 @@ public sealed record PendingAction
 {
     public PendingAction(
         ClientActionIntent intent,
-        MacroTimestamp issuedAt,
+        MacroTimestamp requestedAt,
         MacroTimestamp deadline,
         int attempt,
         int maximumAttempts = 1,
@@ -24,12 +24,12 @@ public sealed record PendingAction
                 "Pending actions require a valid action identifier.");
         }
 
-        if (deadline <= issuedAt)
+        if (deadline <= requestedAt)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(deadline),
                 deadline,
-                "Pending action deadlines must be later than issuance.");
+                "Pending action deadlines must be later than the request.");
         }
 
         if (attempt <= 0)
@@ -49,7 +49,7 @@ public sealed record PendingAction
         }
 
         Intent = intent;
-        IssuedAt = issuedAt;
+        RequestedAt = requestedAt;
         Deadline = deadline;
         Attempt = attempt;
         MaximumAttempts = maximumAttempts;
@@ -58,7 +58,7 @@ public sealed record PendingAction
 
     public ClientActionIntent Intent { get; }
 
-    public MacroTimestamp IssuedAt { get; }
+    public MacroTimestamp RequestedAt { get; }
 
     public MacroTimestamp Deadline { get; }
 
@@ -68,5 +68,23 @@ public sealed record PendingAction
 
     public SnapshotSequence? BaselineSnapshotSequence { get; }
 
-    public TimeSpan AttemptTimeout => Deadline.Elapsed - IssuedAt.Elapsed;
+    public MacroTimestamp? IssuedAt { get; private init; }
+
+    public bool IsIssued => IssuedAt.HasValue;
+
+    public TimeSpan AttemptTimeout =>
+        Deadline.Elapsed - RequestedAt.Elapsed;
+
+    internal PendingAction MarkIssued(MacroTimestamp issuedAt)
+    {
+        if (issuedAt < RequestedAt)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(issuedAt),
+                issuedAt,
+                "An action cannot be issued before it was requested.");
+        }
+
+        return this with { IssuedAt = issuedAt };
+    }
 }

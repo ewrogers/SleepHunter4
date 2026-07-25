@@ -1,8 +1,10 @@
-﻿using SleepHunter.Runtime.Automation.Flowering;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -12,13 +14,16 @@ internal sealed class MacroScenario
 {
     private readonly List<MacroDecision> decisions = [];
     private readonly IMacroEngine engine;
+    private readonly bool issueActions;
 
     public MacroScenario(
         IMacroEngine? engine = null,
-        ClientIdentity? client = null)
+        ClientIdentity? client = null,
+        bool issueActions = true)
     {
         this.engine = engine ?? new MacroEngine();
         Client = client ?? new ClientIdentity("scenario-client", "test");
+        this.issueActions = issueActions;
     }
 
     public ClientIdentity Client { get; }
@@ -100,6 +105,27 @@ internal sealed class MacroScenario
         var decision = engine.Decide(State, input, CurrentTime);
         State = decision.State;
         decisions.Add(decision);
-        return decision;
+        var reportedDecision = decision;
+        if (issueActions &&
+            decision.Intent is ClientActionIntent clientAction)
+        {
+            var issueDecision = engine.Decide(
+                State,
+                new ClientActionIssueObserved(
+                    new ClientActionIssue(
+                        clientAction.ActionId,
+                        ClientActionIssueStatus.Issued)),
+                CurrentTime);
+            State = issueDecision.State;
+            decisions.Add(issueDecision);
+            reportedDecision = new MacroDecision(
+                issueDecision.State,
+                decision.RaisedEvents,
+                decision.ScheduledEvents,
+                decision.Intent,
+                issueDecision.PublishedView);
+        }
+
+        return reportedDecision;
     }
 }

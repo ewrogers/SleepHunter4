@@ -90,6 +90,25 @@ public sealed record ClientIntentIssueResult
 
     public WindowInputDispatchResult? Dispatch { get; }
 
+    public ClientActionIssue ToActionIssue() =>
+        new(
+            ActionId,
+            Status switch
+            {
+                ClientIntentIssueStatus.Issued =>
+                    ClientActionIssueStatus.Issued,
+                ClientIntentIssueStatus.Rejected =>
+                    ClientActionIssueStatus.Rejected,
+                ClientIntentIssueStatus.Unsupported =>
+                    ClientActionIssueStatus.Unsupported,
+                ClientIntentIssueStatus.Failed =>
+                    ClientActionIssueStatus.Failed,
+                ClientIntentIssueStatus.PartiallyIssued =>
+                    ClientActionIssueStatus.PartiallyIssued,
+                _ => throw new InvalidOperationException(
+                    "The client intent issuance status is not supported.")
+            });
+
     private static bool DoesDispatchStatusMatch(
         ClientIntentIssueStatus issueStatus,
         WindowInputDispatchStatus dispatchStatus) =>

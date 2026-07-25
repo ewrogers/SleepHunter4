@@ -55,6 +55,9 @@ public sealed record PanelTransitionState
     internal PanelTransitionState TimedOut() =>
         this with { Status = PanelTransitionStatus.TimedOut };
 
+    internal PanelTransitionState IssueFailed() =>
+        this with { Status = PanelTransitionStatus.IssueFailed };
+
     internal PanelTransitionState Cancelled() =>
         this with { Status = PanelTransitionStatus.Cancelled };
 }

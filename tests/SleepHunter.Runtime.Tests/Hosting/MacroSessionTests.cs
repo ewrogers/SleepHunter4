@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Equipment;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -41,6 +42,47 @@ public sealed class MacroSessionTests
                 finalView.StopReason,
                 Is.EqualTo(MacroStopReason.UserRequested));
             Assert.That(session.Intents.TryRead(out _), Is.False);
+        });
+    }
+
+    [Test]
+    public async Task ShouldProcessActionIssueThroughReliableChannel()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var session = new MacroSession(
+            new MacroEngine(),
+            new MacroClock(timeProvider));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 1,
+                MacroTimestamp.Zero,
+                ClientPanel.Inventory));
+        await session.Views.ReadUntilAsync(view => view.Revision == 1);
+        await session.SendCommandAsync(new StartMacroCommand());
+        await session.SendCommandAsync(
+            new RequestPanelTransitionCommand(
+                ClientPanel.TemuairSpells));
+        var intent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+            value => value is SwitchPanelIntent);
+
+        await session.ReportActionIssueAsync(
+            new ClientActionIssue(
+                intent.ActionId,
+                ClientActionIssueStatus.Rejected));
+        var paused = await session.Views.ReadUntilAsync(
+            view =>
+                view.LastActionIssue?.ActionId == intent.ActionId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(paused.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(paused.PendingActionId, Is.Null);
+            Assert.That(
+                paused.PanelTransition?.Status,
+                Is.EqualTo(PanelTransitionStatus.IssueFailed));
+            Assert.That(
+                paused.LastActionIssue?.Status,
+                Is.EqualTo(ClientActionIssueStatus.Rejected));
         });
     }
 
@@ -136,12 +178,14 @@ public sealed class MacroSessionTests
 
         var firstIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
             intent => intent is SwitchPanelIntent);
+        await ReportIssuedAsync(session, firstIntent);
         await session.Views.ReadUntilAsync(view => view.Revision == 3);
         timeProvider.Advance(policy.AttemptTimeout);
         var retryIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
             intent =>
                 intent is SwitchPanelIntent switchPanel &&
                 switchPanel.ActionId != firstIntent.ActionId);
+        await ReportIssuedAsync(session, retryIntent);
 
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var confirmationTime = new MacroTimestamp(
@@ -208,6 +252,7 @@ public sealed class MacroSessionTests
 
         var panelIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
             intent => intent is SwitchPanelIntent);
+        await ReportIssuedAsync(session, panelIntent);
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var panelTime = new MacroTimestamp(TimeSpan.FromTicks(1));
         session.PublishSnapshot(
@@ -221,6 +266,7 @@ public sealed class MacroSessionTests
         var weaponIntent =
             (EquipWeaponIntent)await session.Intents.ReadUntilAsync(
                 intent => intent is EquipWeaponIntent);
+        await ReportIssuedAsync(session, weaponIntent);
 
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var equippedTime = new MacroTimestamp(TimeSpan.FromTicks(2));
@@ -292,6 +338,7 @@ public sealed class MacroSessionTests
 
         var panelIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
             intent => intent is SwitchPanelIntent);
+        await ReportIssuedAsync(session, panelIntent);
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var panelTime = new MacroTimestamp(TimeSpan.FromTicks(1));
         session.PublishSnapshot(
@@ -303,6 +350,7 @@ public sealed class MacroSessionTests
                 spellbook: new SpellbookSnapshot([spell])));
         var castIntent = (CastSpellIntent)await session.Intents.ReadUntilAsync(
             intent => intent is CastSpellIntent);
+        await ReportIssuedAsync(session, castIntent);
         await session.Views.ReadUntilAsync(
             view => view.SpellCast?.Status == SpellCastStatus.Casting);
 
@@ -366,6 +414,7 @@ public sealed class MacroSessionTests
         var disarmIntent =
             (DisarmIntent)await session.Intents.ReadUntilAsync(
                 intent => intent is DisarmIntent);
+        await ReportIssuedAsync(session, disarmIntent);
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var disarmedAt = new MacroTimestamp(TimeSpan.FromTicks(1));
         session.PublishSnapshot(
@@ -379,6 +428,7 @@ public sealed class MacroSessionTests
         var panelIntent =
             (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
                 intent => intent is SwitchPanelIntent);
+        await ReportIssuedAsync(session, panelIntent);
 
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var panelAt = new MacroTimestamp(TimeSpan.FromTicks(2));
@@ -393,6 +443,7 @@ public sealed class MacroSessionTests
         var skillIntent =
             (UseSkillIntent)await session.Intents.ReadUntilAsync(
                 intent => intent is UseSkillIntent);
+        await ReportIssuedAsync(session, skillIntent);
         timeProvider.Advance(policy.ActionDuration);
         var completed = await session.Views.ReadUntilAsync(
             view => view.SkillUse?.Status == SkillUseStatus.Succeeded);
@@ -429,6 +480,13 @@ public sealed class MacroSessionTests
             Assert.That(
                 async () =>
                     await session.SendCommandAsync(new StartMacroCommand()),
+                Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(
+                async () =>
+                    await session.ReportActionIssueAsync(
+                        new ClientActionIssue(
+                            new ClientActionId(1),
+                            ClientActionIssueStatus.Issued)),
                 Throws.TypeOf<ObjectDisposedException>());
             Assert.That(
                 () => session.PublishSnapshot(
@@ -485,4 +543,12 @@ public sealed class MacroSessionTests
             vitals,
             spellbook,
             skillbook);
+
+    private static ValueTask ReportIssuedAsync(
+        MacroSession session,
+        ClientActionIntent intent) =>
+        session.ReportActionIssueAsync(
+            new ClientActionIssue(
+                intent.ActionId,
+                ClientActionIssueStatus.Issued));
 }

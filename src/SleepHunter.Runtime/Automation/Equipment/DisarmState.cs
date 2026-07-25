@@ -62,6 +62,9 @@ public sealed record DisarmState
     internal DisarmState TimedOut() =>
         this with { Status = DisarmStatus.TimedOut };
 
+    internal DisarmState IssueFailed() =>
+        this with { Status = DisarmStatus.IssueFailed };
+
     internal DisarmState Cancelled() =>
         this with { Status = DisarmStatus.Cancelled };
 }

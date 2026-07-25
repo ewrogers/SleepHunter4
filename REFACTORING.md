@@ -1,4 +1,4 @@
-# SleepHunter Runtime Refactor
+﻿# SleepHunter Runtime Refactor
 
 ## Status
 
@@ -432,13 +432,20 @@ Client actions never wait for completion inside the executor.
 
 The action sequence is:
 
-1. The engine emits an intent.
+1. The engine records pending state with a deadline and emits an intent.
 2. Interop executes the intent and returns an issuance result.
-3. The session records a pending action with an expected condition and
-   deadline.
-4. A newer snapshot confirms success, reports an invalid condition, or reaches
-   the deadline.
+3. The host reports that result through the session's reliable action issue
+   channel.
+4. Only an issued result allows a newer snapshot or the action deadline to
+   confirm completion.
 5. The engine chooses the next deterministic transition.
+
+If issuance feedback is missing at the deadline, the action is marked timed
+out. Rejected, unsupported, failed, partially issued, and feedback-timeout
+results clear the pending action, mark its owning workflow as issue failed, and
+pause the macro. The runtime does not automatically retry these outcomes.
+Partial issuance is especially uncertain because the client may have processed
+only part of the input sequence.
 
 Before posting window input, interop must verify that the target HWND still
 exists, is owned by the expected process, and retains the client-area
@@ -485,11 +492,11 @@ runtime before input planning.
 Pending actions contain enough information to diagnose and test behavior:
 
 - Action identifier and kind.
-- Issued timestamp.
+- Requested timestamp, issuance state, and issued timestamp.
 - Expected confirmation condition.
 - Deadline.
 - Attempt count.
-- Failure and cancellation outcome.
+- Last issuance result, failure outcome, and cancellation outcome.
 
 Deferred work is represented as scheduled engine events. Arbitrary callbacks
 must not mutate macro state outside the session loop.

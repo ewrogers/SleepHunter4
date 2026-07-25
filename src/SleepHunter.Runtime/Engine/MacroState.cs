@@ -44,7 +44,8 @@ public sealed record MacroState
         ClientRosterSnapshot? clientRoster = null,
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
-        TargetRotationState? flowerTargetRotations = null)
+        TargetRotationState? flowerTargetRotations = null,
+        ClientActionIssue? lastActionIssue = null)
     {
         if (revision < 0)
         {
@@ -102,6 +103,7 @@ public sealed record MacroState
             spellTargetRotations ?? TargetRotationState.Empty;
         FlowerTargetRotations =
             flowerTargetRotations ?? TargetRotationState.Empty;
+        LastActionIssue = lastActionIssue;
     }
 
     public long Revision { get; }
@@ -147,6 +149,8 @@ public sealed record MacroState
     public TargetRotationState SpellTargetRotations { get; }
 
     public TargetRotationState FlowerTargetRotations { get; }
+
+    public ClientActionIssue? LastActionIssue { get; }
 
     internal long NextClientActionId { get; }
 }

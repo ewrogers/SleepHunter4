@@ -162,6 +162,13 @@ public sealed record StaffSwitchState
             TargetInventoryExpanded = null
         };
 
+    internal StaffSwitchState IssueFailed() =>
+        this with
+        {
+            Status = StaffSwitchStatus.IssueFailed,
+            TargetInventoryExpanded = null
+        };
+
     internal StaffSwitchState Cancelled() =>
         this with
         {

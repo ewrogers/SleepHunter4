@@ -4,6 +4,7 @@ using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
+using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Tests.Scenarios;
@@ -101,6 +102,73 @@ public sealed class StaffSwitchScenarioTests
             Assert.That(
                 decision.State.StaffSwitch?.Status,
                 Is.EqualTo(StaffSwitchStatus.ChangingWeapon));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenWeaponIssuanceIsPartial()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            [new InventoryItemSnapshot(7, staff.Name)],
+            issueActions: false);
+        var requested = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((EquipWeaponIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.PartiallyIssued)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.PendingAction, Is.Null);
+            Assert.That(
+                failed.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.IssueFailed));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenInventoryModeIssuanceIsRejected()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            [new InventoryItemSnapshot(35, staff.Name)],
+            issueActions: false);
+        var requested = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((ExpandInventoryIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.Rejected)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.IssueFailed));
         });
     }
 
@@ -756,9 +824,10 @@ public sealed class StaffSwitchScenarioTests
         CharacterClass characterClass,
         IEnumerable<InventoryItemSnapshot> inventory,
         string? equippedWeapon = null,
-        bool isInventoryExpanded = false)
+        bool isInventoryExpanded = false,
+        bool issueActions = true)
     {
-        var scenario = new MacroScenario();
+        var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Observe(
             sequence: 1,
             activePanel: activePanel,
