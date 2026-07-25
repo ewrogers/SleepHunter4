@@ -806,6 +806,21 @@ As of July 24, 2026:
   graph.
 - Keep pure decisions and channel-driven hosting in one runtime assembly
   initially.
+- Route process memory through a read-only `IProcessMemorySource` and a
+  per-capture `MemoryReadSession`. The session validates the complete address
+  range, block size, total-byte budget, read-count budget, and pointer depth
+  before issuing a transport read.
+- Treat partial process-memory reads as failures and retain their actual byte
+  count and native error code for diagnostics. Never parse a partial buffer.
+- Keep process-handle ownership outside `WindowsProcessMemorySource` so client
+  attachment and disposal have one explicit owner.
+- Represent client mappings as immutable, case-insensitive version maps with
+  explicit pointer width, value kind, base address, and signed pointer offsets.
+  Resolve every pointer and offset through checked address arithmetic.
+- Start with capture limits of 64 KiB per block, 4 KiB per string, 4 MiB total,
+  4,096 transport reads, and 16 pointer dereferences. Section-specific parsing
+  may use tighter limits, and measurement may justify revising the overall
+  capture budgets.
 - Use a single-owner event loop with reliable commands and coalesced snapshots.
 - Schedule the engine from events and deadlines rather than a high-speed fixed
   tick.
