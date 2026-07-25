@@ -796,6 +796,12 @@ As of July 24, 2026:
 - Use `IMacroEngine.Decide` as the pure state-transition contract.
 - Name requested external operations `MacroIntent` values so execution remains
   separate from deterministic decisions.
+- Represent spell queue edits as reliable, identifier-based runtime commands.
+- Preserve the logical spell queue cursor across insert, move, update, and
+  non-current removal operations.
+- Use explicit priority, sequential, and round-robin spell queue policies.
+- Treat missing and completed sequential entries as skippable, while a
+  temporarily unavailable entry blocks later sequential entries.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
