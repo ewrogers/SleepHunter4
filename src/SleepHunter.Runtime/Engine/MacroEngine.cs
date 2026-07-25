@@ -335,76 +335,16 @@ public sealed partial class MacroEngine : IMacroEngine
             if (staffSwitch is
                 {
                     Status: StaffSwitchStatus.WaitingForInventory,
-                    Selection: { } selection
+                    Selection: not null
                 } &&
                 switchIntent.TargetPanel == ClientPanel.Inventory)
             {
-                if (spellCast is
-                    {
-                        Status: SpellCastStatus.WaitingForStaff
-                    })
-                {
-                    var refreshedPlan = ReplanSelectedSpell(
-                        currentState,
-                        spellCast,
-                        snapshot,
-                        currentTime);
-                    if (!DoesPlanMatchSelection(spellCast, refreshedPlan))
-                    {
-                        var nextSpellCast = refreshedPlan.HasSelection
-                            ? spellCast.SelectionInvalidated(refreshedPlan)
-                            : spellCast.Replanned(refreshedPlan);
-                        var spellQueue = refreshedPlan.HasSelection
-                            ? currentState.SpellQueue
-                            : refreshedPlan.Queue;
-
-                        return Changed(
-                            currentState,
-                            lifecycle,
-                            stopReason,
-                            snapshot,
-                            lastTransitionAt,
-                            pendingAction: null,
-                            spellQueue: spellQueue,
-                            panelTransition: panelTransition,
-                            staffSwitch: staffSwitch.SelectionInvalidated(),
-                            spellCooldowns: refreshedPlan.Cooldowns,
-                            spellCast: nextSpellCast);
-                    }
-
-                    spellCast = spellCast.WithPlan(refreshedPlan);
-                }
-
-                if (!IsStaffSelectionStillValid(selection, snapshot))
-                {
-                    var nextSpellCast = spellCast is
-                    {
-                        Status: SpellCastStatus.WaitingForStaff
-                    } waitingForStaff
-                        ? waitingForStaff.StaffUnavailable()
-                        : spellCast;
-
-                    return Changed(
-                        currentState,
-                        lifecycle,
-                        stopReason,
-                        snapshot,
-                        lastTransitionAt,
-                        pendingAction: null,
-                        panelTransition: panelTransition,
-                        staffSwitch: staffSwitch.SelectionInvalidated(),
-                        spellCast: nextSpellCast);
-                }
-
-                return IssueStaffEquipmentAttempt(
+                return ContinueStaffSwitchAfterObservation(
                     currentState,
-                    selection,
-                    staffSwitch.AttemptTimeout,
-                    checked(staffSwitch.Attempt + 1),
-                    staffSwitch.MaximumAttempts,
-                    currentTime,
                     snapshot,
+                    currentTime,
                     panelTransition,
+                    staffSwitch,
                     spellCast);
             }
 
@@ -439,6 +379,24 @@ public sealed partial class MacroEngine : IMacroEngine
                     panelTransition,
                     disarm);
             }
+        }
+
+        if (!clientLoggedOut &&
+            CanConfirmInventoryMode(currentState.PendingAction, snapshot) &&
+            staffSwitch is
+            {
+                Status: StaffSwitchStatus.ChangingInventoryMode,
+                Selection: not null
+            })
+        {
+            pendingAction = null;
+            return ContinueStaffSwitchAfterObservation(
+                currentState,
+                snapshot,
+                currentTime,
+                panelTransition,
+                staffSwitch,
+                spellCast);
         }
 
         if (!clientLoggedOut &&
@@ -604,6 +562,12 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction,
                 weaponIntent,
                 currentTime),
+            ExpandInventoryIntent => HandleInventoryModeDeadline(
+                currentState,
+                pendingAction),
+            CollapseInventoryIntent => HandleInventoryModeDeadline(
+                currentState,
+                pendingAction),
             CastSpellIntent castSpellIntent => HandleSpellCastDeadline(
                 currentState,
                 pendingAction,

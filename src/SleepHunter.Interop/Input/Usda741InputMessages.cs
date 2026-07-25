@@ -46,11 +46,7 @@ internal static class Usda741InputMessages
             [up]);
     }
 
-    public static bool TryClick(
-        IVirtualKeyMapper mapper,
-        ClientPoint point,
-        bool withShift,
-        out WindowInputPlan? plan)
+    public static WindowInputPlan Click(ClientPoint point)
     {
         var move = MouseMessage(
             ClientWindowMessage.MouseMove,
@@ -64,11 +60,20 @@ internal static class Usda741InputMessages
             ClientWindowMessage.LeftButtonUp,
             wParam: 0,
             point);
+        return new WindowInputPlan(
+            [move, down, up],
+            [up]);
+    }
+
+    public static bool TryClick(
+        IVirtualKeyMapper mapper,
+        ClientPoint point,
+        bool withShift,
+        out WindowInputPlan? plan)
+    {
         if (!withShift)
         {
-            plan = new WindowInputPlan(
-                [move, down, up],
-                [up]);
+            plan = Click(point);
             return true;
         }
 
@@ -88,9 +93,10 @@ internal static class Usda741InputMessages
             ClientWindowMessage.KeyUp,
             VirtualKey.Shift,
             shiftScanCode);
+        var click = Click(point);
         plan = new WindowInputPlan(
-            [shiftDown, move, down, up, shiftUp],
-            [up, shiftUp]);
+            [shiftDown, .. click.Messages, shiftUp],
+            [.. click.CleanupMessages, shiftUp]);
         return true;
     }
 

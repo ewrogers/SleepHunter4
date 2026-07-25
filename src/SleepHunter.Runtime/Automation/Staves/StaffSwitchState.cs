@@ -10,14 +10,43 @@ public sealed record StaffSwitchState
         TimeSpan attemptTimeout,
         int attempt,
         int maximumAttempts,
-        ClientActionId? actionId)
+        ClientActionId? actionId,
+        int completedEquipmentAttempts,
+        bool? targetInventoryExpanded)
     {
+        if (attempt < 0 || maximumAttempts < attempt)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(attempt),
+                attempt,
+                "Staff switch attempts must fit within the attempt budget.");
+        }
+
+        if (completedEquipmentAttempts < 0 ||
+            completedEquipmentAttempts > maximumAttempts)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(completedEquipmentAttempts),
+                completedEquipmentAttempts,
+                "Completed equipment attempts must fit within the attempt budget.");
+        }
+
+        if ((status == StaffSwitchStatus.ChangingInventoryMode) !=
+            targetInventoryExpanded.HasValue)
+        {
+            throw new ArgumentException(
+                "Only an inventory mode transition can have a target display mode.",
+                nameof(targetInventoryExpanded));
+        }
+
         Selection = selection;
         Status = status;
         AttemptTimeout = attemptTimeout;
         Attempt = attempt;
         MaximumAttempts = maximumAttempts;
         ActionId = actionId;
+        CompletedEquipmentAttempts = completedEquipmentAttempts;
+        TargetInventoryExpanded = targetInventoryExpanded;
     }
 
     public StaffSelection? Selection { get; }
@@ -32,6 +61,10 @@ public sealed record StaffSwitchState
 
     public ClientActionId? ActionId { get; }
 
+    public int CompletedEquipmentAttempts { get; }
+
+    public bool? TargetInventoryExpanded { get; private init; }
+
     internal static StaffSwitchState WaitingForInventory(
         StaffSelection selection,
         StaffEquipmentPolicy policy,
@@ -42,7 +75,26 @@ public sealed record StaffSwitchState
             policy.AttemptTimeout,
             completedAttempts,
             policy.MaximumAttempts,
-            actionId: null);
+            actionId: null,
+            completedEquipmentAttempts: completedAttempts,
+            targetInventoryExpanded: null);
+
+    internal static StaffSwitchState ChangingInventoryMode(
+        StaffSelection selection,
+        TimeSpan attemptTimeout,
+        int completedEquipmentAttempts,
+        int maximumEquipmentAttempts,
+        ClientActionId actionId,
+        bool targetInventoryExpanded) =>
+        new(
+            selection,
+            StaffSwitchStatus.ChangingInventoryMode,
+            attemptTimeout,
+            attempt: 1,
+            maximumEquipmentAttempts,
+            actionId,
+            completedEquipmentAttempts,
+            targetInventoryExpanded);
 
     internal static StaffSwitchState ChangingWeapon(
         StaffSelection selection,
@@ -56,7 +108,9 @@ public sealed record StaffSwitchState
             attemptTimeout,
             attempt,
             maximumAttempts,
-            actionId);
+            actionId,
+            completedEquipmentAttempts: attempt - 1,
+            targetInventoryExpanded: null);
 
     internal static StaffSwitchState NoChange(StaffSelection selection) =>
         new(
@@ -65,7 +119,9 @@ public sealed record StaffSwitchState
             TimeSpan.Zero,
             attempt: 0,
             maximumAttempts: 0,
-            actionId: null);
+            actionId: null,
+            completedEquipmentAttempts: 0,
+            targetInventoryExpanded: null);
 
     internal static StaffSwitchState SnapshotUnavailable() =>
         new(
@@ -74,20 +130,42 @@ public sealed record StaffSwitchState
             TimeSpan.Zero,
             attempt: 0,
             maximumAttempts: 0,
-            actionId: null);
+            actionId: null,
+            completedEquipmentAttempts: 0,
+            targetInventoryExpanded: null);
 
     internal StaffSwitchState Succeeded() =>
-        this with { Status = StaffSwitchStatus.Succeeded };
+        this with
+        {
+            Status = StaffSwitchStatus.Succeeded,
+            TargetInventoryExpanded = null
+        };
 
     internal StaffSwitchState SelectionInvalidated() =>
-        this with { Status = StaffSwitchStatus.SelectionInvalidated };
+        this with
+        {
+            Status = StaffSwitchStatus.SelectionInvalidated,
+            TargetInventoryExpanded = null
+        };
 
     internal StaffSwitchState PanelUnavailable() =>
-        this with { Status = StaffSwitchStatus.PanelUnavailable };
+        this with
+        {
+            Status = StaffSwitchStatus.PanelUnavailable,
+            TargetInventoryExpanded = null
+        };
 
     internal StaffSwitchState TimedOut() =>
-        this with { Status = StaffSwitchStatus.TimedOut };
+        this with
+        {
+            Status = StaffSwitchStatus.TimedOut,
+            TargetInventoryExpanded = null
+        };
 
     internal StaffSwitchState Cancelled() =>
-        this with { Status = StaffSwitchStatus.Cancelled };
+        this with
+        {
+            Status = StaffSwitchStatus.Cancelled,
+            TargetInventoryExpanded = null
+        };
 }

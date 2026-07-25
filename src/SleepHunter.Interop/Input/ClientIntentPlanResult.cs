@@ -17,6 +17,8 @@ public enum ClientIntentPlanFailure
     SnapshotUnavailable,
     ClientNotInWorld,
     PanelMismatch,
+    InventoryModeMismatch,
+    InventoryItemMismatch,
     AlreadySatisfied,
     UnsupportedIntent,
     InputUnavailable,

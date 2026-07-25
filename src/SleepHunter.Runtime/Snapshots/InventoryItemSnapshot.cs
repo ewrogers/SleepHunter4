@@ -2,6 +2,8 @@
 
 public sealed record InventoryItemSnapshot
 {
+    public const int MaximumCollapsedSlot = 34;
+    public const int MaximumUsableSlot = 59;
     public const int MaximumSlot = 60;
 
     public InventoryItemSnapshot(int slot, string name)

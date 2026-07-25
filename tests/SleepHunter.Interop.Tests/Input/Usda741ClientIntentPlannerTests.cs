@@ -157,6 +157,149 @@ public sealed class Usda741ClientIntentPlannerTests
         });
     }
 
+    [Test]
+    public void ShouldPlanInventoryExpansionAtTheDocumentedToggle()
+    {
+        var intent = new ExpandInventoryIntent(new ClientActionId(15));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        AssertPlainClick(result, x: 570, y: 320);
+    }
+
+    [Test]
+    public void ShouldPlanInventoryCollapseAtTheDocumentedToggle()
+    {
+        var intent = new CollapseInventoryIntent(new ClientActionId(16));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true));
+
+        AssertPlainClick(result, x: 570, y: 320);
+    }
+
+    [TestCase(34, false, 425, 420)]
+    [TestCase(35, true, 460, 355)]
+    [TestCase(59, true, 460, 425)]
+    public void ShouldDoubleClickTheObservedWeaponSlot(
+        int slot,
+        bool isInventoryExpanded,
+        int expectedX,
+        int expectedY)
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(20 + slot),
+            "Test Staff",
+            slot);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(slot, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isInventoryExpanded: isInventoryExpanded));
+        var plan = result.Plan!;
+
+        var point = PackPoint(expectedX, expectedY);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(point));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectWeaponInputWhenInventoryEvidenceChanged()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(17),
+            "Test Staff",
+            inventorySlot: 35);
+        var matchingInventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(35, "Test Staff")
+        ]);
+        var wrongMode = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: matchingInventory));
+        var wrongItem = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: new InventorySnapshot(
+                [
+                    new InventoryItemSnapshot(35, "Other Staff")
+                ]),
+                isInventoryExpanded: true));
+        var wrongPanel = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Stats,
+                inventory: matchingInventory,
+                isInventoryExpanded: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                wrongMode.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.InventoryModeMismatch));
+            Assert.That(
+                wrongItem.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.InventoryItemMismatch));
+            Assert.That(
+                wrongPanel.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.PanelMismatch));
+            Assert.That(wrongMode.Plan, Is.Null);
+            Assert.That(wrongItem.Plan, Is.Null);
+            Assert.That(wrongPanel.Plan, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectInventoryModeActionsWithoutAStateChange()
+    {
+        var alreadyExpanded = planner.Plan(
+            new ExpandInventoryIntent(new ClientActionId(18)),
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true));
+        var alreadyCollapsed = planner.Plan(
+            new CollapseInventoryIntent(new ClientActionId(19)),
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                alreadyExpanded.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+            Assert.That(
+                alreadyCollapsed.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+        });
+    }
+
     [TestCase(36, ClientPanel.TemuairSkills, 495, 420)]
     [TestCase(37, ClientPanel.MedeniaSkills, 110, 350)]
     [TestCase(73, ClientPanel.WorldSkills, 110, 350)]
@@ -337,7 +480,7 @@ public sealed class Usda741ClientIntentPlannerTests
     }
 
     [Test]
-    public void ShouldReportUnimplementedClientIntentsAsUnsupported()
+    public void ShouldReportUnimplementedSpellInputAsUnsupported()
     {
         var cast = new CastSpellIntent(
             new ClientActionId(12),
@@ -345,19 +488,11 @@ public sealed class Usda741ClientIntentPlannerTests
             slot: 1,
             ClientPanel.TemuairSpells,
             SpellTarget.Self);
-        var equip = new EquipWeaponIntent(
-            new ClientActionId(13),
-            "Test Staff",
-            inventorySlot: 1);
 
         var castResult = planner.Plan(
             cast,
             Target,
             Snapshot(ClientPanel.TemuairSpells));
-        var equipResult = planner.Plan(
-            equip,
-            Target,
-            Snapshot(ClientPanel.Inventory));
 
         Assert.Multiple(() =>
         {
@@ -365,13 +500,7 @@ public sealed class Usda741ClientIntentPlannerTests
                 castResult.Status,
                 Is.EqualTo(ClientIntentPlanStatus.Unsupported));
             Assert.That(
-                equipResult.Status,
-                Is.EqualTo(ClientIntentPlanStatus.Unsupported));
-            Assert.That(
                 castResult.Failure,
-                Is.EqualTo(ClientIntentPlanFailure.UnsupportedIntent));
-            Assert.That(
-                equipResult.Failure,
                 Is.EqualTo(ClientIntentPlanFailure.UnsupportedIntent));
         });
     }
@@ -413,13 +542,23 @@ public sealed class Usda741ClientIntentPlannerTests
                 VirtualKey.Space,
                 (byte)0x39)
             .SetName("ShouldPlanSpaceForAssail");
+        yield return new TestCaseData(
+                new EquipWeaponIntent(
+                    new ClientActionId(13),
+                    staffName: null,
+                    inventorySlot: null),
+                VirtualKey.Oem3,
+                (byte)0x29)
+            .SetName("ShouldPlanTildeForWeaponUnequip");
     }
 
     private static ClientSnapshot Snapshot(
         ClientPanel panel,
         SnapshotQuality quality = SnapshotQuality.Complete,
         ClientPresence presence = ClientPresence.InWorld,
-        ClientIdentity? client = null) =>
+        ClientIdentity? client = null,
+        InventorySnapshot? inventory = null,
+        bool isInventoryExpanded = false) =>
         new(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -427,7 +566,39 @@ public sealed class Usda741ClientIntentPlannerTests
             client ?? Client,
             quality,
             presence,
-            panel);
+            panel,
+            inventory: inventory,
+            isInventoryExpanded: isInventoryExpanded);
+
+    private static void AssertPlainClick(
+        ClientIntentPlanResult result,
+        int x,
+        int y)
+    {
+        var point = PackPoint(x, y);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(
+                result.Plan?.Messages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        new WindowInputMessage(
+                            ClientWindowMessage.MouseMove,
+                            wParam: 0,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonDown,
+                            wParam: 1,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonUp,
+                            wParam: 0,
+                            point)
+                    }));
+        });
+    }
 
     private static WindowInputMessage KeyMessage(
         ClientWindowMessage message,

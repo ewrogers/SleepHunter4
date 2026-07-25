@@ -3,6 +3,7 @@
 public enum StaffSwitchStatus
 {
     WaitingForInventory,
+    ChangingInventoryMode,
     ChangingWeapon,
     Succeeded,
     NoChange,

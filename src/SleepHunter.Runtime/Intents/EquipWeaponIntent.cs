@@ -18,7 +18,7 @@ public sealed record EquipWeaponIntent : ClientActionIntent
                 "Equipping requires both a staff name and inventory slot.");
         }
 
-        if (inventorySlot is <= 0 or > InventoryItemSnapshot.MaximumSlot)
+        if (inventorySlot is <= 0 or > InventoryItemSnapshot.MaximumUsableSlot)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(inventorySlot),
