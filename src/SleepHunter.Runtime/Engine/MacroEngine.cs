@@ -2,6 +2,7 @@
 using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -39,6 +40,11 @@ public sealed partial class MacroEngine : IMacroEngine
                 HandleDialogCloseDue(
                     currentState,
                     dialogCloseDue,
+                    currentTime),
+            FlowerClientsObserved flowerClientsObserved =>
+                HandleFlowerClients(
+                    currentState,
+                    flowerClientsObserved.Snapshot,
                     currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
@@ -93,6 +99,11 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     useNextSkill,
                     currentTime),
+            FlowerCommand flower =>
+                Flower(
+                    currentState,
+                    flower,
+                    currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
@@ -130,6 +141,30 @@ public sealed partial class MacroEngine : IMacroEngine
             ClearSkillQueueCommand => ChangeSkillQueue(
                 currentState,
                 currentState.SkillQueue.Clear()),
+            AddFlowerQueueEntryCommand addFlower => ChangeFlowerQueue(
+                currentState,
+                currentState.FlowerQueue.Add(
+                    addFlower.Entry,
+                    addFlower.Index),
+                currentTime),
+            UpdateFlowerQueueEntryCommand updateFlower => ChangeFlowerQueue(
+                currentState,
+                currentState.FlowerQueue.Update(updateFlower.Entry),
+                currentTime),
+            RemoveFlowerQueueEntryCommand removeFlower => ChangeFlowerQueue(
+                currentState,
+                currentState.FlowerQueue.Remove(removeFlower.EntryId),
+                currentTime),
+            MoveFlowerQueueEntryCommand moveFlower => ChangeFlowerQueue(
+                currentState,
+                currentState.FlowerQueue.Move(
+                    moveFlower.EntryId,
+                    moveFlower.TargetIndex),
+                currentTime),
+            ClearFlowerQueueCommand => ChangeFlowerQueue(
+                currentState,
+                currentState.FlowerQueue.Clear(),
+                currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(command),
                 command,
@@ -181,7 +216,8 @@ public sealed partial class MacroEngine : IMacroEngine
             spellCast: CancelPendingSpellCast(currentState),
             skillUse: CancelPendingSkillUse(currentState),
             disarm: CancelPendingDisarm(currentState),
-            dialog: CancelPendingDialog(currentState));
+            dialog: CancelPendingDialog(currentState),
+            flower: CancelPendingFlower(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -222,7 +258,10 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingDisarm(currentState),
             dialog: nextLifecycle == MacroLifecycle.Running
                 ? currentState.Dialog
-                : CancelPendingDialog(currentState));
+                : CancelPendingDialog(currentState),
+            flower: nextLifecycle == MacroLifecycle.Running
+                ? currentState.Flower
+                : CancelPendingFlower(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -278,6 +317,9 @@ public sealed partial class MacroEngine : IMacroEngine
         var dialog = clientLoggedOut
             ? CancelPendingDialog(currentState)
             : currentState.Dialog;
+        var flower = clientLoggedOut
+            ? CancelPendingFlower(currentState)
+            : currentState.Flower;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -455,7 +497,8 @@ public sealed partial class MacroEngine : IMacroEngine
             spellCast: spellCast,
             skillUse: skillUse,
             disarm: disarm,
-            dialog: dialog);
+            dialog: dialog,
+            flower: flower);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -625,6 +668,9 @@ public sealed partial class MacroEngine : IMacroEngine
             } waitingForSkillPanel
                 ? waitingForSkillPanel.PanelUnavailable()
                 : currentState.SkillUse;
+            var flower = spellCast?.Origin == SpellCastOrigin.Flower
+                ? currentState.Flower?.WithSpellCast(spellCast)
+                : currentState.Flower;
 
             return Changed(
                 currentState,
@@ -636,7 +682,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 panelTransition: panelTransition.TimedOut(),
                 staffSwitch: staffSwitch,
                 spellCast: spellCast,
-                skillUse: skillUse);
+                skillUse: skillUse,
+                flower: flower);
         }
 
         return IssuePanelTransitionAttempt(
@@ -666,7 +713,8 @@ public sealed partial class MacroEngine : IMacroEngine
         SpellCooldownState? spellCooldowns = null,
         SkillUseState? skillUse = null,
         SkillCooldownState? skillCooldowns = null,
-        DisarmState? disarm = null)
+        DisarmState? disarm = null,
+        FlowerState? flower = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new SwitchPanelIntent(actionId, targetPanel);
@@ -698,6 +746,8 @@ public sealed partial class MacroEngine : IMacroEngine
             skillCooldowns: skillCooldowns,
             skillUse: skillUse,
             disarm: disarm,
+            flowerSchedules: flower?.Plan.Schedules,
+            flower: flower,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -801,7 +851,11 @@ public sealed partial class MacroEngine : IMacroEngine
         SkillCooldownState? skillCooldowns = null,
         SkillUseState? skillUse = null,
         DisarmState? disarm = null,
-        DialogState? dialog = null)
+        DialogState? dialog = null,
+        FlowerQueueState? flowerQueue = null,
+        FlowerScheduleState? flowerSchedules = null,
+        FlowerClientSetSnapshot? flowerClients = null,
+        FlowerState? flower = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -825,7 +879,11 @@ public sealed partial class MacroEngine : IMacroEngine
             skillCooldowns ?? currentState.SkillCooldowns,
             skillUse ?? currentState.SkillUse,
             disarm ?? currentState.Disarm,
-            dialog ?? currentState.Dialog);
+            dialog ?? currentState.Dialog,
+            flowerQueue ?? currentState.FlowerQueue,
+            flowerSchedules ?? currentState.FlowerSchedules,
+            flowerClients ?? currentState.FlowerClients,
+            flower ?? currentState.Flower);
 
         return new MacroDecision(
             nextState,

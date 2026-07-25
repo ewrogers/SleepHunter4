@@ -921,6 +921,27 @@ As of July 24, 2026:
   waiting longest since its last flower and rotate fairly among configured
   character entries. Exclude the source client, stopped macros, logged-out
   clients, and out-of-range clients.
+- Publish immutable cross-client flower observations through a coalesced
+  latest-value mailbox. Accept only monotonic observation sequences whose
+  capture time is not in the engine's future.
+- Represent flower queue edits as reliable, identifier-based commands and
+  synchronize interval schedules from the engine's monotonic clock.
+- Select mana restoration, vineyard, and planting as deterministic flower
+  actions, then execute them through the shared spell, panel, staff, cooldown,
+  deadline, and cancellation workflow.
+- Give prioritized waiting characters precedence over vineyard. Otherwise,
+  attempt vineyard before the configured queue target when the spell is ready.
+- Allow mana restoration from an explicit threshold or when the selected plant
+  needs more mana. Replan from a fresh source snapshot before the following
+  plant attempt.
+- Revalidate the selected flower target and spell after every confirmed panel
+  or staff prerequisite. Invalidate a moved or otherwise ineligible target
+  before issuing a cast intent.
+- Advance the flower queue and record its interval schedule only when the final
+  plant `CastSpellIntent` is issued. Vineyard, restoration, and prerequisite
+  actions do not consume the selected target.
+- Do not automatically retry a flower cast intent because replaying an
+  uncertain cast can spend mana or affect a target twice.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

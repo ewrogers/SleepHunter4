@@ -1,4 +1,6 @@
-﻿using SleepHunter.Runtime.Actions;
+﻿using System.Collections.Immutable;
+using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
@@ -57,9 +59,25 @@ public sealed partial class MacroEngine
                 spellCast: spellCast);
         }
 
-        var candidates = command.StaffCatalog.GetCandidates(
-            plan.SelectedEntry!.Id);
-        if (command.Policy.AllowStaffSwitching && !candidates.IsEmpty)
+        return BeginSpellCast(
+            currentState,
+            spellCast,
+            plan,
+            command.StaffCatalog.GetCandidates(plan.SelectedEntry!.Id),
+            currentTime);
+    }
+
+    private static MacroDecision BeginSpellCast(
+        MacroState currentState,
+        SpellCastState spellCast,
+        SpellCastPlan plan,
+        ImmutableArray<StaffCandidate> candidates,
+        MacroTimestamp currentTime,
+        FlowerState? flower = null)
+    {
+        var snapshot = currentState.LatestSnapshot!;
+
+        if (spellCast.Policy.AllowStaffSwitching && !candidates.IsEmpty)
         {
             if (snapshot.Character is null ||
                 snapshot.Inventory is null ||
@@ -73,7 +91,9 @@ public sealed partial class MacroEngine
                     currentState.LastTransitionAt,
                     pendingAction: null,
                     spellCooldowns: plan.Cooldowns,
-                    spellCast: spellCast.SnapshotUnavailable());
+                    spellCast: spellCast.SnapshotUnavailable(),
+                    flowerSchedules: flower?.Plan.Schedules,
+                    flower: flower?.SnapshotUnavailable());
             }
 
             var staffSelection = StaffSelector.Select(
@@ -91,9 +111,11 @@ public sealed partial class MacroEngine
                 return BeginStaffSwitch(
                     currentState,
                     staffSelection,
-                    command.Policy.StaffEquipment,
+                    spellCast.Policy.StaffEquipment,
                     currentTime,
-                    spellCast.WaitingForStaff(staffSelection));
+                    spellCast.WaitingForStaff(staffSelection),
+                    flower?.WithSpellCast(
+                        spellCast.WaitingForStaff(staffSelection)));
             }
 
             return ContinueSpellCastToPanel(
@@ -103,7 +125,8 @@ public sealed partial class MacroEngine
                 snapshot,
                 currentTime,
                 currentState.PanelTransition,
-                staffSwitch);
+                staffSwitch,
+                flower);
         }
 
         return ContinueSpellCastToPanel(
@@ -113,7 +136,8 @@ public sealed partial class MacroEngine
             snapshot,
             currentTime,
             currentState.PanelTransition,
-            currentState.StaffSwitch);
+            currentState.StaffSwitch,
+            flower);
     }
 
     private static MacroDecision ContinueSpellCastToPanel(
@@ -123,7 +147,8 @@ public sealed partial class MacroEngine
         ClientSnapshot snapshot,
         MacroTimestamp currentTime,
         PanelTransitionState? panelTransition,
-        StaffSwitchState? staffSwitch)
+        StaffSwitchState? staffSwitch,
+        FlowerState? flower = null)
     {
         if (!snapshot.ActivePanel.IsEquivalentTo(plan.SelectedSpell!.Panel))
         {
@@ -137,7 +162,8 @@ public sealed partial class MacroEngine
                 currentTime,
                 staffSwitch,
                 spellCast,
-                plan.Cooldowns);
+                plan.Cooldowns,
+                flower: flower?.WithSpellCast(spellCast));
         }
 
         return IssueCastSpell(
@@ -147,7 +173,8 @@ public sealed partial class MacroEngine
             snapshot,
             currentTime,
             panelTransition,
-            staffSwitch);
+            staffSwitch,
+            flower);
     }
 
     private static MacroDecision ContinueSpellCastAfterPanel(
@@ -158,6 +185,36 @@ public sealed partial class MacroEngine
         PanelTransitionState panelTransition,
         StaffSwitchState? staffSwitch)
     {
+        var flower = currentState.Flower;
+        if (spellCast.Origin == SpellCastOrigin.Flower)
+        {
+            if (flower is null)
+            {
+                return Unchanged(currentState);
+            }
+
+            var flowerPlan = ReplanFlower(
+                currentState,
+                flower,
+                snapshot,
+                currentTime);
+            if (!DoesFlowerPlanMatchSelection(flower, flowerPlan))
+            {
+                return FinishInvalidFlowerSelection(
+                    currentState,
+                    flower,
+                    flowerPlan,
+                    spellCast,
+                    snapshot,
+                    panelTransition,
+                    staffSwitch);
+            }
+
+            flower = flower.WithPlan(
+                flowerPlan,
+                currentState.FlowerClients.Sequence);
+        }
+
         var plan = ReplanSelectedSpell(
             currentState,
             spellCast,
@@ -166,6 +223,19 @@ public sealed partial class MacroEngine
 
         if (!DoesPlanMatchSelection(spellCast, plan))
         {
+            if (flower is not null &&
+                spellCast.Origin == SpellCastOrigin.Flower)
+            {
+                return FinishInvalidFlowerSpell(
+                    currentState,
+                    flower,
+                    spellCast,
+                    plan,
+                    snapshot,
+                    panelTransition,
+                    staffSwitch);
+            }
+
             var nextSpellCast = plan.HasSelection
                 ? spellCast.SelectionInvalidated(plan)
                 : spellCast.Replanned(plan);
@@ -194,7 +264,8 @@ public sealed partial class MacroEngine
             snapshot,
             currentTime,
             panelTransition,
-            staffSwitch);
+            staffSwitch,
+            flower);
     }
 
     private static MacroDecision ContinueSpellCastAfterStaff(
@@ -205,6 +276,36 @@ public sealed partial class MacroEngine
         PanelTransitionState? panelTransition,
         StaffSwitchState staffSwitch)
     {
+        var flower = currentState.Flower;
+        if (spellCast.Origin == SpellCastOrigin.Flower)
+        {
+            if (flower is null)
+            {
+                return Unchanged(currentState);
+            }
+
+            var flowerPlan = ReplanFlower(
+                currentState,
+                flower,
+                snapshot,
+                currentTime);
+            if (!DoesFlowerPlanMatchSelection(flower, flowerPlan))
+            {
+                return FinishInvalidFlowerSelection(
+                    currentState,
+                    flower,
+                    flowerPlan,
+                    spellCast,
+                    snapshot,
+                    panelTransition,
+                    staffSwitch);
+            }
+
+            flower = flower.WithPlan(
+                flowerPlan,
+                currentState.FlowerClients.Sequence);
+        }
+
         var plan = ReplanSelectedSpell(
             currentState,
             spellCast,
@@ -213,6 +314,19 @@ public sealed partial class MacroEngine
 
         if (!DoesPlanMatchSelection(spellCast, plan))
         {
+            if (flower is not null &&
+                spellCast.Origin == SpellCastOrigin.Flower)
+            {
+                return FinishInvalidFlowerSpell(
+                    currentState,
+                    flower,
+                    spellCast,
+                    plan,
+                    snapshot,
+                    panelTransition,
+                    staffSwitch);
+            }
+
             var nextSpellCast = plan.HasSelection
                 ? spellCast.SelectionInvalidated(plan)
                 : spellCast.Replanned(plan);
@@ -241,7 +355,8 @@ public sealed partial class MacroEngine
             snapshot,
             currentTime,
             panelTransition,
-            staffSwitch);
+            staffSwitch,
+            flower);
     }
 
     private static MacroDecision IssueCastSpell(
@@ -251,7 +366,8 @@ public sealed partial class MacroEngine
         ClientSnapshot snapshot,
         MacroTimestamp currentTime,
         PanelTransitionState? panelTransition,
-        StaffSwitchState? staffSwitch)
+        StaffSwitchState? staffSwitch,
+        FlowerState? flower = null)
     {
         var selectedEntry = plan.SelectedEntry!;
         var selectedSpell = plan.SelectedSpell!;
@@ -271,6 +387,27 @@ public sealed partial class MacroEngine
             maximumAttempts: 1,
             snapshot.Sequence);
         var casting = spellCast.Casting(plan, actionId, deadline);
+        var nextFlower = flower?.WithSpellCast(casting);
+        var flowerQueue = currentState.FlowerQueue;
+        var flowerSchedules =
+            nextFlower?.Plan.Schedules ??
+            currentState.FlowerSchedules;
+        if (nextFlower is
+            {
+                Action: FlowerActionKind.Plant,
+                Plan: { } flowerPlan
+            })
+        {
+            flowerQueue = flowerPlan.Queue;
+            if (flowerPlan.SelectedEntry is { } selectedFlowerEntry)
+            {
+                flowerSchedules = flowerSchedules.RecordUse(
+                    selectedFlowerEntry,
+                    currentTime);
+            }
+
+            nextFlower = nextFlower.Casting(currentTime);
+        }
 
         return Changed(
             currentState,
@@ -279,11 +416,16 @@ public sealed partial class MacroEngine
             snapshot,
             currentState.LastTransitionAt,
             pendingAction,
-            spellQueue: plan.Queue,
+            spellQueue: spellCast.Origin == SpellCastOrigin.SpellQueue
+                ? plan.Queue
+                : currentState.SpellQueue,
             panelTransition: panelTransition,
             staffSwitch: staffSwitch,
             spellCooldowns: plan.Cooldowns,
             spellCast: casting,
+            flowerQueue: flowerQueue,
+            flowerSchedules: flowerSchedules,
+            flower: nextFlower,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -317,6 +459,17 @@ public sealed partial class MacroEngine
             cooldowns = cooldowns.WithCooldown(spell.Name, readyAt);
         }
 
+        var succeeded = spellCast.Succeeded();
+        var flower = currentState.Flower;
+        if (spellCast.Origin == SpellCastOrigin.Flower &&
+            flower is not null)
+        {
+            flower = flower.Succeeded(
+                flower.Action == FlowerActionKind.Plant
+                    ? pendingAction.Deadline
+                    : null);
+        }
+
         return Changed(
             currentState,
             currentState.Lifecycle,
@@ -325,7 +478,8 @@ public sealed partial class MacroEngine
             currentState.LastTransitionAt,
             pendingAction: null,
             spellCooldowns: cooldowns,
-            spellCast: spellCast.Succeeded());
+            spellCast: succeeded,
+            flower: flower);
     }
 
     private static SpellCastPlan PlanSpell(
@@ -350,7 +504,9 @@ public sealed partial class MacroEngine
         ClientSnapshot snapshot,
         MacroTimestamp currentTime) =>
         PlanSpell(
-            currentState.SpellQueue,
+            spellCast.Origin == SpellCastOrigin.Flower
+                ? spellCast.Plan.Queue
+                : currentState.SpellQueue,
             snapshot,
             currentState.SpellCooldowns,
             currentTime,

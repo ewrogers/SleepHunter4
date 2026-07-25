@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Panels;
+﻿using SleepHunter.Runtime.Automation.Flowering;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
@@ -57,7 +58,8 @@ internal sealed class MacroScenario
         EquipmentSnapshot? equipment = null,
         VitalsSnapshot? vitals = null,
         SpellbookSnapshot? spellbook = null,
-        SkillbookSnapshot? skillbook = null)
+        SkillbookSnapshot? skillbook = null,
+        MapLocationSnapshot? location = null)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -74,10 +76,22 @@ internal sealed class MacroScenario
             equipment,
             vitals,
             spellbook,
-            skillbook);
+            skillbook,
+            location);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }
+
+    public MacroDecision ObserveFlowerClients(
+        long sequence,
+        IEnumerable<FlowerClientObservation> clients,
+        MacroTimestamp? capturedAt = null) =>
+        Apply(
+            new FlowerClientsObserved(
+                new FlowerClientSetSnapshot(
+                    new FlowerObservationSequence(sequence),
+                    capturedAt ?? CurrentTime,
+                    clients)));
 
     private MacroDecision Apply(MacroEvent input)
     {

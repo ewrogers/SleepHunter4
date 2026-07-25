@@ -1,6 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -27,7 +28,11 @@ public sealed record MacroViewSnapshot(
     SkillCooldownState SkillCooldowns,
     SkillUseState? SkillUse,
     DisarmState? Disarm,
-    DialogState? Dialog)
+    DialogState? Dialog,
+    FlowerQueueState FlowerQueue,
+    FlowerScheduleState FlowerSchedules,
+    FlowerObservationSequence? FlowerObservationSequence,
+    FlowerState? Flower)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -50,6 +55,10 @@ public sealed record MacroViewSnapshot(
             state.SkillCooldowns,
             state.SkillUse,
             state.Disarm,
-            state.Dialog);
+            state.Dialog,
+            state.FlowerQueue,
+            state.FlowerSchedules,
+            state.FlowerClients.Sequence,
+            state.Flower);
     }
 }
