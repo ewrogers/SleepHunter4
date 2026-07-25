@@ -440,6 +440,16 @@ The action sequence is:
    the deadline.
 5. The engine chooses the next deterministic transition.
 
+Before posting window input, interop must verify that the target HWND still
+exists, is owned by the expected process, and retains the client-area
+dimensions used to plan coordinates. Input plans contain only an explicit,
+bounded set of keyboard and mouse messages. A native post failure before any
+intended message is a failed issuance, while failure after one or more messages
+is a partial issuance. Partial plans run bounded best-effort key and mouse
+release cleanup, but still remain uncertain and must never be reported as
+success. A successfully posted plan means only that Windows accepted the
+messages, not that the client completed the action.
+
 Pending actions contain enough information to diagnose and test behavior:
 
 - Action identifier and kind.
