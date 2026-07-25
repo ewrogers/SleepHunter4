@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using SleepHunter.Extensions;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views
@@ -49,7 +50,7 @@ namespace SleepHunter.Views
             {
                 Title = "Edit Target";
                 okButton.Content = "_Save Changes";
-            }            
+            }
 
             SpellQueueItem.Id = item.Id;
             SetTargetForMode(item.Target);
@@ -180,6 +181,9 @@ namespace SleepHunter.Views
             spellQueueItem.Name = Spell.Name;
             spellQueueItem.CurrentLevel = Spell.CurrentLevel;
             spellQueueItem.MaximumLevel = Spell.MaximumLevel;
+            spellQueueItem.HealthCondition = new HealthCondition(
+                Spell.MinHealthPercent,
+                Spell.MaxHealthPercent);
 
             if (!IsEditMode)
                 spellQueueItem.StartingLevel = Spell.CurrentLevel;

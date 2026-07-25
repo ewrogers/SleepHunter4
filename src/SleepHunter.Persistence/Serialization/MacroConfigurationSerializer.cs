@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
-using System.Globalization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Xml;
 using System.Xml.Linq;
 using SleepHunter.Persistence.Configuration;
@@ -14,10 +15,30 @@ namespace SleepHunter.Persistence.Serialization;
 public static class MacroConfigurationSerializer
 {
     public const string CurrentVersion = "1";
-    public const string CurrentFileExtension = ".shmacro";
+    public const string CurrentFileExtension = ".sh4x";
     public const string LegacyFileExtension = ".sh4";
 
-    private const long MaximumDocumentCharacters = 4 * 1024 * 1024;
+    private const string CurrentFormat =
+        "SleepHunter.MacroConfiguration";
+    private const int MaximumDocumentBytes = 4 * 1024 * 1024;
+    private const int MaximumDocumentCharacters = 4 * 1024 * 1024;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        AllowTrailingCommas = false,
+        MaxDepth = 64,
+        PropertyNameCaseInsensitive = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        ReadCommentHandling = JsonCommentHandling.Disallow,
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        WriteIndented = true,
+        Converters =
+        {
+            new JsonStringEnumConverter(
+                namingPolicy: null,
+                allowIntegerValues: false)
+        }
+    };
 
     public static MacroConfigurationLoadResult Load(string filePath)
     {
@@ -33,18 +54,24 @@ public static class MacroConfigurationSerializer
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        var settings = CreateReaderSettings(closeInput: !leaveOpen);
-        using var reader = XmlReader.Create(stream, settings);
-        return LoadDocument(reader);
+        try
+        {
+            var document = ReadBounded(stream);
+            return LoadDocument(document);
+        }
+        finally
+        {
+            if (!leaveOpen)
+                stream.Dispose();
+        }
     }
 
     public static MacroConfigurationLoadResult Load(TextReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
 
-        var settings = CreateReaderSettings(closeInput: false);
-        using var xmlReader = XmlReader.Create(reader, settings);
-        return LoadDocument(xmlReader);
+        var document = ReadBounded(reader);
+        return LoadDocument(document);
     }
 
     public static void Save(
@@ -82,7 +109,10 @@ public static class MacroConfigurationSerializer
 
             if (File.Exists(fullPath))
             {
-                File.Replace(temporaryPath, fullPath, destinationBackupFileName: null);
+                File.Replace(
+                    temporaryPath,
+                    fullPath,
+                    destinationBackupFileName: null);
             }
             else
             {
@@ -92,9 +122,7 @@ public static class MacroConfigurationSerializer
         finally
         {
             if (File.Exists(temporaryPath))
-            {
                 File.Delete(temporaryPath);
-            }
         }
     }
 
@@ -106,15 +134,16 @@ public static class MacroConfigurationSerializer
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(stream);
 
-        var settings = new XmlWriterSettings
+        try
         {
-            CloseOutput = !leaveOpen,
-            Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-            Indent = true,
-            NewLineHandling = NewLineHandling.None
-        };
-        using var writer = XmlWriter.Create(stream, settings);
-        CreateDocument(configuration).Save(writer);
+            var document = Serialize(configuration);
+            stream.Write(document);
+        }
+        finally
+        {
+            if (!leaveOpen)
+                stream.Dispose();
+        }
     }
 
     public static void Save(
@@ -124,80 +153,165 @@ public static class MacroConfigurationSerializer
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(writer);
 
-        var settings = new XmlWriterSettings
-        {
-            CloseOutput = false,
-            Indent = true,
-            NewLineHandling = NewLineHandling.None
-        };
-        using var xmlWriter = XmlWriter.Create(writer, settings);
-        CreateDocument(configuration).Save(xmlWriter);
+        writer.Write(
+            Encoding.UTF8.GetString(
+                Serialize(configuration)));
     }
 
-    private static MacroConfigurationLoadResult LoadDocument(XmlReader reader)
+    private static MacroConfigurationLoadResult LoadDocument(
+        ReadOnlyMemory<byte> document)
+    {
+        var first = FindFirstContentByte(document.Span);
+        return first switch
+        {
+            (byte)'{' => ReadCurrent(RemoveUtf8Bom(document.Span)),
+            (byte)'<' => ReadLegacy(document.Span),
+            _ => throw new MacroConfigurationException(
+                "Macro configurations must be .sh4x JSON or legacy .sh4 XML.")
+        };
+    }
+
+    private static MacroConfigurationLoadResult LoadDocument(
+        string document)
+    {
+        var first = document.FirstOrDefault(
+            character => !char.IsWhiteSpace(character) &&
+                         character != '\uFEFF');
+        return first switch
+        {
+            '{' => ReadCurrent(
+                document.Length > 0 &&
+                document[0] == '\uFEFF'
+                    ? document[1..]
+                    : document),
+            '<' => ReadLegacy(document),
+            _ => throw new MacroConfigurationException(
+                "Macro configurations must be .sh4x JSON or legacy .sh4 XML.")
+        };
+    }
+
+    private static MacroConfigurationLoadResult ReadCurrent(
+        ReadOnlySpan<byte> document)
     {
         try
         {
-            var document = XDocument.Load(reader, LoadOptions.SetLineInfo);
-            var root = document.Root ??
-                throw new MacroConfigurationException(
-                    "The macro configuration document has no root element.");
-
-            return root.Name.LocalName switch
-            {
-                "MacroConfiguration" => ReadCurrent(root),
-                "MacroState" => LegacyMacroConfigurationReader.Read(root),
-                _ => throw XmlError(
-                    root,
-                    $"Unsupported macro configuration root '{root.Name.LocalName}'.")
-            };
+            var serialized = JsonSerializer.Deserialize<CurrentDocument>(
+                document,
+                JsonOptions);
+            return CreateLoadResult(serialized);
         }
         catch (MacroConfigurationException)
         {
             throw;
         }
-        catch (Exception exception) when (
-            exception is XmlException or
-                FormatException or
-                OverflowException or
-                ArgumentException)
+        catch (Exception exception)
+            when (exception is JsonException or
+                  ArgumentException or
+                  OverflowException)
         {
             throw new MacroConfigurationException(
-                $"The macro configuration is invalid: {exception.Message}",
+                $"Unable to parse the .sh4x macro configuration: {exception.Message}",
                 exception);
         }
     }
 
-    private static MacroConfigurationLoadResult ReadCurrent(XElement root)
+    private static MacroConfigurationLoadResult ReadCurrent(
+        string document)
     {
-        var version = RequiredAttribute(root, "Version");
-        if (!string.Equals(version, CurrentVersion, StringComparison.Ordinal))
+        try
         {
-            throw XmlError(
-                root,
-                $"Unsupported macro configuration version '{version}'.");
+            var serialized = JsonSerializer.Deserialize<CurrentDocument>(
+                document,
+                JsonOptions);
+            return CreateLoadResult(serialized);
+        }
+        catch (MacroConfigurationException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+            when (exception is JsonException or
+                  ArgumentException or
+                  OverflowException)
+        {
+            throw new MacroConfigurationException(
+                $"Unable to parse the .sh4x macro configuration: {exception.Message}",
+                exception);
+        }
+    }
+
+    private static MacroConfigurationLoadResult CreateLoadResult(
+        CurrentDocument? serialized)
+    {
+        if (serialized is null)
+        {
+            throw new MacroConfigurationException(
+                "The .sh4x macro configuration is empty.");
         }
 
-        var metadata = root.Element("Metadata");
-        var hotkey = ReadHotkey(metadata?.Element("Hotkey"));
-        var skills = ReadSkills(root.Element("Skills"));
-        var spellsElement = root.Element("Spells");
-        var rotation = OptionalEnum<SpellQueueRotation>(
-            spellsElement,
-            "Rotation");
-        var spells = ReadSpells(spellsElement);
-        var flowerElement = root.Element("Flowering");
-        var flowerOptions = ReadFlowerOptions(flowerElement);
-        var flowers = ReadFlowers(flowerElement);
+        if (!string.Equals(
+                serialized.Format,
+                CurrentFormat,
+                StringComparison.Ordinal))
+        {
+            throw new MacroConfigurationException(
+                $"Unsupported macro configuration format '{serialized.Format}'.");
+        }
+
+        if (!string.Equals(
+                serialized.Version,
+                CurrentVersion,
+                StringComparison.Ordinal))
+        {
+            throw new MacroConfigurationException(
+                $"Unsupported macro configuration version '{serialized.Version}'.");
+        }
+
+        if (serialized.Metadata is null ||
+            serialized.Skills is null ||
+            serialized.Spells is null ||
+            serialized.Flowering is null ||
+            serialized.Flowering.Queue is null)
+        {
+            throw new MacroConfigurationException(
+                "The .sh4x macro configuration is missing required sections.");
+        }
+
+        if (serialized.Skills.Any(entry => entry is null) ||
+            serialized.Spells.Any(entry => entry is null) ||
+            serialized.Flowering.Queue.Any(entry => entry is null))
+        {
+            throw new MacroConfigurationException(
+                "Macro configuration queues cannot contain null entries.");
+        }
+
         var configuration = new MacroConfiguration(
-            metadata?.Element("Name")?.Value,
-            metadata?.Element("Description")?.Value,
-            hotkey,
-            rotation,
-            skills,
-            spells,
-            flowers,
-            flowerOptions);
+            serialized.Metadata.Name,
+            serialized.Metadata.Description,
+            serialized.Metadata.Hotkey is { } hotkey
+                ? new HotkeyConfiguration(
+                    hotkey.Key,
+                    hotkey.Modifiers)
+                : null,
+            serialized.SpellRotation,
+            serialized.Skills
+                .Select(
+                    entry => new SkillQueueEntry(
+                        new SkillQueueEntryId(entry.Id),
+                        entry.Name))
+                .ToImmutableArray(),
+            serialized.Spells
+                .Select(CreateSpell)
+                .ToImmutableArray(),
+            serialized.Flowering.Queue
+                .Select(CreateFlower)
+                .ToImmutableArray(),
+            new FlowerOptions(
+                serialized.Flowering.UseVineyard,
+                serialized.Flowering.FlowerAlternateCharacters,
+                serialized.Flowering.PrioritizeAlternateCharacters,
+                serialized.Flowering.MaximumXDistance,
+                serialized.Flowering.MaximumYDistance));
         return new MacroConfigurationLoadResult(
             configuration,
             MacroConfigurationFormat.Current,
@@ -205,206 +319,329 @@ public static class MacroConfigurationSerializer
             ImmutableArray<MacroConfigurationWarning>.Empty);
     }
 
-    private static ImmutableArray<SkillQueueEntry> ReadSkills(
-        XElement? element) =>
-        element?.Elements("Skill")
-            .Select(skill => new SkillQueueEntry(
-                new SkillQueueEntryId(RequiredLong(skill, "Id")),
-                RequiredAttribute(skill, "Name")))
-            .ToImmutableArray() ??
-        ImmutableArray<SkillQueueEntry>.Empty;
-
-    private static ImmutableArray<SpellQueueEntry> ReadSpells(
-        XElement? element) =>
-        element?.Elements("Spell")
-            .Select(spell => new SpellQueueEntry(
-                new SpellQueueEntryId(RequiredLong(spell, "Id")),
-                RequiredAttribute(spell, "Name"),
-                OptionalInt(spell, "TargetLevel"),
-                ReadTarget(RequiredElement(spell, "Target")),
-                new HealthCondition(
-                    OptionalDouble(spell, "MinimumHealthExclusive"),
-                    OptionalDouble(spell, "MaximumHealthInclusive"))))
-            .ToImmutableArray() ??
-        ImmutableArray<SpellQueueEntry>.Empty;
-
-    private static ImmutableArray<FlowerQueueEntry> ReadFlowers(
-        XElement? element) =>
-        element?.Elements("Flower")
-            .Select(flower => new FlowerQueueEntry(
-                new FlowerQueueEntryId(RequiredLong(flower, "Id")),
-                ReadTarget(RequiredElement(flower, "Target")),
-                OptionalLong(flower, "IntervalTicks") is { } ticks
-                    ? TimeSpan.FromTicks(ticks)
-                    : null,
-                OptionalInt(flower, "ManaThreshold")))
-            .ToImmutableArray() ??
-        ImmutableArray<FlowerQueueEntry>.Empty;
-
-    private static FlowerOptions ReadFlowerOptions(XElement? element) =>
-        element is null
-            ? FlowerOptions.Default
-            : new FlowerOptions(
-                OptionalBool(element, "UseVineyard") ?? false,
-                OptionalBool(element, "FlowerAlternateCharacters") ?? false,
-                OptionalBool(element, "PrioritizeAlternateCharacters") ?? true,
-                OptionalInt(element, "MaximumXDistance") ?? 10,
-                OptionalInt(element, "MaximumYDistance") ?? 10);
-
-    private static HotkeyConfiguration? ReadHotkey(XElement? element) =>
-        element is null
-            ? null
-            : new HotkeyConfiguration(
-                RequiredAttribute(element, "Key"),
-                ReadHotkeyModifiers(element));
-
-    private static XDocument CreateDocument(
-        MacroConfiguration configuration) =>
+    private static SpellQueueEntry CreateSpell(
+        SpellDocument entry) =>
         new(
-            new XElement(
-                "MacroConfiguration",
-                new XAttribute("Version", CurrentVersion),
-                CreateMetadata(configuration),
-                new XElement(
-                    "Skills",
-                    configuration.Skills.Select(entry =>
-                        new XElement(
-                            "Skill",
-                            new XAttribute("Id", entry.Id.Value),
-                            new XAttribute("Name", entry.Name)))),
-                new XElement(
-                    "Spells",
-                    Attribute("Rotation", configuration.SpellRotation),
-                    configuration.Spells.Select(CreateSpell)),
-                CreateFlowering(configuration)));
+            new SpellQueueEntryId(entry.Id),
+            entry.Name,
+            entry.TargetLevel,
+            CreateTarget(entry.Target),
+            new HealthCondition(
+                entry.MinimumHealthExclusive,
+                entry.MaximumHealthInclusive));
 
-    private static XElement CreateMetadata(MacroConfiguration configuration) =>
+    private static FlowerQueueEntry CreateFlower(
+        FlowerDocument entry) =>
         new(
-            "Metadata",
-            Element("Name", configuration.Name),
-            Element("Description", configuration.Description),
-            configuration.Hotkey is { } hotkey
-                ? new XElement(
-                    "Hotkey",
-                    new XAttribute("Key", hotkey.Key),
-                    new XAttribute("Modifiers", hotkey.Modifiers))
-                : null);
+            new FlowerQueueEntryId(entry.Id),
+            CreateTarget(entry.Target),
+            entry.IntervalTicks is { } ticks
+                ? TimeSpan.FromTicks(ticks)
+                : null,
+            entry.ManaThreshold);
 
-    private static XElement CreateSpell(SpellQueueEntry entry) =>
-        new(
-            "Spell",
-            new XAttribute("Id", entry.Id.Value),
-            new XAttribute("Name", entry.Name),
-            Attribute("TargetLevel", entry.TargetLevel),
-            Attribute(
-                "MinimumHealthExclusive",
-                entry.HealthCondition.MinimumPercentExclusive),
-            Attribute(
-                "MaximumHealthInclusive",
-                entry.HealthCondition.MaximumPercentInclusive),
-            CreateTarget(entry.Target));
-
-    private static XElement CreateFlowering(
-        MacroConfiguration configuration) =>
-        new(
-            "Flowering",
-            new XAttribute(
-                "UseVineyard",
-                configuration.FlowerOptions.UseVineyard),
-            new XAttribute(
-                "FlowerAlternateCharacters",
-                configuration.FlowerOptions.FlowerAlternateCharacters),
-            new XAttribute(
-                "PrioritizeAlternateCharacters",
-                configuration.FlowerOptions.PrioritizeAlternateCharacters),
-            new XAttribute(
-                "MaximumXDistance",
-                configuration.FlowerOptions.MaximumXDistance),
-            new XAttribute(
-                "MaximumYDistance",
-                configuration.FlowerOptions.MaximumYDistance),
-            configuration.Flowers.Select(entry =>
-                new XElement(
-                    "Flower",
-                    new XAttribute("Id", entry.Id.Value),
-                    Attribute("IntervalTicks", entry.Interval?.Ticks),
-                    Attribute("ManaThreshold", entry.ManaThreshold),
-                    CreateTarget(entry.Target))));
-
-    internal static XElement CreateTarget(SpellTarget target) =>
-        new(
-            "Target",
-            new XAttribute("Kind", target.Kind),
-            Attribute("Character", target.CharacterName),
-            Attribute("X", target.X),
-            Attribute("Y", target.Y),
-            Attribute(
-                "OffsetX",
-                target.Offset.X == 0 ? null : (int?)target.Offset.X),
-            Attribute(
-                "OffsetY",
-                target.Offset.Y == 0 ? null : (int?)target.Offset.Y),
-            Attribute("InnerRadius", target.InnerRadius),
-            Attribute("OuterRadius", target.OuterRadius));
-
-    internal static SpellTarget ReadTarget(XElement element)
+    private static SpellTarget CreateTarget(TargetDocument? target)
     {
-        var kind = RequiredEnum<SpellTargetKind>(element, "Kind");
-        var x = OptionalInt(element, "X");
-        var y = OptionalInt(element, "Y");
+        if (target is null)
+        {
+            throw new MacroConfigurationException(
+                "A macro queue entry is missing its target.");
+        }
+
         var offset = new TargetOffset(
-            OptionalInt(element, "OffsetX") ?? 0,
-            OptionalInt(element, "OffsetY") ?? 0);
-        var target = kind switch
+            target.OffsetX,
+            target.OffsetY);
+        return target.Kind switch
         {
             SpellTargetKind.None => SpellTarget.None,
-            SpellTargetKind.Self => SpellTarget.Self,
+            SpellTargetKind.Self => ApplyOffset(
+                SpellTarget.Self,
+                offset),
             SpellTargetKind.Character => SpellTarget.Character(
-                RequiredAttribute(element, "Character")),
+                target.CharacterName ??
+                throw new MacroConfigurationException(
+                    "A character target is missing its character name."),
+                offset),
             SpellTargetKind.RelativeTile => SpellTarget.RelativeTile(
-                RequiredCoordinate(element, "X", x),
-                RequiredCoordinate(element, "Y", y),
+                Required(target.X, "X"),
+                Required(target.Y, "Y"),
                 offset),
             SpellTargetKind.AbsoluteTile => SpellTarget.AbsoluteTile(
-                RequiredCoordinate(element, "X", x),
-                RequiredCoordinate(element, "Y", y),
+                Required(target.X, "X"),
+                Required(target.Y, "Y"),
                 offset),
             SpellTargetKind.ScreenPoint => SpellTarget.ScreenPoint(
-                RequiredCoordinate(element, "X", x),
-                RequiredCoordinate(element, "Y", y),
+                Required(target.X, "X"),
+                Required(target.Y, "Y"),
                 offset),
             SpellTargetKind.RelativeArea => SpellTarget.RelativeArea(
-                RequiredCoordinate(element, "X", x),
-                RequiredCoordinate(element, "Y", y),
-                RequiredInt(element, "InnerRadius"),
-                RequiredInt(element, "OuterRadius"),
+                Required(target.X, "X"),
+                Required(target.Y, "Y"),
+                Required(target.InnerRadius, "innerRadius"),
+                Required(target.OuterRadius, "outerRadius"),
                 offset),
             SpellTargetKind.AbsoluteArea => SpellTarget.AbsoluteArea(
-                RequiredCoordinate(element, "X", x),
-                RequiredCoordinate(element, "Y", y),
-                RequiredInt(element, "InnerRadius"),
-                RequiredInt(element, "OuterRadius"),
+                Required(target.X, "X"),
+                Required(target.Y, "Y"),
+                Required(target.InnerRadius, "innerRadius"),
+                Required(target.OuterRadius, "outerRadius"),
                 offset),
-            _ => throw XmlError(
-                element,
-                $"Unsupported target kind '{kind}'.")
+            _ => throw new MacroConfigurationException(
+                $"Unsupported spell target kind '{target.Kind}'.")
+        };
+    }
+
+    private static SpellTarget ApplyOffset(
+        SpellTarget target,
+        TargetOffset offset) =>
+        offset == TargetOffset.Zero
+            ? target
+            : target.WithOffset(offset.X, offset.Y);
+
+    private static int Required(int? value, string name) =>
+        value ??
+        throw new MacroConfigurationException(
+            $"A macro target is missing required '{name}' data.");
+
+    private static MacroConfigurationLoadResult ReadLegacy(
+        ReadOnlySpan<byte> document)
+    {
+        using var stream = new MemoryStream(document.ToArray());
+        return ReadLegacy(stream);
+    }
+
+    private static MacroConfigurationLoadResult ReadLegacy(
+        string document)
+    {
+        using var reader = new StringReader(document);
+        var settings = CreateLegacyReaderSettings(closeInput: false);
+        using var xmlReader = XmlReader.Create(reader, settings);
+        return ReadLegacy(xmlReader);
+    }
+
+    private static MacroConfigurationLoadResult ReadLegacy(Stream stream)
+    {
+        var settings = CreateLegacyReaderSettings(closeInput: false);
+        using var reader = XmlReader.Create(stream, settings);
+        return ReadLegacy(reader);
+    }
+
+    private static MacroConfigurationLoadResult ReadLegacy(
+        XmlReader reader)
+    {
+        try
+        {
+            var document = XDocument.Load(
+                reader,
+                LoadOptions.SetLineInfo);
+            var root = document.Root ??
+                throw new MacroConfigurationException(
+                    "The legacy macro configuration has no root element.");
+            if (!string.Equals(
+                    root.Name.LocalName,
+                    "MacroState",
+                    StringComparison.Ordinal))
+            {
+                throw new MacroConfigurationException(
+                    $"Unsupported legacy macro root '{root.Name.LocalName}'.");
+            }
+
+            return LegacyMacroConfigurationReader.Read(root);
+        }
+        catch (MacroConfigurationException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+            when (exception is XmlException or
+                  ArgumentException or
+                  OverflowException)
+        {
+            throw new MacroConfigurationException(
+                $"Unable to parse the legacy .sh4 macro configuration: {exception.Message}",
+                exception);
+        }
+    }
+
+    private static CurrentDocument CreateDocument(
+        MacroConfiguration configuration) =>
+        new()
+        {
+            Format = CurrentFormat,
+            Version = CurrentVersion,
+            Metadata = new MetadataDocument
+            {
+                Name = configuration.Name,
+                Description = configuration.Description,
+                Hotkey = configuration.Hotkey is { } hotkey
+                    ? new HotkeyDocument
+                    {
+                        Key = hotkey.Key,
+                        Modifiers = hotkey.Modifiers
+                    }
+                    : null
+            },
+            SpellRotation = configuration.SpellRotation,
+            Skills = configuration.Skills
+                .Select(
+                    entry => new SkillDocument
+                    {
+                        Id = entry.Id.Value,
+                        Name = entry.Name
+                    })
+                .ToArray(),
+            Spells = configuration.Spells
+                .Select(
+                    entry => new SpellDocument
+                    {
+                        Id = entry.Id.Value,
+                        Name = entry.Name,
+                        TargetLevel = entry.TargetLevel,
+                        MinimumHealthExclusive =
+                            entry.HealthCondition
+                                .MinimumPercentExclusive,
+                        MaximumHealthInclusive =
+                            entry.HealthCondition
+                                .MaximumPercentInclusive,
+                        Target = CreateTarget(entry.Target)
+                    })
+                .ToArray(),
+            Flowering = new FloweringDocument
+            {
+                UseVineyard =
+                    configuration.FlowerOptions.UseVineyard,
+                FlowerAlternateCharacters =
+                    configuration.FlowerOptions
+                        .FlowerAlternateCharacters,
+                PrioritizeAlternateCharacters =
+                    configuration.FlowerOptions
+                        .PrioritizeAlternateCharacters,
+                MaximumXDistance =
+                    configuration.FlowerOptions.MaximumXDistance,
+                MaximumYDistance =
+                    configuration.FlowerOptions.MaximumYDistance,
+                Queue = configuration.Flowers
+                    .Select(
+                        entry => new FlowerDocument
+                        {
+                            Id = entry.Id.Value,
+                            IntervalTicks =
+                                entry.Interval?.Ticks,
+                            ManaThreshold =
+                                entry.ManaThreshold,
+                            Target =
+                                CreateTarget(entry.Target)
+                        })
+                    .ToArray()
+            }
         };
 
-        if (offset != TargetOffset.Zero &&
-            kind is SpellTargetKind.Self or SpellTargetKind.Character)
+    private static byte[] Serialize(
+        MacroConfiguration configuration)
+    {
+        var document = JsonSerializer.SerializeToUtf8Bytes(
+            CreateDocument(configuration),
+            JsonOptions);
+        if (document.Length > MaximumDocumentBytes)
         {
-            target = target.WithOffset(offset.X, offset.Y);
-        }
-        else if (offset != TargetOffset.Zero &&
-                 kind == SpellTargetKind.None)
-        {
-            throw XmlError(
-                element,
-                $"Target kind '{kind}' does not support pixel offsets.");
+            throw new MacroConfigurationException(
+                $"Macro configurations cannot exceed {MaximumDocumentBytes} bytes.");
         }
 
-        return target;
+        return document;
     }
+
+    private static TargetDocument CreateTarget(
+        SpellTarget target) =>
+        new()
+        {
+            Kind = target.Kind,
+            CharacterName = target.CharacterName,
+            X = target.X,
+            Y = target.Y,
+            OffsetX = target.Offset.X,
+            OffsetY = target.Offset.Y,
+            InnerRadius = target.InnerRadius,
+            OuterRadius = target.OuterRadius
+        };
+
+    private static ReadOnlyMemory<byte> ReadBounded(Stream stream)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        while (true)
+        {
+            var count = stream.Read(chunk, 0, chunk.Length);
+            if (count == 0)
+                break;
+
+            if (buffer.Length + count > MaximumDocumentBytes)
+            {
+                throw new MacroConfigurationException(
+                    $"Macro configurations cannot exceed {MaximumDocumentBytes} bytes.");
+            }
+
+            buffer.Write(chunk, 0, count);
+        }
+
+        return buffer.ToArray();
+    }
+
+    private static string ReadBounded(TextReader reader)
+    {
+        var builder = new StringBuilder();
+        var chunk = new char[8192];
+        while (true)
+        {
+            var count = reader.Read(chunk, 0, chunk.Length);
+            if (count == 0)
+                break;
+
+            if (builder.Length + count > MaximumDocumentCharacters)
+            {
+                throw new MacroConfigurationException(
+                    $"Macro configurations cannot exceed {MaximumDocumentCharacters} characters.");
+            }
+
+            builder.Append(chunk, 0, count);
+        }
+
+        return builder.ToString();
+    }
+
+    private static byte FindFirstContentByte(
+        ReadOnlySpan<byte> document)
+    {
+        var index = document.Length >= 3 &&
+                    document[0] == 0xEF &&
+                    document[1] == 0xBB &&
+                    document[2] == 0xBF
+            ? 3
+            : 0;
+        for (; index < document.Length; index++)
+        {
+            var value = document[index];
+            if (value is not (
+                (byte)' ' or
+                (byte)'\t' or
+                (byte)'\r' or
+                (byte)'\n'))
+            {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    private static ReadOnlySpan<byte> RemoveUtf8Bom(
+        ReadOnlySpan<byte> document) =>
+        document.Length >= 3 &&
+        document[0] == 0xEF &&
+        document[1] == 0xBB &&
+        document[2] == 0xBF
+            ? document[3..]
+            : document;
 
     internal static MacroConfigurationException XmlError(
         XObject node,
@@ -417,12 +654,6 @@ public static class MacroConfigurationSerializer
         return new MacroConfigurationException($"{message}{location}");
     }
 
-    internal static XElement RequiredElement(
-        XElement parent,
-        string name) =>
-        parent.Element(name) ??
-        throw XmlError(parent, $"Required element '{name}' is missing.");
-
     internal static string RequiredAttribute(
         XElement element,
         string name) =>
@@ -432,125 +663,12 @@ public static class MacroConfigurationSerializer
                 element,
                 $"Required attribute '{name}' is missing.");
 
-    internal static int RequiredInt(XElement element, string name) =>
-        OptionalInt(element, name) ??
-        throw XmlError(
-            element,
-            $"Required integer attribute '{name}' is missing.");
-
-    internal static long RequiredLong(XElement element, string name) =>
-        OptionalLong(element, name) ??
-        throw XmlError(
-            element,
-            $"Required integer attribute '{name}' is missing.");
-
-    internal static int? OptionalInt(XElement? element, string name)
-    {
-        var value = element?.Attribute(name)?.Value;
-        if (value is null)
-        {
-            return null;
-        }
-
-        return int.TryParse(
-            value,
-            NumberStyles.Integer,
-            CultureInfo.InvariantCulture,
-            out var parsed)
-            ? parsed
-            : throw XmlError(
-                element!,
-                $"Attribute '{name}' must be a 32-bit integer.");
-    }
-
-    internal static long? OptionalLong(XElement? element, string name)
-    {
-        var value = element?.Attribute(name)?.Value;
-        if (value is null)
-        {
-            return null;
-        }
-
-        return long.TryParse(
-            value,
-            NumberStyles.Integer,
-            CultureInfo.InvariantCulture,
-            out var parsed)
-            ? parsed
-            : throw XmlError(
-                element!,
-                $"Attribute '{name}' must be a 64-bit integer.");
-    }
-
-    internal static double? OptionalDouble(XElement? element, string name)
-    {
-        var value = element?.Attribute(name)?.Value;
-        if (value is null)
-        {
-            return null;
-        }
-
-        return double.TryParse(
-            value,
-            NumberStyles.Float,
-            CultureInfo.InvariantCulture,
-            out var parsed) &&
-            double.IsFinite(parsed)
-            ? parsed
-            : throw XmlError(
-                element!,
-                $"Attribute '{name}' must be a finite number.");
-    }
-
-    internal static bool? OptionalBool(XElement? element, string name)
-    {
-        var value = element?.Attribute(name)?.Value;
-        if (value is null)
-        {
-            return null;
-        }
-
-        return bool.TryParse(value, out var parsed)
-            ? parsed
-            : throw XmlError(
-                element!,
-                $"Attribute '{name}' must be true or false.");
-    }
-
-    internal static T RequiredEnum<T>(XElement element, string name)
-        where T : struct, Enum =>
-        OptionalEnum<T>(element, name) ??
-        throw XmlError(
-            element,
-            $"Required enum attribute '{name}' is missing.");
-
-    internal static T? OptionalEnum<T>(XElement? element, string name)
-        where T : struct, Enum
-    {
-        var value = element?.Attribute(name)?.Value;
-        if (value is null)
-        {
-            return null;
-        }
-
-        return Enum.TryParse<T>(
-            value,
-            ignoreCase: true,
-            out var parsed) &&
-            Enum.IsDefined(parsed)
-            ? parsed
-            : throw XmlError(
-                element!,
-                $"Attribute '{name}' has unsupported value '{value}'.");
-    }
-
-    internal static HotkeyModifiers ReadHotkeyModifiers(XElement element)
+    internal static HotkeyModifiers ReadHotkeyModifiers(
+        XElement element)
     {
         var value = element.Attribute("Modifiers")?.Value;
         if (value is null)
-        {
             return HotkeyModifiers.None;
-        }
 
         const HotkeyModifiers supported =
             HotkeyModifiers.Alt |
@@ -568,36 +686,8 @@ public static class MacroConfigurationSerializer
                 $"Attribute 'Modifiers' has unsupported value '{value}'.");
     }
 
-    private static int RequiredCoordinate(
-        XElement element,
-        string name,
-        int? value) =>
-        value ??
-        throw XmlError(
-            element,
-            $"Target coordinate '{name}' is missing.");
-
-    private static XElement? Element(string name, string? value) =>
-        value is null
-            ? null
-            : new XElement(name, value);
-
-    private static XAttribute? Attribute<T>(string name, T? value)
-        where T : struct =>
-        value is null
-            ? null
-            : new XAttribute(
-                name,
-                Convert.ToString(
-                    value.Value,
-                    CultureInfo.InvariantCulture)!);
-
-    private static XAttribute? Attribute(string name, string? value) =>
-        value is null
-            ? null
-            : new XAttribute(name, value);
-
-    private static XmlReaderSettings CreateReaderSettings(bool closeInput) =>
+    private static XmlReaderSettings CreateLegacyReaderSettings(
+        bool closeInput) =>
         new()
         {
             CloseInput = closeInput,
@@ -607,4 +697,104 @@ public static class MacroConfigurationSerializer
             MaxCharactersInDocument = MaximumDocumentCharacters,
             XmlResolver = null
         };
+
+    private sealed class CurrentDocument
+    {
+        public string? Format { get; set; }
+
+        public string? Version { get; set; }
+
+        public MetadataDocument? Metadata { get; set; }
+
+        public SpellQueueRotation? SpellRotation { get; set; }
+
+        public SkillDocument[]? Skills { get; set; }
+
+        public SpellDocument[]? Spells { get; set; }
+
+        public FloweringDocument? Flowering { get; set; }
+    }
+
+    private sealed class MetadataDocument
+    {
+        public string? Name { get; set; }
+
+        public string? Description { get; set; }
+
+        public HotkeyDocument? Hotkey { get; set; }
+    }
+
+    private sealed class HotkeyDocument
+    {
+        public string Key { get; set; } = string.Empty;
+
+        public HotkeyModifiers Modifiers { get; set; }
+    }
+
+    private sealed class SkillDocument
+    {
+        public long Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private sealed class SpellDocument
+    {
+        public long Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public int? TargetLevel { get; set; }
+
+        public double? MinimumHealthExclusive { get; set; }
+
+        public double? MaximumHealthInclusive { get; set; }
+
+        public TargetDocument? Target { get; set; }
+    }
+
+    private sealed class FloweringDocument
+    {
+        public bool UseVineyard { get; set; }
+
+        public bool FlowerAlternateCharacters { get; set; }
+
+        public bool PrioritizeAlternateCharacters { get; set; } = true;
+
+        public int MaximumXDistance { get; set; } = 10;
+
+        public int MaximumYDistance { get; set; } = 10;
+
+        public FlowerDocument[]? Queue { get; set; }
+    }
+
+    private sealed class FlowerDocument
+    {
+        public long Id { get; set; }
+
+        public long? IntervalTicks { get; set; }
+
+        public int? ManaThreshold { get; set; }
+
+        public TargetDocument? Target { get; set; }
+    }
+
+    private sealed class TargetDocument
+    {
+        public SpellTargetKind Kind { get; set; }
+
+        public string? CharacterName { get; set; }
+
+        public int? X { get; set; }
+
+        public int? Y { get; set; }
+
+        public int OffsetX { get; set; }
+
+        public int OffsetY { get; set; }
+
+        public int? InnerRadius { get; set; }
+
+        public int? OuterRadius { get; set; }
+    }
 }

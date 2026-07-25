@@ -22,13 +22,15 @@ By default, game clients that are not actively "logged in" will **not** be displ
 
 ## Load State
 
-This button will open a dialog to manually open the current character's state from a file.
+This button will open a dialog to load the current character's macro configuration.
+Current `.sh4x` JSON files and legacy `.sh4` XML files can be loaded.
 
-**NOTE:** Any skills/spells that are not available on the character will be ignored and not added to the queue.
+**NOTE:** Skills and spells that are not currently available on the character are preserved in the configuration instead of being discarded.
 
 ## Save State
 
-This button will open a dialog to manually save the current character's state to a file.
+This button will save the current character's macro configuration as a versioned `.sh4x` JSON file.
+Legacy `.sh4` XML is import-only and is never written by the new save path.
 
 ## Start Macro
 

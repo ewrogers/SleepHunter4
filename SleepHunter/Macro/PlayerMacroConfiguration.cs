@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation.Skills;
 
 namespace SleepHunter.Macro
 {
@@ -10,12 +12,16 @@ namespace SleepHunter.Macro
         ObservableObject
     {
         private readonly List<FlowerQueueItem> flowers = new();
+        private readonly List<SkillQueueEntry> skills = new();
         private readonly List<SpellQueueItem> spells = new();
 
         public PlayerMacroConfiguration(Player client)
         {
             Client = client ??
                 throw new ArgumentNullException(nameof(client));
+            PrioritizeAlternateCharacters = true;
+            MaximumFlowerXDistance = 10;
+            MaximumFlowerYDistance = 10;
         }
 
         public event SpellQueueItemEventHandler SpellAdded;
@@ -34,7 +40,12 @@ namespace SleepHunter.Macro
 
         public IReadOnlyList<FlowerQueueItem> FlowerTargets => flowers;
 
+        public IReadOnlyList<SkillQueueEntry> Skills => skills;
+
         public int FlowerQueueCount => flowers.Count;
+
+        [ObservableProperty]
+        public partial string Description { get; set; }
 
         [ObservableProperty]
         public partial SpellRotationMode SpellQueueRotation { get; set; }
@@ -44,6 +55,18 @@ namespace SleepHunter.Macro
 
         [ObservableProperty]
         public partial bool FlowerAlternateCharacters { get; set; }
+
+        [ObservableProperty]
+        public partial bool PrioritizeAlternateCharacters { get; set; }
+
+        [ObservableProperty]
+        public partial int MaximumFlowerXDistance { get; set; }
+
+        [ObservableProperty]
+        public partial int MaximumFlowerYDistance { get; set; }
+
+        public List<SkillQueueEntry> GetSkillQueueSnapshot() =>
+            [.. skills];
 
         public List<SpellQueueItem> GetSpellQueueSnapshot() =>
             [.. spells];
@@ -59,6 +82,7 @@ namespace SleepHunter.Macro
 
             spell.IsUndefined =
                 !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
+            EnsureSpellIdentifier(spell);
             if (index < 0)
                 spells.Add(spell);
             else
@@ -75,6 +99,7 @@ namespace SleepHunter.Macro
         {
             ArgumentNullException.ThrowIfNull(flower);
 
+            EnsureFlowerIdentifier(flower);
             if (index < 0)
                 flowers.Add(flower);
             else
@@ -94,6 +119,69 @@ namespace SleepHunter.Macro
                     spell.Name,
                     spellName.Trim(),
                     StringComparison.OrdinalIgnoreCase));
+        }
+
+        public void ReplaceSkills(
+            IEnumerable<SkillQueueEntry> entries)
+        {
+            ArgumentNullException.ThrowIfNull(entries);
+
+            var replacement = entries.ToList();
+            if (replacement.Any(entry => entry is null))
+            {
+                throw new ArgumentException(
+                    "Skill entries cannot contain null values.",
+                    nameof(entries));
+            }
+
+            skills.Clear();
+            skills.AddRange(replacement);
+            Client.Skillbook.ClearActiveSkills();
+            foreach (var entry in skills)
+            {
+                Client.Skillbook.ToggleActive(
+                    entry.Name,
+                    isActive: true);
+            }
+        }
+
+        public bool ToggleSkill(string skillName)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(skillName);
+
+            var normalized = skillName.Trim();
+            var index = skills.FindIndex(
+                entry => string.Equals(
+                    entry.Name,
+                    normalized,
+                    StringComparison.OrdinalIgnoreCase));
+            var isActive = index < 0;
+            if (isActive)
+            {
+                var identifier = skills.Count == 0
+                    ? 1
+                    : skills.Max(entry => entry.Id.Value) + 1;
+                skills.Add(
+                    new SkillQueueEntry(
+                        new SkillQueueEntryId(identifier),
+                        normalized));
+            }
+            else
+            {
+                skills.RemoveAt(index);
+            }
+
+            Client.Skillbook.ToggleActive(
+                normalized,
+                isActive);
+
+            return isActive;
+        }
+
+        public void ClearSkills()
+        {
+            skills.Clear();
+            Client.Skillbook.ClearActiveSkills();
         }
 
         public bool RemoveFromSpellQueue(SpellQueueItem spell)
@@ -164,6 +252,38 @@ namespace SleepHunter.Macro
                     this,
                     new FlowerQueueItemEventArgs(flower));
             }
+        }
+
+        private void EnsureSpellIdentifier(SpellQueueItem spell)
+        {
+            if (spell.Id > 0 &&
+                !spells.Any(
+                    existing =>
+                        !ReferenceEquals(existing, spell) &&
+                        existing.Id == spell.Id))
+            {
+                return;
+            }
+
+            spell.Id = spells.Count == 0
+                ? 1
+                : spells.Max(existing => existing.Id) + 1;
+        }
+
+        private void EnsureFlowerIdentifier(FlowerQueueItem flower)
+        {
+            if (flower.Id > 0 &&
+                !flowers.Any(
+                    existing =>
+                        !ReferenceEquals(existing, flower) &&
+                        existing.Id == flower.Id))
+            {
+                return;
+            }
+
+            flower.Id = flowers.Count == 0
+                ? 1
+                : flowers.Max(existing => existing.Id) + 1;
         }
     }
 }

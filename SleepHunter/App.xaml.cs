@@ -6,7 +6,6 @@ using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Services.Runtime;
-using SleepHunter.Services.Serialization;
 using SleepHunter.Views;
 
 namespace SleepHunter
@@ -67,16 +66,14 @@ namespace SleepHunter
                 IMacroConfigurationReader,
                 FileMacroConfigurationReader>();
             services.AddSingleton<
+                IPlayerMacroConfigurationMapper,
+                PlayerMacroConfigurationMapper>();
+            services.AddSingleton<
                 IRuntimeStaffCandidateProvider,
                 RuntimeStaffCandidateProvider>();
             services.AddSingleton<
                 IRuntimeAutomationSetupFactory,
                 RuntimeAutomationSetupFactory>();
-
-            services.AddTransient<ILegacyMacroConfigurationSerializer, LegacyMacroConfigurationSerializer>();
-            services.AddTransient<
-                IRuntimeMacroConfigurationAdapter,
-                RuntimeMacroConfigurationAdapter>();
 
             // ViewModels
 

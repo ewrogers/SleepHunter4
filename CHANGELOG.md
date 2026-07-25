@@ -38,12 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Routed toolbar, hotkey, and stop-all lifecycle controls through Community Toolkit commands backed by the deterministic runtime
 - Adapted the current macro editor configuration through the tested legacy migration path before each start or resume, and disabled macro editing only while a configured runtime is running
 - Replaced the legacy executable macro state with a DI-owned Community Toolkit observable editor configuration, and projected queued spell levels and readiness from immutable runtime snapshots
+- Changed current macro saves and autosaves to bounded, versioned `.sh4x` JSON while retaining XML `.sh4` files as import-only legacy configurations
 
 ### Removed
 
 - Removed the Zolian-only Water & Beds automation, its feature tab, client feature flag, and private macro-state storage
 - Removed legacy Zolian and XML `Auto-Detect` mapping profiles so `Versions.xml` contains exactly one configurable client layout
 - Removed the legacy macro executor, lock-based queue processing, deferred dispatcher, execution flags on players, and the 16 ms flower update worker
+- Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
 
 ### Fixed
 

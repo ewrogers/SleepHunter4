@@ -81,9 +81,10 @@ This allows it special functionality when supporting other characters and priori
 SleepHunter allows user-defined hotkeys to start, pause, and resume automation for each character.
 This can be used to pause automation when you need to do something manually, or to resume automation when you are done.
 
-### Auto-Save Macro State
+### Auto-Save Macro Configuration
 
-SleepHunter automatically saves the state of each character's last macro when the application is closed.
+SleepHunter automatically saves each character's last macro configuration as a versioned `.sh4x` JSON file when the application is closed.
+Existing `.sh4` XML files can still be imported and are migrated to `.sh4x` when used as an autosave.
 This allows you to easily resume automation where you left off, even after you close the application.
 
 ### Color Themes

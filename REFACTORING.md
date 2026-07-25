@@ -1222,8 +1222,12 @@ As of July 24, 2026:
 - Remove the legacy `MacroState` executor, its lock-protected queues, deferred
   dispatcher, execution status flags, and 16 ms flower worker once the
   deterministic runtime owns every lifecycle command and observation.
-- Write new macro configurations as schema version 1 using the `.shmacro`
-  extension. Treat `.sh4` as an import-only legacy format.
+- Write new macro configurations as schema version 1 JSON using the `.sh4x`
+  extension. Treat XML `.sh4` as an import-only legacy format.
+- Keep shipped skills, spells, staves, themes, and the configurable client
+  layout in XML. Their stable, attribute-heavy metadata schemas and editor
+  support are separate from user-owned macro persistence and do not benefit
+  from being folded into the `.sh4x` migration.
 - Preserve an unresolved legacy default spell rotation so application settings
   can supply the fallback. Map legacy singular and round-robin modes to their
   deterministic equivalents, and map legacy none to priority order with a
