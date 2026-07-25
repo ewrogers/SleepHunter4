@@ -57,17 +57,85 @@ public sealed partial class MacroEngine
                 spellCast: spellCast);
         }
 
+        var candidates = command.StaffCatalog.GetCandidates(
+            plan.SelectedEntry!.Id);
+        if (command.Policy.AllowStaffSwitching && !candidates.IsEmpty)
+        {
+            if (snapshot.Character is null ||
+                snapshot.Inventory is null ||
+                snapshot.Equipment is null)
+            {
+                return Changed(
+                    currentState,
+                    currentState.Lifecycle,
+                    currentState.StopReason,
+                    currentState.LatestSnapshot,
+                    currentState.LastTransitionAt,
+                    pendingAction: null,
+                    spellCooldowns: plan.Cooldowns,
+                    spellCast: spellCast.SnapshotUnavailable());
+            }
+
+            var staffSelection = StaffSelector.Select(
+                new StaffSelectionRequest(
+                    plan.SelectedSpell!.CastLines,
+                    snapshot.Character,
+                    snapshot.Inventory,
+                    snapshot.Equipment,
+                    candidates));
+            spellCast = spellCast.WithStaffSelection(staffSelection);
+            var staffSwitch = StaffSwitchState.NoChange(staffSelection);
+
+            if (staffSelection.Action != StaffSelectionAction.None)
+            {
+                return BeginStaffSwitch(
+                    currentState,
+                    staffSelection,
+                    command.Policy.StaffEquipment,
+                    currentTime,
+                    spellCast.WaitingForStaff(staffSelection));
+            }
+
+            return ContinueSpellCastToPanel(
+                currentState,
+                spellCast,
+                plan,
+                snapshot,
+                currentTime,
+                currentState.PanelTransition,
+                staffSwitch);
+        }
+
+        return ContinueSpellCastToPanel(
+            currentState,
+            spellCast,
+            plan,
+            snapshot,
+            currentTime,
+            currentState.PanelTransition,
+            currentState.StaffSwitch);
+    }
+
+    private static MacroDecision ContinueSpellCastToPanel(
+        MacroState currentState,
+        SpellCastState spellCast,
+        SpellCastPlan plan,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime,
+        PanelTransitionState? panelTransition,
+        StaffSwitchState? staffSwitch)
+    {
         if (!snapshot.ActivePanel.IsEquivalentTo(plan.SelectedSpell!.Panel))
         {
-            spellCast = spellCast.WaitingForPanel();
+            spellCast = spellCast.WaitingForPanel(plan);
             return IssuePanelTransitionAttempt(
                 currentState,
                 plan.SelectedSpell.Panel,
-                command.Policy.PanelTransition.AttemptTimeout,
+                spellCast.Policy.PanelTransition.AttemptTimeout,
                 attempt: 1,
-                command.Policy.PanelTransition.MaximumAttempts,
+                spellCast.Policy.PanelTransition.MaximumAttempts,
                 currentTime,
-                currentState.StaffSwitch,
+                staffSwitch,
                 spellCast,
                 plan.Cooldowns);
         }
@@ -78,8 +146,8 @@ public sealed partial class MacroEngine
             plan,
             snapshot,
             currentTime,
-            currentState.PanelTransition,
-            currentState.StaffSwitch);
+            panelTransition,
+            staffSwitch);
     }
 
     private static MacroDecision ContinueSpellCastAfterPanel(
@@ -90,22 +158,13 @@ public sealed partial class MacroEngine
         PanelTransitionState panelTransition,
         StaffSwitchState? staffSwitch)
     {
-        var plan = PlanSpell(
-            currentState.SpellQueue,
+        var plan = ReplanSelectedSpell(
+            currentState,
+            spellCast,
             snapshot,
-            currentState.SpellCooldowns,
-            currentTime,
-            spellCast.Policy.Cast);
-        var expectedEntry = spellCast.Plan.SelectedEntry!;
-        var expectedSpell = spellCast.Plan.SelectedSpell!;
+            currentTime);
 
-        if (plan.SelectedEntry != expectedEntry ||
-            plan.SelectedSpell is not { } selectedSpell ||
-            selectedSpell.Slot != expectedSpell.Slot ||
-            !string.Equals(
-                selectedSpell.Name,
-                expectedSpell.Name,
-                StringComparison.OrdinalIgnoreCase))
+        if (!DoesPlanMatchSelection(spellCast, plan))
         {
             var nextSpellCast = plan.HasSelection
                 ? spellCast.SelectionInvalidated(plan)
@@ -128,9 +187,56 @@ public sealed partial class MacroEngine
                 spellCast: nextSpellCast);
         }
 
-        return IssueCastSpell(
+        return ContinueSpellCastToPanel(
             currentState,
-            spellCast.WaitingForPanel(plan),
+            spellCast.WithPlan(plan),
+            plan,
+            snapshot,
+            currentTime,
+            panelTransition,
+            staffSwitch);
+    }
+
+    private static MacroDecision ContinueSpellCastAfterStaff(
+        MacroState currentState,
+        SpellCastState spellCast,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime,
+        PanelTransitionState? panelTransition,
+        StaffSwitchState staffSwitch)
+    {
+        var plan = ReplanSelectedSpell(
+            currentState,
+            spellCast,
+            snapshot,
+            currentTime);
+
+        if (!DoesPlanMatchSelection(spellCast, plan))
+        {
+            var nextSpellCast = plan.HasSelection
+                ? spellCast.SelectionInvalidated(plan)
+                : spellCast.Replanned(plan);
+            var spellQueue = plan.HasSelection
+                ? currentState.SpellQueue
+                : plan.Queue;
+
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                snapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                spellQueue: spellQueue,
+                panelTransition: panelTransition,
+                staffSwitch: staffSwitch,
+                spellCooldowns: plan.Cooldowns,
+                spellCast: nextSpellCast);
+        }
+
+        return ContinueSpellCastToPanel(
+            currentState,
+            spellCast.WithPlan(plan),
             plan,
             snapshot,
             currentTime,
@@ -156,7 +262,7 @@ public sealed partial class MacroEngine
             selectedSpell.Slot,
             selectedSpell.Panel,
             selectedEntry.Target);
-        var deadline = currentTime.Add(plan.CastDuration!.Value);
+        var deadline = currentTime.Add(spellCast.CastDuration!.Value);
         var pendingAction = new PendingAction(
             intent,
             currentTime,
@@ -238,11 +344,41 @@ public sealed partial class MacroEngine
                 currentTime,
                 policy));
 
+    private static SpellCastPlan ReplanSelectedSpell(
+        MacroState currentState,
+        SpellCastState spellCast,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime) =>
+        PlanSpell(
+            currentState.SpellQueue,
+            snapshot,
+            currentState.SpellCooldowns,
+            currentTime,
+            spellCast.Policy.Cast);
+
+    private static bool DoesPlanMatchSelection(
+        SpellCastState spellCast,
+        SpellCastPlan plan)
+    {
+        var expectedEntry = spellCast.Plan.SelectedEntry!;
+        var expectedSpell = spellCast.Plan.SelectedSpell!;
+
+        return plan.SelectedEntry == expectedEntry &&
+               plan.SelectedSpell is { } selectedSpell &&
+               selectedSpell.Slot == expectedSpell.Slot &&
+               selectedSpell.CastLines == expectedSpell.CastLines &&
+               string.Equals(
+                   selectedSpell.Name,
+                   expectedSpell.Name,
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
     private static SpellCastState? CancelPendingSpellCast(
         MacroState currentState) =>
         currentState.SpellCast is
         {
             Status: SpellCastStatus.WaitingForPanel or
+                SpellCastStatus.WaitingForStaff or
                 SpellCastStatus.Casting
         } spellCast
             ? spellCast.Cancelled()

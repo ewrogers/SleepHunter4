@@ -1,5 +1,6 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
@@ -50,31 +51,50 @@ public sealed partial class MacroEngine
                 StaffSwitchState.NoChange(selection));
         }
 
+        return BeginStaffSwitch(
+            currentState,
+            selection,
+            command.Policy,
+            currentTime);
+    }
+
+    private static MacroDecision BeginStaffSwitch(
+        MacroState currentState,
+        StaffSelection selection,
+        StaffEquipmentPolicy policy,
+        MacroTimestamp currentTime,
+        SpellCastState? spellCast = null)
+    {
+        var snapshot = currentState.LatestSnapshot!;
+
         if (selection.Action == StaffSelectionAction.Equip &&
             !snapshot.ActivePanel.IsEquivalentTo(ClientPanel.Inventory))
         {
             var staffSwitch = StaffSwitchState.WaitingForInventory(
                 selection,
-                command.Policy,
+                policy,
                 completedAttempts: 0);
 
             return IssuePanelTransitionAttempt(
                 currentState,
                 ClientPanel.Inventory,
-                command.Policy.AttemptTimeout,
+                policy.AttemptTimeout,
                 attempt: 1,
-                command.Policy.MaximumAttempts,
+                policy.MaximumAttempts,
                 currentTime,
-                staffSwitch);
+                staffSwitch,
+                spellCast,
+                spellCast?.Plan.Cooldowns);
         }
 
         return IssueStaffEquipmentAttempt(
             currentState,
             selection,
-            command.Policy.AttemptTimeout,
+            policy.AttemptTimeout,
             attempt: 1,
-            command.Policy.MaximumAttempts,
-            currentTime);
+            policy.MaximumAttempts,
+            currentTime,
+            spellCast: spellCast);
     }
 
     private static MacroDecision HandleStaffEquipmentDeadline(
@@ -95,6 +115,13 @@ public sealed partial class MacroEngine
 
         if (pendingAction.Attempt >= pendingAction.MaximumAttempts)
         {
+            var spellCast = currentState.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForStaff
+            } waitingForStaff
+                ? waitingForStaff.StaffUnavailable()
+                : currentState.SpellCast;
+
             return Changed(
                 currentState,
                 currentState.Lifecycle,
@@ -102,12 +129,20 @@ public sealed partial class MacroEngine
                 currentState.LatestSnapshot,
                 currentState.LastTransitionAt,
                 pendingAction: null,
-                staffSwitch: staffSwitch.TimedOut());
+                staffSwitch: staffSwitch.TimedOut(),
+                spellCast: spellCast);
         }
 
         if (currentState.LatestSnapshot is not { } snapshot ||
             !IsStaffSelectionStillValid(selection, snapshot))
         {
+            var spellCast = currentState.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForStaff
+            } waitingForStaff
+                ? waitingForStaff.StaffUnavailable()
+                : currentState.SpellCast;
+
             return Changed(
                 currentState,
                 currentState.Lifecycle,
@@ -115,7 +150,8 @@ public sealed partial class MacroEngine
                 currentState.LatestSnapshot,
                 currentState.LastTransitionAt,
                 pendingAction: null,
-                staffSwitch: staffSwitch.SelectionInvalidated());
+                staffSwitch: staffSwitch.SelectionInvalidated(),
+                spellCast: spellCast);
         }
 
         if (selection.Action == StaffSelectionAction.Equip &&
@@ -136,7 +172,9 @@ public sealed partial class MacroEngine
                 attempt: 1,
                 staffSwitch.MaximumAttempts,
                 currentTime,
-                waiting);
+                waiting,
+                currentState.SpellCast,
+                currentState.SpellCooldowns);
         }
 
         return IssueStaffEquipmentAttempt(
@@ -145,7 +183,8 @@ public sealed partial class MacroEngine
             staffSwitch.AttemptTimeout,
             checked(pendingAction.Attempt + 1),
             staffSwitch.MaximumAttempts,
-            currentTime);
+            currentTime,
+            spellCast: currentState.SpellCast);
     }
 
     private static MacroDecision IssueStaffEquipmentAttempt(
@@ -156,7 +195,8 @@ public sealed partial class MacroEngine
         int maximumAttempts,
         MacroTimestamp currentTime,
         ClientSnapshot? latestSnapshot = null,
-        PanelTransitionState? panelTransition = null)
+        PanelTransitionState? panelTransition = null,
+        SpellCastState? spellCast = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = selection.Action switch
@@ -197,6 +237,7 @@ public sealed partial class MacroEngine
             pendingAction,
             panelTransition: panelTransition,
             staffSwitch: staffSwitch,
+            spellCast: spellCast,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:

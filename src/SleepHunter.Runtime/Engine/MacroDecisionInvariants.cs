@@ -156,6 +156,24 @@ internal static class MacroDecisionInvariants
 
         if (decision.State.SpellCast is
             {
+                Status: SpellCastStatus.WaitingForStaff
+            } waitingForStaff &&
+            (waitingForStaff.StaffSelection is not
+            { } spellStaffSelection ||
+             decision.State.StaffSwitch is not
+             {
+                 Status: StaffSwitchStatus.WaitingForInventory or
+                      StaffSwitchStatus.ChangingWeapon,
+                 Selection: { } staffSelection
+             } ||
+             staffSelection != spellStaffSelection))
+        {
+            throw new InvalidOperationException(
+                "Spell casting can wait only on its matching staff action.");
+        }
+
+        if (decision.State.SpellCast is
+            {
                 Status: SpellCastStatus.WaitingForPanel,
                 Plan.SelectedSpell: { } selectedSpell
             } &&

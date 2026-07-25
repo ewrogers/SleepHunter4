@@ -9,10 +9,12 @@ public enum SpellCastStatus
     CoolingDown,
     Complete,
     Unavailable,
+    WaitingForStaff,
     WaitingForPanel,
     Casting,
     Succeeded,
     SelectionInvalidated,
+    StaffUnavailable,
     PanelUnavailable,
     Cancelled
 }

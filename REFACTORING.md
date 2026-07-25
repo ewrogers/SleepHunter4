@@ -833,6 +833,17 @@ As of July 24, 2026:
 - Confirm weapon changes only from a later coherent equipment snapshot.
 - Publish stable snapshot-unavailable, selection-invalidated,
   panel-unavailable, timed-out, cancelled, and succeeded staff outcomes.
+- Resolve immutable staff candidate sets by stable spell queue entry identifier.
+  Staff metadata and queue persistence adapters will construct these sets
+  outside the deterministic runtime.
+- Require character, inventory, and equipment snapshot sections only when a
+  spell has configured staff candidates and automatic switching is enabled.
+- Carry the staff-adjusted cast lines and duration through confirmed inventory,
+  equipment, and spell panel transitions.
+- Revalidate the selected queue entry and observed spell before equipping a
+  staff and again after the equipment change is confirmed.
+- Propagate staff panel, selection, and equipment failures to the spell
+  workflow without advancing its queue cursor or leaving a pending action.
 - Capture vitals and spellbook entries as immutable snapshot sections. Keep
   observed client action-delay flags separate from runtime-owned cooldown
   deadlines.
