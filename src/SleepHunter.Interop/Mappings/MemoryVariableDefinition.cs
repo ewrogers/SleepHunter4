@@ -10,7 +10,8 @@ public sealed record MemoryVariableDefinition
         MemoryValueKind valueKind = MemoryValueKind.Text,
         int maximumLength = 0,
         int recordSize = 0,
-        int capacity = 0)
+        int capacity = 0,
+        MemoryAddressSearch? search = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(address);
@@ -60,6 +61,7 @@ public sealed record MemoryVariableDefinition
         MaximumLength = maximumLength;
         RecordSize = recordSize;
         Capacity = capacity;
+        Search = search;
     }
 
     public string Key { get; }
@@ -73,4 +75,8 @@ public sealed record MemoryVariableDefinition
     public int RecordSize { get; }
 
     public int Capacity { get; }
+
+    public MemoryAddressSearch? Search { get; }
+
+    public bool RequiresSearch => Search is not null;
 }

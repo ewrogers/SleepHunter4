@@ -817,6 +817,11 @@ As of July 24, 2026:
 - Represent client mappings as immutable, case-insensitive version maps with
   explicit pointer width, value kind, base address, and signed pointer offsets.
   Resolve every pointer and offset through checked address arithmetic.
+- Load exactly one explicitly selected client mapping from bounded,
+  DTD-prohibited XML. Do not fall back to another version, infer an unbounded
+  text length, or validate a different profile in place of the selected one.
+  Preserve search-based mappings as explicit metadata and require a dedicated
+  bounded search resolver before reading them.
 - Start with capture limits of 64 KiB per block, 4 KiB per string, 4 MiB total,
   4,096 transport reads, and 16 pointer dereferences. Section-specific parsing
   may use tighter limits, and measurement may justify revising the overall
