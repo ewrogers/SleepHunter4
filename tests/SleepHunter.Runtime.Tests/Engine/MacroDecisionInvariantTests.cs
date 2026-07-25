@@ -1,8 +1,10 @@
 ﻿using System.Collections.Immutable;
 
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Tests.Hosting;
 using SleepHunter.Runtime.Time;
 
@@ -62,6 +64,39 @@ public sealed class MacroDecisionInvariantTests
                 MacroState.Initial,
                 decision,
                 new MacroTimestamp(TimeSpan.FromTicks(1))),
+            Throws.TypeOf<InvalidOperationException>());
+    }
+
+    [Test]
+    public void ShouldRejectPanelIntentWithoutMatchingTransitionState()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(1),
+            ClientPanel.TemuairSpells);
+        var pendingAction = new PendingAction(
+            intent,
+            MacroTimestamp.Zero,
+            new MacroTimestamp(TimeSpan.FromSeconds(1)),
+            attempt: 1);
+        var state = new MacroState(
+            revision: 1,
+            MacroLifecycle.Running,
+            MacroStopReason.None,
+            latestSnapshot: null,
+            MacroTimestamp.Zero,
+            pendingAction);
+        var decision = new MacroDecision(
+            state,
+            ImmutableArray<MacroEvent>.Empty,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
+            publishedView: null);
+
+        Assert.That(
+            () => MacroDecisionInvariants.EnsureValid(
+                state,
+                decision,
+                MacroTimestamp.Zero),
             Throws.TypeOf<InvalidOperationException>());
     }
 }

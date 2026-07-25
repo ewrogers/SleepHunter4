@@ -802,6 +802,15 @@ As of July 24, 2026:
 - Use explicit priority, sequential, and round-robin spell queue policies.
 - Treat missing and completed sequential entries as skippable, while a
   temporarily unavailable entry blocks later sequential entries.
+- Represent panel changes as semantic client intents rather than blocking input
+  and polling operations.
+- Confirm a client action only from a coherent snapshot whose capture began
+  after the intent was issued and whose sequence follows the action baseline.
+- Give every client action attempt a unique identifier, scheduled deadline, and
+  finite retry budget.
+- Publish stable succeeded, timed-out, and cancelled panel transition outcomes.
+- Treat the world skill and spell selections as one visible panel for
+  confirmation while preserving their distinct targets.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

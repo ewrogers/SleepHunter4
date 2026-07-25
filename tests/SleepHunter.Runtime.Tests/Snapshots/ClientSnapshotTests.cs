@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Snapshots;
+﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Tests.Snapshots;
@@ -43,5 +44,22 @@ public sealed class ClientSnapshotTests
                 SnapshotQuality.Complete,
                 ClientPresence.InWorld),
             Throws.TypeOf<ArgumentException>());
+    }
+
+    [Test]
+    public void ShouldRejectUnsupportedObservedPanel()
+    {
+        var client = new ClientIdentity("client", "test");
+
+        Assert.That(
+            () => new ClientSnapshot(
+                new SnapshotSequence(1),
+                MacroTimestamp.Zero,
+                MacroTimestamp.Zero,
+                client,
+                SnapshotQuality.Complete,
+                ClientPresence.InWorld,
+                (ClientPanel)int.MaxValue),
+            Throws.TypeOf<ArgumentOutOfRangeException>());
     }
 }
