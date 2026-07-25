@@ -299,7 +299,7 @@ must remain distinct.
 The core decision function is conceptually:
 
 ```text
-Step(current state, input event, current time)
+Decide(current state, input event, current time)
     -> new state
     -> zero or more internal events
     -> zero or one external client action
@@ -789,6 +789,11 @@ As of July 24, 2026:
   tick.
 - Schedule snapshot capture independently and choose its cadence through
   measurement.
+- Express engine time as elapsed `MacroTimestamp` values derived from an
+  injected `TimeProvider`.
+- Require a complete in-world snapshot before a macro can enter the running
+  state.
+- Use `IMacroEngine.Decide` as the pure state-transition contract.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
