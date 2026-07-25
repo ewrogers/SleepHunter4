@@ -3,9 +3,9 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Runtime.Intents;
 
-public sealed record SetEquippedWeaponIntent : ClientActionIntent
+public sealed record EquipWeaponIntent : ClientActionIntent
 {
-    public SetEquippedWeaponIntent(
+    public EquipWeaponIntent(
         ClientActionId actionId,
         string? staffName,
         int? inventorySlot)

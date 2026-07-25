@@ -88,7 +88,7 @@ public sealed class StaffSwitchScenarioTests
                 baseCastLines: 4,
                 [staff],
                 TestPolicy));
-        var intent = decision.Intent as SetEquippedWeaponIntent;
+        var intent = decision.Intent as EquipWeaponIntent;
 
         Assert.Multiple(() =>
         {
@@ -148,9 +148,9 @@ public sealed class StaffSwitchScenarioTests
                 Is.EqualTo(StaffSwitchStatus.WaitingForInventory));
             Assert.That(
                 panelConfirmed.Intent,
-                Is.TypeOf<SetEquippedWeaponIntent>());
+                Is.TypeOf<EquipWeaponIntent>());
             Assert.That(
-                ((SetEquippedWeaponIntent)panelConfirmed.Intent!).ActionId.Value,
+                ((EquipWeaponIntent)panelConfirmed.Intent!).ActionId.Value,
                 Is.EqualTo(2));
             Assert.That(
                 panelConfirmed.State.StaffSwitch?.Status,
@@ -221,9 +221,9 @@ public sealed class StaffSwitchScenarioTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(retry.Intent, Is.TypeOf<SetEquippedWeaponIntent>());
+            Assert.That(retry.Intent, Is.TypeOf<EquipWeaponIntent>());
             Assert.That(
-                ((SetEquippedWeaponIntent)retry.Intent!).ActionId.Value,
+                ((EquipWeaponIntent)retry.Intent!).ActionId.Value,
                 Is.EqualTo(2));
             Assert.That(retry.State.PendingAction?.Attempt, Is.EqualTo(2));
             Assert.That(timedOut.Intent, Is.Null);
@@ -360,10 +360,10 @@ public sealed class StaffSwitchScenarioTests
                 Is.EqualTo(StaffSwitchStatus.WaitingForInventory));
             Assert.That(
                 panelConfirmed.Intent,
-                Is.TypeOf<SetEquippedWeaponIntent>());
+                Is.TypeOf<EquipWeaponIntent>());
             Assert.That(panelConfirmed.State.PendingAction?.Attempt, Is.EqualTo(2));
             Assert.That(
-                ((SetEquippedWeaponIntent)panelConfirmed.Intent!).ActionId.Value,
+                ((EquipWeaponIntent)panelConfirmed.Intent!).ActionId.Value,
                 Is.EqualTo(3));
         });
     }
@@ -396,9 +396,9 @@ public sealed class StaffSwitchScenarioTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(request.Intent, Is.TypeOf<SetEquippedWeaponIntent>());
+            Assert.That(request.Intent, Is.TypeOf<EquipWeaponIntent>());
             Assert.That(
-                ((SetEquippedWeaponIntent)request.Intent!).IsUnequip,
+                ((EquipWeaponIntent)request.Intent!).IsUnequip,
                 Is.True);
             Assert.That(confirmed.State.PendingAction, Is.Null);
             Assert.That(
@@ -508,7 +508,7 @@ public sealed class StaffSwitchScenarioTests
                     TimeSpan.FromSeconds(1),
                     maximumAttempts: 0));
             Assert.Throws<ArgumentException>(
-                () => _ = new SetEquippedWeaponIntent(
+                () => _ = new EquipWeaponIntent(
                     new ClientActionId(1),
                     staff.Name,
                     inventorySlot: null));

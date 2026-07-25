@@ -216,8 +216,8 @@ public sealed class MacroSessionTests
                 inventory,
                 new EquipmentSnapshot(weaponName: null)));
         var weaponIntent =
-            (SetEquippedWeaponIntent)await session.Intents.ReadUntilAsync(
-                intent => intent is SetEquippedWeaponIntent);
+            (EquipWeaponIntent)await session.Intents.ReadUntilAsync(
+                intent => intent is EquipWeaponIntent);
 
         timeProvider.Advance(TimeSpan.FromTicks(1));
         var equippedTime = new MacroTimestamp(TimeSpan.FromTicks(2));
