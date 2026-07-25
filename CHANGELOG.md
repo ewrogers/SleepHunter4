@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the legacy macro executor, lock-based queue processing, deferred dispatcher, execution flags on players, and the 16 ms flower update worker
 - Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
 - Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
+- Removed the unused blocking player-interface input stack, direct `PostMessage` automator, deferred-action residue, panel-coordinate helpers, and other unreferenced legacy utilities
 
 ### Fixed
 
