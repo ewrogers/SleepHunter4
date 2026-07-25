@@ -670,9 +670,11 @@ statistics, so slow consumers cannot create an unbounded diagnostics backlog.
 
 The WPF `ClientRuntimeViewModel` owns that host, marshals immutable views through
 an injected UI dispatcher, exposes capture health, errors, snapshots, and
-statistics as bindable state, and exposes source-generated Toolkit async relay
-commands for macro lifecycle changes. Runtime-fed properties keep private
-setters so only the host pumps can publish them. Feature ViewModels may forward
+statistics through Toolkit-generated C# 14 observable partial properties, and
+exposes source-generated Toolkit async relay commands for macro lifecycle
+changes. Generated dependent-property notifications update capture projections
+and invalidate lifecycle commands. Runtime-fed properties keep private setters
+so only the host pumps can publish them. Feature ViewModels may forward
 additional typed runtime commands through the same boundary. The legacy engine
 remains authoritative until client attachment and the corresponding UI slices
 are explicitly cut over.
@@ -693,9 +695,11 @@ stable, ordered collection of `ClientListItemViewModel` instances. Each item
 projects the coherent runtime character, presence, location, and vitals
 sections into the existing client card. Missing sections, unsupported clients,
 and the newest failed capture fall back to the corresponding legacy
-observation, while a small runtime badge exposes capture status. Selection,
-inventory, abilities, queues, hotkeys, and all macro controls continue to
-unwrap the legacy `Player` until their own slices are cut over.
+observation, while a small runtime badge exposes capture status. The client
+list owns the selected item through a generated observable property and a
+two-way XAML binding, clearing selection when its client is removed. Inventory,
+abilities, queues, hotkeys, and all macro controls continue to unwrap the
+legacy `Player` until their own slices are cut over.
 
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:

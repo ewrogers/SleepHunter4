@@ -238,6 +238,7 @@
                      BorderThickness="0,1,0,0"
                      ItemTemplate="{StaticResource PlayerDataTemplate}"
                      ItemsSource="{Binding Clients}"
+                     SelectedItem="{Binding SelectedClient, Mode=TwoWay}"
                      Style="{StaticResource ObsidianListBox}"
                      Margin="0"
                      SelectionChanged="clientListBox_SelectionChanged"

@@ -23,6 +23,21 @@ public sealed class ClientRuntimeViewModelTests
         "USDA 7.41");
 
     [Test]
+    public void ShouldKeepRuntimeFedPropertiesPrivatelyWritable()
+    {
+        var current = typeof(ClientRuntimeViewModel)
+            .GetProperty(nameof(ClientRuntimeViewModel.Current));
+        var latestCapture = typeof(ClientRuntimeViewModel)
+            .GetProperty(nameof(ClientRuntimeViewModel.LatestCapture));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(current?.SetMethod?.IsPrivate, Is.True);
+            Assert.That(latestCapture?.SetMethod?.IsPrivate, Is.True);
+        });
+    }
+
+    [Test]
     public async Task ShouldProjectViewsAndRouteLifecycleCommands()
     {
         var host = new RecordingRuntimeHost();

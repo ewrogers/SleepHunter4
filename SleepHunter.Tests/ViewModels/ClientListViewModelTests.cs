@@ -17,6 +17,33 @@ namespace SleepHunter.Tests.ViewModels;
 public sealed class ClientListViewModelTests
 {
     [Test]
+    public void ShouldOwnSelectionAndClearItWithTheRemovedClient()
+    {
+        using var player = CreatePlayer();
+        using var clients = new ClientListViewModel();
+
+        clients.Refresh([player], _ => null);
+        var item = clients.Clients.Single();
+        clients.SelectedClient = item;
+        clients.Refresh([player], _ => null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(clients.SelectedClient, Is.SameAs(item));
+            Assert.That(
+                typeof(ClientListItemViewModel)
+                    .GetProperty(nameof(ClientListItemViewModel.Runtime))
+                    ?.SetMethod
+                    ?.IsPrivate,
+                Is.True);
+        });
+
+        clients.Refresh(Array.Empty<Player>(), _ => null);
+
+        Assert.That(clients.SelectedClient, Is.Null);
+    }
+
+    [Test]
     public async Task ShouldUseRuntimeObservationsAndFallBackAfterFailure()
     {
         using var player = CreatePlayer();

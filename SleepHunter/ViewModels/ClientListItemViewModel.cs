@@ -6,11 +6,10 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.ViewModels
 {
-    public sealed class ClientListItemViewModel :
+    public sealed partial class ClientListItemViewModel :
         ObservableObject,
         IDisposable
     {
-        private ClientRuntimeViewModel runtime;
         private bool isDisposed;
 
         public ClientListItemViewModel(
@@ -28,7 +27,15 @@ namespace SleepHunter.ViewModels
 
         public Player Player { get; }
 
-        public ClientRuntimeViewModel Runtime => runtime;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasRuntime))]
+        [NotifyPropertyChangedFor(nameof(RuntimeStatus))]
+        [NotifyPropertyChangedFor(nameof(UsesRuntimeSnapshot))]
+        public partial ClientRuntimeViewModel Runtime
+        {
+            get;
+            private set;
+        }
 
         public ClientProcess Process => Player.Process;
 
@@ -146,19 +153,21 @@ namespace SleepHunter.ViewModels
 
         internal void SetRuntime(ClientRuntimeViewModel value)
         {
-            if (ReferenceEquals(runtime, value))
-                return;
+            Runtime = value;
+        }
 
-            if (runtime is not null)
-                runtime.PropertyChanged -= OnRuntimePropertyChanged;
+        partial void OnRuntimeChanging(ClientRuntimeViewModel value)
+        {
+            if (Runtime is not null)
+                Runtime.PropertyChanged -= OnRuntimePropertyChanged;
+        }
 
-            runtime = value;
-
-            if (runtime is not null)
-                runtime.PropertyChanged += OnRuntimePropertyChanged;
+        partial void OnRuntimeChanged(ClientRuntimeViewModel value)
+        {
+            if (value is not null)
+                value.PropertyChanged += OnRuntimePropertyChanged;
 
             NotifyObservedState();
-            OnPropertyChanged(nameof(Runtime));
         }
 
         private void OnObservedPropertyChanged(

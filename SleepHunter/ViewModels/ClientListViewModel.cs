@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Models;
 
 namespace SleepHunter.ViewModels
 {
-    public sealed class ClientListViewModel : IDisposable
+    public sealed partial class ClientListViewModel :
+        ObservableObject,
+        IDisposable
     {
         private readonly ObservableCollection<
             ClientListItemViewModel> clients = new();
@@ -22,6 +25,13 @@ namespace SleepHunter.ViewModels
 
         public ReadOnlyObservableCollection<ClientListItemViewModel>
             Clients => readOnlyClients;
+
+        [ObservableProperty]
+        public partial ClientListItemViewModel SelectedClient
+        {
+            get;
+            set;
+        }
 
         public void Refresh(
             IEnumerable<Player> players,
@@ -58,6 +68,9 @@ namespace SleepHunter.ViewModels
                 }
 
                 var removed = clients[index];
+                if (ReferenceEquals(SelectedClient, removed))
+                    SelectedClient = null;
+
                 clients.RemoveAt(index);
                 removed.Dispose();
             }
@@ -98,11 +111,24 @@ namespace SleepHunter.ViewModels
             if (isDisposed)
                 return;
 
+            SelectedClient = null;
+
             foreach (var client in clients)
                 client.Dispose();
 
             clients.Clear();
             isDisposed = true;
+        }
+
+        partial void OnSelectedClientChanging(
+            ClientListItemViewModel value)
+        {
+            if (value is not null && !clients.Contains(value))
+            {
+                throw new ArgumentException(
+                    "The selected client must belong to the client list.",
+                    nameof(value));
+            }
         }
     }
 }
