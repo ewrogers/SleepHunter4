@@ -51,7 +51,10 @@ internal sealed class MacroScenario
         ClientIdentity? client = null,
         ClientPanel activePanel = ClientPanel.Unknown,
         MacroTimestamp? captureStartedAt = null,
-        MacroTimestamp? captureCompletedAt = null)
+        MacroTimestamp? captureCompletedAt = null,
+        CharacterSnapshot? character = null,
+        InventorySnapshot? inventory = null,
+        EquipmentSnapshot? equipment = null)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -62,7 +65,10 @@ internal sealed class MacroScenario
             client ?? Client,
             quality,
             presence,
-            activePanel);
+            activePanel,
+            character,
+            inventory,
+            equipment);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }

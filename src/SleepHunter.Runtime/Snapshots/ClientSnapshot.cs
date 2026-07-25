@@ -12,7 +12,10 @@ public sealed record ClientSnapshot
         ClientIdentity client,
         SnapshotQuality quality,
         ClientPresence presence,
-        ClientPanel activePanel = ClientPanel.Unknown)
+        ClientPanel activePanel = ClientPanel.Unknown,
+        CharacterSnapshot? character = null,
+        InventorySnapshot? inventory = null,
+        EquipmentSnapshot? equipment = null)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -46,6 +49,9 @@ public sealed record ClientSnapshot
         Quality = quality;
         Presence = presence;
         ActivePanel = activePanel;
+        Character = character;
+        Inventory = inventory;
+        Equipment = equipment;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -61,6 +67,12 @@ public sealed record ClientSnapshot
     public ClientPresence Presence { get; }
 
     public ClientPanel ActivePanel { get; }
+
+    public CharacterSnapshot? Character { get; }
+
+    public InventorySnapshot? Inventory { get; }
+
+    public EquipmentSnapshot? Equipment { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }
