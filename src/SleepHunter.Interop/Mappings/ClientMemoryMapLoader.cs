@@ -27,35 +27,21 @@ public static class ClientMemoryMapLoader
         using var reader = XmlReader.Create(stream, settings);
         var document = XDocument.Load(reader, LoadOptions.SetLineInfo);
         var root = document.Root;
-        if (root?.Name != "ClientVersions")
+        if (root?.Name != "ClientLayout")
         {
             throw Format(
                 root,
-                "The mapping document root must be 'ClientVersions'.");
+                "The mapping document root must be 'ClientLayout'.");
         }
 
-        var clientsElement = root.Element("Clients");
-        if (clientsElement is null)
-        {
-            throw Format(root, "The mapping document has no 'Clients' element.");
-        }
-
-        var clients = clientsElement.Elements("Client").ToArray();
-        if (clients.Length != 1)
-        {
-            throw Format(
-                clientsElement,
-                "The mapping document must contain exactly one client mapping.");
-        }
-
-        return ParseClient(clients[0], limits);
+        return ParseLayout(root, limits);
     }
 
-    private static ClientMemoryMap ParseClient(
-        XElement client,
+    private static ClientMemoryMap ParseLayout(
+        XElement layout,
         ClientMemoryMapLoadLimits limits)
     {
-        var pointerWidthValue = RequiredAttribute(client, "PointerWidth");
+        var pointerWidthValue = RequiredAttribute(layout, "PointerWidth");
         if (!Enum.TryParse<PointerWidth>(
                 pointerWidthValue,
                 ignoreCase: true,
@@ -63,19 +49,26 @@ public static class ClientMemoryMapLoader
             !Enum.IsDefined(pointerWidth))
         {
             throw Format(
-                client,
+                layout,
                 $"The client mapping has unsupported pointer width '{pointerWidthValue}'.");
         }
 
-        var variablesElement = client.Element("Variables");
+        var variablesElement = layout.Element("Variables");
         if (variablesElement is null)
         {
             throw Format(
-                client,
+                layout,
                 "The client mapping has no 'Variables' element.");
         }
 
         var variableElements = variablesElement.Elements().ToArray();
+        if (variableElements.Length == 0)
+        {
+            throw Format(
+                variablesElement,
+                "The client mapping has no memory variables.");
+        }
+
         if (variableElements.Length > limits.MaximumVariables)
         {
             throw Format(

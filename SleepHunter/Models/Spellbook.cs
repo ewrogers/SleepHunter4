@@ -37,16 +37,16 @@ namespace SleepHunter.Models
 
         public Player Owner { get; init; }
 
-        public IEnumerable<Spell> AllSpells => 
+        public IEnumerable<Spell> AllSpells =>
             from s in spells select s;
 
-        public IEnumerable<Spell> TemuairSpells => 
+        public IEnumerable<Spell> TemuairSpells =>
             from s in spells where s.Panel == InterfacePanel.TemuairSpells && s.Slot <= TemuairSpellCount select s;
 
-        public IEnumerable<Spell> MedeniaSpells => 
+        public IEnumerable<Spell> MedeniaSpells =>
             from s in spells where s.Panel == InterfacePanel.MedeniaSpells && s.Slot <= (TemuairSpellCount + MedeniaSpellCount) select s;
 
-        public IEnumerable<Spell> WorldSpells => 
+        public IEnumerable<Spell> WorldSpells =>
             from s in spells where s.Panel == InterfacePanel.WorldSpells && s.Slot <= (TemuairSpellCount + MedeniaSpellCount + WorldSpellCount) select s;
 
         public string ActiveSpell
@@ -112,22 +112,22 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 UpdateCooldowns();
                 return;
             }
 
-            if (TryUpdateFromPanes(version))
+            if (TryUpdateFromPanes(layout))
             {
                 UpdateCooldowns();
                 return;
             }
 
-            if (!version.TryGetVariable(SpellbookKey, out var spellbookVariable))
+            if (!layout.TryGetVariable(SpellbookKey, out var spellbookVariable))
             {
                 ResetDefaults();
                 UpdateCooldowns();
@@ -223,10 +223,11 @@ namespace SleepHunter.Models
             UpdateCooldowns();
         }
 
-        private bool TryUpdateFromPanes(Settings.ClientVersion version)
+        private bool TryUpdateFromPanes(
+            Settings.ClientLayout layout)
         {
-            if (!version.TryGetVariable(SpellbookPanesKey, out var panesVariable) ||
-                !version.TryGetVariable(SpellbookPaneCapacityKey, out var capacityVariable) ||
+            if (!layout.TryGetVariable(SpellbookPanesKey, out var panesVariable) ||
+                !layout.TryGetVariable(SpellbookPaneCapacityKey, out var capacityVariable) ||
                 !capacityVariable.TryReadInt32(reader, out var capacity) ||
                 capacity <= 0 ||
                 capacity > spells.Length ||

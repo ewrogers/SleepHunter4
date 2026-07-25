@@ -479,7 +479,6 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
@@ -520,27 +519,6 @@
                         </Grid>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                Margin="8,2">
-                        <!-- Client Version-->
-                        <TextBlock Text="Client Version:"
-                                   Width="100"
-                                   Margin="10,2"
-                                   Style="{StaticResource ObsidianText}"
-                                   ToolTip="This is the client version to expect for patching and memory reading."/>
-
-                        <!-- Client Version ComboBox -->
-                        <ComboBox Name="clientVersionComboBox"
-                                  Width="180" Height="36"
-                                  Style="{StaticResource ObsidianComboBox}"
-                                  ItemTemplate="{StaticResource ClientVersionDataTemplate}"
-                                  ItemsSource="{Binding Source={x:Static settings:ClientVersionManager.Instance}, Path=Versions}"
-                                  SelectedValuePath="Key"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedVersion}"
-                                  Margin="0,2"/>
-                    </StackPanel>
                 </Grid>
             </TabItem>
 

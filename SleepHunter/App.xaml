@@ -36,7 +36,6 @@
                 
                 <!-- Data Templates -->
                 <ResourceDictionary Source="Templates\AbilityDataTemplate.xaml"/>
-                <ResourceDictionary Source="Templates\ClientVersionDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\ColorThemeDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\EquipmentItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\FlowerQueueDataTemplate.xaml"/>

@@ -10,20 +10,13 @@ using SleepHunter.IO.Process;
 namespace SleepHunter.Settings
 {
     [Serializable]
-    public sealed class ClientVersion : ObservableObject
+    [XmlRoot("ClientLayout")]
+    public sealed class ClientLayout : ObservableObject
     {
-        private const string DefaultExecutableName = "Darkages.exe";
-        private const string DefaultWindowClassName = "DarkAges";
-        private const string DefaultWindowTitle = "Darkages";
-
-        public static readonly ClientVersion AutoDetect = new("Auto-Detect");
-
-        private string key;
-        private bool isDefault;
-        private ClientSignature signature;
-        private string executableName = DefaultExecutableName;
-        private string windowClassName = DefaultWindowClassName;
-        private string windowTitle = DefaultWindowTitle;
+        private string pointerWidth = "Bit32";
+        private string executableName;
+        private string windowClassName;
+        private string windowTitle;
         private bool supportsFlowering;
         private bool supportsLoginNotificationSuppression;
         private bool supportsModifiersKeyFix;
@@ -37,25 +30,11 @@ namespace SleepHunter.Settings
         private long noWallAddress;
         private List<MemoryVariable> variables = new();
 
-        [XmlAttribute("Key")]
-        public string Key
+        [XmlAttribute]
+        public string PointerWidth
         {
-            get => key;
-            set => SetProperty(ref key, value);
-        }
-
-        [XmlAttribute("IsDefault")]
-        public bool IsDefault
-        {
-            get => isDefault;
-            set => SetProperty(ref isDefault, value);
-        }
-
-        [XmlElement("Signature")]
-        public ClientSignature Signature
-        {
-            get => signature;
-            set => SetProperty(ref signature, value);
+            get => pointerWidth;
+            set => SetProperty(ref pointerWidth, value);
         }
 
         [XmlElement]
@@ -202,13 +181,8 @@ namespace SleepHunter.Settings
             set => SetProperty(ref variables, value);
         }
 
-        private ClientVersion() :
-           this(string.Empty)
-        { }
-
-        public ClientVersion(string key)
+        public ClientLayout()
         {
-            this.key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
         public bool TryGetVariable(string key, out MemoryVariable variable)
@@ -234,7 +208,5 @@ namespace SleepHunter.Settings
 
             return false;
         }
-
-        public override string ToString() => Key ?? string.Empty;
     }
 }

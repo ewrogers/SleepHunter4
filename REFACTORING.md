@@ -979,9 +979,10 @@ As of July 24, 2026:
   metadata configurable, but do not encode client-release or private-server
   names into Runtime or Interop types and do not route behavior by a version
   string.
-- Treat the legacy `ClientVersion` model as a temporary launch, patch, and
-  process-detection container. Remove or rename it when those responsibilities
-  move out of the legacy WPF model.
+- Use one `ClientLayout` model and one direct `ClientLayout.xml` root for
+  launch, patch, process detection, legacy WPF reads, and Interop mappings.
+  Do not retain a version selector, signature-based routing, collection
+  wrapper, or `ClientVersion` compatibility model.
 - Audit and minimize existing dependencies before establishing the new package
   graph.
 - Keep pure decisions and channel-driven hosting in one runtime assembly
@@ -997,7 +998,7 @@ As of July 24, 2026:
 - Represent the client mapping as one immutable, case-insensitive map with
   explicit pointer width, value kind, base address, and signed pointer offsets.
   Resolve every pointer and offset through checked address arithmetic.
-- Require exactly one client mapping in bounded, DTD-prohibited XML. Runtime
+- Require one direct client layout in bounded, DTD-prohibited XML. Runtime
   client identity is instance-only and never selects a layout by version name.
   Addresses remain configurable without code changes. Preserve search-based
   mappings as explicit metadata and require a dedicated bounded search resolver

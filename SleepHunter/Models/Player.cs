@@ -28,7 +28,7 @@ namespace SleepHunter.Models
         private readonly Stream stream;
         private readonly BinaryReader reader;
 
-        private ClientVersion version;
+        private ClientLayout layout;
         private long nameSessionAddress;
 
         private string name;
@@ -47,10 +47,10 @@ namespace SleepHunter.Models
 
         public ClientProcess Process { get; init; }
 
-        public ClientVersion Version
+        public ClientLayout Layout
         {
-            get => version;
-            set => SetProperty(ref version, value);
+            get => layout;
+            set => SetProperty(ref layout, value);
         }
 
         public nint ProcessHandle => accessor.ProcessHandle;
@@ -193,8 +193,6 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            GameClient.VersionKey = Version?.Key ?? "Unknown";
-
             Process.TryUpdate();
             gameClient.TryUpdate();
 
@@ -228,13 +226,13 @@ namespace SleepHunter.Models
             if (accessor == null)
                 throw new ArgumentNullException(nameof(accessor));
 
-            if (version == null)
+            if (layout == null)
             {
                 ClearCharacterNameSession();
                 return;
             }
 
-            if (version.TryGetVariable(WorldUserFuncKey, out var sessionVariable))
+            if (layout.TryGetVariable(WorldUserFuncKey, out var sessionVariable))
             {
                 if (!sessionVariable.TryDereferenceValue(reader, out var sessionAddress))
                 {
@@ -249,7 +247,7 @@ namespace SleepHunter.Models
                 }
             }
 
-            if (!version.TryGetVariable(CharacterNameKey, out var nameVariable))
+            if (!layout.TryGetVariable(CharacterNameKey, out var nameVariable))
                 return;
 
             string candidateName;

@@ -64,7 +64,7 @@ namespace SleepHunter.Models
         private PlayerElement? defenseElement;
         private int magicResistanceUnits;
 
-        public Player Owner { get; init;  }
+        public Player Owner { get; init; }
 
         public int CurrentHealth
         {
@@ -264,39 +264,45 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            CurrentHealth = ReadInt32(version, CurrentHealthKey);
-            MaximumHealth = ReadInt32(version, MaximumHealthKey);
-            CurrentMana = ReadInt32(version, CurrentManaKey);
-            MaximumMana = ReadInt32(version, MaximumManaKey);
-            Level = ReadInt32(version, LevelKey);
-            AbilityLevel = ReadInt32(version, AbilityLevelKey);
-            TotalExperience = ReadInt64(version, TotalExperienceKey);
-            Strength = ReadInt32(version, StrengthKey);
-            Dexterity = ReadInt32(version, DexterityKey);
-            Wisdom = ReadInt32(version, WisdomKey);
-            Constitution = ReadInt32(version, ConstitutionKey);
-            Intelligence = ReadInt32(version, IntelligenceKey);
-            StatPoints = ReadInt32(version, StatPointsKey);
-            ExperienceToNextLevel = ReadInt64(version, ExperienceToNextLevelKey);
-            GamePoints = ReadInt64(version, GamePointsKey);
-            AbilityToNextLevel = ReadInt64(version, AbilityToNextLevelKey);
-            TotalAbility = ReadInt64(version, TotalAbilityKey);
-            Weight = ReadInt32(version, WeightKey);
-            MaximumWeight = ReadInt32(version, MaximumWeightKey);
-            ArmorClass = ReadInt32(version, ArmorClassKey);
-            DamageModifier = ReadInt32(version, DamageModifierKey);
-            HitModifier = ReadInt32(version, HitModifierKey);
-            AttackElement = ReadElement(version, AttackElementKey);
-            DefenseElement = ReadElement(version, DefenseElementKey);
-            MagicResistanceUnits = ReadInt32(version, MagicResistanceKey);
+            CurrentHealth = ReadInt32(layout, CurrentHealthKey);
+            MaximumHealth = ReadInt32(layout, MaximumHealthKey);
+            CurrentMana = ReadInt32(layout, CurrentManaKey);
+            MaximumMana = ReadInt32(layout, MaximumManaKey);
+            Level = ReadInt32(layout, LevelKey);
+            AbilityLevel = ReadInt32(layout, AbilityLevelKey);
+            TotalExperience = ReadInt64(layout, TotalExperienceKey);
+            Strength = ReadInt32(layout, StrengthKey);
+            Dexterity = ReadInt32(layout, DexterityKey);
+            Wisdom = ReadInt32(layout, WisdomKey);
+            Constitution = ReadInt32(layout, ConstitutionKey);
+            Intelligence = ReadInt32(layout, IntelligenceKey);
+            StatPoints = ReadInt32(layout, StatPointsKey);
+            ExperienceToNextLevel = ReadInt64(
+                layout,
+                ExperienceToNextLevelKey);
+            GamePoints = ReadInt64(layout, GamePointsKey);
+            AbilityToNextLevel = ReadInt64(
+                layout,
+                AbilityToNextLevelKey);
+            TotalAbility = ReadInt64(layout, TotalAbilityKey);
+            Weight = ReadInt32(layout, WeightKey);
+            MaximumWeight = ReadInt32(layout, MaximumWeightKey);
+            ArmorClass = ReadInt32(layout, ArmorClassKey);
+            DamageModifier = ReadInt32(layout, DamageModifierKey);
+            HitModifier = ReadInt32(layout, HitModifierKey);
+            AttackElement = ReadElement(layout, AttackElementKey);
+            DefenseElement = ReadElement(layout, DefenseElementKey);
+            MagicResistanceUnits = ReadInt32(
+                layout,
+                MagicResistanceKey);
         }
 
         protected override void Dispose(bool isDisposing)
@@ -342,23 +348,30 @@ namespace SleepHunter.Models
             MagicResistanceUnits = 0;
         }
 
-        private int ReadInt32(Settings.ClientVersion version, string key)
+        private int ReadInt32(
+            Settings.ClientLayout layout,
+            string key)
         {
-            var value = ReadInt64(version, key);
+            var value = ReadInt64(layout, key);
             if (value < int.MinValue || value > int.MaxValue)
                 return 0;
 
             return (int)value;
         }
 
-        private long ReadInt64(Settings.ClientVersion version, string key)
-            => ReadInt64(version, key, out _);
+        private long ReadInt64(
+            Settings.ClientLayout layout,
+            string key) =>
+            ReadInt64(layout, key, out _);
 
-        private long ReadInt64(Settings.ClientVersion version, string key, out bool wasRead)
+        private long ReadInt64(
+            Settings.ClientLayout layout,
+            string key,
+            out bool wasRead)
         {
             wasRead = false;
 
-            var variable = version.GetVariable(key);
+            var variable = layout.GetVariable(key);
             if (variable == null || !variable.TryReadInteger(reader, out var value))
                 return 0;
 
@@ -366,9 +379,14 @@ namespace SleepHunter.Models
             return value;
         }
 
-        private PlayerElement? ReadElement(Settings.ClientVersion version, string key)
+        private PlayerElement? ReadElement(
+            Settings.ClientLayout layout,
+            string key)
         {
-            var value = ReadInt64(version, key, out var wasRead);
+            var value = ReadInt64(
+                layout,
+                key,
+                out var wasRead);
             if (!wasRead)
                 return null;
 

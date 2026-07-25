@@ -12,7 +12,7 @@ public sealed class ClientMemoryMapLoaderTests
         var path = Path.Combine(
             TestContext.CurrentContext.TestDirectory,
             "Data",
-            "Versions.xml");
+            "ClientLayout.xml");
         using var stream = File.OpenRead(path);
 
         var map = ClientMemoryMapLoader.Load(stream);
@@ -45,15 +45,11 @@ public sealed class ClientMemoryMapLoaderTests
     public void ShouldLoadTheSingleMappingAndLeaveStreamOpen()
     {
         const string xml = """
-            <ClientVersions>
-              <Clients>
-                <Client PointerWidth="Bit32">
-                  <Variables>
-                    <Static Key="Value" Address="1000" Type="UInt32" />
-                  </Variables>
-                </Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit32">
+              <Variables>
+                <Static Key="Value" Address="1000" Type="UInt32" />
+              </Variables>
+            </ClientLayout>
             """;
         using var stream = Stream(xml);
 
@@ -67,17 +63,19 @@ public sealed class ClientMemoryMapLoaderTests
     }
 
     [Test]
-    public void ShouldRejectZeroOrMultipleMappings()
+    public void ShouldRejectLegacyCollectionAndMissingOrEmptyVariables()
     {
-        const string empty = """
-            <ClientVersions>
-              <Clients />
-            </ClientVersions>
+        const string missingVariables = """
+            <ClientLayout PointerWidth="Bit32" />
             """;
-        const string multiple = """
+        const string emptyVariables = """
+            <ClientLayout PointerWidth="Bit32">
+              <Variables />
+            </ClientLayout>
+            """;
+        const string legacyCollection = """
             <ClientVersions>
               <Clients>
-                <Client PointerWidth="Bit32"><Variables /></Client>
                 <Client PointerWidth="Bit32"><Variables /></Client>
               </Clients>
             </ClientVersions>
@@ -85,13 +83,17 @@ public sealed class ClientMemoryMapLoaderTests
 
         Assert.Multiple(() =>
         {
-            using var emptyStream = Stream(empty);
+            using var missingStream = Stream(missingVariables);
+            Assert.Throws<InvalidDataException>(
+                () => ClientMemoryMapLoader.Load(missingStream));
+
+            using var emptyStream = Stream(emptyVariables);
             Assert.Throws<InvalidDataException>(
                 () => ClientMemoryMapLoader.Load(emptyStream));
 
-            using var multipleStream = Stream(multiple);
+            using var legacyStream = Stream(legacyCollection);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(multipleStream));
+                () => ClientMemoryMapLoader.Load(legacyStream));
         });
     }
 
@@ -99,51 +101,35 @@ public sealed class ClientMemoryMapLoaderTests
     public void ShouldRejectInvalidWidthsTypesOffsetsAndLimits()
     {
         const string invalidWidth = """
-            <ClientVersions>
-              <Clients>
-                <Client Key="Version" PointerWidth="Bit16"><Variables /></Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit16"><Variables /></ClientLayout>
             """;
         const string invalidType = """
-            <ClientVersions>
-              <Clients>
-                <Client Key="Version" PointerWidth="Bit32">
-                  <Variables>
-                    <Static Key="Value" Address="1000" Type="Float32" />
-                  </Variables>
-                </Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit32">
+              <Variables>
+                <Static Key="Value" Address="1000" Type="Float32" />
+              </Variables>
+            </ClientLayout>
             """;
         const string invalidOffset = """
-            <ClientVersions>
-              <Clients>
-                <Client Key="Version" PointerWidth="Bit32">
-                  <Variables>
-                    <Dynamic Key="Value" Address="1000" Type="Byte">
-                      <Offsets><Offset Value="not-hex" /></Offsets>
-                    </Dynamic>
-                  </Variables>
-                </Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit32">
+              <Variables>
+                <Dynamic Key="Value" Address="1000" Type="Byte">
+                  <Offsets><Offset Value="not-hex" /></Offsets>
+                </Dynamic>
+              </Variables>
+            </ClientLayout>
             """;
         const string tooManyOffsets = """
-            <ClientVersions>
-              <Clients>
-                <Client Key="Version" PointerWidth="Bit32">
-                  <Variables>
-                    <Dynamic Key="Value" Address="1000" Type="Byte">
-                      <Offsets>
-                        <Offset Value="1" />
-                        <Offset Value="2" />
-                      </Offsets>
-                    </Dynamic>
-                  </Variables>
-                </Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit32">
+              <Variables>
+                <Dynamic Key="Value" Address="1000" Type="Byte">
+                  <Offsets>
+                    <Offset Value="1" />
+                    <Offset Value="2" />
+                  </Offsets>
+                </Dynamic>
+              </Variables>
+            </ClientLayout>
             """;
 
         Assert.Multiple(() =>
@@ -174,18 +160,14 @@ public sealed class ClientMemoryMapLoaderTests
     public void ShouldProhibitDocumentTypeDefinitions()
     {
         const string xml = """
-            <!DOCTYPE ClientVersions [
+            <!DOCTYPE ClientLayout [
               <!ENTITY value "1000">
             ]>
-            <ClientVersions>
-              <Clients>
-                <Client Key="Version" PointerWidth="Bit32">
-                  <Variables>
-                    <Static Key="Value" Address="&value;" Type="Byte" />
-                  </Variables>
-                </Client>
-              </Clients>
-            </ClientVersions>
+            <ClientLayout PointerWidth="Bit32">
+              <Variables>
+                <Static Key="Value" Address="&value;" Type="Byte" />
+              </Variables>
+            </ClientLayout>
             """;
         using var stream = Stream(xml);
 

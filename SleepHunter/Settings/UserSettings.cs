@@ -54,7 +54,6 @@ namespace SleepHunter.Settings
         private string spellIconFile;
         private string spellPaletteFile;
 
-        private string selectedVersion;
         private bool allowMultipleInstances = true;
         private bool skipintroVideo = true;
         private bool noWalls = false;
@@ -306,13 +305,6 @@ namespace SleepHunter.Settings
         {
             get => spellPaletteFile;
             set => SetProperty(ref spellPaletteFile, value);
-        }
-
-        [XmlElement("SelectedVersion")]
-        public string SelectedVersion
-        {
-            get => selectedVersion;
-            set => SetProperty(ref selectedVersion, value);
         }
 
         [XmlElement("AllowMultipleInstances")]
@@ -620,7 +612,6 @@ namespace SleepHunter.Settings
             SpellIconFile = "spell001.epf";
             SpellPaletteFile = "gui06.pal";
 
-            SelectedVersion = "Auto-Detect";
             AllowMultipleInstances = true;
             SkipIntroVideo = true;
             SuppressLoginNotification = true;

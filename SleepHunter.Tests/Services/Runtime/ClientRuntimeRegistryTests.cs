@@ -18,7 +18,7 @@ namespace SleepHunter.Tests.Services.Runtime;
 
 public sealed class ClientRuntimeRegistryTests
 {
-    private static readonly string MappingPath = FindVersionsFile();
+    private static readonly string MappingPath = FindLayoutFile();
 
     [Test]
     public async Task ShouldAttachFindAndDetachAnActiveRuntime()
@@ -391,7 +391,7 @@ public sealed class ClientRuntimeRegistryTests
         }
     }
 
-    private static string FindVersionsFile()
+    private static string FindLayoutFile()
     {
         var directory = new DirectoryInfo(
             TestContext.CurrentContext.TestDirectory);
@@ -400,7 +400,7 @@ public sealed class ClientRuntimeRegistryTests
             var candidate = Path.Combine(
                 directory.FullName,
                 "data",
-                "Versions.xml");
+                "ClientLayout.xml");
             if (File.Exists(candidate))
                 return candidate;
 
@@ -408,7 +408,7 @@ public sealed class ClientRuntimeRegistryTests
         }
 
         throw new FileNotFoundException(
-            "Could not locate data/Versions.xml from the test directory.");
+            "Could not locate data/ClientLayout.xml from the test directory.");
     }
 
     private static ClientRuntimeDescriptor Descriptor(int processId) =>

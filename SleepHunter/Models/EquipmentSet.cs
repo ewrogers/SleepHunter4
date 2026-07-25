@@ -208,18 +208,18 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            if (TryUpdateFromSnapshot(version))
+            if (TryUpdateFromSnapshot(layout))
                 return;
 
-            if (!version.TryGetVariable(EquipmentKey, out var equipmentVariable))
+            if (!layout.TryGetVariable(EquipmentKey, out var equipmentVariable))
             {
                 ResetDefaults();
                 return;
@@ -261,9 +261,10 @@ namespace SleepHunter.Models
             ResetDefaults(entryCount);
         }
 
-        private bool TryUpdateFromSnapshot(Settings.ClientVersion version)
+        private bool TryUpdateFromSnapshot(
+            Settings.ClientLayout layout)
         {
-            if (!version.TryGetVariable(EquipmentSnapshotKey, out var snapshotVariable) ||
+            if (!layout.TryGetVariable(EquipmentSnapshotKey, out var snapshotVariable) ||
                 !snapshotVariable.TryDereferenceValue(reader, out var snapshotAddress))
             {
                 return false;

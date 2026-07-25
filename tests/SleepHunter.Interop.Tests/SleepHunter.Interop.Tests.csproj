@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\data\Versions.xml"
-          Link="Data\Versions.xml"
+    <None Include="..\..\data\ClientLayout.xml"
+          Link="Data\ClientLayout.xml"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

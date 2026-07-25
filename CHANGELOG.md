@@ -43,11 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 - Replaced the window-owned process and client `BackgroundWorker` loops with independently paced, cancellable async polling that is awaited during shutdown
 - Moved global hotkey assignment, transfer, clearing, and rollback behavior into a tested application service
+- Replaced the version collection and selector with one bounded `ClientLayout.xml` document shared by application and Interop memory readers
 
 ### Removed
 
 - Removed the Zolian-only Water & Beds automation, its feature tab, client feature flag, and private macro-state storage
-- Removed legacy Zolian and XML `Auto-Detect` mapping profiles so `Versions.xml` contains exactly one configurable client layout
+- Removed legacy Zolian and `Auto-Detect` mapping profiles, signature-based client version routing, and the unused client version selector
 - Removed the legacy macro executor, lock-based queue processing, deferred dispatcher, execution flags on players, and the 16 ms flower update worker
 - Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
 - Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
