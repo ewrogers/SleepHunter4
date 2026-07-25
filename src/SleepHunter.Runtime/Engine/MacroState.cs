@@ -1,6 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -37,7 +38,11 @@ public sealed record MacroState
         SkillCooldownState? skillCooldowns = null,
         SkillUseState? skillUse = null,
         DisarmState? disarm = null,
-        DialogState? dialog = null)
+        DialogState? dialog = null,
+        FlowerQueueState? flowerQueue = null,
+        FlowerScheduleState? flowerSchedules = null,
+        FlowerClientSetSnapshot? flowerClients = null,
+        FlowerState? flower = null)
     {
         if (revision < 0)
         {
@@ -87,6 +92,10 @@ public sealed record MacroState
         SkillUse = skillUse;
         Disarm = disarm;
         Dialog = dialog;
+        FlowerQueue = flowerQueue ?? FlowerQueueState.Empty;
+        FlowerSchedules = flowerSchedules ?? FlowerScheduleState.Empty;
+        FlowerClients = flowerClients ?? FlowerClientSetSnapshot.Empty;
+        Flower = flower;
     }
 
     public long Revision { get; }
@@ -120,6 +129,14 @@ public sealed record MacroState
     public DisarmState? Disarm { get; }
 
     public DialogState? Dialog { get; }
+
+    public FlowerQueueState FlowerQueue { get; }
+
+    public FlowerScheduleState FlowerSchedules { get; }
+
+    public FlowerClientSetSnapshot FlowerClients { get; }
+
+    public FlowerState? Flower { get; }
 
     internal long NextClientActionId { get; }
 }

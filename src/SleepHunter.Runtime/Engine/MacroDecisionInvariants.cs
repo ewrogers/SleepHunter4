@@ -1,5 +1,6 @@
 ﻿using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -186,6 +187,57 @@ internal static class MacroDecisionInvariants
         {
             throw new InvalidOperationException(
                 "Spell casting can wait only on its pending spell panel action.");
+        }
+
+        var flowerSpellCast = decision.State.SpellCast is
+        {
+            Origin: SpellCastOrigin.Flower
+        } flowerCast
+            ? flowerCast
+            : null;
+        var flowerSpellEntry = decision.State.Flower?.SpellEntry;
+        if (flowerSpellCast is not null &&
+            (decision.State.Flower?.Action is null ||
+             flowerSpellEntry is null))
+        {
+            throw new InvalidOperationException(
+                "Flower spell casting requires flower action state.");
+        }
+
+        if (flowerSpellCast is not null &&
+            flowerSpellEntry is not null &&
+            !flowerSpellCast.Plan.Queue.Entries.Contains(flowerSpellEntry))
+        {
+            throw new InvalidOperationException(
+                "Flower spell casting requires matching flower action state.");
+        }
+
+        var flowerStatusMatchesSpell = decision.State.Flower?.Status switch
+        {
+            FlowerStatus.WaitingForStaff =>
+                flowerSpellCast?.Status == SpellCastStatus.WaitingForStaff,
+            FlowerStatus.WaitingForPanel =>
+                flowerSpellCast?.Status == SpellCastStatus.WaitingForPanel,
+            FlowerStatus.Casting =>
+                flowerSpellCast?.Status == SpellCastStatus.Casting,
+            FlowerStatus.Succeeded =>
+                flowerSpellCast is null ||
+                flowerSpellCast?.Status == SpellCastStatus.Succeeded,
+            FlowerStatus.StaffUnavailable =>
+                flowerSpellCast is null ||
+                flowerSpellCast?.Status == SpellCastStatus.StaffUnavailable,
+            FlowerStatus.PanelUnavailable =>
+                flowerSpellCast is null ||
+                flowerSpellCast?.Status == SpellCastStatus.PanelUnavailable,
+            FlowerStatus.Cancelled =>
+                flowerSpellCast is null ||
+                flowerSpellCast.Status == SpellCastStatus.Cancelled,
+            _ => true
+        };
+        if (!flowerStatusMatchesSpell)
+        {
+            throw new InvalidOperationException(
+                "Flower action status must match its spell cast state.");
         }
 
         var pendingDisarmIntent =

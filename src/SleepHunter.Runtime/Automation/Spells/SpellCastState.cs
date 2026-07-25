@@ -15,7 +15,8 @@ public sealed record SpellCastState
         TimeSpan? castDuration,
         ClientActionId? actionId,
         MacroTimestamp? completesAt,
-        MacroTimestamp? snapshotRequiredAfter)
+        MacroTimestamp? snapshotRequiredAfter,
+        SpellCastOrigin origin)
     {
         Plan = plan;
         Policy = policy;
@@ -26,6 +27,7 @@ public sealed record SpellCastState
         ActionId = actionId;
         CompletesAt = completesAt;
         SnapshotRequiredAfter = snapshotRequiredAfter;
+        Origin = origin;
     }
 
     public SpellCastPlan Plan { get; private init; }
@@ -46,10 +48,13 @@ public sealed record SpellCastState
 
     public MacroTimestamp? SnapshotRequiredAfter { get; private init; }
 
+    public SpellCastOrigin Origin { get; }
+
     internal static SpellCastState FromPlan(
         SpellCastPlan plan,
         SpellExecutionPolicy policy,
-        MacroTimestamp? snapshotRequiredAfter = null)
+        MacroTimestamp? snapshotRequiredAfter = null,
+        SpellCastOrigin origin = SpellCastOrigin.SpellQueue)
     {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(policy);
@@ -63,7 +68,8 @@ public sealed record SpellCastState
             plan.CastDuration,
             actionId: null,
             completesAt: null,
-            snapshotRequiredAfter);
+            snapshotRequiredAfter,
+            origin);
     }
 
     internal SpellCastState WaitingForStaff(
@@ -125,13 +131,13 @@ public sealed record SpellCastState
         };
 
     internal SpellCastState Replanned(SpellCastPlan plan) =>
-        FromPlan(plan, Policy, SnapshotRequiredAfter);
+        FromPlan(plan, Policy, SnapshotRequiredAfter, Origin);
 
     internal SpellCastState Succeeded() =>
         this with { Status = SpellCastStatus.Succeeded };
 
     internal SpellCastState SelectionInvalidated(SpellCastPlan plan) =>
-        FromPlan(plan, Policy, SnapshotRequiredAfter) with
+        FromPlan(plan, Policy, SnapshotRequiredAfter, Origin) with
         {
             Status = SpellCastStatus.SelectionInvalidated,
             ActionId = null

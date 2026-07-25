@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Channels;
 
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
@@ -20,6 +21,8 @@ public sealed class MacroSession : IAsyncDisposable
     private readonly IMacroEngine engine;
     private readonly Channel<MacroIntent> intents;
     private readonly Queue<MacroEvent> immediateEvents = new();
+    private readonly LatestValueMailbox<FlowerClientSetSnapshot> flowerClients =
+        new();
     private readonly LatestValueMailbox<ClientSnapshot> snapshots = new();
     private readonly PriorityQueue<
         ScheduledMacroEvent,
@@ -111,6 +114,19 @@ public sealed class MacroSession : IAsyncDisposable
         return true;
     }
 
+    public bool PublishFlowerClients(FlowerClientSetSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ThrowIfDisposing();
+
+        ObjectDisposedException.ThrowIf(
+            !flowerClients.TryWrite(snapshot),
+            this);
+
+        SignalWorker();
+        return true;
+    }
+
     public async ValueTask DisposeAsync()
     {
         var isFirstDispose = Interlocked.Exchange(ref disposeState, 1) == 0;
@@ -118,6 +134,7 @@ public sealed class MacroSession : IAsyncDisposable
         {
             commands.Writer.TryComplete();
             snapshots.Complete();
+            flowerClients.Complete();
             disposeCancellation.Cancel();
             SignalWorker();
         }
@@ -148,6 +165,7 @@ public sealed class MacroSession : IAsyncDisposable
 
                 var didWork = ProcessCommands();
                 didWork |= ProcessLatestSnapshot();
+                didWork |= ProcessLatestFlowerClients();
                 didWork |= ProcessDueEvents();
 
                 if (didWork)
@@ -198,6 +216,17 @@ public sealed class MacroSession : IAsyncDisposable
         }
 
         ProcessInput(new ClientSnapshotObserved(snapshot));
+        return true;
+    }
+
+    private bool ProcessLatestFlowerClients()
+    {
+        if (!flowerClients.TryReadLatest(out var snapshot))
+        {
+            return false;
+        }
+
+        ProcessInput(new FlowerClientsObserved(snapshot));
         return true;
     }
 
