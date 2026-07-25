@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed legacy Zolian and XML `Auto-Detect` mapping profiles so `Versions.xml` contains exactly one configurable client layout
 - Removed the legacy macro executor, lock-based queue processing, deferred dispatcher, execution flags on players, and the 16 ms flower update worker
 - Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
+- Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
 
 ### Fixed
 

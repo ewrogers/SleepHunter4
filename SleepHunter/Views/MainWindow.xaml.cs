@@ -111,12 +111,7 @@ namespace SleepHunter.Views
                 TimeProvider.System,
                 () => AbilitySnapshotCatalogFactory.Create(
                     SkillMetadataManager.Instance.Skills,
-                    SpellMetadataManager.Instance.Spells),
-                App.Current.Services.GetService<
-                    IMacroConfigurationReader>(),
-                () => LegacySpellQueueRotationMapper.Map(
-                    UserSettingsManager.Instance.Settings
-                        .SpellRotationMode));
+                    SpellMetadataManager.Instance.Spells));
             clientList = new ClientListViewModel(
                 (player, runtime) =>
                     new ClientListItemViewModel(
@@ -1490,9 +1485,6 @@ namespace SleepHunter.Views
                 showError);
             if (loaded is not null)
             {
-                await SynchronizeRuntimeMacroConfiguration(
-                    configuration,
-                    loaded);
                 if (loaded.Format ==
                     MacroConfigurationFormat.LegacyV4)
                 {
@@ -1516,36 +1508,6 @@ namespace SleepHunter.Views
                     logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
                 }
             }
-        }
-
-        private async Task SynchronizeRuntimeMacroConfiguration(
-            PlayerMacroConfiguration macroConfiguration,
-            MacroConfigurationLoadResult loaded)
-        {
-            if (!runtimeClients.TryFindConfiguration(
-                    macroConfiguration.Client.Process.ProcessId,
-                    out var configuration))
-            {
-                logger.LogWarn(
-                    $"No runtime is available for {macroConfiguration.Client.Name}; skipped deterministic configuration synchronization.");
-                return;
-            }
-
-            await configuration.ApplyAsync(loaded);
-
-            if (configuration.LastError is { } error)
-            {
-                logger.LogError(
-                    $"Unable to synchronize {macroConfiguration.Client.Name} macro configuration with the runtime.");
-                logger.LogException(error);
-                return;
-            }
-
-            if (configuration.LatestLoad is null)
-                return;
-
-            logger.LogInfo(
-                $"Synchronized {macroConfiguration.Client.Name} runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
         }
 
         private async Task<MacroConfigurationLoadResult>
@@ -1703,16 +1665,9 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
             {
-                var configuration = selectedMacro;
-                var loaded = await LoadMacroConfigurationAsync(
-                    configuration,
+                await LoadMacroConfigurationAsync(
+                    selectedMacro,
                     dialog.FileName);
-                if (loaded is not null)
-                {
-                    await SynchronizeRuntimeMacroConfiguration(
-                        configuration,
-                        loaded);
-                }
             }
         }
 
