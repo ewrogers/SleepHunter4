@@ -1,4 +1,4 @@
-﻿using SleepHunter.Runtime.Effects;
+﻿using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -29,17 +29,27 @@ internal static class MacroDecisionInvariants
                 "Published view revision must match the state revision.");
         }
 
-        if (decision.Effect is ClientActionEffect &&
-            decision.State.Lifecycle != MacroLifecycle.Running)
+        if (decision.Intent is ClientActionIntent clientActionIntent)
         {
-            throw new InvalidOperationException(
-                "Client actions are only allowed while the macro is running.");
+            if (decision.State.Lifecycle != MacroLifecycle.Running)
+            {
+                throw new InvalidOperationException(
+                    "Client action intents are only allowed while the macro is running.");
+            }
+
+            if (decision.State.PendingAction?.Intent.ActionId !=
+                clientActionIntent.ActionId)
+            {
+                throw new InvalidOperationException(
+                    "Client action intents require matching bounded pending action state.");
+            }
         }
 
-        if (decision.NextDeadline is { } deadline && deadline < currentTime)
+        if (decision.ScheduledEvents.Any(
+                scheduledEvent => scheduledEvent.DueAt < currentTime))
         {
             throw new InvalidOperationException(
-                "The next deadline cannot be earlier than the current time.");
+                "Scheduled events cannot be earlier than the current time.");
         }
     }
 }

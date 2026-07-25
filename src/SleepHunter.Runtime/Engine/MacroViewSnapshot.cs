@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Snapshots;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -9,7 +10,8 @@ public sealed record MacroViewSnapshot(
     MacroStopReason StopReason,
     SnapshotSequence? LatestSnapshotSequence,
     ClientPresence Presence,
-    MacroTimestamp? LastTransitionAt)
+    MacroTimestamp? LastTransitionAt,
+    ClientActionId? PendingActionId)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -21,6 +23,7 @@ public sealed record MacroViewSnapshot(
             state.StopReason,
             state.LatestSnapshot?.Sequence,
             state.LatestSnapshot?.Presence ?? ClientPresence.Unknown,
-            state.LastTransitionAt);
+            state.LastTransitionAt,
+            state.PendingAction?.Intent.ActionId);
     }
 }

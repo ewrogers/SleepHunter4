@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
-
-using SleepHunter.Runtime.Effects;
 using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -11,8 +10,8 @@ public sealed record MacroDecision
     internal MacroDecision(
         MacroState state,
         ImmutableArray<MacroEvent> raisedEvents,
-        MacroEffect? effect,
-        MacroTimestamp? nextDeadline,
+        ImmutableArray<ScheduledMacroEvent> scheduledEvents,
+        MacroIntent? intent,
         MacroViewSnapshot? publishedView)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -24,10 +23,17 @@ public sealed record MacroDecision
                 nameof(raisedEvents));
         }
 
+        if (scheduledEvents.IsDefault)
+        {
+            throw new ArgumentException(
+                "Scheduled events must be an initialized immutable array.",
+                nameof(scheduledEvents));
+        }
+
         State = state;
         RaisedEvents = raisedEvents;
-        Effect = effect;
-        NextDeadline = nextDeadline;
+        ScheduledEvents = scheduledEvents;
+        Intent = intent;
         PublishedView = publishedView;
     }
 
@@ -35,9 +41,14 @@ public sealed record MacroDecision
 
     public ImmutableArray<MacroEvent> RaisedEvents { get; }
 
-    public MacroEffect? Effect { get; }
+    public ImmutableArray<ScheduledMacroEvent> ScheduledEvents { get; }
 
-    public MacroTimestamp? NextDeadline { get; }
+    public MacroIntent? Intent { get; }
+
+    public MacroTimestamp? NextDeadline =>
+        ScheduledEvents.IsEmpty
+            ? null
+            : ScheduledEvents.Min(scheduledEvent => scheduledEvent.DueAt);
 
     public MacroViewSnapshot? PublishedView { get; }
 }
