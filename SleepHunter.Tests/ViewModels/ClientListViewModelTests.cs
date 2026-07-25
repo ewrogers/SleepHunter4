@@ -177,11 +177,11 @@ public sealed class ClientListViewModelTests
     public async Task ShouldConfigureRuntimeBeforeStartingOrResuming()
     {
         using var player = CreatePlayer();
-        var macroState = new PlayerMacroState(player)
+        var macroConfiguration = new PlayerMacroConfiguration(player)
         {
             SpellQueueRotation = SpellRotationMode.RoundRobin
         };
-        macroState.AddToSpellQueue(
+        macroConfiguration.AddToSpellQueue(
             new SpellQueueItem
             {
                 Name = "test spell",
@@ -197,10 +197,10 @@ public sealed class ClientListViewModelTests
             new InlineUiDispatcher());
         using var item = new ClientListItemViewModel(
             player,
-            macroState,
+            macroConfiguration,
             runtime,
             new RuntimeMacroConfigurationAdapter(
-                new MacroStateSerializer()),
+                new LegacyMacroConfigurationSerializer()),
             new RuntimeAutomationSetupFactory(
                 new EmptyStaffCandidateProvider()),
             () => new UserSettings
@@ -214,10 +214,34 @@ public sealed class ClientListViewModelTests
         host.PublishCapture(CreateCapture(
             host.Client,
             sequenceValue: 1,
-            succeeded: true));
+            succeeded: true,
+            spellbook: new SpellbookSnapshot(
+            [
+                new SpellSnapshot(
+                    "test spell",
+                    slot: 1,
+                    currentLevel: 5,
+                    maximumLevel: 10,
+                    castLines: 1,
+                    manaCost: 25,
+                    cooldown: TimeSpan.FromSeconds(1),
+                    isActionDelayed: true)
+            ])));
         await WaitUntilAsync(
             () => item.StartOrResumeMacroCommand.CanExecute(null));
 
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                macroConfiguration.QueuedSpells.Single().CurrentLevel,
+                Is.EqualTo(5));
+            Assert.That(
+                macroConfiguration.QueuedSpells.Single().MaximumLevel,
+                Is.EqualTo(10));
+            Assert.That(
+                macroConfiguration.QueuedSpells.Single().IsOnCooldown,
+                Is.True);
+        });
         await item.StartOrResumeMacroCommand.ExecuteAsync(null);
 
         var replace = await host.ReadCommandAsync();
@@ -373,7 +397,8 @@ public sealed class ClientListViewModelTests
         ClientIdentity client,
         long sequenceValue,
         bool succeeded,
-        ClientPresence presence = ClientPresence.InWorld)
+        ClientPresence presence = ClientPresence.InWorld,
+        SpellbookSnapshot? spellbook = null)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -414,6 +439,7 @@ public sealed class ClientListViewModelTests
                             currentMana: 500,
                             maximumMana: 600)
                         : null,
+                    spellbook: spellbook,
                     location: presence == ClientPresence.InWorld
                         ? new MapLocationSnapshot(
                             mapNumber: 1,

@@ -53,7 +53,10 @@ namespace SleepHunter.Views
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
-        private readonly IMacroStateSerializer macroStateSerializer;
+        private readonly ILegacyMacroConfigurationSerializer
+            legacyMacroSerializer;
+        private readonly PlayerMacroConfigurationManager
+            macroConfigurations;
         private readonly ClientListViewModel clientList;
         private readonly ClientRuntimeRegistry runtimeClients;
 
@@ -69,15 +72,18 @@ namespace SleepHunter.Views
 
         private BackgroundWorker processScannerWorker;
         private BackgroundWorker clientUpdateWorker;
-        private BackgroundWorker flowerUpdateWorker;
-
-        private PlayerMacroState selectedMacro;
+        private PlayerMacroConfiguration selectedMacro;
 
         public MainWindow()
         {
             logger = App.Current.Services.GetService<ILogger>();
             releaseService = App.Current.Services.GetService<IReleaseService>();
-            macroStateSerializer = App.Current.Services.GetService<IMacroStateSerializer>();
+            legacyMacroSerializer =
+                App.Current.Services.GetService<
+                    ILegacyMacroConfigurationSerializer>();
+            macroConfigurations =
+                App.Current.Services.GetService<
+                    PlayerMacroConfigurationManager>();
             var runtimeConfigurationAdapter =
                 App.Current.Services.GetService<
                     IRuntimeMacroConfigurationAdapter>();
@@ -104,7 +110,7 @@ namespace SleepHunter.Views
                 (player, runtime) =>
                     new ClientListItemViewModel(
                         player,
-                        MacroManager.Instance.GetMacroState(player),
+                        macroConfigurations.GetOrCreate(player),
                         runtime,
                         runtimeConfigurationAdapter,
                         runtimeSetupFactory,
@@ -156,7 +162,6 @@ namespace SleepHunter.Views
             {
                 processScannerWorker?.Dispose();
                 clientUpdateWorker?.Dispose();
-                flowerUpdateWorker?.Dispose();
                 clientList.Dispose();
             }
 
@@ -488,7 +493,7 @@ namespace SleepHunter.Views
         {
             logger.LogInfo($"Game client process removed with pid: {e.Player.Process.ProcessId}");
 
-            OnPlayerLoggedOut(e.Player);
+            await OnPlayerLoggedOutAsync(e.Player);
 
             UpdateToolbarState();
             UpdateClientList();
@@ -496,6 +501,8 @@ namespace SleepHunter.Views
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
                 SelectNextAvailablePlayer();
 
+            macroConfigurations.Remove(
+                e.Player.Process.ProcessId);
             await runtimeClients.DetachAsync(e.Player.Process.ProcessId);
         }
 
@@ -509,9 +516,9 @@ namespace SleepHunter.Views
             if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
                 if (!player.IsLoggedIn)
-                    OnPlayerLoggedOut(player);
+                    await OnPlayerLoggedOutAsync(player);
                 else
-                    OnPlayerLoggedIn(player);
+                    await OnPlayerLoggedInAsync(player);
             }
 
             UpdateClientList();
@@ -533,7 +540,7 @@ namespace SleepHunter.Views
             }
         }
 
-        private async void OnPlayerLoggedIn(Player player)
+        private async Task OnPlayerLoggedInAsync(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
@@ -550,30 +557,37 @@ namespace SleepHunter.Views
                 NativeMethods.SetWindowText(player.Process.WindowHandle, $"{player.Version.WindowTitle} - {player.Name}");
 
             var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
-            var state = MacroManager.Instance.GetMacroState(player);
+            var configuration =
+                macroConfigurations.GetOrCreate(player);
 
-            if (state != null)
-                state.Client.Updated += HandleClientUpdateTick;
-
-            if (autosaveEnabled && state != null)
+            if (autosaveEnabled)
             {
-                logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
-                await AutoLoadMacroState(state);
+                logger.LogInfo(
+                    $"Auto-loading {configuration.Client.Name} macro configuration...");
+                await AutoLoadMacroConfigurationAsync(configuration);
             }
 
             UpdateWindowTitle();
 
             // Set default spell queue rotation mode
-            if (state.SpellQueueRotation == SpellRotationMode.Default)
-                state.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
+            if (configuration.SpellQueueRotation ==
+                SpellRotationMode.Default)
+            {
+                configuration.SpellQueueRotation =
+                    UserSettingsManager.Instance.Settings
+                        .SpellRotationMode;
+            }
         }
 
-        private async void OnPlayerLoggedOut(Player player)
+        private async Task OnPlayerLoggedOutAsync(Player player)
         {
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
             await Dispatcher.SwitchToUIThread();
+
+            if (player.LoginTimestamp is null)
+                return;
 
             player.LoginTimestamp = null;
             UpdateClientList();
@@ -583,12 +597,14 @@ namespace SleepHunter.Views
             NativeMethods.SetWindowText(player.Process.WindowHandle, player.Version.WindowTitle);
 
             var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
-            var state = MacroManager.Instance.GetMacroState(player);
+            var configuration =
+                macroConfigurations.GetOrCreate(player);
 
-            if (autosaveEnabled && state != null)
+            if (autosaveEnabled)
             {
-                logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
-                AutoSaveMacroState(state);
+                logger.LogInfo(
+                    $"Auto-saving {configuration.Client.Name} macro configuration...");
+                AutoSaveMacroConfiguration(configuration);
             }
 
             if (player.HasHotkey)
@@ -598,13 +614,8 @@ namespace SleepHunter.Views
 
             UpdateWindowTitle();
 
-            if (state != null)
-            {
-                state.Client.Updated -= HandleClientUpdateTick;
-
-                state.ClearSpellQueue();
-                state.ClearFlowerQueue();
-            }
+            configuration.ClearSpellQueue();
+            configuration.ClearFlowerQueue();
 
             UpdateUIForSelectedClient(player.Name);
         }
@@ -618,38 +629,6 @@ namespace SleepHunter.Views
 
             if (!PlayerManager.Instance.LoggedInPlayers.Any())
                 ToggleSpellQueue(false);
-        }
-
-        private void HandleClientUpdateTick(object sender, EventArgs e)
-        {
-            if (selectedMacro == null || sender is not Player player)
-                return;
-
-            if (selectedMacro.Client != player)
-                return;
-
-            // Refresh the spell queue levels on tick
-            foreach (var queuedSpell in selectedMacro.QueuedSpells)
-            {
-                var spell = player.Spellbook.GetSpell(queuedSpell.Name);
-                if (spell is null)
-                    continue;
-
-                queuedSpell.MaximumLevel = spell.MaximumLevel;
-                queuedSpell.CurrentLevel = spell.CurrentLevel;
-                queuedSpell.IsOnCooldown = spell.IsOnCooldown;
-
-                var isWaitingOnHealth = false;
-
-                // Min health percentage (ex: > 90%), cannot use yet
-                if (spell.MinHealthPercent.HasValue && spell.MinHealthPercent.Value >= player.Stats.HealthPercent)
-                    isWaitingOnHealth = true;
-                // Max health percentage (ex: < 2%), cannot use yet
-                else if (spell.MaxHealthPercent.HasValue && player.Stats.HealthPercent > spell.MaxHealthPercent.Value)
-                    isWaitingOnHealth = true;
-
-                queuedSpell.IsWaitingOnHealth = isWaitingOnHealth;
-            }
         }
 
         private void SelectNextAvailablePlayer()
@@ -900,7 +879,6 @@ namespace SleepHunter.Views
 
             StartProcessScanner();
             StartClientUpdate();
-            StartFlowerUpdate();
         }
 
         private void StartProcessScanner()
@@ -978,39 +956,6 @@ namespace SleepHunter.Views
             // Start immediately!
             clientUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
             logger.LogInfo("Client update background worker has started");
-        }
-
-        private void StartFlowerUpdate()
-        {
-            var updateInterval = TimeSpan.FromMilliseconds(16);
-
-            flowerUpdateWorker = new BackgroundWorker
-            {
-                WorkerReportsProgress = true
-            };
-
-            flowerUpdateWorker.DoWork += (sender, e) =>
-            {
-                var delayTime = (TimeSpan)e.Argument;
-
-                if (delayTime > TimeSpan.Zero)
-                    Thread.Sleep(delayTime);
-
-                foreach (var macro in MacroManager.Instance.Macros)
-                    if (macro.Status == MacroStatus.Running)
-                        macro.TickFlowerTimers(updateInterval);
-            };
-
-            flowerUpdateWorker.RunWorkerCompleted += (sender, e) =>
-            {
-                if (e.Cancelled)
-                    return;
-
-                flowerUpdateWorker.RunWorkerAsync(updateInterval);
-            };
-
-            flowerUpdateWorker.RunWorkerAsync(updateInterval);
-            logger.LogInfo($"Flower update background worker has started, interval = {updateInterval.TotalMilliseconds:0}ms");
         }
 
         private void ApplyTheme()
@@ -1372,23 +1317,25 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
             }
 
-            var allMacros = MacroManager.Instance.Macros.ToList();
+            var configurations =
+                macroConfigurations.Configurations.ToList();
 
-            foreach (var state in allMacros)
+            foreach (var configuration in configurations)
             {
-                state.Stop();
-
-                if (state.Client is not { IsLoggedIn: true })
+                if (configuration.Client is not { IsLoggedIn: true })
                     continue;
-
-                state.Stop();
 
                 if (UserSettingsManager.Instance.Settings.SaveMacroStates)
                 {
-                    logger.LogInfo($"Auto-saving {state.Client.Name} macro state...");
-                    AutoSaveMacroState(state, showError: false);
+                    logger.LogInfo(
+                        $"Auto-saving {configuration.Client.Name} macro configuration...");
+                    AutoSaveMacroConfiguration(
+                        configuration,
+                        showError: false);
                 }
             }
+
+            macroConfigurations.Clear();
 
             PlayerManager.Instance.PlayerAdded -= OnPlayerCollectionAdd;
             PlayerManager.Instance.PlayerRemoved -= OnPlayerCollectionRemove;
@@ -1444,7 +1391,9 @@ namespace SleepHunter.Views
             }
         }
 
-        private void AutoSaveMacroState(PlayerMacroState state, bool showError = true)
+        private void AutoSaveMacroConfiguration(
+            PlayerMacroConfiguration configuration,
+            bool showError = true)
         {
             var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
             try
@@ -1462,47 +1411,72 @@ namespace SleepHunter.Views
 
                 if (showError)
                 {
-                    this.ShowMessageBox("Failed to Autosave", $"Unable to save macro state for {state.Client.Name}.", ex.Message);
+                    this.ShowMessageBox(
+                        "Failed to Autosave",
+                        $"Unable to save macro configuration for {configuration.Client.Name}.",
+                        ex.Message);
                     return;
                 }
             }
 
-            var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
+            var autosaveFile =
+                $"{configuration.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
             var autosaveFilePath = Path.Combine(autosaveDirectory, autosaveFile);
 
-            SaveMacroState(state, autosaveFilePath, showError);
+            SaveMacroConfiguration(
+                configuration,
+                autosaveFilePath,
+                showError);
         }
 
-        private void SaveMacroState(PlayerMacroState state, string filename, bool showError = true)
+        private void SaveMacroConfiguration(
+            PlayerMacroConfiguration configuration,
+            string filename,
+            bool showError = true)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(configuration));
+            }
 
             if (filename == null)
                 throw new ArgumentNullException(nameof(filename));
 
             try
             {
-                logger.LogInfo($"Saving {state.Client.Name} macro state into {filename}...");
-                macroStateSerializer.Serialize(state, filename);
+                logger.LogInfo(
+                    $"Saving {configuration.Client.Name} macro configuration into {filename}...");
+                legacyMacroSerializer.Serialize(
+                    configuration,
+                    filename);
                 logger.LogInfo("Serialized successfully");
             }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                logger.LogError($"Unable to save macro state file: {filename}");
+                logger.LogError(
+                    $"Unable to save macro configuration file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Save Macro", $"Unable to save the macro state for {state.Client.Name}.", ex.Message);
+                {
+                    this.ShowMessageBox(
+                        "Failed to Save Macro",
+                        $"Unable to save the macro configuration for {configuration.Client.Name}.",
+                        ex.Message);
+                }
             }
         }
 
-        private async Task AutoLoadMacroState(
-            PlayerMacroState state,
+        private async Task AutoLoadMacroConfigurationAsync(
+            PlayerMacroConfiguration configuration,
             bool showError = true)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(configuration));
+            }
 
             var autosaveDirectory = Path.Combine(Environment.CurrentDirectory, "autosave");
             if (!Directory.Exists(autosaveDirectory))
@@ -1511,7 +1485,8 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
+            var autosaveFile =
+                $"{configuration.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
             var autosaveFilePath = Path.Combine(autosaveDirectory, autosaveFile);
 
             if (!File.Exists(autosaveFilePath))
@@ -1520,11 +1495,14 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var didLoad = LoadMacroState(state, autosaveFilePath, showError);
+            var didLoad = LoadMacroConfiguration(
+                configuration,
+                autosaveFilePath,
+                showError);
             if (didLoad)
             {
                 await SynchronizeRuntimeMacroConfiguration(
-                    state,
+                    configuration,
                     autosaveFilePath);
             }
 
@@ -1544,15 +1522,15 @@ namespace SleepHunter.Views
         }
 
         private async Task SynchronizeRuntimeMacroConfiguration(
-            PlayerMacroState state,
+            PlayerMacroConfiguration macroConfiguration,
             string filename)
         {
             if (!runtimeClients.TryFindConfiguration(
-                    state.Client.Process.ProcessId,
+                    macroConfiguration.Client.Process.ProcessId,
                     out var configuration))
             {
                 logger.LogWarn(
-                    $"No runtime is available for {state.Client.Name}; skipped deterministic configuration synchronization.");
+                    $"No runtime is available for {macroConfiguration.Client.Name}; skipped deterministic configuration synchronization.");
                 return;
             }
 
@@ -1561,7 +1539,7 @@ namespace SleepHunter.Views
             if (configuration.LastError is { } error)
             {
                 logger.LogError(
-                    $"Unable to synchronize {state.Client.Name} macro configuration with the runtime.");
+                    $"Unable to synchronize {macroConfiguration.Client.Name} macro configuration with the runtime.");
                 logger.LogException(error);
                 return;
             }
@@ -1570,7 +1548,7 @@ namespace SleepHunter.Views
                 return;
 
             logger.LogInfo(
-                $"Synchronized {state.Client.Name} runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
+                $"Synchronized {macroConfiguration.Client.Name} runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
             foreach (var warning in loaded.Warnings)
             {
                 logger.LogWarn(
@@ -1578,51 +1556,65 @@ namespace SleepHunter.Views
             }
         }
 
-        private bool LoadMacroState(PlayerMacroState state, string filename, bool showError = true)
+        private bool LoadMacroConfiguration(
+            PlayerMacroConfiguration configuration,
+            string filename,
+            bool showError = true)
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(configuration));
+            }
 
             if (filename == null)
                 throw new ArgumentNullException(nameof(filename));
-
-            state.Stop();
 
             SerializedMacroState deserialized;
 
             try
             {
-                logger.LogInfo($"Loading {state.Client.Name} macro state from {filename}...");
-                deserialized = macroStateSerializer.Deserialize(state, filename);
+                logger.LogInfo(
+                    $"Loading {configuration.Client.Name} macro configuration from {filename}...");
+                deserialized = legacyMacroSerializer.Deserialize(filename);
                 logger.LogInfo("Deserialized successfully");
             }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                logger.LogError($"Unable to load macro state file: {filename}");
+                logger.LogError(
+                    $"Unable to load macro configuration file: {filename}");
 
                 if (showError)
-                    this.ShowMessageBox("Failed to Load Macro", $"Unable to load the macro state for {state.Client.Name}.", ex.Message);
+                {
+                    this.ShowMessageBox(
+                        "Failed to Load Macro",
+                        $"Unable to load the macro configuration for {configuration.Client.Name}.",
+                        ex.Message);
+                }
 
                 return false;
             }
 
             try
             {
-                logger.LogInfo($"Updating {state.Client.Name} macro state from deserialized data...");
+                logger.LogInfo(
+                    $"Updating {configuration.Client.Name} macro configuration from deserialized data...");
 
                 var process = Process.GetCurrentProcess();
 
-                // Stop macro and unregister any current hotkey
-                state.Stop();
+                // Unregister any current hotkey
+                if (configuration.Client.HasHotkey)
+                {
+                    HotkeyManager.Instance.UnregisterHotkey(
+                        process.MainWindowHandle,
+                        configuration.Client.Hotkey);
+                }
 
-                if (state.Client.HasHotkey)
-                    HotkeyManager.Instance.UnregisterHotkey(process.MainWindowHandle, state.Client.Hotkey);
-
-                // Clear state
-                state.Client.Skillbook.ClearActiveSkills();
-                state.ClearSpellQueue();
-                state.ClearFlowerQueue();
+                // Clear configuration
+                configuration.Client.Skillbook.ClearActiveSkills();
+                configuration.ClearSpellQueue();
+                configuration.ClearFlowerQueue();
 
                 // Re-register the new hotkey (if defined)
                 if (deserialized.Hotkey != null)
@@ -1630,36 +1622,48 @@ namespace SleepHunter.Views
                     var hotkey = new Hotkey(deserialized.Hotkey.Modifiers, deserialized.Hotkey.Key);
                     HotkeyManager.Instance.RegisterHotkey(process.MainWindowHandle, hotkey);
 
-                    state.Client.Hotkey = hotkey;
+                    configuration.Client.Hotkey = hotkey;
                 }
-                else state.Client.Hotkey = null;
+                else configuration.Client.Hotkey = null;
 
                 // Set spell rotation mode and flower configuration
                 if (deserialized.SpellRotation != SpellRotationMode.Default)
-                    state.SpellQueueRotation = deserialized.SpellRotation;
+                    configuration.SpellQueueRotation =
+                        deserialized.SpellRotation;
                 else
-                    state.SpellQueueRotation = UserSettingsManager.Instance.Settings.SpellRotationMode;
+                {
+                    configuration.SpellQueueRotation =
+                        UserSettingsManager.Instance.Settings
+                            .SpellRotationMode;
+                }
 
-                state.UseLyliacVineyard = deserialized.UseLyliacVineyard;
-                state.FlowerAlternateCharacters = deserialized.FlowerAlternateCharacters;
+                configuration.UseLyliacVineyard =
+                    deserialized.UseLyliacVineyard;
+                configuration.FlowerAlternateCharacters =
+                    deserialized.FlowerAlternateCharacters;
 
                 // Add all skill macros to state
                 foreach (var skillMacro in deserialized.Skills)
                 {
-                    if (!state.Client.Skillbook.ContainSkill(skillMacro.SkillName))
+                    if (!configuration.Client.Skillbook.ContainSkill(
+                            skillMacro.SkillName))
                         continue;
 
-                    state.Client.Skillbook.ToggleActive(skillMacro.SkillName, true);
+                    configuration.Client.Skillbook.ToggleActive(
+                        skillMacro.SkillName,
+                        true);
                 }
 
                 // Add all spell macros to state
                 foreach (var spellMacro in deserialized.Spells)
                 {
-                    var spellInfo = state.Client.Spellbook.GetSpell(spellMacro.SpellName);
+                    var spellInfo =
+                        configuration.Client.Spellbook.GetSpell(
+                            spellMacro.SpellName);
                     if (spellInfo == null)
                         continue;
 
-                    state.AddToSpellQueue(new SpellQueueItem
+                    configuration.AddToSpellQueue(new SpellQueueItem
                     {
                         Icon = spellInfo.Icon,
                         Name = spellInfo.Name,
@@ -1685,7 +1689,7 @@ namespace SleepHunter.Views
                     if (flowerMacro.TargetMode == SpellTargetMode.None)
                         continue;
 
-                    state.AddToFlowerQueue(new FlowerQueueItem
+                    configuration.AddToFlowerQueue(new FlowerQueueItem
                     {
                         Target = new SpellTarget
                         {
@@ -1706,9 +1710,13 @@ namespace SleepHunter.Views
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                logger.LogError($"Unable to update {state.Client.Name} macro state from deserialized data");
+                logger.LogError(
+                    $"Unable to update {configuration.Client.Name} macro configuration from deserialized data");
 
-                this.ShowMessageBox("Failed to Load Macro", "Unable to load the macro state.", ex.Message);
+                this.ShowMessageBox(
+                    "Failed to Load Macro",
+                    "Unable to load the macro configuration.",
+                    ex.Message);
                 return false;
             }
             finally
@@ -1717,8 +1725,12 @@ namespace SleepHunter.Views
                 RefreshSpellQueue();
                 RefreshFlowerQueue();
 
-                if (selectedMacro != null && selectedMacro == state)
-                    ToggleSpellQueue(state.QueuedSpells.Count > 0);
+                if (selectedMacro != null &&
+                    selectedMacro == configuration)
+                {
+                    ToggleSpellQueue(
+                        configuration.QueuedSpells.Count > 0);
+                }
             }
         }
 
@@ -1737,7 +1749,7 @@ namespace SleepHunter.Views
 
             var dialog = new OpenFileDialog
             {
-                Title = "Load Macro State",
+                Title = "Load Macro Configuration",
                 Filter = SleepHunterMacroFileFilter,
                 DefaultExt = SleepHunterMacroFileExtension,
                 FileName = defaultFilename,
@@ -1747,7 +1759,8 @@ namespace SleepHunter.Views
                 CheckFileExists = true
             };
 
-            logger.LogInfo($"User has requested to load the macro state for character: {selectedMacro.Client.Name}");
+            logger.LogInfo(
+                $"User has requested to load the macro configuration for character: {selectedMacro.Client.Name}");
 
             if (!dialog.ShowDialog(this).GetValueOrDefault())
             {
@@ -1757,11 +1770,13 @@ namespace SleepHunter.Views
 
             if (selectedMacro != null)
             {
-                var state = selectedMacro;
-                if (LoadMacroState(state, dialog.FileName))
+                var configuration = selectedMacro;
+                if (LoadMacroConfiguration(
+                        configuration,
+                        dialog.FileName))
                 {
                     await SynchronizeRuntimeMacroConfiguration(
-                        state,
+                        configuration,
                         dialog.FileName);
                 }
             }
@@ -1777,7 +1792,7 @@ namespace SleepHunter.Views
 
             var dialog = new SaveFileDialog
             {
-                Title = "Save Macro State",
+                Title = "Save Macro Configuration",
                 Filter = SleepHunterMacroFileFilter,
                 DefaultExt = SleepHunterMacroFileExtension,
                 FileName = defaultFilename,
@@ -1788,7 +1803,8 @@ namespace SleepHunter.Views
                 ValidateNames = true,
             };
 
-            logger.LogInfo($"User has requested to save the macro state for character: {selectedMacro.Client.Name}");
+            logger.LogInfo(
+                $"User has requested to save the macro configuration for character: {selectedMacro.Client.Name}");
 
             if (!dialog.ShowDialog(this).GetValueOrDefault())
             {
@@ -1797,7 +1813,11 @@ namespace SleepHunter.Views
             }
 
             if (selectedMacro != null)
-                SaveMacroState(selectedMacro, dialog.FileName);
+            {
+                SaveMacroConfiguration(
+                    selectedMacro,
+                    dialog.FileName);
+            }
         }
 
         private void showSpellQueueButton_Click(object sender, RoutedEventArgs e) => ToggleSpellQueue(true);
@@ -2046,11 +2066,12 @@ namespace SleepHunter.Views
             }
 
             var player = item.Player;
-            var macroState = MacroManager.Instance.GetMacroState(player);
+            var macroConfiguration =
+                macroConfigurations.GetOrCreate(player);
 
             UnsubscribeMacroHandlers(selectedMacro);
             var prevSelectedMacro = selectedMacro;
-            selectedMacro = macroState;
+            selectedMacro = macroConfiguration;
             SubscribeMacroHandlers(selectedMacro);
 
             UpdateWindowTitle();
@@ -2099,7 +2120,7 @@ namespace SleepHunter.Views
             }
         }
 
-        private void SubscribeMacroHandlers(PlayerMacroState state)
+        private void SubscribeMacroHandlers(PlayerMacroConfiguration state)
         {
             if (state == null)
                 return;
@@ -2107,15 +2128,13 @@ namespace SleepHunter.Views
             state.PropertyChanged += SelectedMacro_PropertyChanged;
 
             state.SpellAdded += selectedMacro_SpellQueueChanged;
-            state.SpellUpdated += selectedMacro_SpellQueueChanged;
             state.SpellRemoved += selectedMacro_SpellQueueChanged;
 
             state.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
-            state.FlowerTargetUpdated += selectedMacro_FlowerQueueChanged;
             state.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
         }
 
-        private void UnsubscribeMacroHandlers(PlayerMacroState state)
+        private void UnsubscribeMacroHandlers(PlayerMacroConfiguration state)
         {
             if (state == null)
                 return;
@@ -2123,11 +2142,9 @@ namespace SleepHunter.Views
             state.PropertyChanged -= SelectedMacro_PropertyChanged;
 
             state.SpellAdded -= selectedMacro_SpellQueueChanged;
-            state.SpellUpdated -= selectedMacro_SpellQueueChanged;
             state.SpellRemoved -= selectedMacro_SpellQueueChanged;
 
             state.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
-            state.FlowerTargetUpdated -= selectedMacro_FlowerQueueChanged;
             state.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
         }
 
@@ -2225,7 +2242,7 @@ namespace SleepHunter.Views
 
         private void selectedMacro_SpellQueueChanged(object sender, SpellQueueItemEventArgs e)
         {
-            if (sender is not PlayerMacroState macro)
+            if (sender is not PlayerMacroConfiguration macro)
                 return;
 
             spellQueueListBox.ItemsSource = macro.QueuedSpells;
@@ -2234,7 +2251,7 @@ namespace SleepHunter.Views
 
         private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
         {
-            if (sender is not PlayerMacroState macro)
+            if (sender is not PlayerMacroConfiguration macro)
                 return;
 
             flowerListBox.ItemsSource = macro.FlowerTargets;
@@ -2500,7 +2517,7 @@ namespace SleepHunter.Views
 
         private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (sender is not PlayerMacroState macro)
+            if (sender is not PlayerMacroConfiguration macro)
                 return;
 
             // Update Spell Queue Rotation

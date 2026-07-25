@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Persistence.Serialization;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
@@ -30,7 +32,7 @@ namespace SleepHunter.ViewModels
             ClientRuntimeViewModel runtime = null)
             : this(
                 player,
-                macroState: null,
+                macroConfiguration: null,
                 runtime,
                 configurationAdapter: null,
                 setupFactory: null,
@@ -40,7 +42,7 @@ namespace SleepHunter.ViewModels
 
         internal ClientListItemViewModel(
             Player player,
-            PlayerMacroState macroState,
+            PlayerMacroConfiguration macroConfiguration,
             ClientRuntimeViewModel runtime,
             IRuntimeMacroConfigurationAdapter configurationAdapter,
             IRuntimeAutomationSetupFactory setupFactory,
@@ -48,7 +50,7 @@ namespace SleepHunter.ViewModels
         {
             Player = player ??
                 throw new ArgumentNullException(nameof(player));
-            MacroState = macroState;
+            MacroConfiguration = macroConfiguration;
             this.configurationAdapter = configurationAdapter;
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
@@ -56,15 +58,18 @@ namespace SleepHunter.ViewModels
             Player.PropertyChanged += OnObservedPropertyChanged;
             Player.Location.PropertyChanged += OnObservedPropertyChanged;
             Player.Stats.PropertyChanged += OnObservedPropertyChanged;
-            if (MacroState is not null)
-                MacroState.PropertyChanged += OnObservedPropertyChanged;
+            if (MacroConfiguration is not null)
+            {
+                MacroConfiguration.PropertyChanged +=
+                    OnObservedPropertyChanged;
+            }
 
             SetRuntime(runtime);
         }
 
         public Player Player { get; }
 
-        public PlayerMacroState MacroState { get; }
+        public PlayerMacroConfiguration MacroConfiguration { get; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasRuntime))]
@@ -122,14 +127,10 @@ namespace SleepHunter.ViewModels
                 : Player.IsLoggedIn;
 
         public bool IsMacroRunning =>
-            Runtime is null
-                ? Player.IsMacroRunning
-                : Runtime.Current?.Lifecycle == MacroLifecycle.Running;
+            Runtime?.Current?.Lifecycle == MacroLifecycle.Running;
 
         public bool IsMacroPaused =>
-            Runtime is null
-                ? Player.IsMacroPaused
-                : Runtime.Current?.Lifecycle == MacroLifecycle.Paused;
+            Runtime?.Current?.Lifecycle == MacroLifecycle.Paused;
 
         public string StartMacroLabel =>
             IsMacroPaused
@@ -229,8 +230,11 @@ namespace SleepHunter.ViewModels
             Player.PropertyChanged -= OnObservedPropertyChanged;
             Player.Location.PropertyChanged -= OnObservedPropertyChanged;
             Player.Stats.PropertyChanged -= OnObservedPropertyChanged;
-            if (MacroState is not null)
-                MacroState.PropertyChanged -= OnObservedPropertyChanged;
+            if (MacroConfiguration is not null)
+            {
+                MacroConfiguration.PropertyChanged -=
+                    OnObservedPropertyChanged;
+            }
 
             isDisposed = true;
         }
@@ -272,7 +276,39 @@ namespace SleepHunter.ViewModels
                     nameof(ClientRuntimeViewModel.Current),
                     StringComparison.Ordinal))
             {
+                UpdateMacroSpellObservations();
                 NotifyObservedState();
+            }
+        }
+
+        private void UpdateMacroSpellObservations()
+        {
+            var spellbook = Runtime?.LatestSnapshot?.Spellbook;
+            if (spellbook is null || MacroConfiguration is null)
+                return;
+
+            var readiness =
+                Runtime.Current?.SpellCast?.Plan.Readiness;
+            foreach (var queuedSpell in MacroConfiguration.QueuedSpells)
+            {
+                var observed = spellbook.Find(queuedSpell.Name);
+                if (observed is null)
+                    continue;
+
+                var spellReadiness = readiness?.FirstOrDefault(
+                    entry => string.Equals(
+                        entry.Entry.Name,
+                        queuedSpell.Name,
+                        StringComparison.OrdinalIgnoreCase));
+                queuedSpell.MaximumLevel = observed.MaximumLevel;
+                queuedSpell.CurrentLevel = observed.CurrentLevel;
+                queuedSpell.IsOnCooldown =
+                    observed.IsActionDelayed ||
+                    spellReadiness?.Status ==
+                        SpellReadinessStatus.CoolingDown;
+                queuedSpell.IsWaitingOnHealth =
+                    spellReadiness?.Status ==
+                        SpellReadinessStatus.WaitingForHealth;
             }
         }
 
@@ -325,7 +361,7 @@ namespace SleepHunter.ViewModels
             CanPauseMacro();
 
         private bool CanPrepareAutomation() =>
-            MacroState is not null &&
+            MacroConfiguration is not null &&
             configurationAdapter is not null &&
             setupFactory is not null &&
             getSettings is not null &&
@@ -354,13 +390,14 @@ namespace SleepHunter.ViewModels
                     "A healthy in-world client snapshot is required to start automation.");
             }
 
-            var macroState = MacroState ??
+            var macroConfiguration = MacroConfiguration ??
                 throw new InvalidOperationException(
-                    "The editable macro state is unavailable.");
+                    "The editable macro configuration is unavailable.");
             var settings = getSettings?.Invoke() ??
                 throw new InvalidOperationException(
                     "The current user settings are unavailable.");
-            var loaded = configurationAdapter?.Adapt(macroState) ??
+            var loaded = configurationAdapter?.Adapt(
+                macroConfiguration) ??
                 throw new InvalidOperationException(
                     "The macro configuration adapter is unavailable.");
             var setup = setupFactory?.Create(

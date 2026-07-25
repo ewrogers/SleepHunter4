@@ -10,23 +10,23 @@ namespace SleepHunter.Services.Runtime
     public sealed class RuntimeMacroConfigurationAdapter :
         IRuntimeMacroConfigurationAdapter
     {
-        private readonly IMacroStateSerializer serializer;
+        private readonly ILegacyMacroConfigurationSerializer serializer;
 
         public RuntimeMacroConfigurationAdapter(
-            IMacroStateSerializer serializer)
+            ILegacyMacroConfigurationSerializer serializer)
         {
             this.serializer = serializer ??
                 throw new ArgumentNullException(nameof(serializer));
         }
 
         public MacroConfigurationLoadResult Adapt(
-            PlayerMacroState state)
+            PlayerMacroConfiguration configuration)
         {
-            ArgumentNullException.ThrowIfNull(state);
+            ArgumentNullException.ThrowIfNull(configuration);
 
             using var serialized = new StringWriter(
                 CultureInfo.InvariantCulture);
-            serializer.Serialize(state, serialized);
+            serializer.Serialize(configuration, serialized);
             using var reader = new StringReader(serialized.ToString());
             return MacroConfigurationSerializer.Load(reader);
         }

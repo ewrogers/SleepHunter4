@@ -36,12 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an application composition boundary that converts persisted queues and macro settings into atomic runtime commands with class-aware staff catalogs
 - Honored the option to wait behind a cooling spell instead of skipping it, and safely mapped legacy close-client movement actions to runtime stop behavior
 - Routed toolbar, hotkey, and stop-all lifecycle controls through Community Toolkit commands backed by the deterministic runtime
-- Adapted the current macro editor state through the tested legacy migration path before each start or resume, and disabled macro editing only while a configured runtime is running
+- Adapted the current macro editor configuration through the tested legacy migration path before each start or resume, and disabled macro editing only while a configured runtime is running
+- Replaced the legacy executable macro state with a DI-owned Community Toolkit observable editor configuration, and projected queued spell levels and readiness from immutable runtime snapshots
 
 ### Removed
 
 - Removed the Zolian-only Water & Beds automation, its feature tab, client feature flag, and private macro-state storage
 - Removed legacy Zolian and XML `Auto-Detect` mapping profiles so `Versions.xml` contains exactly one configurable client layout
+- Removed the legacy macro executor, lock-based queue processing, deferred dispatcher, execution flags on players, and the 16 ms flower update worker
 
 ### Fixed
 
