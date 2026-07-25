@@ -66,6 +66,9 @@ namespace SleepHunter
                 IMacroConfigurationReader,
                 FileMacroConfigurationReader>();
             services.AddSingleton<
+                IMacroConfigurationWriter,
+                FileMacroConfigurationWriter>();
+            services.AddSingleton<
                 IPlayerMacroConfigurationMapper,
                 PlayerMacroConfigurationMapper>();
             services.AddSingleton<

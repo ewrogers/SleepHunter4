@@ -751,6 +751,14 @@ focus, drag gestures, and native window integration. It must not contain macro
 decisions, process polling, persistence orchestration, or application state
 ownership.
 
+Macro file persistence now follows that boundary. A tested application service
+owns current saves, bounded loads, legacy autosave discovery and migration,
+broken-autosave cleanup, editable-configuration mapping, and imported hotkey
+replacement. A focused macro-persistence ViewModel exposes Community Toolkit
+commands for load, save, and spell-queue visibility. WPF owns only the
+file-dialog and message adapter, while `MainWindow` calls the same application
+boundary for login, logout, and shutdown autosaves.
+
 New WPF ViewModels will use
 [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 where its focused building blocks apply. Planned uses include:
