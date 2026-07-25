@@ -811,6 +811,16 @@ As of July 24, 2026:
 - Publish stable succeeded, timed-out, and cancelled panel transition outcomes.
 - Treat the world skill and spell selections as one visible panel for
   confirmation while preserving their distinct targets.
+- Model observed character class as a single value with an explicit unknown
+  state rather than as legacy flags.
+- Represent class-neutral staff metadata separately from a class requirement.
+  Map legacy `Class="All"` staff metadata to the neutral form.
+- Reject every class-specific staff when character class is unknown.
+- Filter staff candidates by class, level, ability level, and current
+  availability before ranking them.
+- Rank eligible staves by cast lines, keeping an equally good equipped staff,
+  then by inventory slot and stable name ordering.
+- Do not equip a staff that provides no improvement over the base spell.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
