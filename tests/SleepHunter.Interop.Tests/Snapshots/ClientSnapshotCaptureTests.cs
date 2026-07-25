@@ -50,6 +50,7 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong MaximumManaAddress = PlayerAddress + 0x2C;
     private const ulong ActivePanelAddress = PlayerAddress + 0x30;
     private const ulong InventoryExpandedAddress = PlayerAddress + 0x31;
+    private const ulong UserChattingAddress = PlayerAddress + 0x32;
     private const ulong MapNumberAddress = PlayerAddress + 0x40;
     private const ulong MapXAddress = PlayerAddress + 0x44;
     private const ulong MapYAddress = PlayerAddress + 0x48;
@@ -80,6 +81,7 @@ public sealed class ClientSnapshotCaptureTests
                 result.Snapshot?.ActivePanel,
                 Is.EqualTo(ClientPanel.Inventory));
             Assert.That(result.Snapshot?.IsInventoryExpanded, Is.True);
+            Assert.That(result.Snapshot?.IsUserChatting, Is.False);
             Assert.That(
                 result.Snapshot?.Character,
                 Is.EqualTo(
@@ -175,6 +177,60 @@ public sealed class ClientSnapshotCaptureTests
             Assert.That(
                 result.Snapshot?.CaptureCompletedAt,
                 Is.EqualTo(result.Metrics.CaptureCompletedAt));
+        });
+    }
+
+    [Test]
+    public void ShouldCaptureUserChattingState()
+    {
+        var source = CreateMemoryImage();
+        source.Write(new MemoryAddress(UserChattingAddress), 1);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.Snapshot?.IsUserChatting, Is.True);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectUserChattingStateChangedDuringCapture()
+    {
+        var source = CreateMemoryImage();
+        var userChattingReads = 0;
+        source.ReadStarting = (address, _) =>
+        {
+            if (address.Value != UserChattingAddress)
+            {
+                return;
+            }
+
+            userChattingReads++;
+            if (userChattingReads == 2)
+            {
+                source.Write(address, 1);
+            }
+        };
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(result.Quality, Is.EqualTo(SnapshotQuality.Incoherent));
+            Assert.That(
+                result.Error?.Failure,
+                Is.EqualTo(SnapshotCaptureFailure.StateChanged));
+            Assert.That(
+                result.Error?.Section,
+                Is.EqualTo(SnapshotSection.Coherence));
+            Assert.That(
+                result.Error?.VariableKey,
+                Is.EqualTo("UserChatting"));
         });
     }
 
@@ -861,6 +917,7 @@ public sealed class ClientSnapshotCaptureTests
         source.WriteUInt32(new MemoryAddress(MaximumManaAddress), 600);
         source.Write(new MemoryAddress(ActivePanelAddress), 0);
         source.Write(new MemoryAddress(InventoryExpandedAddress), 1);
+        source.Write(new MemoryAddress(UserChattingAddress), 0);
         source.WriteUInt32(new MemoryAddress(MapNumberAddress), 1);
         source.WriteInt32(new MemoryAddress(MapXAddress), 50);
         source.WriteInt32(new MemoryAddress(MapYAddress), 60);
@@ -971,6 +1028,7 @@ public sealed class ClientSnapshotCaptureTests
         Dynamic("MaximumMana", 0x2C, MemoryValueKind.Unsigned32),
         Dynamic("ActivePanel", 0x30, MemoryValueKind.Byte),
         Dynamic("InventoryExpanded", 0x31, MemoryValueKind.Byte),
+        Dynamic("UserChatting", 0x32, MemoryValueKind.Byte),
         Dynamic("MapNumber", 0x40, MemoryValueKind.Unsigned32),
         Dynamic("MapX", 0x44, MemoryValueKind.Signed32),
         Dynamic("MapY", 0x48, MemoryValueKind.Signed32),

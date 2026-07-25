@@ -352,6 +352,36 @@ public sealed partial class MacroEngine : IMacroEngine
             : currentState.Flower;
 
         if (!clientLoggedOut &&
+            TryGetObservationChange(
+                currentState,
+                snapshot,
+                out var changeAction,
+                out var changeReason) &&
+            changeAction != ObservationChangeAction.Continue)
+        {
+            var nextLifecycle = changeAction == ObservationChangeAction.Pause
+                ? MacroLifecycle.Paused
+                : MacroLifecycle.Stopped;
+
+            return Changed(
+                currentState,
+                nextLifecycle,
+                nextLifecycle == MacroLifecycle.Stopped
+                    ? changeReason
+                    : MacroStopReason.None,
+                snapshot,
+                currentTime,
+                pendingAction: null,
+                panelTransition: CancelPendingPanelTransition(currentState),
+                staffSwitch: CancelPendingStaffSwitch(currentState),
+                spellCast: CancelPendingSpellCast(currentState),
+                skillUse: CancelPendingSkillUse(currentState),
+                disarm: CancelPendingDisarm(currentState),
+                dialog: CancelPendingDialog(currentState),
+                flower: CancelPendingFlower(currentState));
+        }
+
+        if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
         {
             var switchIntent = (SwitchPanelIntent)currentState.PendingAction!.Intent;
@@ -487,6 +517,44 @@ public sealed partial class MacroEngine : IMacroEngine
             disarm: disarm,
             dialog: dialog,
             flower: flower);
+    }
+
+    private static bool TryGetObservationChange(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        out ObservationChangeAction action,
+        out MacroStopReason stopReason)
+    {
+        action = ObservationChangeAction.Continue;
+        stopReason = MacroStopReason.None;
+
+        if (currentState.Lifecycle != MacroLifecycle.Running ||
+            currentState.LatestSnapshot?.Location is not { } previous ||
+            snapshot.Presence != ClientPresence.InWorld ||
+            snapshot.Location is not { } current)
+        {
+            return false;
+        }
+
+        if (previous.MapNumber != current.MapNumber ||
+            !string.Equals(
+                previous.MapName,
+                current.MapName,
+                StringComparison.Ordinal))
+        {
+            action = currentState.Automation.ObservationChanges.MapChange;
+            stopReason = MacroStopReason.MapChanged;
+            return true;
+        }
+
+        if (previous.X != current.X || previous.Y != current.Y)
+        {
+            action = currentState.Automation.ObservationChanges.CoordinateChange;
+            stopReason = MacroStopReason.CoordinatesChanged;
+            return true;
+        }
+
+        return false;
     }
 
     private static MacroDecision RequestPanelTransition(

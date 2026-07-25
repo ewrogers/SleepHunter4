@@ -33,7 +33,8 @@ namespace SleepHunter.Services.Runtime
                         spell.Name,
                         spell.NumberOfLines,
                         spell.ManaCost,
-                        spell.Cooldown)));
+                        spell.Cooldown,
+                        spell.OpensDialog)));
         }
 
         private static HealthCondition CreateHealthCondition(

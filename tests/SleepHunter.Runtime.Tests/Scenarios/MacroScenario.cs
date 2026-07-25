@@ -65,7 +65,8 @@ internal sealed class MacroScenario
         SpellbookSnapshot? spellbook = null,
         SkillbookSnapshot? skillbook = null,
         MapLocationSnapshot? location = null,
-        bool isInventoryExpanded = false)
+        bool isInventoryExpanded = false,
+        bool isUserChatting = false)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -84,7 +85,8 @@ internal sealed class MacroScenario
             spellbook,
             skillbook,
             location,
-            isInventoryExpanded);
+            isInventoryExpanded,
+            isUserChatting);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }

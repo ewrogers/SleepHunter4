@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
@@ -445,6 +446,24 @@ public sealed partial class MacroEngine
             deadline,
             locatedTarget);
         var nextFlower = flower?.WithSpellCast(casting);
+        var dialog = currentState.Dialog;
+        var scheduledEvents = ImmutableArray.Create(
+            new ScheduledMacroEvent(
+                new ClientActionDeadlineElapsed(actionId),
+                deadline));
+        if (selectedSpell.OpensDialog)
+        {
+            var dialogDueAt =
+                currentTime.Add(spellCast.Policy.Dialog.CloseDelay);
+            dialog = DialogState.Scheduled(
+                spellCast.Policy.Dialog,
+                dialogDueAt);
+            scheduledEvents = scheduledEvents.Add(
+                new ScheduledMacroEvent(
+                    new DialogCloseDue(dialogDueAt),
+                    dialogDueAt));
+        }
+
         var flowerQueue = currentState.FlowerQueue;
         var flowerSchedules =
             nextFlower?.Plan.Schedules ??
@@ -480,6 +499,7 @@ public sealed partial class MacroEngine
             staffSwitch: staffSwitch,
             spellCooldowns: plan.Cooldowns,
             spellCast: casting,
+            dialog: dialog,
             flowerQueue: flowerQueue,
             flowerSchedules: flowerSchedules,
             flower: nextFlower,
@@ -487,12 +507,7 @@ public sealed partial class MacroEngine
             flowerTargetRotations: flowerTargetRotations,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
-            scheduledEvents:
-            [
-                new ScheduledMacroEvent(
-                    new ClientActionDeadlineElapsed(actionId),
-                    deadline)
-            ]);
+            scheduledEvents: scheduledEvents);
     }
 
     private static TargetResolution ResolveCastTarget(
@@ -613,6 +628,7 @@ public sealed partial class MacroEngine
                plan.SelectedSpell is { } selectedSpell &&
                selectedSpell.Slot == expectedSpell.Slot &&
                selectedSpell.CastLines == expectedSpell.CastLines &&
+               selectedSpell.OpensDialog == expectedSpell.OpensDialog &&
                string.Equals(
                    selectedSpell.Name,
                    expectedSpell.Name,

@@ -264,7 +264,8 @@ internal static partial class ClientAbilityParser
             castLines,
             metadata?.ManaCost ?? 0,
             metadata?.Cooldown ?? TimeSpan.Zero,
-            isActionDelayed);
+            isActionDelayed,
+            metadata?.OpensDialog ?? false);
     }
 
     private static string ParseName(

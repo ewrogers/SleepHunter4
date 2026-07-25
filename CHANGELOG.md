@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures
 - Projected immutable automation configuration and enabled state through the Community Toolkit runtime ViewModel
 - Promoted per-client runtime hosts from read-only shadow capture to the active command boundary, with a shared clock, immutable ability metadata, and deduplicated cross-client rosters
+- Made deterministic automation wait while the user is typing, dismiss dialogs opened by spells as well as skills, and apply configurable pause or stop policies when the observed map or coordinates change
 
 ### Removed
 

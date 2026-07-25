@@ -24,7 +24,8 @@ public sealed class AbilitySnapshotCatalogFactoryTests
             Name = "Mor Dion",
             NumberOfLines = 4,
             ManaCost = 55,
-            Cooldown = TimeSpan.FromSeconds(8)
+            Cooldown = TimeSpan.FromSeconds(8),
+            OpensDialog = true
         };
 
         var catalog = AbilitySnapshotCatalogFactory.Create(
@@ -57,6 +58,7 @@ public sealed class AbilitySnapshotCatalogFactoryTests
             Assert.That(
                 projectedSpell?.Cooldown,
                 Is.EqualTo(TimeSpan.FromSeconds(8)));
+            Assert.That(projectedSpell?.OpensDialog, Is.True);
         });
     }
 

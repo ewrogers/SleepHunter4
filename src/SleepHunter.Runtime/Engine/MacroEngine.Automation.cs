@@ -57,6 +57,7 @@ public sealed partial class MacroEngine
             {
                 Presence: ClientPresence.InWorld
             } snapshot ||
+            snapshot.IsUserChatting ||
             IsAutomationSnapshotStale(currentState, snapshot))
         {
             return Unchanged(currentState);

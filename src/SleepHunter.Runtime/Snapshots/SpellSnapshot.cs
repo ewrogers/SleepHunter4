@@ -14,7 +14,8 @@ public sealed record SpellSnapshot
         int castLines,
         int manaCost,
         TimeSpan cooldown,
-        bool isActionDelayed = false)
+        bool isActionDelayed = false,
+        bool opensDialog = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -74,6 +75,7 @@ public sealed record SpellSnapshot
         ManaCost = manaCost;
         Cooldown = cooldown;
         IsActionDelayed = isActionDelayed;
+        OpensDialog = opensDialog;
     }
 
     public string Name { get; }
@@ -111,4 +113,6 @@ public sealed record SpellSnapshot
     public TimeSpan Cooldown { get; }
 
     public bool IsActionDelayed { get; }
+
+    public bool OpensDialog { get; }
 }
