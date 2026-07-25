@@ -852,6 +852,14 @@ As of July 24, 2026:
   tick.
 - Schedule snapshot capture independently and choose its cadence through
   measurement.
+- Require composition to supply the capture interval explicitly until
+  read-only client measurements establish a default. Use one periodic capture
+  owner per client so missed periods coalesce instead of creating a backlog,
+  and publish only the latest unread result through a bounded channel.
+- Retain a bounded rolling timing window with capture and section median, p95,
+  and maximum durations, plus capture failure categories and aggregate memory
+  read counts and bytes. Keep the timing window capacity configurable and
+  bounded.
 - Express engine time as elapsed `MacroTimestamp` values derived from an
   injected `TimeProvider`.
 - Require a complete in-world snapshot before a macro can enter the running
