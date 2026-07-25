@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +22,7 @@ using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Services.Clients;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
@@ -66,8 +66,7 @@ namespace SleepHunter.Views
         private MetadataEditorWindow metadataWindow;
         private SettingsWindow settingsWindow;
 
-        private BackgroundWorker processScannerWorker;
-        private BackgroundWorker clientUpdateWorker;
+        private readonly ClientPollingCoordinator clientPolling;
         private PlayerMacroConfiguration selectedMacro;
 
         public MainWindow()
@@ -89,10 +88,12 @@ namespace SleepHunter.Views
             var runtimeSetupFactory =
                 App.Current.Services.GetService<
                     IRuntimeAutomationSetupFactory>();
+            var uiDispatcher =
+                new WpfUiDispatcher(Dispatcher);
             runtimeClients = new ClientRuntimeRegistry(
                 new WindowsClientRuntimeFactory(),
                 logger,
-                new WpfUiDispatcher(Dispatcher),
+                uiDispatcher,
                 Path.Combine(
                     AppContext.BaseDirectory,
                     ClientVersionManager.VersionsFile),
@@ -121,6 +122,17 @@ namespace SleepHunter.Views
                 macroPersistence,
                 new WpfMacroConfigurationInteraction(this),
                 logger);
+            clientPolling = new ClientPollingCoordinator(
+                () => ProcessManager.Instance.ScanForProcesses(),
+                ReconcileDetectedProcesses,
+                () => PlayerManager.Instance.UpdateClients(),
+                () => UserSettingsManager.Instance.Settings
+                    .ProcessUpdateInterval,
+                () => UserSettingsManager.Instance.Settings
+                    .ClientUpdateInterval,
+                uiDispatcher,
+                TimeProvider.System,
+                logger);
             DataContext = clientList;
 
             InitializeLogger();
@@ -147,7 +159,7 @@ namespace SleepHunter.Views
             ToggleSpells(false);
             clientList.MacroPersistence.IsSpellQueueVisible = false;
 
-            StartUpdateTimers();
+            StartClientPolling();
         }
 
         public void Dispose()
@@ -163,8 +175,7 @@ namespace SleepHunter.Views
 
             if (isDisposing)
             {
-                processScannerWorker?.Dispose();
-                clientUpdateWorker?.Dispose();
+                clientPolling.Dispose();
                 clientList.Dispose();
             }
 
@@ -852,89 +863,39 @@ namespace SleepHunter.Views
             StaffMetadataManager.Instance.RecalculateAllStaves();
         }
 
-        private void StartUpdateTimers()
+        private void StartClientPolling()
         {
             IconManager.Instance.Context = TaskScheduler.FromCurrentSynchronizationContext();
 
-            StartProcessScanner();
-            StartClientUpdate();
+            clientPolling.Start();
         }
 
-        private void StartProcessScanner()
+        private void ReconcileDetectedProcesses()
         {
-            processScannerWorker = new BackgroundWorker
+            while (ProcessManager.Instance.DeadClientCount > 0)
             {
-                WorkerSupportsCancellation = true
-            };
-
-            processScannerWorker.DoWork += (sender, e) =>
-            {
-                var delayTime = (TimeSpan)e.Argument;
-
-                if (delayTime > TimeSpan.Zero)
-                    Thread.Sleep(delayTime);
-
-                ProcessManager.Instance.ScanForProcesses();
-            };
-
-            processScannerWorker.RunWorkerCompleted += (sender, e) =>
-            {
-                if (e.Cancelled)
-                    return;
-
-                // Dead Clients
-                while (ProcessManager.Instance.DeadClientCount > 0)
+                var deadClient =
+                    ProcessManager.Instance.DequeueDeadClient();
+                if (deadClient is not null)
                 {
-                    var deadClient = ProcessManager.Instance.DequeueDeadClient();
-                    PlayerManager.Instance.RemovePlayer(deadClient.ProcessId);
+                    PlayerManager.Instance.RemovePlayer(
+                        deadClient.ProcessId);
                 }
+            }
 
-                // New Clients
-                while (ProcessManager.Instance.NewClientCount > 0)
-                {
-                    var newClient = ProcessManager.Instance.DequeueNewClient();
+            while (ProcessManager.Instance.NewClientCount > 0)
+            {
+                var newClient =
+                    ProcessManager.Instance.DequeueNewClient();
+                if (newClient is not null)
                     PlayerManager.Instance.AddNewClient(newClient);
-                }
+            }
 
-                if (clientListBox.SelectedIndex == -1 && clientListBox.Items.Count > 0)
-                    clientListBox.SelectedIndex = 0;
-
-                processScannerWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ProcessUpdateInterval);
-            };
-
-            // Start immediately!
-            processScannerWorker.RunWorkerAsync(TimeSpan.Zero);
-            logger.LogInfo("Process scanner background worker has started");
-        }
-
-        private void StartClientUpdate()
-        {
-            clientUpdateWorker = new BackgroundWorker
+            if (clientListBox.SelectedIndex == -1 &&
+                clientListBox.Items.Count > 0)
             {
-                WorkerSupportsCancellation = true
-            };
-
-            clientUpdateWorker.DoWork += (sender, e) =>
-            {
-                var delayTime = (TimeSpan)e.Argument;
-
-                if (delayTime > TimeSpan.Zero)
-                    Thread.Sleep(delayTime);
-
-                PlayerManager.Instance.UpdateClients();
-            };
-
-            clientUpdateWorker.RunWorkerCompleted += (sender, e) =>
-            {
-                if (e.Cancelled)
-                    return;
-
-                clientUpdateWorker.RunWorkerAsync(UserSettingsManager.Instance.Settings.ClientUpdateInterval);
-            };
-
-            // Start immediately!
-            clientUpdateWorker.RunWorkerAsync(TimeSpan.Zero);
-            logger.LogInfo("Client update background worker has started");
+                clientListBox.SelectedIndex = 0;
+            }
         }
 
         private void ApplyTheme()
@@ -1242,6 +1203,19 @@ namespace SleepHunter.Views
             }
 
             logger.LogInfo("Application is shutting down");
+            e.Cancel = true;
+            isShutdownInProgress = true;
+
+            try
+            {
+                await clientPolling.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    "Unable to stop client polling");
+                logger.LogException(ex);
+            }
 
             UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
 
@@ -1304,8 +1278,6 @@ namespace SleepHunter.Views
             PlayerManager.Instance.PlayerRemoved -= OnPlayerCollectionRemove;
             PlayerManager.Instance.PlayerPropertyChanged -= OnPlayerPropertyChanged;
 
-            e.Cancel = true;
-            isShutdownInProgress = true;
             try
             {
                 await runtimeClients.DisposeAsync();
