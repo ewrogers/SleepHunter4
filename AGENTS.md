@@ -55,9 +55,9 @@ documentation output when the source belongs in `docs/src/` or `CHANGELOG.md`.
 Run commands from the repository root.
 
 ```powershell
-dotnet restore SleepHunter/SleepHunter.sln
-dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
-dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj --configuration Release --no-build
+dotnet restore SleepHunter.sln
+dotnet build SleepHunter.sln --configuration Release --no-restore
+dotnet test SleepHunter.sln --configuration Release --no-build
 ```
 
 For a focused test run, use an NUnit-compatible filter and still run the full
