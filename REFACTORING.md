@@ -1168,6 +1168,17 @@ As of July 24, 2026:
 - Preserve the cooldown-skip setting as an explicit spell policy. Map legacy
   movement `ForceQuit` to runtime stop, because the deterministic engine does
   not emit a process-termination intent.
+- Route toolbar, hotkey, and stop-all lifecycle changes through the same
+  Community Toolkit command surface. Project running and paused state from the
+  runtime whenever a host exists, with legacy player state used only when no
+  runtime is attached.
+- Until the legacy macro editor is replaced, serialize its current state in
+  memory and import it through the tested legacy configuration reader before
+  every start or resume. Send queue replacement and immutable configuration
+  before the lifecycle command.
+- Treat each running configuration as immutable. Disable macro editor mutation
+  while running, allow edits while paused, and recompose the complete setup on
+  resume so a live runtime never silently diverges from the editor.
 - Represent flower queues as immutable entries with stable identifiers,
   monotonic interval schedules, deterministic rotation, and interval or
   character-mana conditions. When both conditions are configured, either can

@@ -1,8 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.Persistence.Serialization;
+using SleepHunter.Runtime.Commands;
+using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Services.Runtime;
+using SleepHunter.Settings;
 
 namespace SleepHunter.ViewModels
 {
@@ -10,28 +19,80 @@ namespace SleepHunter.ViewModels
         ObservableObject,
         IDisposable
     {
+        private readonly IRuntimeMacroConfigurationAdapter
+            configurationAdapter;
+        private readonly Func<UserSettings> getSettings;
+        private readonly IRuntimeAutomationSetupFactory setupFactory;
         private bool isDisposed;
 
         public ClientListItemViewModel(
             Player player,
             ClientRuntimeViewModel runtime = null)
+            : this(
+                player,
+                macroState: null,
+                runtime,
+                configurationAdapter: null,
+                setupFactory: null,
+                getSettings: null)
+        {
+        }
+
+        internal ClientListItemViewModel(
+            Player player,
+            PlayerMacroState macroState,
+            ClientRuntimeViewModel runtime,
+            IRuntimeMacroConfigurationAdapter configurationAdapter,
+            IRuntimeAutomationSetupFactory setupFactory,
+            Func<UserSettings> getSettings)
         {
             Player = player ??
                 throw new ArgumentNullException(nameof(player));
+            MacroState = macroState;
+            this.configurationAdapter = configurationAdapter;
+            this.setupFactory = setupFactory;
+            this.getSettings = getSettings;
 
             Player.PropertyChanged += OnObservedPropertyChanged;
             Player.Location.PropertyChanged += OnObservedPropertyChanged;
             Player.Stats.PropertyChanged += OnObservedPropertyChanged;
+            if (MacroState is not null)
+                MacroState.PropertyChanged += OnObservedPropertyChanged;
+
             SetRuntime(runtime);
         }
 
         public Player Player { get; }
+
+        public PlayerMacroState MacroState { get; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasRuntime))]
         [NotifyPropertyChangedFor(nameof(RuntimeStatus))]
         [NotifyPropertyChangedFor(nameof(UsesRuntimeSnapshot))]
         public partial ClientRuntimeViewModel Runtime
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        public partial Exception LastAutomationError { get; private set; }
+
+        [ObservableProperty]
+        public partial MacroConfigurationLoadResult LastConfigurationLoad
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsMacroEditingEnabled))]
+        [NotifyCanExecuteChangedFor(nameof(StartOrResumeMacroCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PauseMacroCommand))]
+        [NotifyCanExecuteChangedFor(nameof(StopMacroCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ToggleMacroCommand))]
+        public partial bool IsAutomationCommandRunning
         {
             get;
             private set;
@@ -60,9 +121,25 @@ namespace SleepHunter.ViewModels
                 ? snapshot.Presence == ClientPresence.InWorld
                 : Player.IsLoggedIn;
 
-        public bool IsMacroRunning => Player.IsMacroRunning;
+        public bool IsMacroRunning =>
+            Runtime is null
+                ? Player.IsMacroRunning
+                : Runtime.Current?.Lifecycle == MacroLifecycle.Running;
 
-        public bool IsMacroPaused => Player.IsMacroPaused;
+        public bool IsMacroPaused =>
+            Runtime is null
+                ? Player.IsMacroPaused
+                : Runtime.Current?.Lifecycle == MacroLifecycle.Paused;
+
+        public string StartMacroLabel =>
+            IsMacroPaused
+                ? "Resume Macro"
+                : "Start Macro";
+
+        public bool IsMacroEditingEnabled =>
+            IsLoggedIn &&
+            !IsMacroRunning &&
+            !IsAutomationCommandRunning;
 
         public bool HasHotkey => Player.HasHotkey;
 
@@ -144,10 +221,17 @@ namespace SleepHunter.ViewModels
             if (isDisposed)
                 return;
 
+            StartOrResumeMacroCommand.Cancel();
+            PauseMacroCommand.Cancel();
+            StopMacroCommand.Cancel();
+            ToggleMacroCommand.Cancel();
             SetRuntime(null);
             Player.PropertyChanged -= OnObservedPropertyChanged;
             Player.Location.PropertyChanged -= OnObservedPropertyChanged;
             Player.Stats.PropertyChanged -= OnObservedPropertyChanged;
+            if (MacroState is not null)
+                MacroState.PropertyChanged -= OnObservedPropertyChanged;
+
             isDisposed = true;
         }
 
@@ -182,9 +266,192 @@ namespace SleepHunter.ViewModels
             if (string.Equals(
                     e.PropertyName,
                     nameof(ClientRuntimeViewModel.LatestCapture),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientRuntimeViewModel.Current),
                     StringComparison.Ordinal))
             {
                 NotifyObservedState();
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStartOrResumeMacro))]
+        private Task StartOrResumeMacroAsync(
+            CancellationToken cancellationToken) =>
+            ExecuteAutomationAsync(
+                StartOrResumeMacroCoreAsync,
+                cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanPauseMacro))]
+        private Task PauseMacroAsync(
+            CancellationToken cancellationToken) =>
+            ExecuteAutomationAsync(
+                PauseMacroCoreAsync,
+                cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanStopMacro))]
+        private Task StopMacroAsync(
+            CancellationToken cancellationToken) =>
+            ExecuteAutomationAsync(
+                StopMacroCoreAsync,
+                cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanToggleMacro))]
+        private Task ToggleMacroAsync(
+            CancellationToken cancellationToken) =>
+            ExecuteAutomationAsync(
+                IsMacroRunning
+                    ? PauseMacroCoreAsync
+                    : StartOrResumeMacroCoreAsync,
+                cancellationToken);
+
+        private bool CanStartOrResumeMacro() =>
+            !IsAutomationCommandRunning &&
+            CanPrepareAutomation() &&
+            (Runtime.StartCommand.CanExecute(null) ||
+             Runtime.ResumeCommand.CanExecute(null));
+
+        private bool CanPauseMacro() =>
+            !IsAutomationCommandRunning &&
+            Runtime?.PauseCommand.CanExecute(null) == true;
+
+        private bool CanStopMacro() =>
+            !IsAutomationCommandRunning &&
+            Runtime?.StopCommand.CanExecute(null) == true;
+
+        private bool CanToggleMacro() =>
+            CanStartOrResumeMacro() ||
+            CanPauseMacro();
+
+        private bool CanPrepareAutomation() =>
+            MacroState is not null &&
+            configurationAdapter is not null &&
+            setupFactory is not null &&
+            getSettings is not null &&
+            Runtime?.IsCaptureHealthy == true &&
+            Runtime.LatestSnapshot is
+            {
+                Presence: ClientPresence.InWorld,
+                Character: not null
+            };
+
+        private async Task StartOrResumeMacroCoreAsync(
+            CancellationToken cancellationToken)
+        {
+            var runtime = Runtime ??
+                throw new InvalidOperationException(
+                    "The client runtime is unavailable.");
+            var snapshot = runtime.LatestSnapshot;
+            if (runtime.IsCaptureHealthy != true ||
+                snapshot is not
+                {
+                    Presence: ClientPresence.InWorld,
+                    Character: not null
+                })
+            {
+                throw new InvalidOperationException(
+                    "A healthy in-world client snapshot is required to start automation.");
+            }
+
+            var macroState = MacroState ??
+                throw new InvalidOperationException(
+                    "The editable macro state is unavailable.");
+            var settings = getSettings?.Invoke() ??
+                throw new InvalidOperationException(
+                    "The current user settings are unavailable.");
+            var loaded = configurationAdapter?.Adapt(macroState) ??
+                throw new InvalidOperationException(
+                    "The macro configuration adapter is unavailable.");
+            var setup = setupFactory?.Create(
+                loaded.Configuration,
+                settings,
+                snapshot.Character.Class) ??
+                throw new InvalidOperationException(
+                    "The runtime automation setup is unavailable.");
+
+            LastConfigurationLoad = loaded;
+            await runtime
+                .SendCommandAsync(
+                    setup.ReplaceQueues,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            await runtime
+                .SendCommandAsync(
+                    setup.ConfigureAutomation,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            MacroCommand lifecycleCommand =
+                runtime.Current?.Lifecycle switch
+                {
+                    MacroLifecycle.Stopped =>
+                        new StartMacroCommand(),
+                    MacroLifecycle.Paused =>
+                        new ResumeMacroCommand(),
+                    _ => throw new InvalidOperationException(
+                        "Automation can only start from a stopped or paused runtime.")
+                };
+            await runtime
+                .SendCommandAsync(
+                    lifecycleCommand,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        private Task PauseMacroCoreAsync(
+            CancellationToken cancellationToken) =>
+            SendLifecycleCommandAsync(
+                new PauseMacroCommand(),
+                Runtime?.PauseCommand.CanExecute(null) == true,
+                cancellationToken);
+
+        private Task StopMacroCoreAsync(
+            CancellationToken cancellationToken) =>
+            SendLifecycleCommandAsync(
+                new StopMacroCommand(),
+                Runtime?.StopCommand.CanExecute(null) == true,
+                cancellationToken);
+
+        private Task SendLifecycleCommandAsync(
+            MacroCommand command,
+            bool canExecute,
+            CancellationToken cancellationToken)
+        {
+            if (!canExecute || Runtime is null)
+            {
+                throw new InvalidOperationException(
+                    "The requested runtime lifecycle change is unavailable.");
+            }
+
+            return Runtime
+                .SendCommandAsync(command, cancellationToken)
+                .AsTask();
+        }
+
+        private async Task ExecuteAutomationAsync(
+            Func<CancellationToken, Task> action,
+            CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(isDisposed, this);
+            IsAutomationCommandRunning = true;
+            LastAutomationError = null;
+
+            try
+            {
+                await action(cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                LastAutomationError = exception;
+            }
+            finally
+            {
+                IsAutomationCommandRunning = false;
             }
         }
 
@@ -198,6 +465,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(HealthPercent));
             OnPropertyChanged(nameof(HotkeyString));
             OnPropertyChanged(nameof(IsLoggedIn));
+            OnPropertyChanged(nameof(IsMacroEditingEnabled));
             OnPropertyChanged(nameof(IsMacroPaused));
             OnPropertyChanged(nameof(IsMacroRunning));
             OnPropertyChanged(nameof(ManaPercent));
@@ -208,8 +476,13 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(MaximumMana));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(RuntimeStatus));
+            OnPropertyChanged(nameof(StartMacroLabel));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(UsesRuntimeSnapshot));
+            StartOrResumeMacroCommand.NotifyCanExecuteChanged();
+            PauseMacroCommand.NotifyCanExecuteChanged();
+            StopMacroCommand.NotifyCanExecuteChanged();
+            ToggleMacroCommand.NotifyCanExecuteChanged();
         }
     }
 }

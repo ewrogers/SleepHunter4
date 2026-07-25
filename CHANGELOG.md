@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserved the user-selected client panel across automatic spell, skill, and flowering actions through deterministic, bounded restoration attempts
 - Added an application composition boundary that converts persisted queues and macro settings into atomic runtime commands with class-aware staff catalogs
 - Honored the option to wait behind a cooling spell instead of skipping it, and safely mapped legacy close-client movement actions to runtime stop behavior
+- Routed toolbar, hotkey, and stop-all lifecycle controls through Community Toolkit commands backed by the deterministic runtime
+- Adapted the current macro editor state through the tested legacy migration path before each start or resume, and disabled macro editing only while a configured runtime is running
 
 ### Removed
 
@@ -48,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown
 - Show pane-backed spell cooldowns in the UI by combining the client's live action-delay state with SleepHunter's local cooldown timestamps
 - Corrected inventory and equipment durability ordering so the documented maximum value is no longer interpreted as current durability and vice versa
+- Restored selected macro queue notifications by correcting the reversed subscription guard
 - Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
 - Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available
 

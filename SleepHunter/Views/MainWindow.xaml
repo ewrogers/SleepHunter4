@@ -66,6 +66,7 @@
                     <Button Name="loadStateButton"
                             Style="{StaticResource ObsidianToolBarButton}"
                             Click="loadStateButton_Click"
+                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -107,11 +108,11 @@
                     <!-- Start Macro Button -->
                     <Button Name="startMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
-                            Click="startMacroButton_Click"
+                            Command="{Binding SelectedClient.StartOrResumeMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="Sta_rt Macro"
+                                   Content="{Binding SelectedClient.StartMacroLabel}"
                                    Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
@@ -127,7 +128,7 @@
                     <!-- Pause Macro Button -->
                     <Button Name="pauseMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
-                            Click="pauseMacroButton_Click"
+                            Command="{Binding SelectedClient.PauseMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -147,7 +148,7 @@
                     <!-- Stop Macro Button -->
                     <Button Name="stopMacroButton"
                             Style="{StaticResource ObsidianToolBarButton}"
-                            Click="stopMacroButton_Click"
+                            Command="{Binding SelectedClient.StopMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -167,7 +168,7 @@
                     <!-- Stop All Macros Button -->
                     <Button Name="stopAllMacrosButton"
                             Style="{StaticResource ObsidianToolBarButton}"
-                            Click="stopAllMacrosButton_Click"
+                            Command="{Binding StopAllMacrosCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
@@ -328,7 +329,8 @@
 
             <!-- Skills Tabs-->
             <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">
-                <TabControl Style="{StaticResource ObsidianPanelTabControl}">
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}"
+                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
                     <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
                         <!-- Temuair Skills -->
                         <ListBox Name="temuairSkillListBox" 
@@ -375,7 +377,8 @@
             <!-- Spells Tabs-->
             <TabItem Name="spellsTab" Header="S_pells" IsEnabled="False">
                 <!-- Temuair Spells -->
-                <TabControl Style="{StaticResource ObsidianPanelTabControl}">
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}"
+                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
                     <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
                         <ListBox Name="temuairSpellListBox" 
                                  Style="{StaticResource ObsidianSkillListBox}"
@@ -419,8 +422,11 @@
             </TabItem>
 
             <!-- Flowering Tab -->
-            <TabItem Name="flowerTab" Header="_Flowering" IsEnabled="False" Visibility="Collapsed">
-                <Grid>
+            <TabItem Name="flowerTab"
+                     Header="_Flowering"
+                     IsEnabled="False"
+                     Visibility="Collapsed">
+                <Grid IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -581,7 +587,9 @@
                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
 
         <!-- Spell Queue Grid -->
-        <Grid Grid.Row="1" Grid.Column="2">
+        <Grid Grid.Row="1"
+              Grid.Column="2"
+              IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

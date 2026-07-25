@@ -72,6 +72,9 @@ namespace SleepHunter
                 RuntimeAutomationSetupFactory>();
 
             services.AddTransient<IMacroStateSerializer, MacroStateSerializer>();
+            services.AddTransient<
+                IRuntimeMacroConfigurationAdapter,
+                RuntimeMacroConfigurationAdapter>();
 
             // ViewModels
 
