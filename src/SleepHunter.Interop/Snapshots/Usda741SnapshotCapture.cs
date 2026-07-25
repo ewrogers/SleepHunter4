@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text;
 using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
@@ -31,6 +31,12 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
     private const string InventoryKey = "Inventory";
     private const string EquipmentKey = "Equipment";
     private const string EquipmentSnapshotKey = "EquipmentSnapshot";
+    private const string SkillbookKey = "Skillbook";
+    private const string SpellbookKey = "Spellbook";
+    private const string SkillbookPanesKey = "SkillbookPanes";
+    private const string SkillbookPaneCapacityKey = "SkillbookPaneCapacity";
+    private const string SpellbookPanesKey = "SpellbookPanes";
+    private const string SpellbookPaneCapacityKey = "SpellbookPaneCapacity";
 
     private static readonly Encoding StrictAscii = Encoding.GetEncoding(
         Encoding.ASCII.CodePage,
@@ -56,7 +62,13 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         new(MapYKey, MemoryValueKind.Signed32),
         new(InventoryKey, MemoryValueKind.Binary),
         new(EquipmentKey, MemoryValueKind.Binary),
-        new(EquipmentSnapshotKey, MemoryValueKind.Binary)
+        new(EquipmentSnapshotKey, MemoryValueKind.Binary),
+        new(SkillbookKey, MemoryValueKind.Binary),
+        new(SpellbookKey, MemoryValueKind.Binary),
+        new(SkillbookPanesKey, MemoryValueKind.Binary),
+        new(SkillbookPaneCapacityKey, MemoryValueKind.Signed32),
+        new(SpellbookPanesKey, MemoryValueKind.Binary),
+        new(SpellbookPaneCapacityKey, MemoryValueKind.Signed32)
     ];
 
     private readonly ClientIdentity client;
@@ -64,6 +76,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
     private readonly IProcessMemorySource source;
     private readonly MemoryReadLimits limits;
     private readonly MacroClock clock;
+    private readonly AbilitySnapshotCatalog abilityCatalog;
     private int captureInProgress;
 
     public Usda741SnapshotCapture(
@@ -71,7 +84,8 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         ClientMemoryMap map,
         IProcessMemorySource source,
         MemoryReadLimits limits,
-        MacroClock clock)
+        MacroClock clock,
+        AbilitySnapshotCatalog? abilityCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(map);
@@ -113,6 +127,7 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         this.source = source;
         this.limits = limits;
         this.clock = clock;
+        this.abilityCatalog = abilityCatalog ?? AbilitySnapshotCatalog.Empty;
     }
 
     public ClientIdentity Client => client;
@@ -389,6 +404,68 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             }
         }
 
+        SkillbookSnapshot? skillbook = null;
+        if (requestedSections.HasFlag(SnapshotCaptureSections.Skillbook))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var skillbookSucceeded = TryReadSkillbook(
+                reader,
+                out skillbook,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.Skillbook,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                skillbookSucceeded);
+            if (!skillbookSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
+        SpellbookSnapshot? spellbook = null;
+        if (requestedSections.HasFlag(SnapshotCaptureSections.Spellbook))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var spellbookSucceeded = TryReadSpellbook(
+                reader,
+                out spellbook,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.Spellbook,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                spellbookSucceeded);
+            if (!spellbookSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
         sectionStartedAt = clock.GetCurrentTimestamp();
         readsBefore = session.Metrics;
         var coherenceSucceeded = TryValidateCoherence(
@@ -430,7 +507,9 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             vitals,
             location,
             inventory,
-            equipment);
+            equipment,
+            skillbook,
+            spellbook);
     }
 
     private SnapshotCaptureResult Success(
@@ -444,7 +523,9 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
         VitalsSnapshot? vitals,
         MapLocationSnapshot? location,
         InventorySnapshot? inventory = null,
-        EquipmentSnapshot? equipment = null)
+        EquipmentSnapshot? equipment = null,
+        SkillbookSnapshot? skillbook = null,
+        SpellbookSnapshot? spellbook = null)
     {
         var completedAt = clock.GetCurrentTimestamp();
         var snapshot = new ClientSnapshot(
@@ -459,6 +540,8 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             inventory,
             equipment,
             vitals: vitals,
+            spellbook: spellbook,
+            skillbook: skillbook,
             location: location);
         var metrics = new SnapshotCaptureMetrics(
             sequence,
@@ -1168,6 +1251,30 @@ public sealed partial class Usda741SnapshotCapture : IClientSnapshotCapture
             maximumLength: 0,
             recordSize: Usda741EquipmentParser.RichSnapshotSize,
             capacity: Usda741EquipmentParser.RecordCount);
+        ValidateBinaryLayout(
+            map,
+            SkillbookKey,
+            maximumLength: Usda741AbilityParser.NameLength,
+            recordSize: Usda741AbilityParser.CompactSkillRecordSize,
+            capacity: Usda741AbilityParser.CompactRecordCount);
+        ValidateBinaryLayout(
+            map,
+            SpellbookKey,
+            maximumLength: Usda741AbilityParser.NameLength,
+            recordSize: Usda741AbilityParser.CompactSpellRecordSize,
+            capacity: Usda741AbilityParser.CompactRecordCount);
+        ValidateBinaryLayout(
+            map,
+            SkillbookPanesKey,
+            maximumLength: 0,
+            recordSize: Usda741AbilityParser.PanePointerSize,
+            capacity: Usda741AbilityParser.PaneRecordCount);
+        ValidateBinaryLayout(
+            map,
+            SpellbookPanesKey,
+            maximumLength: 0,
+            recordSize: Usda741AbilityParser.PanePointerSize,
+            capacity: Usda741AbilityParser.PaneRecordCount);
     }
 
     private static void ValidateBinaryLayout(

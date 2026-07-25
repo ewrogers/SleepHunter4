@@ -834,6 +834,15 @@ As of July 24, 2026:
   collection root before publishing its parsed section. Keep these sections
   opt-in so macros that do not need staff or disarm state are not blocked by an
   unrelated collection.
+- Prefer USDA 7.41 skill and spell pane snapshots for slot, level, cast-line,
+  and client action-delay observations. Revalidate the pane capacity address
+  and value, pointer-table root, and complete pointer table before publishing.
+  Preserve the bounded compact skillbook and spellbook tables as fallbacks.
+- Enrich observed abilities through an immutable metadata catalog supplied at
+  interop composition. Do not couple process-memory parsing to legacy WPF
+  metadata managers. Client-observed spell cast lines take precedence over
+  configured metadata, while missing values retain the established safe
+  defaults.
 - Start with capture limits of 64 KiB per block, 4 KiB per string, 4 MiB total,
   4,096 transport reads, and 16 pointer dereferences. Section-specific parsing
   may use tighter limits, and measurement may justify revising the overall
