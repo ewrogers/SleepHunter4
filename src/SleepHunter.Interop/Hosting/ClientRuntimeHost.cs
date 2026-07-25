@@ -31,13 +31,13 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
         SnapshotCaptureSchedule snapshotSchedule,
         ClientIntentExecutor intentExecutor,
         IClientWindowTargetProvider targetProvider,
-        TimeProvider timeProvider)
+        MacroClock clock)
     {
         ArgumentNullException.ThrowIfNull(snapshotCapture);
         ArgumentNullException.ThrowIfNull(snapshotSchedule);
         ArgumentNullException.ThrowIfNull(intentExecutor);
         ArgumentNullException.ThrowIfNull(targetProvider);
-        ArgumentNullException.ThrowIfNull(timeProvider);
+        ArgumentNullException.ThrowIfNull(clock);
 
         if (snapshotCapture.Client != targetProvider.Client)
         {
@@ -59,11 +59,11 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
             });
         session = new MacroSession(
             new MacroEngine(),
-            new MacroClock(timeProvider));
+            clock);
         snapshotScheduler = new ClientSnapshotScheduler(
             snapshotCapture,
             snapshotSchedule,
-            timeProvider);
+            clock.TimeProvider);
         worker = RunAsync();
     }
 

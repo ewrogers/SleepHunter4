@@ -86,6 +86,9 @@ namespace SleepHunter.Views
                     AppContext.BaseDirectory,
                     ClientVersionManager.VersionsFile),
                 TimeProvider.System,
+                () => AbilitySnapshotCatalogFactory.Create(
+                    SkillMetadataManager.Instance.Skills,
+                    SpellMetadataManager.Instance.Spells),
                 App.Current.Services.GetService<
                     IMacroConfigurationReader>(),
                 () => LegacySpellQueueRotationMapper.Map(
@@ -1408,7 +1411,7 @@ namespace SleepHunter.Views
             }
             catch (Exception ex)
             {
-                logger.LogError("Unable to stop all shadow runtime clients");
+                logger.LogError("Unable to stop all runtime clients");
                 logger.LogException(ex);
             }
 

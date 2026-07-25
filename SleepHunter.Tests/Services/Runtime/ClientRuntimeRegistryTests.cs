@@ -3,13 +3,16 @@ using System.Collections.Immutable;
 using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
+using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Persistence.Serialization;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Runtime;
@@ -22,7 +25,7 @@ public sealed class ClientRuntimeRegistryTests
     private static readonly string MappingPath = FindVersionsFile();
 
     [Test]
-    public async Task ShouldAttachFindAndDetachAShadowRuntime()
+    public async Task ShouldAttachFindAndDetachAnActiveRuntime()
     {
         var factory = new RecordingRuntimeFactory();
         var logger = new RecordingLogger();
@@ -53,12 +56,12 @@ public sealed class ClientRuntimeRegistryTests
             Assert.That(
                 factory.LastSections,
                 Is.EqualTo(SnapshotCaptureSections.All));
+            Assert.That(
+                factory.LastAbilityCatalog,
+                Is.SameAs(AbilitySnapshotCatalog.Empty));
             Assert.That(logger.InfoMessages.Length, Is.EqualTo(1));
         });
-        Assert.That(
-            async () => await viewModel.SendCommandAsync(
-                new StartMacroCommand()),
-            Throws.TypeOf<InvalidOperationException>());
+        await viewModel.SendCommandAsync(new StartMacroCommand());
 
         var detached = await registry.DetachAsync(descriptor.ProcessId);
 
@@ -68,7 +71,7 @@ public sealed class ClientRuntimeRegistryTests
             Assert.That(registry.Count, Is.Zero);
             Assert.That(factory.LastHost?.IsDisposed, Is.True);
             Assert.That(logger.InfoMessages.Length, Is.EqualTo(2));
-            Assert.That(factory.LastHost?.CommandCount, Is.Zero);
+            Assert.That(factory.LastHost?.CommandCount, Is.EqualTo(1));
         });
     }
 
@@ -89,6 +92,64 @@ public sealed class ClientRuntimeRegistryTests
             Assert.That(registry.Count, Is.EqualTo(1));
             Assert.That(factory.AttachCount, Is.EqualTo(1));
             Assert.That(logger.InfoMessages.Length, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ShouldPublishChangedRostersUsingOneSharedClock()
+    {
+        var factory = new RecordingRuntimeFactory();
+        await using var registry = CreateRegistry(
+            factory,
+            new RecordingLogger());
+        var first = Descriptor(processId: 1234);
+        var second = Descriptor(processId: 5678);
+
+        await registry.AttachAsync(
+            first,
+            TimeSpan.FromMilliseconds(200));
+        await registry.AttachAsync(
+            second,
+            TimeSpan.FromMilliseconds(200));
+        var hosts = factory.Hosts;
+        hosts[0].PublishCapture(
+            CreateCapture(
+                first.Client,
+                sequenceValue: 1,
+                characterName: "First"));
+        await WaitUntilAsync(
+            () => hosts.All(
+                host => host.PublishedRosters
+                    .Any(roster => roster.Clients.Length == 1)));
+        var publicationCount =
+            hosts[0].PublishedRosters.Length;
+
+        hosts[0].PublishCapture(
+            CreateCapture(
+                first.Client,
+                sequenceValue: 2,
+                characterName: "First"));
+        await WaitUntilAsync(
+            () => registry.TryFind(
+                      first.ProcessId,
+                      out var runtime) &&
+                  runtime.CaptureSequence?.Value == 2);
+
+        var roster = hosts[1].PublishedRosters.Last();
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                factory.Clocks.Distinct().Count(),
+                Is.EqualTo(1));
+            Assert.That(
+                roster.Clients.Single().CharacterName,
+                Is.EqualTo("First"));
+            Assert.That(
+                roster.Clients.Single().Client,
+                Is.EqualTo(first.Client));
+            Assert.That(
+                hosts[0].PublishedRosters.Length,
+                Is.EqualTo(publicationCount));
         });
     }
 
@@ -252,8 +313,94 @@ public sealed class ClientRuntimeRegistryTests
             new InlineUiDispatcher(),
             MappingPath,
             TimeProvider.System,
+            () => AbilitySnapshotCatalog.Empty,
             new EmptyMacroConfigurationReader(),
             () => SpellQueueRotation.Priority);
+
+    private static SnapshotCaptureObservation CreateCapture(
+        ClientIdentity client,
+        long sequenceValue,
+        string characterName)
+    {
+        var sequence = new SnapshotSequence(sequenceValue);
+        var timestamp = new MacroTimestamp(
+            TimeSpan.FromTicks(sequenceValue));
+        var reads = new MemoryReadMetrics(
+            RequestCount: 1,
+            TransportReadCount: 1,
+            FailedReadCount: 0,
+            RequestedBytes: 4,
+            BytesRead: 4);
+        var metrics = new SnapshotCaptureMetrics(
+            sequence,
+            timestamp,
+            timestamp,
+            ImmutableArray<SnapshotSectionMetrics>.Empty,
+            reads);
+        var snapshot = new ClientSnapshot(
+            sequence,
+            timestamp,
+            timestamp,
+            client,
+            SnapshotQuality.Complete,
+            ClientPresence.InWorld,
+            character: new CharacterSnapshot(
+                CharacterClass.Wizard,
+                level: 99,
+                abilityLevel: 50,
+                name: characterName),
+            vitals: new VitalsSnapshot(
+                currentHealth: 100,
+                maximumHealth: 200,
+                currentMana: 300,
+                maximumMana: 400),
+            location: new MapLocationSnapshot(
+                mapNumber: 1,
+                mapName: "Test Map",
+                x: 50,
+                y: 60));
+        var result = new SnapshotCaptureResult(
+            snapshot,
+            SnapshotQuality.Complete,
+            error: null,
+            metrics);
+        var statistics = new SnapshotCaptureStatistics(
+            windowCapacity: 1,
+            succeededCount: 1,
+            failedCount: 0,
+            new SnapshotDurationStatistics(
+                sampleCount: 1,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                TimeSpan.Zero),
+            reads,
+            ImmutableDictionary<SnapshotCaptureFailure, int>.Empty,
+            ImmutableArray<SnapshotSectionStatistics>.Empty);
+        return new SnapshotCaptureObservation(
+            result,
+            statistics);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        using var timeout = new CancellationTokenSource(
+            TimeSpan.FromSeconds(5));
+        try
+        {
+            while (!predicate())
+            {
+                await Task.Delay(
+                    TimeSpan.FromMilliseconds(1),
+                    timeout.Token);
+            }
+        }
+        catch (OperationCanceledException)
+            when (timeout.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                "The expected runtime registry state was not observed.");
+        }
+    }
 
     private static string FindVersionsFile()
     {
@@ -283,6 +430,7 @@ public sealed class ClientRuntimeRegistryTests
 
     private sealed class RecordingRuntimeFactory : IClientRuntimeFactory
     {
+        private readonly ConcurrentQueue<MacroClock> clocks = new();
         private readonly ConcurrentQueue<RecordingRuntimeHost> hosts = new();
 
         public Exception? AttachError { get; init; }
@@ -297,6 +445,16 @@ public sealed class ClientRuntimeRegistryTests
 
         public SnapshotCaptureSections LastSections { get; private set; }
 
+        public AbilitySnapshotCatalog? LastAbilityCatalog
+        {
+            get;
+            private set;
+        }
+
+        public MacroClock? LastClock { get; private set; }
+
+        public MacroClock[] Clocks => clocks.ToArray();
+
         public RecordingRuntimeHost[] Hosts => hosts.ToArray();
 
         public IClientRuntimeHost Attach(
@@ -305,13 +463,16 @@ public sealed class ClientRuntimeRegistryTests
             int processId,
             nint windowHandle,
             SnapshotCaptureSchedule snapshotSchedule,
-            TimeProvider timeProvider,
+            MacroClock clock,
             AbilitySnapshotCatalog? abilityCatalog = null)
         {
             Assert.That(mappingStream.CanRead, Is.True);
             AttachCount++;
             LastInterval = snapshotSchedule.Interval;
             LastSections = snapshotSchedule.Sections;
+            LastClock = clock;
+            LastAbilityCatalog = abilityCatalog;
+            clocks.Enqueue(clock);
             if (AttachError is not null)
                 throw AttachError;
 
@@ -329,6 +490,8 @@ public sealed class ClientRuntimeRegistryTests
             Channel.CreateUnbounded<SnapshotCaptureObservation>();
         private readonly TaskCompletionSource completion =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly ConcurrentQueue<ClientRosterSnapshot>
+            publishedRosters = new();
         private readonly Channel<MacroViewSnapshot> views =
             Channel.CreateUnbounded<MacroViewSnapshot>();
 
@@ -357,6 +520,9 @@ public sealed class ClientRuntimeRegistryTests
 
         public int CommandCount { get; private set; }
 
+        public ClientRosterSnapshot[] PublishedRosters =>
+            publishedRosters.ToArray();
+
         public ValueTask SendCommandAsync(
             MacroCommand command,
             CancellationToken cancellationToken = default)
@@ -365,7 +531,11 @@ public sealed class ClientRuntimeRegistryTests
             return ValueTask.CompletedTask;
         }
 
-        public bool PublishClientRoster(ClientRosterSnapshot snapshot) => true;
+        public bool PublishClientRoster(ClientRosterSnapshot snapshot)
+        {
+            publishedRosters.Enqueue(snapshot);
+            return true;
+        }
 
         public ValueTask DisposeAsync()
         {
@@ -378,6 +548,15 @@ public sealed class ClientRuntimeRegistryTests
             }
 
             return ValueTask.CompletedTask;
+        }
+
+        public void PublishCapture(SnapshotCaptureObservation capture)
+        {
+            if (!captures.Writer.TryWrite(capture))
+            {
+                throw new InvalidOperationException(
+                    "The test capture channel is unavailable.");
+            }
         }
     }
 

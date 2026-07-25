@@ -4,6 +4,7 @@ using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Tests.Hosting;
 
@@ -28,7 +29,7 @@ public sealed class WindowsClientRuntimeFactoryTests
             new nint(1),
             new SnapshotCaptureSchedule(
                 TimeSpan.FromSeconds(1)),
-            TimeProvider.System);
+            new MacroClock(TimeProvider.System));
 
         var capture = await host.Captures.ReadUntilAsync(
             current => current.Result.Metrics.Sequence.Value == 1);
@@ -58,7 +59,7 @@ public sealed class WindowsClientRuntimeFactoryTests
                 new nint(1),
                 new SnapshotCaptureSchedule(
                     TimeSpan.FromSeconds(1)),
-                TimeProvider.System),
+                new MacroClock(TimeProvider.System)),
             Throws.TypeOf<Win32Exception>());
     }
 
@@ -86,7 +87,7 @@ public sealed class WindowsClientRuntimeFactoryTests
                 new nint(1),
                 new SnapshotCaptureSchedule(
                     TimeSpan.FromSeconds(1)),
-                TimeProvider.System),
+                new MacroClock(TimeProvider.System)),
             Throws.TypeOf<InvalidDataException>());
     }
 }

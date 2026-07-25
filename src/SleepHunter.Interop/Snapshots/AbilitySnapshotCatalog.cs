@@ -21,10 +21,14 @@ public sealed class AbilitySnapshotCatalog
 
     public static AbilitySnapshotCatalog Empty { get; } = new([], []);
 
-    internal SkillSnapshotMetadata? FindSkill(string name) =>
+    public int SkillCount => skills.Count;
+
+    public int SpellCount => spells.Count;
+
+    public SkillSnapshotMetadata? FindSkill(string name) =>
         skills.GetValueOrDefault(name);
 
-    internal SpellSnapshotMetadata? FindSpell(string name) =>
+    public SpellSnapshotMetadata? FindSpell(string name) =>
         spells.GetValueOrDefault(name);
 
     private static ImmutableDictionary<string, TMetadata> BuildCatalog<TMetadata>(
