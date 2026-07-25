@@ -27,7 +27,9 @@ public sealed record MacroState
         SpellQueueState? spellQueue = null,
         PanelTransitionState? panelTransition = null,
         long nextClientActionId = 1,
-        StaffSwitchState? staffSwitch = null)
+        StaffSwitchState? staffSwitch = null,
+        SpellCooldownState? spellCooldowns = null,
+        SpellCastState? spellCast = null)
     {
         if (revision < 0)
         {
@@ -70,6 +72,8 @@ public sealed record MacroState
         PanelTransition = panelTransition;
         NextClientActionId = nextClientActionId;
         StaffSwitch = staffSwitch;
+        SpellCooldowns = spellCooldowns ?? SpellCooldownState.Empty;
+        SpellCast = spellCast;
     }
 
     public long Revision { get; }
@@ -89,6 +93,10 @@ public sealed record MacroState
     public PanelTransitionState? PanelTransition { get; }
 
     public StaffSwitchState? StaffSwitch { get; }
+
+    public SpellCooldownState SpellCooldowns { get; }
+
+    public SpellCastState? SpellCast { get; }
 
     internal long NextClientActionId { get; }
 }

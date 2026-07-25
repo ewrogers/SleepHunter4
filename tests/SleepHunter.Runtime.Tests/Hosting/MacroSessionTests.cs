@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
@@ -243,6 +244,81 @@ public sealed class MacroSessionTests
     }
 
     [Test]
+    public async Task ShouldSequenceAndCompleteSpellCastThroughSession()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var session = new MacroSession(
+            new MacroEngine(),
+            new MacroClock(timeProvider));
+        var entry = new SpellQueueEntry(
+            new SpellQueueEntryId(1),
+            "spell",
+            targetLevel: null,
+            SpellTarget.Self);
+        var spell = new SpellSnapshot(
+            entry.Name,
+            slot: 37,
+            currentLevel: 0,
+            maximumLevel: 100,
+            castLines: 1,
+            manaCost: 10,
+            cooldown: TimeSpan.Zero);
+        var timing = new SpellCastTimingPolicy(
+            TimeSpan.FromMilliseconds(1),
+            TimeSpan.FromMilliseconds(10),
+            TimeSpan.FromMilliseconds(10),
+            TimeSpan.FromMilliseconds(1));
+        var policy = new SpellExecutionPolicy(
+            new SpellCastPolicy(requireMana: true, timing),
+            new PanelTransitionPolicy(
+                TimeSpan.FromMilliseconds(100),
+                maximumAttempts: 2));
+
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 1,
+                MacroTimestamp.Zero,
+                ClientPanel.Stats,
+                vitals: new VitalsSnapshot(100, 100, 100, 100),
+                spellbook: new SpellbookSnapshot([spell])));
+        await session.Views.ReadUntilAsync(view => view.Revision == 1);
+        await session.SendCommandAsync(new AddSpellQueueEntryCommand(entry));
+        await session.Views.ReadUntilAsync(view => view.Revision == 2);
+        await session.SendCommandAsync(new StartMacroCommand());
+        await session.Views.ReadUntilAsync(view => view.Revision == 3);
+        await session.SendCommandAsync(new CastNextSpellCommand(policy));
+
+        var panelIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+            intent => intent is SwitchPanelIntent);
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var panelTime = new MacroTimestamp(TimeSpan.FromTicks(1));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 2,
+                panelTime,
+                ClientPanel.MedeniaSpells,
+                vitals: new VitalsSnapshot(100, 100, 100, 100),
+                spellbook: new SpellbookSnapshot([spell])));
+        var castIntent = (CastSpellIntent)await session.Intents.ReadUntilAsync(
+            intent => intent is CastSpellIntent);
+        await session.Views.ReadUntilAsync(
+            view => view.SpellCast?.Status == SpellCastStatus.Casting);
+
+        timeProvider.Advance(timing.CalculateDuration(spell.CastLines));
+        var completed = await session.Views.ReadUntilAsync(
+            view => view.SpellCast?.Status == SpellCastStatus.Succeeded);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(panelIntent.ActionId.Value, Is.EqualTo(1));
+            Assert.That(castIntent.ActionId.Value, Is.EqualTo(2));
+            Assert.That(castIntent.SpellName, Is.EqualTo(spell.Name));
+            Assert.That(castIntent.Target, Is.EqualTo(SpellTarget.Self));
+            Assert.That(completed.PendingActionId, Is.Null);
+        });
+    }
+
+    [Test]
     public async Task ShouldAwaitShutdownAndRejectNewInputAfterDisposal()
     {
         var timeProvider = new ManualTimeProvider();
@@ -302,7 +378,9 @@ public sealed class MacroSessionTests
         ClientPanel activePanel = ClientPanel.Unknown,
         CharacterSnapshot? character = null,
         InventorySnapshot? inventory = null,
-        EquipmentSnapshot? equipment = null) =>
+        EquipmentSnapshot? equipment = null,
+        VitalsSnapshot? vitals = null,
+        SpellbookSnapshot? spellbook = null) =>
         new(
             new SnapshotSequence(sequence),
             capturedAt,
@@ -313,5 +391,7 @@ public sealed class MacroSessionTests
             activePanel,
             character,
             inventory,
-            equipment);
+            equipment,
+            vitals,
+            spellbook);
 }

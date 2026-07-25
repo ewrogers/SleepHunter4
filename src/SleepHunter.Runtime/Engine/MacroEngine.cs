@@ -75,6 +75,11 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     requestStaff,
                     currentTime),
+            CastNextSpellCommand castNextSpell =>
+                CastNextSpell(
+                    currentState,
+                    castNextSpell,
+                    currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
@@ -142,7 +147,8 @@ public sealed partial class MacroEngine : IMacroEngine
             currentTime,
             pendingAction: null,
             panelTransition: CancelPendingPanelTransition(currentState),
-            staffSwitch: CancelPendingStaffSwitch(currentState));
+            staffSwitch: CancelPendingStaffSwitch(currentState),
+            spellCast: CancelPendingSpellCast(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -171,7 +177,10 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingPanelTransition(currentState),
             staffSwitch: nextLifecycle == MacroLifecycle.Running
                 ? currentState.StaffSwitch
-                : CancelPendingStaffSwitch(currentState));
+                : CancelPendingStaffSwitch(currentState),
+            spellCast: nextLifecycle == MacroLifecycle.Running
+                ? currentState.SpellCast
+                : CancelPendingSpellCast(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -215,6 +224,9 @@ public sealed partial class MacroEngine : IMacroEngine
         var staffSwitch = clientLoggedOut
             ? CancelPendingStaffSwitch(currentState)
             : currentState.StaffSwitch;
+        var spellCast = clientLoggedOut
+            ? CancelPendingSpellCast(currentState)
+            : currentState.SpellCast;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -257,6 +269,22 @@ public sealed partial class MacroEngine : IMacroEngine
                     snapshot,
                     panelTransition);
             }
+
+            if (spellCast is
+                {
+                    Status: SpellCastStatus.WaitingForPanel
+                } &&
+                spellCast.Plan.SelectedSpell?.Panel is { } spellPanel &&
+                switchIntent.TargetPanel.IsEquivalentTo(spellPanel))
+            {
+                return ContinueSpellCastAfterPanel(
+                    currentState,
+                    spellCast,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    staffSwitch);
+            }
         }
 
         if (!clientLoggedOut &&
@@ -274,7 +302,8 @@ public sealed partial class MacroEngine : IMacroEngine
             lastTransitionAt,
             pendingAction,
             panelTransition: panelTransition,
-            staffSwitch: staffSwitch);
+            staffSwitch: staffSwitch,
+            spellCast: spellCast);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -287,6 +316,18 @@ public sealed partial class MacroEngine : IMacroEngine
             {
                 Presence: ClientPresence.InWorld
             } latestSnapshot)
+        {
+            return Unchanged(currentState);
+        }
+
+        if (currentState.StaffSwitch is
+            {
+                Status: StaffSwitchStatus.WaitingForInventory
+            } ||
+            currentState.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForPanel
+            })
         {
             return Unchanged(currentState);
         }
@@ -364,6 +405,11 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction,
                 weaponIntent,
                 currentTime),
+            CastSpellIntent castSpellIntent => HandleSpellCastDeadline(
+                currentState,
+                pendingAction,
+                castSpellIntent,
+                currentTime),
             _ => Unchanged(currentState)
         };
     }
@@ -387,6 +433,12 @@ public sealed partial class MacroEngine : IMacroEngine
             } waiting
                 ? waiting.PanelUnavailable()
                 : currentState.StaffSwitch;
+            var spellCast = currentState.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForPanel
+            } waitingForPanel
+                ? waitingForPanel.PanelUnavailable()
+                : currentState.SpellCast;
 
             return Changed(
                 currentState,
@@ -396,7 +448,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 currentState.LastTransitionAt,
                 pendingAction: null,
                 panelTransition: panelTransition.TimedOut(),
-                staffSwitch: staffSwitch);
+                staffSwitch: staffSwitch,
+                spellCast: spellCast);
         }
 
         return IssuePanelTransitionAttempt(
@@ -406,7 +459,9 @@ public sealed partial class MacroEngine : IMacroEngine
             checked(pendingAction.Attempt + 1),
             pendingAction.MaximumAttempts,
             currentTime,
-            currentState.StaffSwitch);
+            currentState.StaffSwitch,
+            currentState.SpellCast,
+            currentState.SpellCooldowns);
     }
 
     private static MacroDecision IssuePanelTransitionAttempt(
@@ -416,7 +471,9 @@ public sealed partial class MacroEngine : IMacroEngine
         int attempt,
         int maximumAttempts,
         MacroTimestamp currentTime,
-        StaffSwitchState? staffSwitch = null)
+        StaffSwitchState? staffSwitch = null,
+        SpellCastState? spellCast = null,
+        SpellCooldownState? spellCooldowns = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new SwitchPanelIntent(actionId, targetPanel);
@@ -443,6 +500,8 @@ public sealed partial class MacroEngine : IMacroEngine
             pendingAction,
             panelTransition: transition,
             staffSwitch: staffSwitch,
+            spellCooldowns: spellCooldowns,
+            spellCast: spellCast,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -520,7 +579,9 @@ public sealed partial class MacroEngine : IMacroEngine
         long? nextClientActionId = null,
         MacroIntent? intent = null,
         ImmutableArray<ScheduledMacroEvent> scheduledEvents = default,
-        StaffSwitchState? staffSwitch = null)
+        StaffSwitchState? staffSwitch = null,
+        SpellCooldownState? spellCooldowns = null,
+        SpellCastState? spellCast = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -537,7 +598,9 @@ public sealed partial class MacroEngine : IMacroEngine
             spellQueue ?? currentState.SpellQueue,
             panelTransition ?? currentState.PanelTransition,
             nextClientActionId ?? currentState.NextClientActionId,
-            staffSwitch ?? currentState.StaffSwitch);
+            staffSwitch ?? currentState.StaffSwitch,
+            spellCooldowns ?? currentState.SpellCooldowns,
+            spellCast ?? currentState.SpellCast);
 
         return new MacroDecision(
             nextState,

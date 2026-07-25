@@ -17,7 +17,9 @@ public sealed record MacroViewSnapshot(
     ClientActionId? PendingActionId,
     SpellQueueState SpellQueue,
     PanelTransitionState? PanelTransition,
-    StaffSwitchState? StaffSwitch)
+    StaffSwitchState? StaffSwitch,
+    SpellCooldownState SpellCooldowns,
+    SpellCastState? SpellCast)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -33,6 +35,8 @@ public sealed record MacroViewSnapshot(
             state.PendingAction?.Intent.ActionId,
             state.SpellQueue,
             state.PanelTransition,
-            state.StaffSwitch);
+            state.StaffSwitch,
+            state.SpellCooldowns,
+            state.SpellCast);
     }
 }

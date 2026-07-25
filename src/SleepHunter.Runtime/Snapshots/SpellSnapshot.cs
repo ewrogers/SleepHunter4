@@ -80,12 +80,25 @@ public sealed record SpellSnapshot
 
     public int Slot { get; }
 
-    public ClientPanel Panel => Slot switch
+    public ClientPanel Panel => GetPanelForSlot(Slot);
+
+    public static ClientPanel GetPanelForSlot(int slot)
     {
-        <= 36 => ClientPanel.TemuairSpells,
-        <= 72 => ClientPanel.MedeniaSpells,
-        _ => ClientPanel.WorldSpells
-    };
+        if (slot is <= 0 or > MaximumSlot)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(slot),
+                slot,
+                "Spell slots must be within the supported spellbook range.");
+        }
+
+        return slot switch
+        {
+            <= 36 => ClientPanel.TemuairSpells,
+            <= 72 => ClientPanel.MedeniaSpells,
+            _ => ClientPanel.WorldSpells
+        };
+    }
 
     public int CurrentLevel { get; }
 

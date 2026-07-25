@@ -2,11 +2,13 @@
 
 using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Tests.Hosting;
 using SleepHunter.Runtime.Time;
 
@@ -140,6 +142,66 @@ public sealed class MacroDecisionInvariantTests
             MacroTimestamp.Zero,
             pendingAction,
             staffSwitch: staffSwitch);
+        var decision = new MacroDecision(
+            state,
+            ImmutableArray<MacroEvent>.Empty,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
+            publishedView: null);
+
+        Assert.That(
+            () => MacroDecisionInvariants.EnsureValid(
+                state,
+                decision,
+                MacroTimestamp.Zero),
+            Throws.TypeOf<InvalidOperationException>());
+    }
+
+    [Test]
+    public void ShouldRejectCastIntentWithoutMatchingSpellState()
+    {
+        var entry = new SpellQueueEntry(
+            new SpellQueueEntryId(1),
+            "spell");
+        var spell = new SpellSnapshot(
+            "spell",
+            slot: 1,
+            currentLevel: 0,
+            maximumLevel: 100,
+            castLines: 1,
+            manaCost: 0,
+            cooldown: TimeSpan.Zero);
+        var queue = SpellQueueState.Empty.Add(entry);
+        var plan = SpellPlanner.Plan(
+            new SpellPlanningRequest(
+                queue,
+                new VitalsSnapshot(100, 100, 100, 100),
+                new SpellbookSnapshot([spell]),
+                SpellCooldownState.Empty,
+                MacroTimestamp.Zero));
+        var deadline = new MacroTimestamp(TimeSpan.FromSeconds(1));
+        var intent = new CastSpellIntent(
+            new ClientActionId(1),
+            spell.Name,
+            spell.Slot,
+            spell.Panel,
+            entry.Target);
+        var pendingAction = new PendingAction(
+            intent,
+            MacroTimestamp.Zero,
+            deadline,
+            attempt: 1);
+        var spellCast = SpellCastState
+            .FromPlan(plan, SpellExecutionPolicy.Default)
+            .Casting(plan, new ClientActionId(2), deadline);
+        var state = new MacroState(
+            revision: 1,
+            MacroLifecycle.Running,
+            MacroStopReason.None,
+            latestSnapshot: null,
+            MacroTimestamp.Zero,
+            pendingAction,
+            spellCast: spellCast);
         var decision = new MacroDecision(
             state,
             ImmutableArray<MacroEvent>.Empty,
