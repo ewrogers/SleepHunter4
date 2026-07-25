@@ -7,7 +7,7 @@ namespace SleepHunter.Interop.Tests.Mappings;
 public sealed class ClientMemoryMapLoaderTests
 {
     [Test]
-    public void ShouldLoadExactUsdaMappingFromRuntimeConfiguration()
+    public void ShouldLoadUnifiedMappingFromRuntimeConfiguration()
     {
         var path = Path.Combine(
             TestContext.CurrentContext.TestDirectory,
@@ -15,7 +15,7 @@ public sealed class ClientMemoryMapLoaderTests
             "Versions.xml");
         using var stream = File.OpenRead(path);
 
-        var map = ClientMemoryMapLoader.Load(stream, "usda 7.41");
+        var map = ClientMemoryMapLoader.Load(stream);
 
         var characterName = map.Find("CharacterName");
         var characterId = map.Find("CharacterId");
@@ -24,7 +24,6 @@ public sealed class ClientMemoryMapLoaderTests
         var activePanel = map.Find("ActivePanel");
         Assert.Multiple(() =>
         {
-            Assert.That(map.VersionKey, Is.EqualTo("USDA 7.41"));
             Assert.That(map.PointerWidth, Is.EqualTo(PointerWidth.Bit32));
             Assert.That(characterName?.ValueKind, Is.EqualTo(MemoryValueKind.Text));
             Assert.That(characterName?.MaximumLength, Is.EqualTo(16));
@@ -43,19 +42,14 @@ public sealed class ClientMemoryMapLoaderTests
     }
 
     [Test]
-    public void ShouldSelectOnlyTheRequestedVersionAndLeaveStreamOpen()
+    public void ShouldLoadTheSingleMappingAndLeaveStreamOpen()
     {
         const string xml = """
             <ClientVersions>
               <Clients>
-                <Client Key="Valid" PointerWidth="Bit32">
+                <Client PointerWidth="Bit32">
                   <Variables>
                     <Static Key="Value" Address="1000" Type="UInt32" />
-                  </Variables>
-                </Client>
-                <Client Key="Unrelated" PointerWidth="Bit32">
-                  <Variables>
-                    <Static Key="Ambiguous" Address="2000" />
                   </Variables>
                 </Client>
               </Clients>
@@ -63,7 +57,7 @@ public sealed class ClientMemoryMapLoaderTests
             """;
         using var stream = Stream(xml);
 
-        var map = ClientMemoryMapLoader.Load(stream, "VALID");
+        var map = ClientMemoryMapLoader.Load(stream);
 
         Assert.Multiple(() =>
         {
@@ -73,41 +67,31 @@ public sealed class ClientMemoryMapLoaderTests
     }
 
     [Test]
-    public void ShouldRejectMissingDuplicateAndAmbiguousMappings()
+    public void ShouldRejectZeroOrMultipleMappings()
     {
-        const string duplicate = """
+        const string empty = """
             <ClientVersions>
-              <Clients>
-                <Client Key="Same" PointerWidth="Bit32"><Variables /></Client>
-                <Client Key="same" PointerWidth="Bit32"><Variables /></Client>
-              </Clients>
+              <Clients />
             </ClientVersions>
             """;
-        const string ambiguous = """
+        const string multiple = """
             <ClientVersions>
               <Clients>
-                <Client Key="Version" PointerWidth="Bit32">
-                  <Variables>
-                    <Static Key="Value" Address="1000" />
-                  </Variables>
-                </Client>
+                <Client PointerWidth="Bit32"><Variables /></Client>
+                <Client PointerWidth="Bit32"><Variables /></Client>
               </Clients>
             </ClientVersions>
             """;
 
         Assert.Multiple(() =>
         {
-            using var missingStream = Stream(duplicate);
+            using var emptyStream = Stream(empty);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(missingStream, "Missing"));
+                () => ClientMemoryMapLoader.Load(emptyStream));
 
-            using var duplicateStream = Stream(duplicate);
+            using var multipleStream = Stream(multiple);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(duplicateStream, "Same"));
-
-            using var ambiguousStream = Stream(ambiguous);
-            Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(ambiguousStream, "Version"));
+                () => ClientMemoryMapLoader.Load(multipleStream));
         });
     }
 
@@ -166,15 +150,15 @@ public sealed class ClientMemoryMapLoaderTests
         {
             using var widthStream = Stream(invalidWidth);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(widthStream, "Version"));
+                () => ClientMemoryMapLoader.Load(widthStream));
 
             using var typeStream = Stream(invalidType);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(typeStream, "Version"));
+                () => ClientMemoryMapLoader.Load(typeStream));
 
             using var offsetStream = Stream(invalidOffset);
             Assert.Throws<InvalidDataException>(
-                () => ClientMemoryMapLoader.Load(offsetStream, "Version"));
+                () => ClientMemoryMapLoader.Load(offsetStream));
 
             using var limitedStream = Stream(tooManyOffsets);
             var limits = new ClientMemoryMapLoadLimits(
@@ -182,7 +166,6 @@ public sealed class ClientMemoryMapLoaderTests
             Assert.Throws<InvalidDataException>(
                 () => ClientMemoryMapLoader.Load(
                     limitedStream,
-                    "Version",
                     limits));
         });
     }
@@ -207,7 +190,7 @@ public sealed class ClientMemoryMapLoaderTests
         using var stream = Stream(xml);
 
         Assert.Throws<System.Xml.XmlException>(
-            () => ClientMemoryMapLoader.Load(stream, "Version"));
+            () => ClientMemoryMapLoader.Load(stream));
     }
 
     private static MemoryStream Stream(string value) =>

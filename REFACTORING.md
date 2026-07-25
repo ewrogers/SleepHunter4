@@ -134,7 +134,7 @@ and namespace rules preserve the logical boundary.
 
 - WPF or a UI dispatcher.
 - Win32 or process APIs.
-- Client-version memory mappings.
+- Client memory mappings.
 - File dialogs or application windows.
 - MoonSharp or another scripting implementation.
 - The legacy `Player`, `MacroState`, or static manager types.
@@ -151,7 +151,7 @@ Processes/
 Memory/
 Input/
 Snapshots/
-ClientVersions/
+Mappings/
 Win32/
 ```
 
@@ -399,7 +399,7 @@ Every snapshot contains:
 
 - A sequence number.
 - Capture start and completion timestamps.
-- Client identity and version.
+- Client instance identity.
 - Validity or quality information.
 - Explicit freshness for independently captured sections when applicable.
 
@@ -411,7 +411,7 @@ Snapshot capture follows these rules:
 - Only one capture may run per client at a time.
 - Slow captures cause later observations to be skipped or coalesced, never
   queued into a backlog.
-- Reads remain bounded and version-specific.
+- Reads remain bounded and match the single configured binary layout.
 - Mutable collection roots or generation values are revalidated when
   available.
 - Partial or incoherent snapshots are rejected.
@@ -468,8 +468,8 @@ release cleanup, but still remain uncertain and must never be reported as
 success. A successfully posted plan means only that Windows accepted the
 messages, not that the client completed the action.
 
-For USDA 7.41, basic client actions are translated from semantic intents into
-version-specific input plans. Cancel dialog uses Escape, disarm uses the OEM
+For the supported client layout, basic client actions are translated from
+semantic intents into input plans. Cancel dialog uses Escape, disarm uses the OEM
 tilde key, and assail uses Space. Panel changes and skill activation use the
 documented 640 by 480 client coordinates, scaled independently to the guarded
 client width and height. Panel changes preserve the Temuair and Medenia Shift
@@ -487,7 +487,7 @@ requires the inventory panel, the correct observed inventory display mode, and
 the expected staff name in the requested slot.
 
 Cast-spell input requires the expected panel and spell name in the requested
-slot. USDA 7.41 spell input double-clicks the verified spell slot, then
+slot. Client spell input double-clicks the verified spell slot, then
 immediately clicks a projected target when one is required. Self, logical
 screen-point, relative-tile, and absolute-tile targets use the legacy 640 by 480
 projection. The logical target is scaled to the guarded client dimensions
@@ -496,7 +496,7 @@ observed map location and remain bounded to the supported local tile range.
 The deterministic runtime resolves character targets to relative tiles from an
 immutable, coherent client roster before input planning. It rejects missing,
 logged-out, moved, different-map, and out-of-range targets without consuming an
-action identifier. The USDA input planner still rejects an unresolved character
+action identifier. The client input planner still rejects an unresolved character
 target defensively. Area targets are likewise resolved to one tile by the
 runtime before input planning.
 
@@ -679,16 +679,15 @@ additional typed runtime commands through the same boundary. The legacy engine
 remains authoritative until client attachment and the corresponding UI slices
 are explicitly cut over.
 
-`ClientRuntimeRegistry` now attaches a read-only shadow host for each supported
-USDA 7.41 process discovered by the legacy client scanner. The Windows factory
+`ClientRuntimeRegistry` now attaches a read-only shadow host for each Dark Ages
+process discovered by the legacy client scanner. The Windows factory
 opens only query and virtual-memory-read process rights. Shadow hosts capture
 all snapshot sections at the configured client update interval, but the
 registry wraps them in a read-only boundary that rejects lifecycle and feature
 commands before they can reach the runtime, so they cannot issue window input.
-Unsupported clients remain on the legacy path. MainWindow owns the registry,
-detaches hosts when clients disappear, and awaits disposal before the
-application completes shutdown. This establishes the live composition seam
-without changing which engine controls automation.
+MainWindow owns the registry, detaches hosts when clients disappear, and awaits
+disposal before the application completes shutdown. This establishes the live
+composition seam without changing which engine controls automation.
 
 The client list is the first vertical WPF slice. `ClientListViewModel` owns a
 stable, ordered collection of `ClientListItemViewModel` instances. Each item
@@ -842,7 +841,7 @@ request.
 ### PR 5: Interop Snapshot Capture
 
 - Implement bounded snapshot production.
-- Add version-specific parser tests.
+- Add configured-layout parser tests.
 - Add capture timing instrumentation.
 - Perform read-only measurement against the supported client.
 - Select initial observation cadence based on measurements.
@@ -850,7 +849,7 @@ request.
 ### PR 6: Interop Action Execution
 
 - Translate runtime intents into client input.
-- Preserve guards and version-specific behavior.
+- Preserve guards and configured-layout behavior.
 - Test action translation and cancellation without live input.
 
 ### PR 7: Persistence and Compatibility
@@ -911,6 +910,13 @@ As of July 24, 2026:
 - Do not release a legacy-engine patch before the completed refactor.
 - Start with `SleepHunter.Runtime` and `SleepHunter.Interop`.
 - Use `SleepHunter.Interop`, not a game-specific assembly name.
+- Support one unified Dark Ages client layout. Keep addresses and patch
+  metadata configurable, but do not encode client-release or private-server
+  names into Runtime or Interop types and do not route behavior by a version
+  string.
+- Treat the legacy `ClientVersion` model as a temporary launch, patch, and
+  process-detection container. Remove or rename it when those responsibilities
+  move out of the legacy WPF model.
 - Audit and minimize existing dependencies before establishing the new package
   graph.
 - Keep pure decisions and channel-driven hosting in one runtime assembly
@@ -923,27 +929,27 @@ As of July 24, 2026:
   count and native error code for diagnostics. Never parse a partial buffer.
 - Keep process-handle ownership outside `WindowsProcessMemorySource` so client
   attachment and disposal have one explicit owner.
-- Represent client mappings as immutable, case-insensitive version maps with
+- Represent the client mapping as one immutable, case-insensitive map with
   explicit pointer width, value kind, base address, and signed pointer offsets.
   Resolve every pointer and offset through checked address arithmetic.
-- Load exactly one explicitly selected client mapping from bounded,
-  DTD-prohibited XML. Do not fall back to another version, infer an unbounded
-  text length, or validate a different profile in place of the selected one.
-  Preserve search-based mappings as explicit metadata and require a dedicated
-  bounded search resolver before reading them.
-- Publish a USDA 7.41 core snapshot only after the client session root,
+- Require exactly one client mapping in bounded, DTD-prohibited XML. Runtime
+  client identity is instance-only and never selects a layout by version name.
+  Addresses remain configurable without code changes. Preserve search-based
+  mappings as explicit metadata and require a dedicated bounded search resolver
+  before reading them.
+- Publish a core snapshot only after the client session root,
   character ownership, active panel, inventory display mode, and map location
   remain stable across the capture. A null session is a complete logged-out
   observation. Transport failures, invalid field values, and changed state or
   ownership produce diagnostics and metrics, but never a partial snapshot.
-- Read the bounded USDA 7.41 compact inventory table for deterministic
+- Read the supported client's bounded compact inventory table for deterministic
   slot/name observations, excluding the synthetic gold slot. Prefer the
   coherent equipment snapshot for weapon and shield observations, but preserve
   the bounded compact equipment-name table as a fallback. Revalidate every
   collection root before publishing its parsed section. Keep these sections
   opt-in so macros that do not need staff or disarm state are not blocked by an
   unrelated collection.
-- Prefer USDA 7.41 skill and spell pane snapshots for slot, level, cast-line,
+- Prefer supported skill and spell pane snapshots for slot, level, cast-line,
   and client action-delay observations. Revalidate the pane capacity address
   and value, pointer-table root, and complete pointer table before publishing.
   Preserve the bounded compact skillbook and spellbook tables as fallbacks.
@@ -1013,7 +1019,7 @@ As of July 24, 2026:
   and equipment snapshot rather than from command-captured mutable models.
 - Sequence staff equipping through the confirmed inventory panel before
   selecting the required inventory display mode and emitting a semantic weapon
-  intent. USDA 7.41 slots 1 through 34 use the collapsed mode, while slots 35
+  intent. Client slots 1 through 34 use the collapsed mode, while slots 35
   through 59 use the expanded mode and its documented slot origin. Slot 60 is
   synthetic gold state and is never a usable equipment source.
 - Represent inventory expansion and collapse as semantic client intents.
@@ -1172,12 +1178,11 @@ As of July 24, 2026:
   latest-value observation stream that includes failures and rolling timing
   statistics. Project that stream into bindable WPF state without adding a
   polling loop.
-- Attach one shadow runtime to each discovered USDA 7.41 client before UI
+- Attach one shadow runtime to each discovered Dark Ages client before UI
   cutover. Use only query and virtual-memory-read process rights, accept only an
   atomic replacement of all configured queues at the shadow host boundary,
-  reject lifecycle, incremental queue, and action-producing commands, skip
-  unsupported clients, and await host disposal during client removal and
-  application shutdown.
+  reject lifecycle, incremental queue, and action-producing commands, and await
+  host disposal during client removal and application shutdown.
 - Load macro files for the shadow runtime through a CommunityToolkit-based
   configuration view model. Apply all persisted queues with one aggregate
   command, preserve the previous accepted configuration when loading fails, and

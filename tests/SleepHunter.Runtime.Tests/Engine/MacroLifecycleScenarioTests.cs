@@ -67,7 +67,7 @@ public sealed class MacroLifecycleScenarioTests
         var stale = scenario.Observe(1);
         var foreign = scenario.Observe(
             4,
-            client: new ClientIdentity("other-client", "test"));
+            client: new ClientIdentity("other-client"));
 
         Assert.Multiple(() =>
         {

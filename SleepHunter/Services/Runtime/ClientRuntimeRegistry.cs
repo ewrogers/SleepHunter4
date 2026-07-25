@@ -72,16 +72,6 @@ namespace SleepHunter.Services.Runtime
             if (clients.ContainsKey(descriptor.ProcessId))
                 return false;
 
-            if (!string.Equals(
-                    descriptor.Client.Version,
-                    Usda741SnapshotCapture.SupportedVersion,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogInfo(
-                    $"Skipping shadow runtime for unsupported client version '{descriptor.Client.Version}' (pid {descriptor.ProcessId}).");
-                return false;
-            }
-
             IClientRuntimeHost host;
             try
             {

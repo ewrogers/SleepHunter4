@@ -1,10 +1,10 @@
-using SleepHunter.Interop.Mappings;
+﻿using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Snapshots;
 
-public sealed partial class Usda741SnapshotCapture
+public sealed partial class ClientSnapshotCapture
 {
     private static bool TryReadInventory(
         MappedMemoryReader reader,
@@ -29,7 +29,7 @@ public sealed partial class Usda741SnapshotCapture
 
         try
         {
-            inventory = Usda741InventoryParser.Parse(
+            inventory = ClientInventoryParser.Parse(
                 bytes,
                 definition.Capacity);
             error = null;
@@ -92,7 +92,7 @@ public sealed partial class Usda741SnapshotCapture
 
         try
         {
-            equipment = Usda741EquipmentParser.ParseCompact(
+            equipment = ClientEquipmentParser.ParseCompact(
                 compactBytes,
                 compactDefinition.Capacity,
                 compactDefinition.MaximumLength);
@@ -119,7 +119,7 @@ public sealed partial class Usda741SnapshotCapture
     {
         try
         {
-            equipment = Usda741EquipmentParser.ParseRich(
+            equipment = ClientEquipmentParser.ParseRich(
                 snapshot,
                 recordCount);
             return true;

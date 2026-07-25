@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Snapshots;
@@ -14,12 +15,11 @@ public sealed class WindowsClientRuntimeFactoryTests
         "Versions.xml");
 
     [Test]
-    public async Task ShouldAttachToAProcessForBoundedReadOnlyCapture()
+    public async Task ShouldAttachAnyClientIdentityForBoundedReadOnlyCapture()
     {
         var factory = new WindowsClientRuntimeFactory();
         var client = new ClientIdentity(
-            $"process:{Environment.ProcessId}",
-            Usda741SnapshotCapture.SupportedVersion);
+            $"custom-client:{Environment.ProcessId}");
         await using var mappingStream = File.OpenRead(MappingPath);
         await using var host = factory.Attach(
             mappingStream,
@@ -47,9 +47,7 @@ public sealed class WindowsClientRuntimeFactoryTests
     public void ShouldFailWhenTheProcessCannotBeOpened()
     {
         var factory = new WindowsClientRuntimeFactory();
-        var client = new ClientIdentity(
-            "process:missing",
-            Usda741SnapshotCapture.SupportedVersion);
+        var client = new ClientIdentity("process:missing");
         using var mappingStream = File.OpenRead(MappingPath);
 
         Assert.That(
@@ -65,23 +63,30 @@ public sealed class WindowsClientRuntimeFactoryTests
     }
 
     [Test]
-    public void ShouldRejectUnsupportedClientsBeforeReadingMappings()
+    public void ShouldRejectMultipleClientMappingsBeforeOpeningAProcess()
     {
+        const string xml = """
+            <ClientVersions>
+              <Clients>
+                <Client PointerWidth="Bit32"><Variables /></Client>
+                <Client PointerWidth="Bit32"><Variables /></Client>
+              </Clients>
+            </ClientVersions>
+            """;
         var factory = new WindowsClientRuntimeFactory();
-        var client = new ClientIdentity(
-            "process:unsupported",
-            "Zolian 9.1.1");
+        var client = new ClientIdentity("custom-client:1234");
+        using var mappingStream = new MemoryStream(
+            Encoding.UTF8.GetBytes(xml));
 
         Assert.That(
             () => factory.Attach(
-                Stream.Null,
+                mappingStream,
                 client,
                 Environment.ProcessId,
                 new nint(1),
                 new SnapshotCaptureSchedule(
                     TimeSpan.FromSeconds(1)),
                 TimeProvider.System),
-            Throws.TypeOf<NotSupportedException>());
+            Throws.TypeOf<InvalidDataException>());
     }
-
 }

@@ -10,11 +10,9 @@ public static class ClientMemoryMapLoader
 {
     public static ClientMemoryMap Load(
         Stream stream,
-        string versionKey,
         ClientMemoryMapLoadLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        ArgumentException.ThrowIfNullOrWhiteSpace(versionKey);
 
         limits ??= ClientMemoryMapLoadLimits.Default;
         var settings = new XmlReaderSettings
@@ -43,45 +41,18 @@ public static class ClientMemoryMapLoader
         }
 
         var clients = clientsElement.Elements("Client").ToArray();
-        if (clients.Length > limits.MaximumClients)
+        if (clients.Length != 1)
         {
             throw Format(
                 clientsElement,
-                $"The mapping document exceeds the {limits.MaximumClients} client limit.");
+                "The mapping document must contain exactly one client mapping.");
         }
 
-        var normalizedKey = versionKey.Trim();
-        var matches = clients
-            .Where(
-                client => string.Equals(
-                    (string?)client.Attribute("Key"),
-                    normalizedKey,
-                    StringComparison.OrdinalIgnoreCase))
-            .Take(2)
-            .ToArray();
-        if (matches.Length == 0)
-        {
-            throw Format(
-                clientsElement,
-                $"Client mapping '{normalizedKey}' was not found.");
-        }
-
-        if (matches.Length > 1)
-        {
-            throw Format(
-                matches[1],
-                $"Client mapping '{normalizedKey}' is duplicated.");
-        }
-
-        return ParseClient(
-            matches[0],
-            RequiredAttribute(matches[0], "Key"),
-            limits);
+        return ParseClient(clients[0], limits);
     }
 
     private static ClientMemoryMap ParseClient(
         XElement client,
-        string versionKey,
         ClientMemoryMapLoadLimits limits)
     {
         var pointerWidthValue = RequiredAttribute(client, "PointerWidth");
@@ -93,7 +64,7 @@ public static class ClientMemoryMapLoader
         {
             throw Format(
                 client,
-                $"Client mapping '{versionKey}' has unsupported pointer width '{pointerWidthValue}'.");
+                $"The client mapping has unsupported pointer width '{pointerWidthValue}'.");
         }
 
         var variablesElement = client.Element("Variables");
@@ -101,7 +72,7 @@ public static class ClientMemoryMapLoader
         {
             throw Format(
                 client,
-                $"Client mapping '{versionKey}' has no 'Variables' element.");
+                "The client mapping has no 'Variables' element.");
         }
 
         var variableElements = variablesElement.Elements().ToArray();
@@ -109,7 +80,7 @@ public static class ClientMemoryMapLoader
         {
             throw Format(
                 variablesElement,
-                $"Client mapping '{versionKey}' exceeds the {limits.MaximumVariables} variable limit.");
+                $"The client mapping exceeds the {limits.MaximumVariables} variable limit.");
         }
 
         var variables = variableElements
@@ -119,7 +90,7 @@ public static class ClientMemoryMapLoader
                     pointerWidth,
                     limits))
             .ToArray();
-        return new ClientMemoryMap(versionKey, pointerWidth, variables);
+        return new ClientMemoryMap(pointerWidth, variables);
     }
 
     private static MemoryVariableDefinition ParseVariable(

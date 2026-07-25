@@ -1,9 +1,9 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Snapshots;
 
-internal static class Usda741EquipmentParser
+internal static class ClientEquipmentParser
 {
     public const int RecordCount = 18;
     public const int RichSnapshotSize = 0x9C8;
@@ -74,7 +74,7 @@ internal static class Usda741EquipmentParser
             return null;
         }
 
-        var name = Usda741Text.ReadNullTerminatedAscii(
+        var name = ClientText.ReadNullTerminatedAscii(
             snapshot.Slice(
                 NameArrayOffset + index * CompactNameLength,
                 CompactNameLength));
@@ -88,7 +88,7 @@ internal static class Usda741EquipmentParser
         int index,
         int nameLength)
     {
-        var name = Usda741Text.ReadNullTerminatedAscii(
+        var name = ClientText.ReadNullTerminatedAscii(
             snapshot.Slice(index * nameLength, nameLength));
         return string.IsNullOrWhiteSpace(name)
             ? null

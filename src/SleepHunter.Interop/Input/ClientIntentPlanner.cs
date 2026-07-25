@@ -5,10 +5,8 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Input;
 
-public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
+public sealed class ClientIntentPlanner : IClientIntentPlanner
 {
-    public const string SupportedVersion = "USDA 7.41";
-
     private const int BaseClientWidth = 640;
     private const int BaseClientHeight = 480;
     private const int PanelX = 545;
@@ -21,7 +19,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
     private readonly IVirtualKeyMapper keyMapper;
 
-    public Usda741ClientIntentPlanner(IVirtualKeyMapper keyMapper)
+    public ClientIntentPlanner(IVirtualKeyMapper keyMapper)
     {
         ArgumentNullException.ThrowIfNull(keyMapper);
         this.keyMapper = keyMapper;
@@ -73,14 +71,14 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             _ => ClientIntentPlanResult.Unsupported(
                 intent.ActionId,
                 ClientIntentPlanFailure.UnsupportedIntent,
-                $"Intent type '{intent.GetType().Name}' does not yet have a USDA 7.41 input plan.")
+                $"Intent type '{intent.GetType().Name}' does not yet have a client input plan.")
         };
     }
 
     private ClientIntentPlanResult Keystroke(
         ClientActionIntent intent,
         VirtualKey key) =>
-        Usda741InputMessages.TryKeystroke(
+        ClientInputMessages.TryKeystroke(
             keyMapper,
             key,
             out var plan)
@@ -112,7 +110,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 "The requested inventory display mode is already active.");
         }
 
-        var basePoint = new Usda741InputMessages.ClientPoint(
+        var basePoint = new ClientInputMessages.ClientPoint(
             InventoryToggleX,
             InventoryToggleY);
         if (!TryScalePoint(target, basePoint, out var point))
@@ -122,7 +120,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
         return ClientIntentPlanResult.Planned(
             intent.ActionId,
-            Usda741InputMessages.Click(point));
+            ClientInputMessages.Click(point));
     }
 
     private ClientIntentPlanResult PlanPanelSwitch(
@@ -147,7 +145,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 "The target client panel is already active.");
         }
 
-        var basePoint = new Usda741InputMessages.ClientPoint(
+        var basePoint = new ClientInputMessages.ClientPoint(
             PanelX,
             PanelY(intent.TargetPanel));
         if (!TryScalePoint(target, basePoint, out var point))
@@ -159,7 +157,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             IsTemuairToMedenia(currentPanel, intent.TargetPanel) ||
             (!IsMedeniaToTemuair(currentPanel, intent.TargetPanel) &&
              IsMedeniaPanel(intent.TargetPanel));
-        return Usda741InputMessages.TryClick(
+        return ClientInputMessages.TryClick(
             keyMapper,
             point,
             withShift,
@@ -195,7 +193,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
         return ClientIntentPlanResult.Planned(
             intent.ActionId,
-            Usda741InputMessages.DoubleClick(point));
+            ClientInputMessages.DoubleClick(point));
     }
 
     private static ClientIntentPlanResult PlanSpell(
@@ -234,7 +232,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             return CoordinateFailure(intent);
         }
 
-        var spellPlan = Usda741InputMessages.DoubleClick(spellPoint);
+        var spellPlan = ClientInputMessages.DoubleClick(spellPoint);
         if (intent.Target.Kind == SpellTargetKind.None)
         {
             return ClientIntentPlanResult.Planned(
@@ -254,9 +252,9 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
         return ClientIntentPlanResult.Planned(
             intent.ActionId,
-            Usda741InputMessages.Sequence(
+            ClientInputMessages.Sequence(
                 spellPlan,
-                Usda741InputMessages.Click(targetPoint)));
+                ClientInputMessages.Click(targetPoint)));
     }
 
     private ClientIntentPlanResult PlanWeapon(
@@ -307,7 +305,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         var originY = snapshot.IsInventoryExpanded
             ? ExpandedSlotOriginY
             : SlotOriginY;
-        var basePoint = new Usda741InputMessages.ClientPoint(
+        var basePoint = new ClientInputMessages.ClientPoint(
             SlotOriginX + (column * SlotSize),
             originY + (row * SlotSize));
         if (!TryScalePoint(target, basePoint, out var point))
@@ -317,7 +315,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
         return ClientIntentPlanResult.Planned(
             intent.ActionId,
-            Usda741InputMessages.DoubleClick(point));
+            ClientInputMessages.DoubleClick(point));
     }
 
     private static ClientIntentPlanResult? ValidateContext(
@@ -331,17 +329,6 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 intent.ActionId,
                 ClientIntentPlanFailure.ClientMismatch,
                 "The snapshot and target window belong to different clients.");
-        }
-
-        if (!string.Equals(
-                snapshot.Client.Version,
-                SupportedVersion,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            return ClientIntentPlanResult.Unsupported(
-                intent.ActionId,
-                ClientIntentPlanFailure.UnsupportedClientVersion,
-                $"Client version '{snapshot.Client.Version}' is not supported by this input planner.");
         }
 
         if (!snapshot.IsUsable)
@@ -376,9 +363,9 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             ClientPanel.Stats or
                 ClientPanel.Modifiers => 435,
             ClientPanel.WorldSkills or
-                ClientPanel.WorldSpells => 460,
+            ClientPanel.WorldSpells => 460,
             _ => throw new InvalidOperationException(
-                "The target panel does not have a USDA 7.41 input coordinate.")
+                "The target panel does not have a supported input coordinate.")
         };
 
     private static bool IsMedeniaPanel(ClientPanel panel) =>
@@ -402,7 +389,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         ClientWindowTarget target,
         int slot,
         ClientPanel panel,
-        out Usda741InputMessages.ClientPoint point)
+        out ClientInputMessages.ClientPoint point)
     {
         var isWorldPanel = panel is
             ClientPanel.WorldSkills or
@@ -430,8 +417,8 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
 
     private static bool TryScalePoint(
         ClientWindowTarget target,
-        Usda741InputMessages.ClientPoint basePoint,
-        out Usda741InputMessages.ClientPoint point) =>
+        ClientInputMessages.ClientPoint basePoint,
+        out ClientInputMessages.ClientPoint point) =>
         TryScalePoint(
             target,
             new LogicalPoint(basePoint.X, basePoint.Y),
@@ -442,7 +429,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         ClientWindowTarget target,
         LogicalPoint basePoint,
         TargetOffset offset,
-        out Usda741InputMessages.ClientPoint point)
+        out ClientInputMessages.ClientPoint point)
     {
         var scaledX =
             basePoint.X *
@@ -472,7 +459,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             return false;
         }
 
-        point = new Usda741InputMessages.ClientPoint((int)x, (int)y);
+        point = new ClientInputMessages.ClientPoint((int)x, (int)y);
         return true;
     }
 
@@ -480,7 +467,7 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         CastSpellIntent intent,
         ClientWindowTarget target,
         ClientSnapshot snapshot,
-        out Usda741InputMessages.ClientPoint point,
+        out ClientInputMessages.ClientPoint point,
         out ClientIntentPlanResult? failure)
     {
         LogicalPoint logicalPoint;

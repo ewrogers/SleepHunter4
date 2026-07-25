@@ -1,8 +1,8 @@
-using System.Text;
+﻿using System.Text;
 
 namespace SleepHunter.Interop.Snapshots;
 
-internal static class Usda741Text
+internal static class ClientText
 {
     private static readonly Encoding StrictAscii = Encoding.GetEncoding(
         Encoding.ASCII.CodePage,

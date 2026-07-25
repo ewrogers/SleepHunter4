@@ -602,7 +602,7 @@ public sealed class FlowerExecutionScenarioTests
         MapLocationSnapshot? location = null,
         ClientIdentity? client = null) =>
         new(
-            client ?? new ClientIdentity(characterName, "test"),
+            client ?? new ClientIdentity(characterName),
             characterName,
             ClientPresence.InWorld,
             isMacroRunning: true,

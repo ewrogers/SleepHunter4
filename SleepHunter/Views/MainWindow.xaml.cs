@@ -456,17 +456,13 @@ namespace SleepHunter.Views
 
             UpdateToolbarState();
 
-            if (e.Player.Version is { } version)
-            {
-                await runtimeClients.AttachAsync(
-                    new ClientRuntimeDescriptor(
-                        new ClientIdentity(
-                            $"process:{e.Player.Process.ProcessId}",
-                            version.Key),
-                        e.Player.Process.ProcessId,
-                        e.Player.Process.WindowHandle),
-                    UserSettingsManager.Instance.Settings.ClientUpdateInterval);
-            }
+            await runtimeClients.AttachAsync(
+                new ClientRuntimeDescriptor(
+                    new ClientIdentity(
+                        $"process:{e.Player.Process.ProcessId}"),
+                    e.Player.Process.ProcessId,
+                    e.Player.Process.WindowHandle),
+                UserSettingsManager.Instance.Settings.ClientUpdateInterval);
 
             UpdateClientList();
         }

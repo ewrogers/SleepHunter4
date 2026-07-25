@@ -533,7 +533,7 @@ public sealed class MacroSessionTests
             new SnapshotSequence(sequence),
             capturedAt,
             capturedAt,
-            new ClientIdentity("session-client", "test"),
+            new ClientIdentity("session-client"),
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
             activePanel,

@@ -6,14 +6,14 @@ using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Interop.Tests.Snapshots;
 
-public sealed class Usda741AbilityParserTests
+public sealed class ClientAbilityParserTests
 {
     [Test]
     public void ShouldParseCompactSkillsAndApplyMetadata()
     {
         var snapshot = new byte[
-            Usda741AbilityParser.CompactSkillRecordSize *
-            Usda741AbilityParser.CompactRecordCount];
+            ClientAbilityParser.CompactSkillRecordSize *
+            ClientAbilityParser.CompactRecordCount];
         WriteCompactSkill(
             snapshot,
             slot: 1,
@@ -34,9 +34,9 @@ public sealed class Usda741AbilityParserTests
             ],
             []);
 
-        var skillbook = Usda741AbilityParser.ParseCompactSkills(
+        var skillbook = ClientAbilityParser.ParseCompactSkills(
             snapshot,
-            Usda741AbilityParser.CompactRecordCount,
+            ClientAbilityParser.CompactRecordCount,
             catalog);
 
         Assert.That(
@@ -62,8 +62,8 @@ public sealed class Usda741AbilityParserTests
     public void ShouldParseCompactSpellsAndUseMetadataCastLines()
     {
         var snapshot = new byte[
-            Usda741AbilityParser.CompactSpellRecordSize *
-            Usda741AbilityParser.CompactRecordCount];
+            ClientAbilityParser.CompactSpellRecordSize *
+            ClientAbilityParser.CompactRecordCount];
         WriteCompactSpell(
             snapshot,
             slot: 73,
@@ -78,9 +78,9 @@ public sealed class Usda741AbilityParserTests
                     TimeSpan.FromSeconds(4))
             ]);
 
-        var spellbook = Usda741AbilityParser.ParseCompactSpells(
+        var spellbook = ClientAbilityParser.ParseCompactSpells(
             snapshot,
-            Usda741AbilityParser.CompactRecordCount,
+            ClientAbilityParser.CompactRecordCount,
             catalog);
 
         Assert.That(
@@ -103,7 +103,7 @@ public sealed class Usda741AbilityParserTests
     public void ShouldPreferPaneSpellCastLinesAndPreserveActionDelay()
     {
         var snapshot = new byte[
-            Usda741AbilityParser.SpellPaneSnapshotSize];
+            ClientAbilityParser.SpellPaneSnapshotSize];
         snapshot[0] = 73;
         Encoding.ASCII.GetBytes("ard cradh").CopyTo(snapshot.AsSpan(0x05));
         snapshot[0x105] = 4;
@@ -118,8 +118,8 @@ public sealed class Usda741AbilityParserTests
                     TimeSpan.FromSeconds(4))
             ]);
 
-        var record = Usda741AbilityParser.ParseSpellPane(snapshot);
-        var spell = Usda741AbilityParser.CreateSpell(record, catalog);
+        var record = ClientAbilityParser.ParseSpellPane(snapshot);
+        var spell = ClientAbilityParser.CreateSpell(record, catalog);
 
         Assert.That(
             spell,
@@ -139,7 +139,7 @@ public sealed class Usda741AbilityParserTests
     public void ShouldParsePaneSuffixLevel()
     {
         var snapshot = new byte[
-            Usda741AbilityParser.SkillPaneSnapshotSize];
+            ClientAbilityParser.SkillPaneSnapshotSize];
         Encoding.ASCII.GetBytes("Assail 3").CopyTo(snapshot.AsSpan(0x02));
         snapshot[0x182] = 37;
         snapshot[0x192] = 1;
@@ -150,8 +150,8 @@ public sealed class Usda741AbilityParserTests
             snapshot.AsSpan(0x1B4, 4),
             6);
 
-        var record = Usda741AbilityParser.ParseSkillPane(snapshot);
-        var skill = Usda741AbilityParser.CreateSkill(
+        var record = ClientAbilityParser.ParseSkillPane(snapshot);
+        var skill = ClientAbilityParser.CreateSkill(
             record,
             AbilitySnapshotCatalog.Empty);
 
@@ -172,28 +172,28 @@ public sealed class Usda741AbilityParserTests
     public void ShouldRejectInvalidAbilitySnapshots()
     {
         var duplicateNames = new byte[
-            Usda741AbilityParser.CompactSkillRecordSize * 2];
+            ClientAbilityParser.CompactSkillRecordSize * 2];
         WriteCompactSkill(duplicateNames, slot: 1, "Assail");
         WriteCompactSkill(duplicateNames, slot: 2, "Assail");
         var invalidEncoding = new byte[
-            Usda741AbilityParser.CompactSkillRecordSize];
+            ClientAbilityParser.CompactSkillRecordSize];
         BinaryPrimitives.WriteInt16LittleEndian(invalidEncoding, 1);
         invalidEncoding[4] = 0xFF;
 
         Assert.Multiple(() =>
         {
             Assert.Throws<InvalidDataException>(
-                () => Usda741AbilityParser.ParseCompactSkills(
+                () => ClientAbilityParser.ParseCompactSkills(
                     new byte[1],
                     recordCount: 1,
                     AbilitySnapshotCatalog.Empty));
             Assert.Throws<InvalidDataException>(
-                () => Usda741AbilityParser.ParseCompactSkills(
+                () => ClientAbilityParser.ParseCompactSkills(
                     duplicateNames,
                     recordCount: 2,
                     AbilitySnapshotCatalog.Empty));
             Assert.Throws<InvalidDataException>(
-                () => Usda741AbilityParser.ParseCompactSkills(
+                () => ClientAbilityParser.ParseCompactSkills(
                     invalidEncoding,
                     recordCount: 1,
                     AbilitySnapshotCatalog.Empty));
@@ -224,8 +224,8 @@ public sealed class Usda741AbilityParserTests
         string name)
     {
         var record = snapshot.Slice(
-            (slot - 1) * Usda741AbilityParser.CompactSkillRecordSize,
-            Usda741AbilityParser.CompactSkillRecordSize);
+            (slot - 1) * ClientAbilityParser.CompactSkillRecordSize,
+            ClientAbilityParser.CompactSkillRecordSize);
         BinaryPrimitives.WriteInt16LittleEndian(record, 1);
         Encoding.ASCII.GetBytes(name).CopyTo(record[4..]);
     }
@@ -236,8 +236,8 @@ public sealed class Usda741AbilityParserTests
         string name)
     {
         var record = snapshot.Slice(
-            (slot - 1) * Usda741AbilityParser.CompactSpellRecordSize,
-            Usda741AbilityParser.CompactSpellRecordSize);
+            (slot - 1) * ClientAbilityParser.CompactSpellRecordSize,
+            ClientAbilityParser.CompactSpellRecordSize);
         BinaryPrimitives.WriteInt16LittleEndian(record, 1);
         Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
     }

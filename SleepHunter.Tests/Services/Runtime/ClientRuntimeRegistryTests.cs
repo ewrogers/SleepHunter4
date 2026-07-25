@@ -27,9 +27,7 @@ public sealed class ClientRuntimeRegistryTests
         var factory = new RecordingRuntimeFactory();
         var logger = new RecordingLogger();
         await using var registry = CreateRegistry(factory, logger);
-        var descriptor = Descriptor(
-            processId: 1234,
-            Usda741SnapshotCapture.SupportedVersion);
+        var descriptor = Descriptor(processId: 1234);
         var interval = TimeSpan.FromMilliseconds(250);
 
         var attached = await registry.AttachAsync(descriptor, interval);
@@ -75,23 +73,21 @@ public sealed class ClientRuntimeRegistryTests
     }
 
     [Test]
-    public async Task ShouldSkipUnsupportedClientVersions()
+    public async Task ShouldAttachAClientWithoutVersionRouting()
     {
         var factory = new RecordingRuntimeFactory();
         var logger = new RecordingLogger();
         await using var registry = CreateRegistry(factory, logger);
 
         var attached = await registry.AttachAsync(
-            Descriptor(
-                processId: 1234,
-                version: "Zolian 9.1.1"),
+            Descriptor(processId: 1234),
             TimeSpan.FromMilliseconds(200));
 
         Assert.Multiple(() =>
         {
-            Assert.That(attached, Is.False);
-            Assert.That(registry.Count, Is.Zero);
-            Assert.That(factory.AttachCount, Is.Zero);
+            Assert.That(attached, Is.True);
+            Assert.That(registry.Count, Is.EqualTo(1));
+            Assert.That(factory.AttachCount, Is.EqualTo(1));
             Assert.That(logger.InfoMessages.Length, Is.EqualTo(1));
         });
     }
@@ -108,9 +104,7 @@ public sealed class ClientRuntimeRegistryTests
         await using var registry = CreateRegistry(factory, logger);
 
         var attached = await registry.AttachAsync(
-            Descriptor(
-                processId: 1234,
-                Usda741SnapshotCapture.SupportedVersion),
+            Descriptor(processId: 1234),
             TimeSpan.FromMilliseconds(200));
 
         Assert.Multiple(() =>
@@ -129,14 +123,10 @@ public sealed class ClientRuntimeRegistryTests
         var logger = new RecordingLogger();
         var registry = CreateRegistry(factory, logger);
         await registry.AttachAsync(
-            Descriptor(
-                processId: 1234,
-                Usda741SnapshotCapture.SupportedVersion),
+            Descriptor(processId: 1234),
             TimeSpan.FromMilliseconds(200));
         await registry.AttachAsync(
-            Descriptor(
-                processId: 5678,
-                Usda741SnapshotCapture.SupportedVersion),
+            Descriptor(processId: 5678),
             TimeSpan.FromMilliseconds(200));
 
         await registry.DisposeAsync();
@@ -149,9 +139,7 @@ public sealed class ClientRuntimeRegistryTests
                 Is.True);
             Assert.That(
                 async () => await registry.AttachAsync(
-                    Descriptor(
-                        processId: 9012,
-                        Usda741SnapshotCapture.SupportedVersion),
+                    Descriptor(processId: 9012),
                     TimeSpan.FromMilliseconds(200)),
                 Throws.TypeOf<ObjectDisposedException>());
         });
@@ -171,9 +159,7 @@ public sealed class ClientRuntimeRegistryTests
 
         Assert.That(
             async () => await registry.AttachAsync(
-                Descriptor(
-                    processId: 1234,
-                    Usda741SnapshotCapture.SupportedVersion),
+                Descriptor(processId: 1234),
                 TimeSpan.FromMilliseconds(200),
                 cancellation.Token),
             Throws.TypeOf<OperationCanceledException>());
@@ -210,9 +196,7 @@ public sealed class ClientRuntimeRegistryTests
             new RecordingLogger());
         var attachTask = Task.Run(
             async () => await registry.AttachAsync(
-                Descriptor(
-                    processId: 1234,
-                    Usda741SnapshotCapture.SupportedVersion),
+                Descriptor(processId: 1234),
                 TimeSpan.FromMilliseconds(200)));
 
         try
@@ -240,9 +224,7 @@ public sealed class ClientRuntimeRegistryTests
     [Test]
     public void ShouldValidateClientRuntimeDescriptors()
     {
-        var client = new ClientIdentity(
-            "process:1234",
-            Usda741SnapshotCapture.SupportedVersion);
+        var client = new ClientIdentity("process:1234");
 
         Assert.Multiple(() =>
         {
@@ -293,13 +275,9 @@ public sealed class ClientRuntimeRegistryTests
             "Could not locate data/Versions.xml from the test directory.");
     }
 
-    private static ClientRuntimeDescriptor Descriptor(
-        int processId,
-        string version) =>
+    private static ClientRuntimeDescriptor Descriptor(int processId) =>
         new(
-            new ClientIdentity(
-                $"process:{processId}",
-                version),
+            new ClientIdentity($"process:{processId}"),
             processId,
             new nint(processId));
 

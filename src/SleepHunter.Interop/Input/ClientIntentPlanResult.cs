@@ -13,7 +13,6 @@ public enum ClientIntentPlanFailure
 {
     None,
     ClientMismatch,
-    UnsupportedClientVersion,
     SnapshotUnavailable,
     ClientNotInWorld,
     PanelMismatch,

@@ -9,9 +9,7 @@ namespace SleepHunter.Interop.Tests.Snapshots;
 
 public sealed class ClientSnapshotSchedulerTests
 {
-    private static readonly ClientIdentity Client = new(
-        "process:1234",
-        Usda741SnapshotCapture.SupportedVersion);
+    private static readonly ClientIdentity Client = new("process:1234");
 
     [Test]
     public async Task ShouldCaptureImmediatelyAndAtTheConfiguredCadence()

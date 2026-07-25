@@ -9,9 +9,7 @@ namespace SleepHunter.Interop.Tests.Input;
 
 public sealed class ClientIntentExecutorTests
 {
-    private static readonly ClientIdentity Client = new(
-        "process:1234",
-        Usda741ClientIntentPlanner.SupportedVersion);
+    private static readonly ClientIdentity Client = new("process:1234");
 
     private static readonly ClientWindowTarget Target = new(
         Client,
@@ -149,27 +147,13 @@ public sealed class ClientIntentExecutorTests
             ClientWindowValidationResult.Valid,
             new RecordingMessageSink(failedAttemptIndex: 0))
             .Execute(Intent, Target, Snapshot);
-        var unsupportedClient = new ClientIdentity(
-            "process:1234",
-            "unsupported");
-        var unsupportedTarget = new ClientWindowTarget(
-            unsupportedClient,
-            Target.ProcessId,
-            Target.WindowHandle,
-            Target.ClientWidth,
-            Target.ClientHeight);
-        var unsupportedSnapshot = new ClientSnapshot(
-            Snapshot.Sequence,
-            Snapshot.CaptureStartedAt,
-            Snapshot.CaptureCompletedAt,
-            unsupportedClient,
-            Snapshot.Quality,
-            Snapshot.Presence,
-            Snapshot.ActivePanel);
         var unsupported = CreateExecutor(
             ClientWindowValidationResult.Valid,
             new RecordingMessageSink())
-            .Execute(Intent, unsupportedTarget, unsupportedSnapshot);
+            .Execute(
+                new UnsupportedIntent(new ClientActionId(2)),
+                Target,
+                Snapshot);
 
         Assert.Multiple(() =>
         {
@@ -186,7 +170,7 @@ public sealed class ClientIntentExecutorTests
         ClientWindowValidationResult validation,
         RecordingMessageSink sink)
     {
-        var planner = new Usda741ClientIntentPlanner(
+        var planner = new ClientIntentPlanner(
             new FixedVirtualKeyMapper());
         var dispatcher = new WindowInputDispatcher(
             new FixedWindowGuard(validation),
@@ -206,6 +190,9 @@ public sealed class ClientIntentExecutorTests
             return scanCode != default;
         }
     }
+
+    private sealed record UnsupportedIntent(ClientActionId Id)
+        : ClientActionIntent(Id);
 
     private sealed class FixedWindowGuard : IClientWindowGuard
     {

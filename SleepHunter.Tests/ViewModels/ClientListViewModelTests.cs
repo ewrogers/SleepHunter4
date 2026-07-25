@@ -303,9 +303,7 @@ public sealed class ClientListViewModelTests
 
         public RecordingRuntimeHost(int processId)
         {
-            Client = new ClientIdentity(
-                $"process:{processId}",
-                "USDA 7.41");
+            Client = new ClientIdentity($"process:{processId}");
         }
 
         public ClientIdentity Client { get; }

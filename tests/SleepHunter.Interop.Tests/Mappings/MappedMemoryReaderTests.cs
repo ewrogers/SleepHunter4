@@ -205,7 +205,6 @@ public sealed class MappedMemoryReaderTests
     public void ShouldRejectMismatchedPointerWidths()
     {
         var map = new ClientMemoryMap(
-            "Version",
             PointerWidth.Bit64,
             []);
         var session = new MemoryReadSession(
@@ -221,7 +220,6 @@ public sealed class MappedMemoryReaderTests
         params MemoryVariableDefinition[] variables)
     {
         var map = new ClientMemoryMap(
-            "Version",
             PointerWidth.Bit32,
             variables);
         var session = new MemoryReadSession(

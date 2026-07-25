@@ -8,11 +8,9 @@ using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Tests.Input;
 
-public sealed class Usda741ClientIntentPlannerTests
+public sealed class ClientIntentPlannerTests
 {
-    private static readonly ClientIdentity Client = new(
-        "process:1234",
-        Usda741ClientIntentPlanner.SupportedVersion);
+    private static readonly ClientIdentity Client = new("process:1234");
 
     private static readonly ClientWindowTarget Target = new(
         Client,
@@ -21,7 +19,7 @@ public sealed class Usda741ClientIntentPlannerTests
         clientWidth: 640,
         clientHeight: 480);
 
-    private readonly Usda741ClientIntentPlanner planner = new(
+    private readonly ClientIntentPlanner planner = new(
         new FixedVirtualKeyMapper());
 
     [TestCaseSource(nameof(KeystrokeCases))]
@@ -430,9 +428,7 @@ public sealed class Usda741ClientIntentPlannerTests
     public void ShouldRejectAMismatchedClient()
     {
         var otherTarget = new ClientWindowTarget(
-            new ClientIdentity(
-                "process:5678",
-                Usda741ClientIntentPlanner.SupportedVersion),
+            new ClientIdentity("process:5678"),
             processId: 5678,
             windowHandle: new nint(0x5678),
             clientWidth: 640,
@@ -451,13 +447,11 @@ public sealed class Usda741ClientIntentPlannerTests
     }
 
     [Test]
-    public void ShouldRejectAnUnsupportedClientVersion()
+    public void ShouldPlanForAClientWithoutVersionMetadata()
     {
-        var unsupportedClient = new ClientIdentity(
-            Client.InstanceId,
-            "USDA 7.42");
+        var customClient = new ClientIdentity("custom-client:1234");
         var target = new ClientWindowTarget(
-            unsupportedClient,
+            customClient,
             Target.ProcessId,
             Target.WindowHandle,
             Target.ClientWidth,
@@ -468,14 +462,12 @@ public sealed class Usda741ClientIntentPlannerTests
             target,
             Snapshot(
                 ClientPanel.Inventory,
-                client: unsupportedClient));
+                client: customClient));
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Unsupported));
-            Assert.That(
-                result.Failure,
-                Is.EqualTo(ClientIntentPlanFailure.UnsupportedClientVersion));
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(result.Failure, Is.EqualTo(ClientIntentPlanFailure.None));
         });
     }
 
@@ -715,7 +707,7 @@ public sealed class Usda741ClientIntentPlannerTests
     [Test]
     public void ShouldRejectInputWhenTheRequiredScanCodeIsUnavailable()
     {
-        var unavailablePlanner = new Usda741ClientIntentPlanner(
+        var unavailablePlanner = new ClientIntentPlanner(
             new FixedVirtualKeyMapper(unavailableKey: VirtualKey.Escape));
 
         var result = unavailablePlanner.Plan(

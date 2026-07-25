@@ -10,7 +10,7 @@ public sealed class LatestValueMailboxTests
     public void ShouldCoalesceQueuedSnapshotsToTheNewestValue()
     {
         var mailbox = new LatestValueMailbox<ClientSnapshot>();
-        var client = new ClientIdentity("client", "test");
+        var client = new ClientIdentity("client");
 
         mailbox.TryWrite(CreateSnapshot(client, 1));
         mailbox.TryWrite(CreateSnapshot(client, 2));
