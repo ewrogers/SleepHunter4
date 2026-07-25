@@ -822,6 +822,11 @@ As of July 24, 2026:
   text length, or validate a different profile in place of the selected one.
   Preserve search-based mappings as explicit metadata and require a dedicated
   bounded search resolver before reading them.
+- Publish a USDA 7.41 core snapshot only after the client session root,
+  character ownership, active panel, and map location remain stable across the
+  capture. A null session is a complete logged-out observation. Transport
+  failures, invalid field values, and changed state or ownership produce
+  diagnostics and metrics, but never a partial snapshot.
 - Start with capture limits of 64 KiB per block, 4 KiB per string, 4 MiB total,
   4,096 transport reads, and 16 pointer dereferences. Section-specific parsing
   may use tighter limits, and measurement may justify revising the overall
