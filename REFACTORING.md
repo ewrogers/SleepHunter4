@@ -693,15 +693,20 @@ additional typed runtime commands through the same boundary. The legacy engine
 remains authoritative until client attachment and the corresponding UI slices
 are explicitly cut over.
 
-`ClientRuntimeRegistry` now attaches a read-only shadow host for each Dark Ages
-process discovered by the legacy client scanner. The Windows factory
-opens only query and virtual-memory-read process rights. Shadow hosts capture
-all snapshot sections at the configured client update interval, but the
-registry wraps them in a read-only boundary that rejects lifecycle and feature
-commands before they can reach the runtime, so they cannot issue window input.
+`ClientRuntimeRegistry` now attaches an active host for each discovered client.
+The Windows factory still opens only query and virtual-memory-read process
+rights. It captures all snapshot sections at the configured client update
+interval and enriches abilities from an immutable application metadata catalog.
+All attached clients share one monotonic macro clock, so snapshot, action, and
+cross-client flower timestamps have the same origin.
+
+The registry projects changed client observations into one content-deduplicated
+roster and publishes it to every host. Roster feedback cannot produce an
+unbounded view loop because an identical projection is not republished.
 MainWindow owns the registry, detaches hosts when clients disappear, and awaits
-disposal before the application completes shutdown. This establishes the live
-composition seam without changing which engine controls automation.
+disposal before shutdown. The host can now accept lifecycle commands, but the
+legacy toolbar remains authoritative until the automation configuration and
+toolbar slices are cut over.
 
 The client list is the first vertical WPF slice. `ClientListViewModel` owns a
 stable, ordered collection of `ClientListItemViewModel` instances. Each item
@@ -1206,6 +1211,10 @@ As of July 24, 2026:
   atomic replacement of all configured queues at the shadow host boundary,
   reject lifecycle, incremental queue, and action-producing commands, and await
   host disposal during client removal and application shutdown.
+- Promote attached hosts from the shadow boundary to the active command
+  boundary before toolbar cutover. Give every attached host the same macro
+  clock, enrich ability snapshots from application metadata, and publish only
+  changed cross-client roster projections.
 - Load macro files for the shadow runtime through a CommunityToolkit-based
   configuration view model. Apply all persisted queues with one aggregate
   command, preserve the previous accepted configuration when loading fails, and

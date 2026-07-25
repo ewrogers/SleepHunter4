@@ -1,5 +1,6 @@
 ﻿using SleepHunter.Interop.Snapshots;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Interop.Hosting;
 
@@ -11,6 +12,6 @@ public interface IClientRuntimeFactory
         int processId,
         nint windowHandle,
         SnapshotCaptureSchedule snapshotSchedule,
-        TimeProvider timeProvider,
+        MacroClock clock,
         AbilitySnapshotCatalog? abilityCatalog = null);
 }

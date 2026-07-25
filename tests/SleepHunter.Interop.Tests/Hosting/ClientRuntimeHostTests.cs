@@ -413,7 +413,7 @@ public sealed class ClientRuntimeHostTests
                 TimeSpan.FromMilliseconds(100)),
             executor,
             targetProvider,
-            timeProvider);
+            new MacroClock(timeProvider));
     }
 
     private static SnapshotCaptureResult CreateSuccess(

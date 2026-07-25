@@ -13,7 +13,7 @@ public sealed class MacroClock
         originTimestamp = timeProvider.GetTimestamp();
     }
 
-    internal TimeProvider TimeProvider => timeProvider;
+    public TimeProvider TimeProvider => timeProvider;
 
     public MacroTimestamp GetCurrentTimestamp()
     {

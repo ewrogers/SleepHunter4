@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
 - Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures
 - Projected immutable automation configuration and enabled state through the Community Toolkit runtime ViewModel
+- Promoted per-client runtime hosts from read-only shadow capture to the active command boundary, with a shared clock, immutable ability metadata, and deduplicated cross-client rosters
 
 ### Removed
 

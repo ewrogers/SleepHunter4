@@ -20,13 +20,13 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
         int processId,
         nint windowHandle,
         SnapshotCaptureSchedule snapshotSchedule,
-        TimeProvider timeProvider,
+        MacroClock clock,
         AbilitySnapshotCatalog? abilityCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(mappingStream);
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(snapshotSchedule);
-        ArgumentNullException.ThrowIfNull(timeProvider);
+        ArgumentNullException.ThrowIfNull(clock);
 
         if (processId <= 0)
         {
@@ -54,7 +54,6 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
         var processHandle = OpenReadProcess(processId);
         try
         {
-            var clock = new MacroClock(timeProvider);
             var capture = new ClientSnapshotCapture(
                 client,
                 map,
@@ -76,7 +75,7 @@ public sealed partial class WindowsClientRuntimeFactory : IClientRuntimeFactory
                     client,
                     processId,
                     windowHandle),
-                timeProvider);
+                clock);
             return new OwnedClientRuntimeHost(host, processHandle);
         }
         catch

@@ -97,6 +97,13 @@ namespace SleepHunter.ViewModels
             return host.SendCommandAsync(command, cancellationToken);
         }
 
+        internal bool PublishClientRoster(ClientRosterSnapshot snapshot)
+        {
+            ArgumentNullException.ThrowIfNull(snapshot);
+            ThrowIfDisposing();
+            return host.PublishClientRoster(snapshot);
+        }
+
         public async ValueTask DisposeAsync()
         {
             var isFirstDispose =
