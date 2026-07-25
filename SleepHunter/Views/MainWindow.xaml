@@ -44,9 +44,8 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <!-- Launch Client Button -->
-                    <Button Name="launchClientButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
-                            Click="launchClientButton_Click"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding ClientLaunch.LaunchClientCommand}"
                             Padding="6,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"

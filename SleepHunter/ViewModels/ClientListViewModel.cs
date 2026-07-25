@@ -43,7 +43,8 @@ namespace SleepHunter.ViewModels
                 macroPersistence = null,
             IMacroConfigurationInteraction
                 macroInteraction = null,
-            ILogger logger = null)
+            ILogger logger = null,
+            ClientLaunchViewModel clientLaunch = null)
         {
             this.createItem = createItem ??
                 throw new ArgumentNullException(nameof(createItem));
@@ -59,12 +60,16 @@ namespace SleepHunter.ViewModels
                     macroInteraction,
                     logger);
             }
+
+            ClientLaunch = clientLaunch;
         }
 
         public ReadOnlyObservableCollection<ClientListItemViewModel>
             Clients => readOnlyClients;
 
         public MacroPersistenceViewModel MacroPersistence { get; }
+
+        public ClientLaunchViewModel ClientLaunch { get; }
 
         [ObservableProperty]
         public partial ClientListItemViewModel SelectedClient

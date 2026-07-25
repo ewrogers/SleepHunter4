@@ -6,6 +6,47 @@ namespace SleepHunter.Tests.IO.Process
     public sealed class ClientPatcherTests
     {
         [Test]
+        public void ShouldRejectUnsupportedPatchClientSize()
+        {
+            var filePath = CreatePatchClientFile(1);
+
+            try
+            {
+                Assert.That(
+                    () => ClientPatcher.VerifyPatchClient(
+                        filePath),
+                    Throws.TypeOf<InvalidDataException>()
+                        .With.Message.Contains(
+                            "Unsupported Dark Ages client size"));
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        [Test]
+        public void ShouldRejectUnsupportedPatchClientHash()
+        {
+            var filePath = CreatePatchClientFile(
+                3_112_960);
+
+            try
+            {
+                Assert.That(
+                    () => ClientPatcher.VerifyPatchClient(
+                        filePath),
+                    Throws.TypeOf<InvalidDataException>()
+                        .With.Message.Contains(
+                            "Unsupported Dark Ages client hash"));
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        [Test]
         public void ShouldBuildModifiersKeyFixStubWithResolvedAddresses()
         {
             var moduleBaseAddress = (nint)0x00400000;
@@ -313,6 +354,21 @@ namespace SleepHunter.Tests.IO.Process
 
         private static int GetNearConditionalTarget(byte[] code, int instructionOffset) =>
             instructionOffset + 6 + BitConverter.ToInt32(code, instructionOffset + 2);
+
+        private static string CreatePatchClientFile(
+            long length)
+        {
+            var filePath = Path.Combine(
+                TestContext.CurrentContext.WorkDirectory,
+                $"{Guid.NewGuid():N}.exe");
+            using var stream = new FileStream(
+                filePath,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None);
+            stream.SetLength(length);
+            return filePath;
+        }
 
         private static List<long> GetRelativeCallTargets(byte[] code, nint codeAddress)
         {

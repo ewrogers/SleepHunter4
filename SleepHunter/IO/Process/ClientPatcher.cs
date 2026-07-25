@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -64,7 +64,7 @@ namespace SleepHunter.IO.Process
                 0x5F, 0x5E, 0x5B, 0x5D, 0xC3
             };
 
-        internal static void VerifyRuntimePatchClient(string clientExecutablePath)
+        internal static void VerifyPatchClient(string clientExecutablePath)
         {
             using var stream = File.OpenRead(clientExecutablePath);
             if (stream.Length != SupportedClientSize)

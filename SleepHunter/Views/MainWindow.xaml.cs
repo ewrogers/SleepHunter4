@@ -5,8 +5,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,13 +36,6 @@ namespace SleepHunter.Views
     public partial class MainWindow : Window, IDisposable
     {
         private const int WM_HOTKEY = 0x312;
-
-        private static readonly (long Address, byte[] Expected, byte[] Replacement)[] SuppressLoginNotificationPatches =
-        {
-            (0x4B897C, new byte[] { 0x75, 0x6C }, new byte[] { 0xEB, 0x6C }),
-            (0x4B8ACF, new byte[] { 0x75, 0x6D }, new byte[] { 0xEB, 0x6D }),
-            (0x564855, new byte[] { 0x68, 0xE8, 0x03, 0x00, 0x00 }, new byte[] { 0x68, 0x00, 0x00, 0x00, 0x00 }),
-        };
 
         private static readonly int IconPadding = 14;
 
@@ -117,6 +108,16 @@ namespace SleepHunter.Views
                     hotkeyRegistration,
                     logger,
                     Environment.CurrentDirectory);
+            var clientLaunch =
+                new ClientLaunchViewModel(
+                    App.Current.Services.GetService<
+                        IClientLaunchService>(),
+                    new WpfClientLaunchInteraction(this),
+                    () => UserSettingsManager.Instance
+                        .Settings,
+                    () => ClientLayoutManager.Instance
+                        .Layout,
+                    logger);
             clientList = new ClientListViewModel(
                 (player, runtime) =>
                     new ClientListItemViewModel(
@@ -128,7 +129,8 @@ namespace SleepHunter.Views
                         () => UserSettingsManager.Instance.Settings),
                 macroPersistence,
                 new WpfMacroConfigurationInteraction(this),
-                logger);
+                logger,
+                clientLaunch);
             clientPolling = new ClientPollingCoordinator(
                 () => ProcessManager.Instance.ScanForProcesses(),
                 ReconcileDetectedProcesses,
@@ -154,8 +156,6 @@ namespace SleepHunter.Views
             LoadClientLayout();
 
             UpdateWindowTitle();
-            UpdateToolbarState();
-
             LoadSkills();
             LoadSpells();
             LoadStaves();
@@ -189,270 +189,6 @@ namespace SleepHunter.Views
             windowSource?.Dispose();
 
             isDisposed = true;
-        }
-
-        private void LaunchClient()
-        {
-            launchClientButton.IsEnabled = false;
-
-            var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
-
-            logger.LogInfo($"Attempting to launch client executable: {clientPath}");
-
-            try
-            {
-                if (!File.Exists(clientPath))
-                {
-                    logger.LogError("Client executable not found, unable to launch");
-                    return;
-                }
-
-                var processInformation = StartClientProcess(clientPath);
-
-                var layout = ClientLayoutManager.Instance.Layout ??
-                    throw new InvalidOperationException(
-                        "The client layout is unavailable.");
-                PatchClient(
-                    processInformation,
-                    layout,
-                    clientPath);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Unable to launch a new client! Path = {clientPath}");
-                logger.LogException(ex);
-
-                this.ShowMessageBox("Launch Client Failed",
-                   ex.Message, "Check that the executable and configured client layout are correct.",
-                   MessageBoxButton.OK,
-                   440,
-                   280);
-            }
-            finally
-            {
-                launchClientButton.IsEnabled = true;
-            }
-        }
-
-        private ProcessInformation StartClientProcess(string clientPath)
-        {
-            // Create Process
-            var startupInfo = new StartupInfo { Size = Marshal.SizeOf(typeof(StartupInfo)) };
-
-            var processSecurity = new SecurityAttributes();
-            var threadSecurity = new SecurityAttributes();
-
-            processSecurity.Size = Marshal.SizeOf(processSecurity);
-            threadSecurity.Size = Marshal.SizeOf(threadSecurity);
-
-            logger.LogInfo($"Attempting to create process for executable: {clientPath}");
-
-            bool wasCreated = NativeMethods.CreateProcess(clientPath,
-               null,
-               ref processSecurity, ref threadSecurity,
-               false,
-               ProcessCreationFlags.Suspended,
-               nint.Zero,
-               null,
-               ref startupInfo, out var processInformation);
-
-            // Ensure the process was actually created
-            if (!wasCreated || processInformation.ProcessId == 0)
-            {
-                var errorCode = Marshal.GetLastPInvokeError();
-                var errorMessage = Marshal.GetLastPInvokeErrorMessage();
-                logger.LogError($"Failed to create client process, code = {errorCode}, message = {errorMessage}");
-
-                throw new Win32Exception(errorCode, "Unable to create client process");
-            }
-            else
-            {
-                logger.LogInfo($"Created client process successfully with pid {processInformation.ProcessId}");
-            }
-
-            return processInformation;
-        }
-
-        private void PatchClient(
-            ProcessInformation process,
-            ClientLayout layout,
-            string clientPath)
-        {
-            var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
-            var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
-            var suppressLoginNotification = UserSettingsManager.Instance.Settings.SuppressLoginNotification;
-            var applyModifiersKeyFix = UserSettingsManager.Instance.Settings.ApplyModifiersKeyFix;
-            var allowAltToShowGroundItems = UserSettingsManager.Instance.Settings.AllowAltToShowGroundItems;
-            var improvedAutoFollow = UserSettingsManager.Instance.Settings.ImprovedAutoFollow;
-            var improvedAutoFollowMinimumDistance =
-                UserSettingsManager.Instance.Settings.ImprovedAutoFollowMinimumDistance;
-            var showItemQuantitiesInDialogs = UserSettingsManager.Instance.Settings.ShowItemQuantitiesInDialogs;
-            var makeExchangeDialogDraggable = UserSettingsManager.Instance.Settings.MakeExchangeDialogDraggable;
-            var showExchangeResultsInMessageBar =
-                UserSettingsManager.Instance.Settings.ShowExchangeResultsInMessageBar;
-            var patchNoWalls = UserSettingsManager.Instance.Settings.NoWalls;
-
-            var pid = process.ProcessId;
-            var patchCompleted = false;
-            logger.LogInfo(
-                $"Attempting to patch client process {pid} with the configured layout");
-
-            try
-            {
-                var applyAltGroundItemPatch =
-                    allowAltToShowGroundItems &&
-                    layout.SupportsAltToShowGroundItems;
-                var applyImprovedAutoFollow =
-                    improvedAutoFollow &&
-                    layout.SupportsImprovedAutoFollow;
-                var shouldApplyModifiersKeyFix =
-                    (applyModifiersKeyFix || applyAltGroundItemPatch) &&
-                    layout.SupportsModifiersKeyFix;
-                var hasRuntimePatches = shouldApplyModifiersKeyFix || applyAltGroundItemPatch ||
-                                        applyImprovedAutoFollow ||
-                                        (showItemQuantitiesInDialogs && layout.SupportsItemQuantitiesInDialogs) ||
-                                        (makeExchangeDialogDraggable && layout.SupportsDraggableExchangeDialog) ||
-                                        (showExchangeResultsInMessageBar &&
-                                         layout.SupportsExchangeResultsInMessageBar);
-                var hasClientPatches = (patchMultipleInstances && layout.MultipleInstanceAddress > 0) ||
-                                       (patchIntroVideo && layout.IntroVideoAddress > 0) ||
-                                       (suppressLoginNotification && layout.SupportsLoginNotificationSuppression) ||
-                                       (patchNoWalls && layout.NoWallAddress > 0) ||
-                                       hasRuntimePatches;
-                if (hasRuntimePatches)
-                    ClientPatcher.VerifyRuntimePatchClient(clientPath);
-
-                // Patch Process
-                using var accessor = new ProcessMemoryAccessor(pid, ProcessAccess.ReadWrite);
-                using var patchStream = accessor.GetWriteableStream();
-                using var writer = new BinaryWriter(patchStream, Encoding.ASCII, leaveOpen: true);
-
-                if (patchMultipleInstances && layout.MultipleInstanceAddress > 0)
-                {
-                    logger.LogInfo($"Applying multiple instance patch to process {pid} (0x{layout.MultipleInstanceAddress:x8})");
-                    patchStream.Position = layout.MultipleInstanceAddress;
-                    writer.Write((byte)0x31);        // XOR
-                    writer.Write((byte)0xC0);        // EAX, EAX
-                    writer.Write((byte)0x90);        // NOP
-                    writer.Write((byte)0x90);        // NOP
-                    writer.Write((byte)0x90);        // NOP
-                    writer.Write((byte)0x90);        // NOP
-                }
-
-                if (patchIntroVideo && layout.IntroVideoAddress > 0)
-                {
-                    logger.LogInfo($"Applying skip intro video patch to process {pid} (0x{layout.IntroVideoAddress:x8})");
-                    patchStream.Position = layout.IntroVideoAddress;
-                    writer.Write((byte)0x83);        // CMP
-                    writer.Write((byte)0xFA);        // EDX
-                    writer.Write((byte)0x00);        // 0
-                    writer.Write((byte)0x90);        // NOP
-                    writer.Write((byte)0x90);        // NOP
-                    writer.Write((byte)0x90);        // NOP
-                }
-
-                if (suppressLoginNotification &&
-                    layout.SupportsLoginNotificationSuppression)
-                {
-                    logger.LogInfo($"Applying suppress login notification patch to process {pid}");
-                    ApplySuppressLoginNotificationPatch(patchStream, writer);
-                }
-
-                if (patchNoWalls && layout.NoWallAddress > 0)
-                {
-                    logger.LogInfo($"Applying no walls patch to process {pid} (0x{layout.NoWallAddress:x8})");
-                    patchStream.Position = layout.NoWallAddress;
-                    writer.Write((byte)0xEB);        // JMP SHORT
-                    writer.Write((byte)0x17);        // +0x17
-                    writer.Write((byte)0x90);        // NOP
-                }
-
-                if (shouldApplyModifiersKeyFix)
-                {
-                    logger.LogInfo($"Applying modifiers key fix to process {pid}");
-                    ClientPatcher.ApplyModifiersKeyFix(patchStream, process.ProcessHandle);
-                }
-
-                if (applyAltGroundItemPatch)
-                {
-                    logger.LogInfo($"Applying Alt ground-item hints patch to process {pid}");
-                    ClientPatcher.ApplyAllowAltToShowGroundItems(patchStream, process.ProcessHandle);
-                }
-
-                if (applyImprovedAutoFollow)
-                {
-                    logger.LogInfo($"Applying improved auto-follow patch to process {pid}");
-                    ClientPatcher.ApplyImprovedAutoFollow(patchStream, process.ProcessHandle,
-                        improvedAutoFollowMinimumDistance);
-                }
-
-                if (showItemQuantitiesInDialogs &&
-                    layout.SupportsItemQuantitiesInDialogs)
-                {
-                    logger.LogInfo($"Applying item quantities in dialogs patch to process {pid}");
-                    ClientPatcher.ApplyShowItemQuantitiesInDialogs(patchStream, process.ProcessHandle);
-                }
-
-                if (makeExchangeDialogDraggable &&
-                    layout.SupportsDraggableExchangeDialog)
-                {
-                    logger.LogInfo($"Applying draggable exchange dialog patch to process {pid}");
-                    ClientPatcher.ApplyMakeExchangeDialogDraggable(patchStream, process.ProcessHandle);
-                }
-
-                if (showExchangeResultsInMessageBar &&
-                    layout.SupportsExchangeResultsInMessageBar)
-                {
-                    logger.LogInfo($"Applying exchange results message bar patch to process {pid}");
-                    ClientPatcher.ApplyShowExchangeResultsInMessageBar(patchStream, process.ProcessHandle);
-                }
-
-                if (hasClientPatches)
-                {
-                    logger.LogInfo($"Flushing instruction cache for process {pid}");
-                    ClientPatcher.FlushInstructionCache(process.ProcessHandle);
-                }
-
-                patchCompleted = true;
-            }
-            finally
-            {
-                if (patchCompleted)
-                {
-                    NativeMethods.ResumeThread(process.ThreadHandle);
-                }
-                else
-                {
-                    logger.LogWarn($"Client patching failed; terminating suspended process {pid}");
-                    NativeMethods.TerminateProcess(process.ProcessHandle, 1);
-                }
-
-                NativeMethods.CloseHandle(process.ThreadHandle);
-                NativeMethods.CloseHandle(process.ProcessHandle);
-            }
-        }
-
-        private static void ApplySuppressLoginNotificationPatch(Stream patchStream, BinaryWriter writer)
-        {
-            foreach (var patch in SuppressLoginNotificationPatches)
-            {
-                patchStream.Position = patch.Address;
-                var actual = new byte[patch.Expected.Length];
-                patchStream.ReadExactly(actual);
-
-                if (!actual.SequenceEqual(patch.Expected))
-                {
-                    throw new InvalidDataException($"Unexpected client bytes at 0x{patch.Address:X}: " +
-                                                   $"expected {Convert.ToHexString(patch.Expected)}, " +
-                                                   $"found {Convert.ToHexString(actual)}.");
-                }
-            }
-
-            foreach (var patch in SuppressLoginNotificationPatches)
-            {
-                patchStream.Position = patch.Address;
-                writer.Write(patch.Replacement);
-            }
         }
 
         private void InitializeLogger()
@@ -503,8 +239,6 @@ namespace SleepHunter.Views
         {
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
-            UpdateToolbarState();
-
             await runtimeClients.AttachAsync(
                 new ClientRuntimeDescriptor(
                     new ClientIdentity(
@@ -522,7 +256,6 @@ namespace SleepHunter.Views
 
             await OnPlayerLoggedOutAsync(e.Player);
 
-            UpdateToolbarState();
             UpdateClientList();
 
             if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
@@ -659,8 +392,6 @@ namespace SleepHunter.Views
 
         private void UpdateUIForSelectedClient(string lastSelectedName = "")
         {
-            UpdateToolbarState();
-
             if (selectedMacro != null && selectedMacro.Name == lastSelectedName)
                 SelectNextAvailablePlayer();
 
@@ -674,7 +405,6 @@ namespace SleepHunter.Views
             if (!PlayerManager.Instance.LoggedInPlayers.Any())
             {
                 clientListBox.SelectedItem = null;
-                UpdateToolbarState();
                 UpdateWindowTitle();
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     false;
@@ -695,6 +425,8 @@ namespace SleepHunter.Views
                 ClientLayoutManager.LayoutFile);
             logger.LogInfo(
                 $"Attempting to load the client layout from file: {layoutFile}");
+            clientList.ClientLaunch.IsLayoutAvailable =
+                false;
 
             try
             {
@@ -707,6 +439,8 @@ namespace SleepHunter.Views
 
                     var layout =
                         ClientLayoutManager.Instance.Layout;
+                    clientList.ClientLaunch.IsLayoutAvailable =
+                        true;
                     if (!string.IsNullOrWhiteSpace(
                             layout.WindowClassName))
                     {
@@ -719,7 +453,6 @@ namespace SleepHunter.Views
                 }
                 else
                 {
-                    UpdateToolbarState();
                     logger.LogInfo(
                         "No client layout file was found");
 
@@ -734,8 +467,6 @@ namespace SleepHunter.Views
                 logger.LogError(
                     "Failed to load the client layout");
                 logger.LogException(ex);
-
-                UpdateToolbarState();
 
                 this.ShowMessageBox(
                     "Unable to Load Client Layout",
@@ -1362,8 +1093,6 @@ namespace SleepHunter.Views
         }
 
         #region Toolbar Button Click Methods
-        private void launchClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
-
         private void metadataEditorButton_Click(object sender, RoutedEventArgs e) => ShowMetadataWindow();
         private void settingsButton_Click(object sender, RoutedEventArgs e) => ShowSettingsWindow();
         #endregion
@@ -1542,7 +1271,6 @@ namespace SleepHunter.Views
                 ToggleFlower(false);
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     false;
-                UpdateToolbarState();
                 return;
             }
 
@@ -1551,7 +1279,6 @@ namespace SleepHunter.Views
             selectedMacro = item.MacroConfiguration;
 
             UpdateWindowTitle();
-            UpdateToolbarState();
 
             if (selectedMacro == null)
                 return;
@@ -1887,14 +1614,6 @@ namespace SleepHunter.Views
             }
 
             Title = $"SleepHunter - {selectedMacro.Client.Name}";
-        }
-
-        private async void UpdateToolbarState()
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            launchClientButton.IsEnabled =
-                ClientLayoutManager.Instance.Layout is not null;
         }
 
         private void ToggleInventory(bool show = true)
