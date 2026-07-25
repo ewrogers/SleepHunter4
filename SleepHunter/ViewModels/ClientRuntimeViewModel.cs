@@ -21,10 +21,8 @@ namespace SleepHunter.ViewModels
         private readonly IUiDispatcher uiDispatcher;
         private readonly Task viewPump;
 
-        private MacroViewSnapshot current;
         private int disposeState;
         private volatile bool isHostAvailable = true;
-        private SnapshotCaptureObservation latestCapture;
 
         public ClientRuntimeViewModel(
             IClientRuntimeHost host,
@@ -41,32 +39,25 @@ namespace SleepHunter.ViewModels
 
         public ClientIdentity Client => host.Client;
 
-        public MacroViewSnapshot Current
-        {
-            get => current;
-            private set
-            {
-                if (SetProperty(ref current, value))
-                    NotifyCommands();
-            }
-        }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(StartCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+        [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+        public partial MacroViewSnapshot Current { get; private set; }
 
-        public SnapshotCaptureObservation LatestCapture
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CaptureError))]
+        [NotifyPropertyChangedFor(nameof(CaptureSequence))]
+        [NotifyPropertyChangedFor(nameof(CaptureStatistics))]
+        [NotifyPropertyChangedFor(nameof(HasCapture))]
+        [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
+        [NotifyPropertyChangedFor(nameof(LatestCaptureResult))]
+        [NotifyPropertyChangedFor(nameof(LatestSnapshot))]
+        public partial SnapshotCaptureObservation LatestCapture
         {
-            get => latestCapture;
-            private set
-            {
-                if (!SetProperty(ref latestCapture, value))
-                    return;
-
-                OnPropertyChanged(nameof(CaptureError));
-                OnPropertyChanged(nameof(CaptureSequence));
-                OnPropertyChanged(nameof(CaptureStatistics));
-                OnPropertyChanged(nameof(HasCapture));
-                OnPropertyChanged(nameof(IsCaptureHealthy));
-                OnPropertyChanged(nameof(LatestCaptureResult));
-                OnPropertyChanged(nameof(LatestSnapshot));
-            }
+            get;
+            private set;
         }
 
         public SnapshotCaptureError CaptureError =>
