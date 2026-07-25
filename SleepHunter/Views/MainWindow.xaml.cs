@@ -24,6 +24,7 @@ using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Services.Runtime;
@@ -84,7 +85,12 @@ namespace SleepHunter.Views
                 Path.Combine(
                     AppContext.BaseDirectory,
                     ClientVersionManager.VersionsFile),
-                TimeProvider.System);
+                TimeProvider.System,
+                App.Current.Services.GetService<
+                    IMacroConfigurationReader>(),
+                () => LegacySpellQueueRotationMapper.Map(
+                    UserSettingsManager.Instance.Settings
+                        .SpellRotationMode));
             clientList = new ClientListViewModel();
             DataContext = clientList;
 
@@ -542,7 +548,7 @@ namespace SleepHunter.Views
             if (autosaveEnabled && state != null)
             {
                 logger.LogInfo($"Auto-loading {state.Client.Name} macro state...");
-                AutoLoadMacroState(state);
+                await AutoLoadMacroState(state);
             }
 
             UpdateWindowTitle();
@@ -1501,7 +1507,9 @@ namespace SleepHunter.Views
             }
         }
 
-        private void AutoLoadMacroState(PlayerMacroState state, bool showError = true)
+        private async Task AutoLoadMacroState(
+            PlayerMacroState state,
+            bool showError = true)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
@@ -1523,6 +1531,12 @@ namespace SleepHunter.Views
             }
 
             var didLoad = LoadMacroState(state, autosaveFilePath, showError);
+            if (didLoad)
+            {
+                await SynchronizeRuntimeMacroConfiguration(
+                    state,
+                    autosaveFilePath);
+            }
 
             // File is probably broken, delete it
             if (!didLoad && File.Exists(autosaveFilePath))
@@ -1536,6 +1550,41 @@ namespace SleepHunter.Views
                     logger.LogException(ex);
                     logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
                 }
+            }
+        }
+
+        private async Task SynchronizeRuntimeMacroConfiguration(
+            PlayerMacroState state,
+            string filename)
+        {
+            if (!runtimeClients.TryFindConfiguration(
+                    state.Client.Process.ProcessId,
+                    out var configuration))
+            {
+                logger.LogWarn(
+                    $"No shadow runtime is available for {state.Client.Name}; skipped deterministic configuration synchronization.");
+                return;
+            }
+
+            await configuration.LoadCommand.ExecuteAsync(filename);
+
+            if (configuration.LastError is { } error)
+            {
+                logger.LogError(
+                    $"Unable to synchronize {state.Client.Name} macro configuration with the shadow runtime.");
+                logger.LogException(error);
+                return;
+            }
+
+            if (configuration.LatestLoad is not { } loaded)
+                return;
+
+            logger.LogInfo(
+                $"Synchronized {state.Client.Name} shadow runtime from {loaded.Format} macro configuration version {loaded.SourceVersion}.");
+            foreach (var warning in loaded.Warnings)
+            {
+                logger.LogWarn(
+                    $"Macro configuration migration warning {warning.Code}: {warning.Message}");
             }
         }
 
@@ -1686,7 +1735,9 @@ namespace SleepHunter.Views
         #region Toolbar Button Click Methods
         private void launchClientButton_Click(object sender, RoutedEventArgs e) => LaunchClient();
 
-        private void loadStateButton_Click(object sender, RoutedEventArgs e)
+        private async void loadStateButton_Click(
+            object sender,
+            RoutedEventArgs e)
         {
             if (selectedMacro?.Client is not { IsLoggedIn: true })
                 return;
@@ -1715,7 +1766,15 @@ namespace SleepHunter.Views
             }
 
             if (selectedMacro != null)
-                LoadMacroState(selectedMacro, dialog.FileName);
+            {
+                var state = selectedMacro;
+                if (LoadMacroState(state, dialog.FileName))
+                {
+                    await SynchronizeRuntimeMacroConfiguration(
+                        state,
+                        dialog.FileName);
+                }
+            }
         }
 
         private void saveStateButton_Click(object sender, RoutedEventArgs e)

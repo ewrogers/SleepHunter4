@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
 using SleepHunter.Services;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Services.Serialization;
@@ -55,10 +56,13 @@ namespace SleepHunter
         private static IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
-            
+
             // Services
             services.AddSingleton<ILogger, Logger>();
             services.AddSingleton<IReleaseService, ReleaseService>();
+            services.AddSingleton<
+                IMacroConfigurationReader,
+                FileMacroConfigurationReader>();
 
             services.AddTransient<IMacroStateSerializer, MacroStateSerializer>();
 

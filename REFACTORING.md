@@ -1178,6 +1178,12 @@ As of July 24, 2026:
   reject lifecycle, incremental queue, and action-producing commands, skip
   unsupported clients, and await host disposal during client removal and
   application shutdown.
+- Load macro files for the shadow runtime through a CommunityToolkit-based
+  configuration view model. Apply all persisted queues with one aggregate
+  command, preserve the previous accepted configuration when loading fails, and
+  expose structured migration warnings and errors as observable state. During
+  the transition, the legacy UI and shadow runtime read the same file through
+  their respective adapters.
 - Make the client card the first vertical MVVM slice. Prefer coherent runtime
   character, presence, location, and vitals observations, fall back per section
   when the runtime observation is unavailable, and leave automation authority
