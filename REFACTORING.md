@@ -466,8 +466,7 @@ The new engine will be implemented in complete, simulated behavior slices:
 5. Spell selection, mana requirements, casting, and cooldowns.
 6. Skills, assails, health conditions, and disarm requirements.
 7. Flowering and alternate-character coordination.
-8. Remaining features such as water and beds.
-9. Macro-state persistence and compatibility migration.
+8. Macro-state persistence and compatibility migration.
 
 Required staff behavior includes:
 
@@ -942,20 +941,6 @@ As of July 24, 2026:
   actions do not consume the selected target.
 - Do not automatically retry a flower cast intent because replaying an
   uncertain cast can spend mana or affect a target twice.
-- Represent Water & Beds as a low-mana absolute-tile policy, independent of
-  spell targeting and panel state. Preserve the legacy strict threshold rule:
-  mana equal to the threshold does not trigger a click.
-- Carry the current map identity and configured tile in `ClickTileIntent`.
-  Keep isometric screen-coordinate translation and final live-map guards in
-  interop.
-- Require the configured tile to be within both X and Y bounds. The legacy
-  helper accidentally subtracts target Y from itself and therefore never
-  rejects a target based on vertical distance.
-- Throttle Water & Beds from the monotonic intent issuance time, give each
-  click a single bounded action window, and require a snapshot captured after
-  that window before another click can be selected.
-- Do not retry a Water & Beds click automatically because an unconfirmed
-  replay can click the map object twice.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

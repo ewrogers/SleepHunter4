@@ -119,8 +119,7 @@ namespace SleepHunter.Services.Serialization
                 Description = string.Empty,
                 SpellRotation = state.SpellQueueRotation,
                 UseLyliacVineyard = state.UseLyliacVineyard,
-                FlowerAlternateCharacters = state.FlowerAlternateCharacters,
-                LocalStorage = new SerializedLocalStorage(state.LocalStorage)
+                FlowerAlternateCharacters = state.FlowerAlternateCharacters
             };
 
             if (state.Client.HasHotkey)
@@ -136,7 +135,7 @@ namespace SleepHunter.Services.Serialization
                 serialized.Skills.Add(new SerializedSkillState { SkillName = skillName });
 
             var queuedSpellsSnapshot = state.GetSpellQueueSnapshot();
-            foreach(var spell in queuedSpellsSnapshot)
+            foreach (var spell in queuedSpellsSnapshot)
             {
                 serialized.Spells.Add(new SerializedSpellState
                 {

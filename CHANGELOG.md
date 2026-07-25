@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
 
+### Removed
+
+- Removed the Zolian-only Water & Beds automation, its feature tab, client feature flag, and private macro-state storage
+
 ### Fixed
 
 - Prevented stale or unallocated USDA 7.41 character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name

@@ -7,7 +7,6 @@ using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
-using SleepHunter.Runtime.Automation.WaterBeds;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
@@ -104,11 +103,6 @@ public sealed partial class MacroEngine : IMacroEngine
                 Flower(
                     currentState,
                     flower,
-                    currentTime),
-            UseWaterBedCommand waterBed =>
-                UseWaterBed(
-                    currentState,
-                    waterBed,
                     currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
@@ -223,8 +217,7 @@ public sealed partial class MacroEngine : IMacroEngine
             skillUse: CancelPendingSkillUse(currentState),
             disarm: CancelPendingDisarm(currentState),
             dialog: CancelPendingDialog(currentState),
-            flower: CancelPendingFlower(currentState),
-            waterBed: CancelPendingWaterBed(currentState));
+            flower: CancelPendingFlower(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -268,10 +261,7 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingDialog(currentState),
             flower: nextLifecycle == MacroLifecycle.Running
                 ? currentState.Flower
-                : CancelPendingFlower(currentState),
-            waterBed: nextLifecycle == MacroLifecycle.Running
-                ? currentState.WaterBed
-                : CancelPendingWaterBed(currentState));
+                : CancelPendingFlower(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -330,9 +320,6 @@ public sealed partial class MacroEngine : IMacroEngine
         var flower = clientLoggedOut
             ? CancelPendingFlower(currentState)
             : currentState.Flower;
-        var waterBed = clientLoggedOut
-            ? CancelPendingWaterBed(currentState)
-            : currentState.WaterBed;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -511,8 +498,7 @@ public sealed partial class MacroEngine : IMacroEngine
             skillUse: skillUse,
             disarm: disarm,
             dialog: dialog,
-            flower: flower,
-            waterBed: waterBed);
+            flower: flower);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -643,11 +629,6 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     pendingAction,
                     cancelDialogIntent),
-            ClickTileIntent clickTileIntent =>
-                HandleClickTileDeadline(
-                    currentState,
-                    pendingAction,
-                    clickTileIntent),
             _ => Unchanged(currentState)
         };
     }
@@ -874,8 +855,7 @@ public sealed partial class MacroEngine : IMacroEngine
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
         FlowerClientSetSnapshot? flowerClients = null,
-        FlowerState? flower = null,
-        WaterBedState? waterBed = null)
+        FlowerState? flower = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -903,8 +883,7 @@ public sealed partial class MacroEngine : IMacroEngine
             flowerQueue ?? currentState.FlowerQueue,
             flowerSchedules ?? currentState.FlowerSchedules,
             flowerClients ?? currentState.FlowerClients,
-            flower ?? currentState.Flower,
-            waterBed ?? currentState.WaterBed);
+            flower ?? currentState.Flower);
 
         return new MacroDecision(
             nextState,

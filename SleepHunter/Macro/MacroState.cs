@@ -30,8 +30,6 @@ namespace SleepHunter.Macro
         protected int lastKnownXCoordinate;
         protected int lastKnownYCoordinate;
 
-        protected MacroLocalStorage localStorage = new();
-
         public event MacroStatusEventHandler StatusChanged;
 
         public string Name
@@ -45,8 +43,6 @@ namespace SleepHunter.Macro
             get => client;
             set => SetProperty(ref client, value);
         }
-
-        public MacroLocalStorage LocalStorage => localStorage;
 
         public MacroStatus Status
         {
@@ -159,7 +155,7 @@ namespace SleepHunter.Macro
                             Stop();
                     }
                 }
-                
+
                 client.Status = null;
 
             }, state, cancelSource.Token);

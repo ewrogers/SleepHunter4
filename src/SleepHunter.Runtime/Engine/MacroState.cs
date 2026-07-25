@@ -6,7 +6,6 @@ using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
-using SleepHunter.Runtime.Automation.WaterBeds;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -43,8 +42,7 @@ public sealed record MacroState
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
         FlowerClientSetSnapshot? flowerClients = null,
-        FlowerState? flower = null,
-        WaterBedState? waterBed = null)
+        FlowerState? flower = null)
     {
         if (revision < 0)
         {
@@ -98,7 +96,6 @@ public sealed record MacroState
         FlowerSchedules = flowerSchedules ?? FlowerScheduleState.Empty;
         FlowerClients = flowerClients ?? FlowerClientSetSnapshot.Empty;
         Flower = flower;
-        WaterBed = waterBed;
     }
 
     public long Revision { get; }
@@ -140,8 +137,6 @@ public sealed record MacroState
     public FlowerClientSetSnapshot FlowerClients { get; }
 
     public FlowerState? Flower { get; }
-
-    public WaterBedState? WaterBed { get; }
 
     internal long NextClientActionId { get; }
 }
