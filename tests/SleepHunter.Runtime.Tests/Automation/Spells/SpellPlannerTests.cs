@@ -140,6 +140,41 @@ public sealed class SpellPlannerTests
         });
     }
 
+    [TestCase(SpellQueueRotation.Priority)]
+    [TestCase(SpellQueueRotation.Sequential)]
+    [TestCase(SpellQueueRotation.RoundRobin)]
+    public void ShouldBlockOnCoolingSpellWhenSkippingIsDisabled(
+        SpellQueueRotation rotation)
+    {
+        var cooling = CreateEntry(1, "cooling");
+        var ready = CreateEntry(2, "ready");
+        var queue = CreateQueue(cooling, ready)
+            .SetRotation(rotation);
+        var spellbook = new SpellbookSnapshot(
+        [
+            Spell("cooling", slot: 1, isActionDelayed: true),
+            Spell("ready", slot: 2)
+        ]);
+        var policy = new SpellCastPolicy(
+            requireMana: true,
+            SpellCastTimingPolicy.Default,
+            skipCoolingDownSpells: false);
+
+        var plan = SpellPlanner.Plan(
+            CreateRequest(
+                queue,
+                Vitals(),
+                spellbook,
+                policy: policy));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.Status, Is.EqualTo(SpellPlanStatus.Waiting));
+            Assert.That(plan.HasSelection, Is.False);
+            Assert.That(plan.Queue.Cursor, Is.Zero);
+        });
+    }
+
     [Test]
     public void ShouldAllowCastingWithoutRequiredManaPolicy()
     {

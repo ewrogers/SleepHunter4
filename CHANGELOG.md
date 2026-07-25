@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Promoted per-client runtime hosts from read-only shadow capture to the active command boundary, with a shared clock, immutable ability metadata, and deduplicated cross-client rosters
 - Made deterministic automation wait while the user is typing, dismiss dialogs opened by spells as well as skills, and apply configurable pause or stop policies when the observed map or coordinates change
 - Preserved the user-selected client panel across automatic spell, skill, and flowering actions through deterministic, bounded restoration attempts
+- Added an application composition boundary that converts persisted queues and macro settings into atomic runtime commands with class-aware staff catalogs
+- Honored the option to wait behind a cooling spell instead of skipping it, and safely mapped legacy close-client movement actions to runtime stop behavior
 
 ### Removed
 

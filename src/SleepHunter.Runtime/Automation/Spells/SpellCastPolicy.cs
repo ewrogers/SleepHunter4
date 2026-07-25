@@ -8,13 +8,17 @@ public sealed record SpellCastPolicy
 
     public SpellCastPolicy(
         bool requireMana,
-        SpellCastTimingPolicy? timing = null)
+        SpellCastTimingPolicy? timing = null,
+        bool skipCoolingDownSpells = true)
     {
         RequireMana = requireMana;
         Timing = timing ?? SpellCastTimingPolicy.Default;
+        SkipCoolingDownSpells = skipCoolingDownSpells;
     }
 
     public bool RequireMana { get; }
 
     public SpellCastTimingPolicy Timing { get; }
+
+    public bool SkipCoolingDownSpells { get; }
 }
