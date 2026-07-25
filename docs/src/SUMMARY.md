@@ -18,7 +18,6 @@
 - [Skills Tab](./main-window/skills-tab.md)
 - [Spells Tab](./main-window/spells-tab.md)
 - [Flowering Tab](./main-window/flowering-tab.md)
-- [Features Tab](./main-window/features-tab.md)
 - [Spell Queue](./main-window/spell-queue.md)
 
 # Spell Targets

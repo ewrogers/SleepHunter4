@@ -250,43 +250,6 @@ public sealed class MacroDecisionInvariantTests
     }
 
     [Test]
-    public void ShouldRejectTileIntentWithoutMatchingWaterBedState()
-    {
-        var intent = new ClickTileIntent(
-            new ClientActionId(1),
-            new MapLocationSnapshot(
-                mapNumber: 1,
-                mapName: "test map",
-                x: 5,
-                y: 1));
-        var pendingAction = new PendingAction(
-            intent,
-            MacroTimestamp.Zero,
-            new MacroTimestamp(TimeSpan.FromSeconds(1)),
-            attempt: 1);
-        var state = new MacroState(
-            revision: 1,
-            MacroLifecycle.Running,
-            MacroStopReason.None,
-            latestSnapshot: null,
-            MacroTimestamp.Zero,
-            pendingAction);
-        var decision = new MacroDecision(
-            state,
-            ImmutableArray<MacroEvent>.Empty,
-            ImmutableArray<ScheduledMacroEvent>.Empty,
-            intent: null,
-            publishedView: null);
-
-        Assert.That(
-            () => MacroDecisionInvariants.EnsureValid(
-                state,
-                decision,
-                MacroTimestamp.Zero),
-            Throws.TypeOf<InvalidOperationException>());
-    }
-
-    [Test]
     public void ShouldRejectNewScheduledDialogWithoutMatchingEvent()
     {
         var previousState = new MacroState(

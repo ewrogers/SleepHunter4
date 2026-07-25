@@ -93,7 +93,6 @@ namespace SleepHunter.Views
             ToggleSkills(false);
             ToggleSpells(false);
             ToggleSpellQueue(false);
-            ToggleFeatures(false);
 
             RefreshSpellQueue();
             RefreshFlowerQueue();
@@ -476,7 +475,6 @@ namespace SleepHunter.Views
                 ToggleSkills(selectedPlayer != null);
                 ToggleSpells(selectedPlayer != null);
                 ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
-                ToggleFeatures(selectedPlayer?.Version?.HasFeaturesAvailable ?? false);
             }
         }
 
@@ -555,7 +553,6 @@ namespace SleepHunter.Views
 
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
-                state.LocalStorage.Clear();
             }
 
             UpdateUIForSelectedClient(player.Name);
@@ -651,24 +648,6 @@ namespace SleepHunter.Views
 
             flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
             flowerListBox.Items.Refresh();
-        }
-
-        private async void RefreshFeatures()
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            if (selectedMacro is not PlayerMacroState state)
-                return;
-
-            RefreshUseWaterAndBedsFeature(state);
-        }
-
-        private void RefreshUseWaterAndBedsFeature(PlayerMacroState state)
-        {
-            useWaterAndBedsCheckBox.IsChecked = state.LocalStorage.GetBoolOrDefault(LocalStorageKey.UseWaterAndBeds.IsEnabled, false);
-            useWaterAndBedsThresholdUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.ManaThreshold, 1000);
-            useWaterAndBedsTileXUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileX, 5);
-            useWaterAndBedsTileYUpDown.Value = state.LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileY, 1);
         }
 
         private void LoadVersions()
@@ -1371,7 +1350,7 @@ namespace SleepHunter.Views
             }
 
             logger.LogInfo("Application shutdown tasks have completed");
-        } 
+        }
 
         private void Window_Closed(object sender, EventArgs e)
         {
@@ -1428,7 +1407,7 @@ namespace SleepHunter.Views
             }
 
             var autosaveFile = $"{state.Client.Name}-Autosave.{SleepHunterMacroFileExtension}";
-            var autosaveFilePath = Path.Combine (autosaveDirectory, autosaveFile);
+            var autosaveFilePath = Path.Combine(autosaveDirectory, autosaveFile);
 
             SaveMacroState(state, autosaveFilePath, showError);
         }
@@ -1479,7 +1458,7 @@ namespace SleepHunter.Views
             }
 
             var didLoad = LoadMacroState(state, autosaveFilePath, showError);
-            
+
             // File is probably broken, delete it
             if (!didLoad && File.Exists(autosaveFilePath))
             {
@@ -1487,7 +1466,7 @@ namespace SleepHunter.Views
                 {
                     File.Delete(autosaveFilePath);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.LogException(ex);
                     logger.LogWarn($"Unable to delete autosave file: {autosaveFilePath}");
@@ -1540,7 +1519,6 @@ namespace SleepHunter.Views
                 state.Client.Skillbook.ClearActiveSkills();
                 state.ClearSpellQueue();
                 state.ClearFlowerQueue();
-                state.LocalStorage.Clear();
 
                 // Re-register the new hotkey (if defined)
                 if (deserialized.Hotkey != null)
@@ -1619,12 +1597,6 @@ namespace SleepHunter.Views
                     });
                 }
 
-                // Copy local storage
-                foreach (var keyValuePair in deserialized.LocalStorage.Entries)
-                {
-                    state.LocalStorage.Add(keyValuePair.Key, keyValuePair.Value);
-                }
-
                 return true;
             }
             catch (Exception ex)
@@ -1640,7 +1612,6 @@ namespace SleepHunter.Views
                 UpdateToolbarState();
                 RefreshSpellQueue();
                 RefreshFlowerQueue();
-                RefreshFeatures();
 
                 if (selectedMacro != null && selectedMacro == state)
                     ToggleSpellQueue(state.QueuedSpells.Count > 0);
@@ -1994,7 +1965,6 @@ namespace SleepHunter.Views
                 ToggleSkills(false);
                 ToggleSpells(false);
                 ToggleFlower(false);
-                ToggleFeatures(false);
                 UpdateToolbarState();
                 return;
             }
@@ -2023,7 +1993,6 @@ namespace SleepHunter.Views
             ToggleSkills(player.IsLoggedIn);
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(supportsFlowering, player.HasLyliacPlant, player.HasLyliacVineyard);
-            ToggleFeatures(player.Version?.HasFeaturesAvailable ?? false);
 
             if (selectedMacro != null)
             {
@@ -2046,7 +2015,6 @@ namespace SleepHunter.Views
                 foreach (var spell in selectedMacro.QueuedSpells)
                     spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
 
-                RefreshFeatures();
             }
             else
             {
@@ -2555,11 +2523,6 @@ namespace SleepHunter.Views
                 flowerVineyardCheckBox.IsChecked = false;
         }
 
-        private void ToggleFeatures(bool show = true)
-        {
-            featuresTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         private async void UpdateClientList()
         {
             await Dispatcher.SwitchToUIThread();
@@ -2607,54 +2570,5 @@ namespace SleepHunter.Views
             }
         }
 
-        #region Use Water & Beds Feature (Zolian)
-        private void useWaterAndBedsCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not CheckBox checkBox)
-                return;
-            if (selectedMacro is not PlayerMacroState state)
-                return;
-
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.IsEnabled, checkBox.IsChecked ?? false);
-
-            if (checkBox.IsChecked != true)
-                return;
-
-            // Ensure these values are in sync with the key/value store when ENABLED
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.ManaThreshold, (int)useWaterAndBedsThresholdUpDown.Value);
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileX, (int)useWaterAndBedsTileXUpDown.Value);
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileY, (int)useWaterAndBedsTileYUpDown.Value);
-        }
-
-        private void useWaterAndBedsThresholdUpDown_ValueChanged(object sender, RoutedEventArgs e)
-        {
-            if (sender is not NumericUpDown numericUpDown)
-                return;
-            if (selectedMacro is not PlayerMacroState state)
-                return;
-
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.ManaThreshold, (int)numericUpDown.Value);
-        }
-
-        private void useWaterAndBedsTileXUpDown_ValueChanged(object sender, RoutedEventArgs e)
-        {
-            if (sender is not NumericUpDown numericUpDown)
-                return;
-            if (selectedMacro is not PlayerMacroState state)
-                return;
-
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileX, (int)numericUpDown.Value);
-        }
-
-        private void useWaterAndBedsTileYUpDown_ValueChanged(object sender, RoutedEventArgs e)
-        {
-            if (sender is not NumericUpDown numericUpDown)
-                return;
-            if (selectedMacro is not PlayerMacroState state)
-                return;
-
-            state.LocalStorage.Add(LocalStorageKey.UseWaterAndBeds.TileY, (int)numericUpDown.Value);
-        }
-        #endregion
     }
 }

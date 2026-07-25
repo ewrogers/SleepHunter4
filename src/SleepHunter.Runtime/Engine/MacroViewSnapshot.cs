@@ -6,7 +6,6 @@ using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
-using SleepHunter.Runtime.Automation.WaterBeds;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -33,8 +32,7 @@ public sealed record MacroViewSnapshot(
     FlowerQueueState FlowerQueue,
     FlowerScheduleState FlowerSchedules,
     FlowerObservationSequence? FlowerObservationSequence,
-    FlowerState? Flower,
-    WaterBedState? WaterBed)
+    FlowerState? Flower)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -61,7 +59,6 @@ public sealed record MacroViewSnapshot(
             state.FlowerQueue,
             state.FlowerSchedules,
             state.FlowerClients.Sequence,
-            state.Flower,
-            state.WaterBed);
+            state.Flower);
     }
 }

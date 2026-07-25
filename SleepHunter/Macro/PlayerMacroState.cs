@@ -34,7 +34,6 @@ namespace SleepHunter.Macro
         private bool flowerAlternateCharacters;
         private bool skipSpellsOnCooldown;
 
-        private DateTime waterAndBedsTimestamp;
         private DateTime spellCastTimestamp;
         private TimeSpan spellCastDuration;
 
@@ -180,7 +179,7 @@ namespace SleepHunter.Macro
             }
             finally { spellQueueLock.ExitReadLock(); }
         }
-        
+
         public List<FlowerQueueItem> GetFlowerQueueSnapshot()
         {
             flowerQueueLock.EnterReadLock();
@@ -461,7 +460,7 @@ namespace SleepHunter.Macro
             deferredDispatcher.Tick();
 
             RefreshQueuedSpellsState();
-            
+
             if (client.GameClient.IsUserChatting)
             {
                 SetPlayerStatus(PlayerMacroStatus.ChatIsUp);
@@ -486,8 +485,6 @@ namespace SleepHunter.Macro
             }
 
             var didUseSkill = DoSkillMacro(token, out var didAssail);
-
-            DoClickWaterAndBedsIfNeeded(token);
 
             if (!IsSpellCasting)
                 client.Spellbook.ActiveSpell = null;
@@ -538,42 +535,6 @@ namespace SleepHunter.Macro
             }
         }
 
-        // Zolian feature!
-        private bool DoClickWaterAndBedsIfNeeded(CancellationToken token = default)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return false;
-            }
-            
-            var timeSinceLastAttempt = DateTime.Now - waterAndBedsTimestamp;
-            if (timeSinceLastAttempt.TotalSeconds < 0.5)
-                return false;
-
-            if (!LocalStorage.GetBoolOrDefault(LocalStorageKey.UseWaterAndBeds.IsEnabled, false))
-                return false;
-
-            var manaThreshold = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.ManaThreshold, 1000);
-
-            if (client.Stats.CurrentMana >= manaThreshold)
-                return false;
-
-            var tileX = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileX, 5);
-            var tileY = LocalStorage.GetIntegerOrDefault(LocalStorageKey.UseWaterAndBeds.TileY, 1);
-
-            var user = new Point(client.Location.X, client.Location.Y);
-            var targetLocation = new Point(tileX, tileY);
-
-            if (!IsWithinRange(user, targetLocation))
-                return false;
-
-            var target = new SpellTarget(SpellTargetMode.AbsoluteTile, targetLocation);
-            ClickTarget(target);
-
-            waterAndBedsTimestamp = DateTime.Now;
-            return true;
-        }
-
         private bool DoSkillMacro(CancellationToken token, out bool didAssail)
         {
             didAssail = false;
@@ -581,7 +542,7 @@ namespace SleepHunter.Macro
             if (token.IsCancellationRequested)
             {
                 return false;
-            }   
+            }
 
             var isAssailQueued = false;
             var useSpaceForAssail = UserSettingsManager.Instance.Settings.UseSpaceForAssail;
@@ -768,7 +729,7 @@ namespace SleepHunter.Macro
 
             if (nextTarget != null)
             {
-                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum && 
+                if (UserSettingsManager.Instance.Settings.FlowerHasMinimum &&
                     ShouldFasSpiorad(UserSettingsManager.Instance.Settings.FlowerMinimumMana, token))
                 {
                     var fasSpiorad = GetFasSpiorad();
@@ -878,7 +839,7 @@ namespace SleepHunter.Macro
             {
                 return false;
             }
-            
+
             var waitingAlt = FindAltWaitingOnMana();
 
             if (waitingAlt == null)
@@ -912,7 +873,7 @@ namespace SleepHunter.Macro
             {
                 return false;
             }
-            
+
             var autoFasSpiorad = UserSettingsManager.Instance.Settings.UseFasSpiorad;
 
             if (!client.HasFasSpiorad)
@@ -927,7 +888,7 @@ namespace SleepHunter.Macro
                 if (client.Stats.CurrentMana < UserSettingsManager.Instance.Settings.FasSpioradThreshold)
                     return true;
             }
-            
+
             if (!manaRequirement.HasValue)
             {
                 return false;
@@ -947,7 +908,7 @@ namespace SleepHunter.Macro
                 try
                 {
                     token.ThrowIfCancellationRequested();
-                    
+
                     if (macro.Status == MacroStatus.Running && macro.IsWaitingOnMana)
                     {
                         if (waitingAlt == null || waitingAlt.TimeSinceFlower < macro.Client.TimeSinceFlower)
@@ -995,7 +956,8 @@ namespace SleepHunter.Macro
             {
                 lyliacVineyardQueueItem = new SpellQueueItem
                 {
-                    Target = { Mode = SpellTargetMode.None }, Name = Spell.LyliacVineyardKey
+                    Target = { Mode = SpellTargetMode.None },
+                    Name = Spell.LyliacVineyardKey
                 };
             }
 
@@ -1061,7 +1023,7 @@ namespace SleepHunter.Macro
                     queued.IsWaitingOnHealth = isWaitingOnHealth;
                 }
             }
-            finally{ spellQueueLock.ExitReadLock(); }
+            finally { spellQueueLock.ExitReadLock(); }
         }
 
         private SpellQueueItem GetNextSpell_NoRotation(bool skipOnCooldown = true)
@@ -1408,14 +1370,6 @@ namespace SleepHunter.Macro
             return GetRelativeTilePoint(deltaX, deltaY);
         }
 
-        private static bool IsWithinRange(Point a, Point b, int maxX = 10, int maxY = 10)
-        {
-            var deltaX = Math.Abs(a.X - b.X);
-            var deltaY = Math.Abs(b.Y - b.Y);
-
-            return deltaX <= maxX && deltaY <= maxY;
-        }
-
         private static TimeSpan CalculateLineDuration(int numberOfLines)
         {
             switch (numberOfLines)
@@ -1425,10 +1379,10 @@ namespace SleepHunter.Macro
                 case 1:
                     return UserSettingsManager.Instance.Settings.SingleLineDelay;
                 default:
-                {
-                    var delay = UserSettingsManager.Instance.Settings.MultipleLineDelaySeconds * numberOfLines;
-                    return TimeSpan.FromSeconds(delay);
-                }
+                    {
+                        var delay = UserSettingsManager.Instance.Settings.MultipleLineDelaySeconds * numberOfLines;
+                        return TimeSpan.FromSeconds(delay);
+                    }
             }
         }
 
