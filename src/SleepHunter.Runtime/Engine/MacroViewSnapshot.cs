@@ -31,7 +31,7 @@ public sealed record MacroViewSnapshot(
     DialogState? Dialog,
     FlowerQueueState FlowerQueue,
     FlowerScheduleState FlowerSchedules,
-    FlowerObservationSequence? FlowerObservationSequence,
+    ClientRosterSequence? ClientRosterSequence,
     FlowerState? Flower,
     TargetRotationState SpellTargetRotations,
     TargetRotationState FlowerTargetRotations)
@@ -60,7 +60,7 @@ public sealed record MacroViewSnapshot(
             state.Dialog,
             state.FlowerQueue,
             state.FlowerSchedules,
-            state.FlowerClients.Sequence,
+            state.ClientRoster.Sequence,
             state.Flower,
             state.SpellTargetRotations,
             state.FlowerTargetRotations);

@@ -12,6 +12,7 @@ public enum SpellCastStatus
     Unavailable,
     WaitingForStaff,
     WaitingForPanel,
+    TargetUnavailable,
     Casting,
     Succeeded,
     SelectionInvalidated,

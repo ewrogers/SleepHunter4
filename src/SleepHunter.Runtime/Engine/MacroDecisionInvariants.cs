@@ -196,6 +196,30 @@ internal static class MacroDecisionInvariants
 
         if (decision.State.SpellCast is
             {
+                Status: SpellCastStatus.Casting,
+                TargetStatus: not TargetLocationStatus.Resolved
+            })
+        {
+            throw new InvalidOperationException(
+                "Casting spell state requires a resolved target.");
+        }
+
+        if (decision.State.SpellCast is
+            {
+                Status: SpellCastStatus.TargetUnavailable
+            } unavailableTarget &&
+            (unavailableTarget.TargetStatus is
+                null or TargetLocationStatus.Resolved ||
+             unavailableTarget.ResolvedTarget is not null ||
+             unavailableTarget.ActionId is not null ||
+             unavailableTarget.CompletesAt is not null))
+        {
+            throw new InvalidOperationException(
+                "Unavailable spell target state cannot contain issued action metadata.");
+        }
+
+        if (decision.State.SpellCast is
+            {
                 Status: SpellCastStatus.WaitingForStaff
             } waitingForStaff &&
             (waitingForStaff.StaffSelection is not
@@ -255,6 +279,8 @@ internal static class MacroDecisionInvariants
                 flowerSpellCast?.Status == SpellCastStatus.WaitingForStaff,
             FlowerStatus.WaitingForPanel =>
                 flowerSpellCast?.Status == SpellCastStatus.WaitingForPanel,
+            FlowerStatus.TargetUnavailable =>
+                flowerSpellCast?.Status == SpellCastStatus.TargetUnavailable,
             FlowerStatus.Casting =>
                 flowerSpellCast?.Status == SpellCastStatus.Casting,
             FlowerStatus.Succeeded =>

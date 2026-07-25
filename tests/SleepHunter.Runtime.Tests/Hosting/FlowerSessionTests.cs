@@ -35,13 +35,13 @@ public sealed class FlowerSessionTests
 
         session.PublishSnapshot(SourceSnapshot());
         await session.Views.ReadUntilAsync(view => view.Revision == 1);
-        session.PublishFlowerClients(
-            new FlowerClientSetSnapshot(
-                new FlowerObservationSequence(1),
+        session.PublishClientRoster(
+            new ClientRosterSnapshot(
+                new ClientRosterSequence(1),
                 MacroTimestamp.Zero,
-                [WaitingClient()]));
+                [SourceClient(), WaitingClient()]));
         var observed = await session.Views.ReadUntilAsync(
-            view => view.FlowerObservationSequence?.Value == 1);
+            view => view.ClientRosterSequence?.Value == 1);
         await session.SendCommandAsync(new StartMacroCommand());
         await session.SendCommandAsync(new FlowerCommand(policy));
 
@@ -54,14 +54,14 @@ public sealed class FlowerSessionTests
         Assert.Multiple(() =>
         {
             Assert.That(
-                observed.FlowerObservationSequence?.Value,
+                observed.ClientRosterSequence?.Value,
                 Is.EqualTo(1));
             Assert.That(
                 intent.SpellName,
                 Is.EqualTo(FlowerSpellNames.Plant));
             Assert.That(
                 intent.Target,
-                Is.EqualTo(SpellTarget.Character("waiting")));
+                Is.EqualTo(SpellTarget.RelativeTile(5, 5)));
             Assert.That(completed.PendingActionId, Is.Null);
             Assert.That(
                 completed.Flower?.FloweredAt,
@@ -72,21 +72,21 @@ public sealed class FlowerSessionTests
     }
 
     [Test]
-    public async Task ShouldRejectFlowerObservationsAfterDisposal()
+    public async Task ShouldRejectClientRosterAfterDisposal()
     {
         var timeProvider = new ManualTimeProvider();
         var session = new MacroSession(
             new MacroEngine(),
             new MacroClock(timeProvider));
-        var snapshot = new FlowerClientSetSnapshot(
-            new FlowerObservationSequence(1),
+        var snapshot = new ClientRosterSnapshot(
+            new ClientRosterSequence(1),
             MacroTimestamp.Zero,
             []);
 
         await session.DisposeAsync();
 
         Assert.That(
-            () => session.PublishFlowerClients(snapshot),
+            () => session.PublishClientRoster(snapshot),
             Throws.TypeOf<ObjectDisposedException>());
     }
 
@@ -117,7 +117,7 @@ public sealed class FlowerSessionTests
             SourceLocation());
     }
 
-    private static FlowerClientObservation WaitingClient() =>
+    private static ClientRosterEntry WaitingClient() =>
         new(
             new ClientIdentity("waiting", "test"),
             "waiting",
@@ -130,6 +130,16 @@ public sealed class FlowerSessionTests
                 x: 55,
                 y: 55),
             new VitalsSnapshot(100, 100, 0, 1000));
+
+    private static ClientRosterEntry SourceClient() =>
+        new(
+            new ClientIdentity("source", "test"),
+            "source",
+            ClientPresence.InWorld,
+            isMacroRunning: true,
+            isWaitingForMana: false,
+            SourceLocation(),
+            new VitalsSnapshot(100, 100, 500, 1000));
 
     private static MapLocationSnapshot SourceLocation() =>
         new(

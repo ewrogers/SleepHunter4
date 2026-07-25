@@ -84,14 +84,14 @@ internal sealed class MacroScenario
         return Apply(new ClientSnapshotObserved(snapshot));
     }
 
-    public MacroDecision ObserveFlowerClients(
+    public MacroDecision ObserveClientRoster(
         long sequence,
-        IEnumerable<FlowerClientObservation> clients,
+        IEnumerable<ClientRosterEntry> clients,
         MacroTimestamp? capturedAt = null) =>
         Apply(
-            new FlowerClientsObserved(
-                new FlowerClientSetSnapshot(
-                    new FlowerObservationSequence(sequence),
+            new ClientRosterObserved(
+                new ClientRosterSnapshot(
+                    new ClientRosterSequence(sequence),
                     capturedAt ?? CurrentTime,
                     clients)));
 

@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Automation.Flowering;
@@ -8,7 +9,7 @@ public sealed record FlowerState
     private FlowerState(
         FlowerPlan plan,
         FlowerExecutionPolicy policy,
-        FlowerObservationSequence? observationSequence,
+        ClientRosterSequence? observationSequence,
         FlowerStatus status,
         FlowerActionKind? action,
         SpellQueueEntry? spellEntry,
@@ -27,7 +28,7 @@ public sealed record FlowerState
 
     public FlowerExecutionPolicy Policy { get; }
 
-    public FlowerObservationSequence? ObservationSequence { get; private init; }
+    public ClientRosterSequence? ObservationSequence { get; private init; }
 
     public FlowerStatus Status { get; private init; }
 
@@ -40,7 +41,7 @@ public sealed record FlowerState
     internal static FlowerState FromPlan(
         FlowerPlan plan,
         FlowerExecutionPolicy policy,
-        FlowerObservationSequence? observationSequence)
+        ClientRosterSequence? observationSequence)
     {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(policy);
@@ -78,7 +79,7 @@ public sealed record FlowerState
 
     internal FlowerState WithPlan(
         FlowerPlan plan,
-        FlowerObservationSequence? observationSequence) =>
+        ClientRosterSequence? observationSequence) =>
         this with
         {
             Plan = plan,
@@ -110,7 +111,7 @@ public sealed record FlowerState
 
     internal FlowerState SelectionInvalidated(
         FlowerPlan plan,
-        FlowerObservationSequence? observationSequence) =>
+        ClientRosterSequence? observationSequence) =>
         this with
         {
             Plan = plan,
@@ -140,6 +141,8 @@ public sealed record FlowerState
                 FlowerStatus.WaitingForStaff,
             SpellCastStatus.WaitingForPanel =>
                 FlowerStatus.WaitingForPanel,
+            SpellCastStatus.TargetUnavailable =>
+                FlowerStatus.TargetUnavailable,
             SpellCastStatus.Casting =>
                 FlowerStatus.Casting,
             SpellCastStatus.Succeeded =>

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Runtime.Automation.Flowering;
 
@@ -9,7 +10,7 @@ public sealed record FlowerPlan
         FlowerPlanStatus status,
         FlowerSelectionKind? selectionKind,
         FlowerQueueEntry? selectedEntry,
-        FlowerClientObservation? selectedClient,
+        ClientRosterEntry? selectedClient,
         SpellTarget? selectedTarget,
         FlowerQueueState queue,
         FlowerScheduleState schedules,
@@ -33,7 +34,7 @@ public sealed record FlowerPlan
 
     public FlowerQueueEntry? SelectedEntry { get; }
 
-    public FlowerClientObservation? SelectedClient { get; }
+    public ClientRosterEntry? SelectedClient { get; }
 
     public SpellTarget? SelectedTarget { get; }
 

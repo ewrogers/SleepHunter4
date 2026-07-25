@@ -1,5 +1,7 @@
-﻿namespace SleepHunter.Runtime.Automation.Flowering;
+﻿using SleepHunter.Runtime.Snapshots;
+
+namespace SleepHunter.Runtime.Automation.Flowering;
 
 public sealed record FlowerClientReadiness(
-    FlowerClientObservation Client,
+    ClientRosterEntry Client,
     FlowerClientReadinessStatus Status);

@@ -389,7 +389,7 @@ public sealed class FlowerPlannerTests
         FlowerQueueState queue,
         FlowerScheduleState schedules,
         MacroTimestamp currentTime,
-        IEnumerable<FlowerClientObservation>? clients = null,
+        IEnumerable<ClientRosterEntry>? clients = null,
         FlowerTargetPolicy? policy = null) =>
         FlowerPlanner.Plan(
             new FlowerPlanningRequest(
@@ -409,7 +409,7 @@ public sealed class FlowerPlannerTests
             target,
             interval: TimeSpan.Zero);
 
-    private static FlowerClientObservation Client(
+    private static ClientRosterEntry Client(
         string characterName,
         int currentMana,
         MapLocationSnapshot? location,

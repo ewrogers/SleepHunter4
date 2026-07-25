@@ -140,7 +140,7 @@ public static class FlowerPlanner
 
     private static FlowerReadinessStatus? EvaluateTarget(
         SpellTarget target,
-        FlowerClientObservation? targetClient,
+        ClientRosterEntry? targetClient,
         MapLocationSnapshot? sourceLocation,
         FlowerTargetPolicy policy)
     {
@@ -207,7 +207,7 @@ public static class FlowerPlanner
     }
 
     private static FlowerClientReadiness EvaluateClient(
-        FlowerClientObservation client,
+        ClientRosterEntry client,
         FlowerPlanningRequest request)
     {
         var status = GetClientReadinessStatus(client, request);
@@ -215,7 +215,7 @@ public static class FlowerPlanner
     }
 
     private static FlowerClientReadinessStatus GetClientReadinessStatus(
-        FlowerClientObservation client,
+        ClientRosterEntry client,
         FlowerPlanningRequest request)
     {
         if (string.Equals(
@@ -254,7 +254,7 @@ public static class FlowerPlanner
             : FlowerClientReadinessStatus.OutOfRange;
     }
 
-    private static FlowerClientObservation? SelectWaitingClient(
+    private static ClientRosterEntry? SelectWaitingClient(
         ImmutableArray<FlowerClientReadiness> readiness) =>
         readiness
             .Where(entry =>
@@ -275,7 +275,7 @@ public static class FlowerPlanner
         FlowerScheduleState schedules,
         ImmutableArray<FlowerReadiness> readiness,
         ImmutableArray<FlowerClientReadiness> clientReadiness,
-        FlowerClientObservation selectedClient) =>
+        ClientRosterEntry selectedClient) =>
         new(
             FlowerPlanStatus.Ready,
             FlowerSelectionKind.WaitingCharacter,
@@ -287,9 +287,9 @@ public static class FlowerPlanner
             readiness,
             clientReadiness);
 
-    private static FlowerClientObservation? FindTargetClient(
+    private static ClientRosterEntry? FindTargetClient(
         FlowerQueueEntry entry,
-        ImmutableArray<FlowerClientObservation> clients)
+        ImmutableArray<ClientRosterEntry> clients)
     {
         if (entry.Target.Kind != SpellTargetKind.Character)
         {

@@ -41,10 +41,10 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     dialogCloseDue,
                     currentTime),
-            FlowerClientsObserved flowerClientsObserved =>
-                HandleFlowerClients(
+            ClientRosterObserved clientRosterObserved =>
+                HandleClientRoster(
                     currentState,
-                    flowerClientsObserved.Snapshot,
+                    clientRosterObserved.Snapshot,
                     currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
@@ -823,7 +823,7 @@ public sealed partial class MacroEngine : IMacroEngine
         DialogState? dialog = null,
         FlowerQueueState? flowerQueue = null,
         FlowerScheduleState? flowerSchedules = null,
-        FlowerClientSetSnapshot? flowerClients = null,
+        ClientRosterSnapshot? clientRoster = null,
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null)
@@ -853,7 +853,7 @@ public sealed partial class MacroEngine : IMacroEngine
             dialog ?? currentState.Dialog,
             flowerQueue ?? currentState.FlowerQueue,
             flowerSchedules ?? currentState.FlowerSchedules,
-            flowerClients ?? currentState.FlowerClients,
+            clientRoster ?? currentState.ClientRoster,
             flower ?? currentState.Flower,
             spellTargetRotations ?? currentState.SpellTargetRotations,
             flowerTargetRotations ?? currentState.FlowerTargetRotations);

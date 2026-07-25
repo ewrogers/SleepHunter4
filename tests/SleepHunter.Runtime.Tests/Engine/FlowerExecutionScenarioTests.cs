@@ -129,9 +129,13 @@ public sealed class FlowerExecutionScenarioTests
         var plant = Spell(FlowerSpellNames.Plant, slot: 1);
         var vineyard = Spell(FlowerSpellNames.Vineyard, slot: 2);
         var scenario = CreateRunningScenario([plant, vineyard]);
-        scenario.ObserveFlowerClients(
+        scenario.ObserveClientRoster(
             sequence: 1,
             [
+                Client(
+                    "source",
+                    location: SourceLocation(),
+                    client: scenario.Client),
                 Client(
                     "waiting",
                     isWaitingForMana: true,
@@ -152,10 +156,46 @@ public sealed class FlowerExecutionScenarioTests
             Assert.That(intent.SpellName, Is.EqualTo(plant.Name));
             Assert.That(
                 intent.Target,
-                Is.EqualTo(SpellTarget.Character("waiting")));
+                Is.EqualTo(SpellTarget.RelativeTile(5, 5)));
             Assert.That(
                 decision.State.Flower?.Plan.SelectionKind,
                 Is.EqualTo(FlowerSelectionKind.WaitingCharacter));
+        });
+    }
+
+    [Test]
+    public void ShouldDeferCharacterFlowerWhenRosterLacksSource()
+    {
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var scenario = CreateRunningScenario([plant]);
+        scenario.ObserveClientRoster(
+            sequence: 1,
+            [
+                Client(
+                    "waiting",
+                    isWaitingForMana: true,
+                    location: NearbyLocation())
+            ]);
+        var policy = new FlowerExecutionPolicy(
+            target: new FlowerTargetPolicy(
+                autoFlowerWaitingCharacters: true),
+            spell: TestSpellPolicy);
+
+        var decision = scenario.Send(new FlowerCommand(policy));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(decision.Intent, Is.Null);
+            Assert.That(decision.State.PendingAction, Is.Null);
+            Assert.That(
+                decision.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.TargetUnavailable));
+            Assert.That(
+                decision.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.TargetUnavailable));
+            Assert.That(
+                decision.State.SpellCast?.TargetStatus,
+                Is.EqualTo(TargetLocationStatus.SourceUnavailable));
         });
     }
 
@@ -251,12 +291,12 @@ public sealed class FlowerExecutionScenarioTests
             [plant],
             activePanel: ClientPanel.Stats);
         scenario.Send(new AddFlowerQueueEntryCommand(entry));
-        scenario.ObserveFlowerClients(
+        scenario.ObserveClientRoster(
             sequence: 1,
             [Client("alt", location: NearbyLocation())]);
 
         var panel = scenario.Send(new FlowerCommand(TestPolicy));
-        scenario.ObserveFlowerClients(
+        scenario.ObserveClientRoster(
             sequence: 2,
             [
                 Client(
@@ -416,13 +456,13 @@ public sealed class FlowerExecutionScenarioTests
     public void ShouldIgnoreStaleAndFutureClientSets()
     {
         var scenario = new MacroScenario();
-        var first = scenario.ObserveFlowerClients(
+        var first = scenario.ObserveClientRoster(
             sequence: 1,
             [Client("first", location: NearbyLocation())]);
-        var stale = scenario.ObserveFlowerClients(
+        var stale = scenario.ObserveClientRoster(
             sequence: 1,
             [Client("stale", location: NearbyLocation())]);
-        var future = scenario.ObserveFlowerClients(
+        var future = scenario.ObserveClientRoster(
             sequence: 2,
             [Client("future", location: NearbyLocation())],
             capturedAt: new MacroTimestamp(TimeSpan.FromTicks(1)));
@@ -430,7 +470,7 @@ public sealed class FlowerExecutionScenarioTests
         Assert.Multiple(() =>
         {
             Assert.That(
-                first.State.FlowerClients.Sequence?.Value,
+                first.State.ClientRoster.Sequence?.Value,
                 Is.EqualTo(1));
             Assert.That(stale.State, Is.SameAs(first.State));
             Assert.That(future.State, Is.SameAs(first.State));
@@ -525,12 +565,13 @@ public sealed class FlowerExecutionScenarioTests
             currentMana,
             maximumMana: 1000);
 
-    private static FlowerClientObservation Client(
+    private static ClientRosterEntry Client(
         string characterName,
         bool isWaitingForMana = false,
-        MapLocationSnapshot? location = null) =>
+        MapLocationSnapshot? location = null,
+        ClientIdentity? client = null) =>
         new(
-            new ClientIdentity(characterName, "test"),
+            client ?? new ClientIdentity(characterName, "test"),
             characterName,
             ClientPresence.InWorld,
             isMacroRunning: true,

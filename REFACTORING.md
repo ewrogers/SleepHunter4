@@ -475,9 +475,12 @@ screen-point, relative-tile, and absolute-tile targets use the legacy 640 by 480
 projection. The logical target is scaled to the guarded client dimensions
 before its pixel offset is applied. Absolute targets additionally require an
 observed map location and remain bounded to the supported local tile range.
-Character targets remain explicitly unsupported until a coherent cross-client
-location observation is available. Area targets must be resolved to one tile by
-the deterministic runtime before input planning.
+The deterministic runtime resolves character targets to relative tiles from an
+immutable, coherent client roster before input planning. It rejects missing,
+logged-out, moved, different-map, and out-of-range targets without consuming an
+action identifier. The USDA input planner still rejects an unresolved character
+target defensively. Area targets are likewise resolved to one tile by the
+runtime before input planning.
 
 Pending actions contain enough information to diagnose and test behavior:
 
@@ -1050,9 +1053,10 @@ As of July 24, 2026:
   waiting longest since its last flower and rotate fairly among configured
   character entries. Exclude the source client, stopped macros, logged-out
   clients, and out-of-range clients.
-- Publish immutable cross-client flower observations through a coalesced
-  latest-value mailbox. Accept only monotonic observation sequences whose
-  capture time is not in the engine's future.
+- Publish an immutable cross-client `ClientRosterSnapshot` through a coalesced
+  latest-value mailbox. Accept only monotonic roster sequences whose capture
+  time is not in the engine's future. Flower planning and named-character spell
+  targeting share this observation boundary.
 - Represent flower queue edits as reliable, identifier-based commands and
   synchronize interval schedules from the engine's monotonic clock.
 - Select mana restoration, vineyard, and planting as deterministic flower
@@ -1103,7 +1107,6 @@ them:
 - Exact WPF hosting and dependency-injection packages.
 - Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
-- Coherent cross-client location observation for character spell targets.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.
 - Legacy macro-state compatibility and migration details.

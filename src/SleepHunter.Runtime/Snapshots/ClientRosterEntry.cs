@@ -1,11 +1,10 @@
-﻿using SleepHunter.Runtime.Snapshots;
-using SleepHunter.Runtime.Time;
+﻿using SleepHunter.Runtime.Time;
 
-namespace SleepHunter.Runtime.Automation.Flowering;
+namespace SleepHunter.Runtime.Snapshots;
 
-public sealed record FlowerClientObservation
+public sealed record ClientRosterEntry
 {
-    public FlowerClientObservation(
+    public ClientRosterEntry(
         ClientIdentity client,
         string characterName,
         ClientPresence presence,

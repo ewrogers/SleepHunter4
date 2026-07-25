@@ -11,7 +11,7 @@ public sealed record FlowerPlanningRequest
         MapLocationSnapshot? sourceLocation,
         FlowerQueueState queue,
         FlowerScheduleState? schedules,
-        IEnumerable<FlowerClientObservation> clients,
+        IEnumerable<ClientRosterEntry> clients,
         MacroTimestamp currentTime,
         FlowerTargetPolicy? policy = null)
     {
@@ -64,7 +64,7 @@ public sealed record FlowerPlanningRequest
 
     public FlowerScheduleState Schedules { get; }
 
-    public ImmutableArray<FlowerClientObservation> Clients { get; }
+    public ImmutableArray<ClientRosterEntry> Clients { get; }
 
     public MacroTimestamp CurrentTime { get; }
 
