@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Time;
@@ -87,11 +88,71 @@ internal static class MacroDecisionInvariants
                 "Pending panel transition metadata must match its client action.");
         }
 
+        var pendingWeaponIntent =
+            decision.State.PendingAction?.Intent as SetEquippedWeaponIntent;
+        var changingWeapon = decision.State.StaffSwitch is
+        {
+            Status: StaffSwitchStatus.ChangingWeapon
+        };
+
+        if ((pendingWeaponIntent is not null) != changingWeapon)
+        {
+            throw new InvalidOperationException(
+                "Pending staff equipment state must match its client action.");
+        }
+
+        if (pendingWeaponIntent is not null &&
+            (decision.State.StaffSwitch!.ActionId !=
+             pendingWeaponIntent.ActionId ||
+             decision.State.StaffSwitch.Attempt !=
+             decision.State.PendingAction!.Attempt ||
+             decision.State.StaffSwitch.MaximumAttempts !=
+             decision.State.PendingAction.MaximumAttempts ||
+             !DoesWeaponIntentMatchSelection(
+                 pendingWeaponIntent,
+                 decision.State.StaffSwitch.Selection)))
+        {
+            throw new InvalidOperationException(
+                "Pending staff equipment metadata must match its client action.");
+        }
+
+        if (decision.State.StaffSwitch is
+            {
+                Status: StaffSwitchStatus.WaitingForInventory
+            } &&
+            pendingSwitchIntent?.TargetPanel != ClientPanel.Inventory)
+        {
+            throw new InvalidOperationException(
+                "Staff equipment can wait only on a pending inventory panel action.");
+        }
+
         if (decision.ScheduledEvents.Any(
                 scheduledEvent => scheduledEvent.DueAt < currentTime))
         {
             throw new InvalidOperationException(
                 "Scheduled events cannot be earlier than the current time.");
         }
+    }
+
+    private static bool DoesWeaponIntentMatchSelection(
+        SetEquippedWeaponIntent intent,
+        StaffSelection? selection)
+    {
+        if (selection is null)
+        {
+            return false;
+        }
+
+        return selection.Action switch
+        {
+            StaffSelectionAction.Equip =>
+                string.Equals(
+                    selection.Staff?.Name,
+                    intent.StaffName,
+                    StringComparison.OrdinalIgnoreCase) &&
+                selection.InventorySlot == intent.InventorySlot,
+            StaffSelectionAction.Unequip => intent.IsUnequip,
+            _ => false
+        };
     }
 }

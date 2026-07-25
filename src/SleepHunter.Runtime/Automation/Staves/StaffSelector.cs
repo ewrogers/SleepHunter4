@@ -1,6 +1,4 @@
-﻿using SleepHunter.Runtime.Characters;
-
-namespace SleepHunter.Runtime.Automation.Staves;
+﻿namespace SleepHunter.Runtime.Automation.Staves;
 
 public static class StaffSelector
 {
@@ -10,7 +8,7 @@ public static class StaffSelector
 
         var equippedWeaponName = request.Equipment.WeaponName;
         var available = request.Candidates
-            .Where(candidate => IsEligible(candidate, request))
+            .Where(candidate => candidate.IsEligibleFor(request.Character))
             .Select(candidate => CreateAvailableCandidate(
                 candidate,
                 equippedWeaponName,
@@ -78,20 +76,6 @@ public static class StaffSelector
             best.Staff.CastLines,
             best.Staff,
             best.InventorySlot);
-    }
-
-    private static bool IsEligible(
-        StaffCandidate candidate,
-        StaffSelectionRequest request)
-    {
-        var character = request.Character;
-        var classCompatible = candidate.RequiredClass is null ||
-                              (character.Class != CharacterClass.Unknown &&
-                               candidate.RequiredClass == character.Class);
-
-        return classCompatible &&
-               candidate.RequiredLevel <= character.Level &&
-               candidate.RequiredAbilityLevel <= character.AbilityLevel;
     }
 
     private static AvailableStaff? CreateAvailableCandidate(

@@ -1,6 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -15,7 +16,8 @@ public sealed record MacroViewSnapshot(
     MacroTimestamp? LastTransitionAt,
     ClientActionId? PendingActionId,
     SpellQueueState SpellQueue,
-    PanelTransitionState? PanelTransition)
+    PanelTransitionState? PanelTransition,
+    StaffSwitchState? StaffSwitch)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -30,6 +32,7 @@ public sealed record MacroViewSnapshot(
             state.LastTransitionAt,
             state.PendingAction?.Intent.ActionId,
             state.SpellQueue,
-            state.PanelTransition);
+            state.PanelTransition,
+            state.StaffSwitch);
     }
 }
