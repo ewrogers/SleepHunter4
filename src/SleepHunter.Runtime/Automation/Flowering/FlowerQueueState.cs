@@ -20,6 +20,13 @@ public sealed class FlowerQueueState : IEquatable<FlowerQueueState>
                 nameof(entries));
         }
 
+        if (entries.Any(entry => entry is null))
+        {
+            throw new ArgumentException(
+                "Flower queue entries cannot contain null values.",
+                nameof(entries));
+        }
+
         var maximumCursor = entries.IsEmpty ? 0 : entries.Length - 1;
         if (cursor < 0 || cursor > maximumCursor)
         {

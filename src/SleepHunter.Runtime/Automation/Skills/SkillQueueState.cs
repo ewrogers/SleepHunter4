@@ -19,6 +19,13 @@ public sealed class SkillQueueState : IEquatable<SkillQueueState>
                 nameof(entries));
         }
 
+        if (entries.Any(entry => entry is null))
+        {
+            throw new ArgumentException(
+                "Skill queue entries cannot contain null values.",
+                nameof(entries));
+        }
+
         var maximumCursor = entries.IsEmpty ? 0 : entries.Length - 1;
         if (cursor < 0 || cursor > maximumCursor)
         {

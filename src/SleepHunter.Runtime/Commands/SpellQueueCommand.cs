@@ -1,6 +1,23 @@
-﻿using SleepHunter.Runtime.Automation.Spells;
+﻿using System.Collections.Immutable;
+using SleepHunter.Runtime.Automation.Spells;
 
 namespace SleepHunter.Runtime.Commands;
+
+public sealed record ReplaceSpellQueueCommand : MacroCommand
+{
+    public ReplaceSpellQueueCommand(
+        IEnumerable<SpellQueueEntry> entries,
+        SpellQueueRotation rotation)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        Queue = new SpellQueueState(
+            ImmutableArray.CreateRange(entries),
+            rotation,
+            cursor: 0);
+    }
+
+    public SpellQueueState Queue { get; }
+}
 
 public sealed record AddSpellQueueEntryCommand : MacroCommand
 {

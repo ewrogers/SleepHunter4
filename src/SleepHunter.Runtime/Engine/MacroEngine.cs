@@ -109,6 +109,9 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     flower,
                     currentTime),
+            ReplaceSpellQueueCommand replaceSpells => ChangeSpellQueue(
+                currentState,
+                replaceSpells.Queue),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
@@ -129,6 +132,9 @@ public sealed partial class MacroEngine : IMacroEngine
             SetSpellQueueRotationCommand setRotation => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.SetRotation(setRotation.Rotation)),
+            ReplaceSkillQueueCommand replaceSkills => ChangeSkillQueue(
+                currentState,
+                replaceSkills.Queue),
             AddSkillQueueEntryCommand addSkill => ChangeSkillQueue(
                 currentState,
                 currentState.SkillQueue.Add(addSkill.Entry, addSkill.Index)),
@@ -146,6 +152,10 @@ public sealed partial class MacroEngine : IMacroEngine
             ClearSkillQueueCommand => ChangeSkillQueue(
                 currentState,
                 currentState.SkillQueue.Clear()),
+            ReplaceFlowerQueueCommand replaceFlowers => ChangeFlowerQueue(
+                currentState,
+                replaceFlowers.Queue,
+                currentTime),
             AddFlowerQueueEntryCommand addFlower => ChangeFlowerQueue(
                 currentState,
                 currentState.FlowerQueue.Add(

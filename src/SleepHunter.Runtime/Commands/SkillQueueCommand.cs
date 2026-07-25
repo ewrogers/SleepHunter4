@@ -1,6 +1,21 @@
-﻿using SleepHunter.Runtime.Automation.Skills;
+﻿using System.Collections.Immutable;
+using SleepHunter.Runtime.Automation.Skills;
 
 namespace SleepHunter.Runtime.Commands;
+
+public sealed record ReplaceSkillQueueCommand : MacroCommand
+{
+    public ReplaceSkillQueueCommand(
+        IEnumerable<SkillQueueEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        Queue = new SkillQueueState(
+            ImmutableArray.CreateRange(entries),
+            cursor: 0);
+    }
+
+    public SkillQueueState Queue { get; }
+}
 
 public sealed record AddSkillQueueEntryCommand : MacroCommand
 {

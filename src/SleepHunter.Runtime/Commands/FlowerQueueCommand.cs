@@ -1,8 +1,23 @@
-﻿using SleepHunter.Runtime.Automation.Flowering;
+﻿using System.Collections.Immutable;
+using SleepHunter.Runtime.Automation.Flowering;
 
 namespace SleepHunter.Runtime.Commands;
 
 public abstract record FlowerQueueCommand : MacroCommand;
+
+public sealed record ReplaceFlowerQueueCommand : FlowerQueueCommand
+{
+    public ReplaceFlowerQueueCommand(
+        IEnumerable<FlowerQueueEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        Queue = new FlowerQueueState(
+            ImmutableArray.CreateRange(entries),
+            cursor: 0);
+    }
+
+    public FlowerQueueState Queue { get; }
+}
 
 public sealed record AddFlowerQueueEntryCommand : FlowerQueueCommand
 {

@@ -29,6 +29,13 @@ public sealed class SpellQueueState : IEquatable<SpellQueueState>
                 "Spell queue rotation is not supported.");
         }
 
+        if (entries.Any(entry => entry is null))
+        {
+            throw new ArgumentException(
+                "Spell queue entries cannot contain null values.",
+                nameof(entries));
+        }
+
         var maximumCursor = entries.IsEmpty ? 0 : entries.Length - 1;
         if (cursor < 0 || cursor > maximumCursor)
         {

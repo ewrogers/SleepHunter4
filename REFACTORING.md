@@ -980,6 +980,11 @@ As of July 24, 2026:
   `EquipWeaponIntent`. Use setter-style prefixes only when they add necessary
   meaning.
 - Represent spell queue edits as reliable, identifier-based runtime commands.
+- Hydrate complete persisted spell, skill, and flower queues with atomic
+  `ReplaceSpellQueueCommand`, `ReplaceSkillQueueCommand`, and
+  `ReplaceFlowerQueueCommand` requests. Snapshot enumerable inputs at command
+  construction, reset transient queue cursors, and synchronize target rotations
+  and flower schedules in the same engine decision.
 - Preserve the logical spell queue cursor across insert, move, update, and
   non-current removal operations.
 - Use explicit priority, sequential, and round-robin spell queue policies.
