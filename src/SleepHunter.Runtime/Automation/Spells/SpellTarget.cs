@@ -90,7 +90,10 @@ public sealed record SpellTarget
         return Coordinates(SpellTargetKind.AbsoluteTile, x, y, offset);
     }
 
-    public static SpellTarget ScreenPoint(int x, int y)
+    public static SpellTarget ScreenPoint(
+        int x,
+        int y,
+        TargetOffset offset = default)
     {
         if (x < 0)
         {
@@ -112,7 +115,7 @@ public sealed record SpellTarget
             SpellTargetKind.ScreenPoint,
             x,
             y,
-            TargetOffset.Zero);
+            offset);
     }
 
     public static SpellTarget RelativeArea(
@@ -148,7 +151,7 @@ public sealed record SpellTarget
 
     public SpellTarget WithOffset(int x, int y)
     {
-        if (Kind is SpellTargetKind.None or SpellTargetKind.ScreenPoint)
+        if (Kind == SpellTargetKind.None)
         {
             throw new InvalidOperationException(
                 "This target kind does not support a pixel offset.");
