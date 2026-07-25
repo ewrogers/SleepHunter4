@@ -109,6 +109,10 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     flower,
                     currentTime),
+            ReplaceQueuesCommand replaceQueues => ChangeQueues(
+                currentState,
+                replaceQueues,
+                currentTime),
             ReplaceSpellQueueCommand replaceSpells => ChangeSpellQueue(
                 currentState,
                 replaceSpells.Queue),
@@ -783,6 +787,47 @@ public sealed partial class MacroEngine : IMacroEngine
         } transition
             ? transition.Cancelled()
             : currentState.PanelTransition;
+
+    private static MacroDecision ChangeQueues(
+        MacroState currentState,
+        ReplaceQueuesCommand command,
+        MacroTimestamp currentTime)
+    {
+        var spellTargetRotations =
+            currentState.SpellTargetRotations.Synchronize(
+                command.SpellQueue.Entries.Select(entry =>
+                    KeyValuePair.Create(entry.Id.Value, entry.Target)));
+        var flowerSchedules = currentState.FlowerSchedules.Synchronize(
+            command.FlowerQueue,
+            currentTime);
+        var flowerTargetRotations =
+            currentState.FlowerTargetRotations.Synchronize(
+                command.FlowerQueue.Entries.Select(entry =>
+                    KeyValuePair.Create(entry.Id.Value, entry.Target)));
+        if (currentState.SpellQueue.Equals(command.SpellQueue) &&
+            currentState.SkillQueue.Equals(command.SkillQueue) &&
+            currentState.FlowerQueue.Equals(command.FlowerQueue) &&
+            currentState.SpellTargetRotations.Equals(spellTargetRotations) &&
+            currentState.FlowerSchedules.Equals(flowerSchedules) &&
+            currentState.FlowerTargetRotations.Equals(flowerTargetRotations))
+        {
+            return Unchanged(currentState);
+        }
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            currentState.PendingAction,
+            command.SpellQueue,
+            skillQueue: command.SkillQueue,
+            flowerQueue: command.FlowerQueue,
+            flowerSchedules: flowerSchedules,
+            spellTargetRotations: spellTargetRotations,
+            flowerTargetRotations: flowerTargetRotations);
+    }
 
     private static MacroDecision ChangeSpellQueue(
         MacroState currentState,

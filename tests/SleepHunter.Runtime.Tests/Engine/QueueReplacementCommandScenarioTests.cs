@@ -9,6 +9,86 @@ namespace SleepHunter.Runtime.Tests.Engine;
 public sealed class QueueReplacementCommandScenarioTests
 {
     [Test]
+    public void ShouldReplaceAllQueuesAtomically()
+    {
+        var oldSpell = Spell(1, "old spell", SpellTarget.Self);
+        var oldSkill = Skill(1, "old skill");
+        var oldFlower = Flower(
+            1,
+            SpellTarget.Self,
+            TimeSpan.FromSeconds(1));
+        var nextSpell = Spell(
+            2,
+            "next spell",
+            SpellTarget.RelativeArea(
+                x: 0,
+                y: 0,
+                innerRadius: 0,
+                outerRadius: 1));
+        var nextSkill = Skill(2, "next skill");
+        var nextFlower = Flower(
+            2,
+            SpellTarget.RelativeArea(
+                x: 1,
+                y: 0,
+                innerRadius: 0,
+                outerRadius: 1),
+            TimeSpan.FromSeconds(2));
+        var scenario = new MacroScenario();
+
+        scenario.Send(new AddSpellQueueEntryCommand(oldSpell));
+        scenario.Send(new AddSkillQueueEntryCommand(oldSkill));
+        scenario.Send(new AddFlowerQueueEntryCommand(oldFlower));
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(500));
+        var startingRevision = scenario.State.Revision;
+        var command = new ReplaceQueuesCommand(
+            [nextSpell],
+            SpellQueueRotation.RoundRobin,
+            [nextSkill],
+            [nextFlower]);
+
+        var replaced = scenario.Send(command);
+        var repeated = scenario.Send(command);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                replaced.State.Revision,
+                Is.EqualTo(startingRevision + 1));
+            Assert.That(
+                replaced.State.SpellQueue.Entries,
+                Is.EqualTo(new[] { nextSpell }));
+            Assert.That(
+                replaced.State.SpellQueue.Rotation,
+                Is.EqualTo(SpellQueueRotation.RoundRobin));
+            Assert.That(replaced.State.SpellQueue.Cursor, Is.Zero);
+            Assert.That(
+                replaced.State.SkillQueue.Entries,
+                Is.EqualTo(new[] { nextSkill }));
+            Assert.That(replaced.State.SkillQueue.Cursor, Is.Zero);
+            Assert.That(
+                replaced.State.FlowerQueue.Entries,
+                Is.EqualTo(new[] { nextFlower }));
+            Assert.That(replaced.State.FlowerQueue.Cursor, Is.Zero);
+            Assert.That(
+                replaced.State.FlowerSchedules.GetReadyAt(oldFlower.Id),
+                Is.Null);
+            Assert.That(
+                replaced.State.FlowerSchedules.GetReadyAt(nextFlower.Id),
+                Is.EqualTo(
+                    scenario.CurrentTime.Add(TimeSpan.FromSeconds(2))));
+            Assert.That(
+                replaced.State.SpellTargetRotations.Count,
+                Is.EqualTo(1));
+            Assert.That(
+                replaced.State.FlowerTargetRotations.Count,
+                Is.EqualTo(1));
+            Assert.That(repeated.State, Is.SameAs(replaced.State));
+            Assert.That(repeated.PublishedView, Is.Null);
+        });
+    }
+
+    [Test]
     public void ShouldReplaceEachQueueInOneRevision()
     {
         var oldSpell = Spell(1, "old spell", SpellTarget.Self);

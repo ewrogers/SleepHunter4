@@ -20,21 +20,15 @@ public sealed class ShadowClientRuntimeHostTests
     {
         var innerHost = new RecordingClientRuntimeHost();
         await using var host = new ShadowClientRuntimeHost(innerHost);
-        MacroCommand[] commands =
-        [
-            new ReplaceSpellQueueCommand(
-                Array.Empty<SpellQueueEntry>(),
-                SpellQueueRotation.Priority),
-            new ReplaceSkillQueueCommand(
-                Array.Empty<SkillQueueEntry>()),
-            new ReplaceFlowerQueueCommand(
-                Array.Empty<FlowerQueueEntry>()),
-        ];
+        var command = new ReplaceQueuesCommand(
+            Array.Empty<SpellQueueEntry>(),
+            SpellQueueRotation.Priority,
+            Array.Empty<SkillQueueEntry>(),
+            Array.Empty<FlowerQueueEntry>());
 
-        foreach (var command in commands)
-            await host.SendCommandAsync(command);
+        await host.SendCommandAsync(command);
 
-        Assert.That(innerHost.Commands, Is.EqualTo(commands));
+        Assert.That(innerHost.Commands, Is.EqualTo(new[] { command }));
     }
 
     [Test]
@@ -45,6 +39,13 @@ public sealed class ShadowClientRuntimeHostTests
         MacroCommand[] commands =
         [
             new StartMacroCommand(),
+            new ReplaceSpellQueueCommand(
+                Array.Empty<SpellQueueEntry>(),
+                SpellQueueRotation.Priority),
+            new ReplaceSkillQueueCommand(
+                Array.Empty<SkillQueueEntry>()),
+            new ReplaceFlowerQueueCommand(
+                Array.Empty<FlowerQueueEntry>()),
             new ClearSpellQueueCommand(),
             new ClearSkillQueueCommand(),
             new ClearFlowerQueueCommand(),
