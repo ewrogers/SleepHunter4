@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:models="clr-namespace:SleepHunter.Models">
+                    xmlns:viewModels="clr-namespace:SleepHunter.ViewModels">
     <!-- Vitals (HP/MP) Progress Bar -->
     <Style x:Key="VitalProgressBar" TargetType="ProgressBar">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -33,7 +33,8 @@
     </Style>
 
     <!-- Player Data Template -->
-    <DataTemplate x:Key="PlayerDataTemplate" DataType="models:Player">
+    <DataTemplate x:Key="PlayerDataTemplate"
+                  DataType="viewModels:ClientListItemViewModel">
         <DockPanel>
             <Border Name="SelectionBorder" 
                     DockPanel.Dock="Left"
@@ -93,6 +94,16 @@
                                    FontSize="20"
                                    VerticalAlignment="Center"
                                    Margin="4,0"/>
+                        <TextBlock Name="RuntimeObservationText"
+                                   Style="{StaticResource ObsidianText}"
+                                   Text="R"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   Margin="2,0,0,0"
+                                   Opacity="0.4"
+                                   ToolTip="{Binding RuntimeStatus}"
+                                   Visibility="Collapsed"/>
                     </StackPanel>
 
                     <!-- Hotkey Information -->
@@ -143,9 +154,9 @@
                            Opacity="0.5">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0} ({1}, {2})">
-                                <Binding Path="Location.MapName"/>
-                                <Binding Path="Location.X"/>
-                                <Binding Path="Location.Y"/>
+                                <Binding Path="MapName"/>
+                                <Binding Path="MapX"/>
+                                <Binding Path="MapY"/>
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
@@ -168,8 +179,8 @@
                                Visibility="{Binding ElementName=HealthBar, Path=Visibility}">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="Stats.CurrentHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                    <Binding Path="Stats.MaximumHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="CurrentHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="MaximumHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
@@ -180,7 +191,7 @@
                              Grid.Row="4"
                              Grid.ColumnSpan="2"
                              Style="{StaticResource VitalProgressBar}"
-                             Value="{Binding Stats.HealthPercent, Mode=OneWay}"/>
+                             Value="{Binding HealthPercent, Mode=OneWay}"/>
 
                     <!-- MP Text -->
                     <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,4,0,0">
@@ -200,8 +211,8 @@
                                Visibility="{Binding ElementName=ManaBar, Path=Visibility}">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="Stats.CurrentMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                    <Binding Path="Stats.MaximumMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="CurrentMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                    <Binding Path="MaximumMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
@@ -212,7 +223,7 @@
                              Grid.Row="6"
                              Grid.ColumnSpan="2"
                              Style="{StaticResource VitalProgressBar}"
-                             Value="{Binding Stats.ManaPercent, Mode=OneWay}"
+                             Value="{Binding ManaPercent, Mode=OneWay}"
                              Margin="2,1,2,6"/>
 
                     <!-- Process Id -->
@@ -256,6 +267,12 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding HasHotkey}" Value="True">
                 <Setter TargetName="HotkeyBorder" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasRuntime}" Value="True">
+                <Setter TargetName="RuntimeObservationText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding UsesRuntimeSnapshot}" Value="True">
+                <Setter TargetName="RuntimeObservationText" Property="Opacity" Value="1"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>

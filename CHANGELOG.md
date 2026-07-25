@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 All notable changes to this library will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made automatic staff selection aware of the character's base class
 - Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
+- Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures
 
 ### Removed
 
