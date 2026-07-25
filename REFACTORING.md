@@ -729,6 +729,12 @@ events and manual `Items.Refresh` calls. Rotation and flowering options use
 two-way bindings. MainWindow retains only target-dialog and drag gesture
 mechanics for these queues.
 
+The transition-only runtime configuration view model has been removed. Loading
+a macro file updates the authoritative editable configuration only. Start and
+resume map that complete typed configuration into immutable queues and runtime
+policies before issuing the lifecycle command, so an idle runtime no longer
+receives a redundant second queue copy during file load.
+
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:
 
@@ -1274,6 +1280,9 @@ As of July 24, 2026:
   expose structured migration warnings and errors as observable state. During
   the transition, the legacy UI and shadow runtime read the same file through
   their respective adapters.
+- Remove the transition configuration view model once start and resume compose
+  the complete typed editor configuration. File loading then updates only the
+  editor, preventing duplicate idle-runtime queue synchronization.
 - Make the client card the first vertical MVVM slice. Prefer coherent runtime
   character, presence, location, and vitals observations, fall back per section
   when the runtime observation is unavailable, and leave automation authority
