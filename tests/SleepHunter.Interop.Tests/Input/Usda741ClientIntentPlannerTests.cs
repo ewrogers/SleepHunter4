@@ -479,29 +479,236 @@ public sealed class Usda741ClientIntentPlannerTests
         });
     }
 
-    [Test]
-    public void ShouldReportUnimplementedSpellInputAsUnsupported()
+    [TestCase(1, ClientPanel.TemuairSpells, 110, 350)]
+    [TestCase(37, ClientPanel.MedeniaSpells, 110, 350)]
+    [TestCase(73, ClientPanel.WorldSpells, 320, 350)]
+    [TestCase(90, ClientPanel.WorldSpells, 495, 420)]
+    public void ShouldDoubleClickTheCorrectSpellSlotWithoutATarget(
+        int slot,
+        ClientPanel panel,
+        int expectedX,
+        int expectedY)
     {
         var cast = new CastSpellIntent(
-            new ClientActionId(12),
+            new ClientActionId(100 + slot),
+            "Test Spell",
+            slot,
+            panel,
+            SpellTarget.None);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                panel,
+                spellbook: Spellbook(slot)));
+        var plan = result.Plan!;
+        var point = PackPoint(expectedX, expectedY);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(point));
+        });
+    }
+
+    [TestCaseSource(nameof(ProjectedTargetCases))]
+    public void ShouldProjectSupportedSpellTargets(
+        SpellTarget spellTarget,
+        MapLocationSnapshot? location,
+        int expectedX,
+        int expectedY)
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(200),
             "Test Spell",
             slot: 1,
             ClientPanel.TemuairSpells,
-            SpellTarget.Self);
+            spellTarget);
 
-        var castResult = planner.Plan(
+        var result = planner.Plan(
             cast,
             Target,
-            Snapshot(ClientPanel.TemuairSpells));
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                location: location));
+        var plan = result.Plan!;
+        var targetPoint = PackPoint(expectedX, expectedY);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(9));
+            Assert.That(
+                plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(targetPoint));
+            Assert.That(
+                plan.Messages.Select(message => message.Message),
+                Is.EqualTo(
+                [
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp,
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp,
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp
+                ]));
+            Assert.That(plan.CleanupMessages, Has.Length.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public void ShouldScaleTargetBeforeApplyingPixelOffset()
+    {
+        var scaledTarget = new ClientWindowTarget(
+            Client,
+            Target.ProcessId,
+            Target.WindowHandle,
+            clientWidth: 1280,
+            clientHeight: 960);
+        var cast = new CastSpellIntent(
+            new ClientActionId(201),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.ScreenPoint(100, 80).WithOffset(5, -3));
+
+        var result = planner.Plan(
+            cast,
+            scaledTarget,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
+
+        Assert.That(
+            result.Plan!.Messages.Skip(6).Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 205, y: 157)));
+    }
+
+    [Test]
+    public void ShouldRejectUnavailableOrOutOfRangeSpellTargets()
+    {
+        var absolute = new CastSpellIntent(
+            new ClientActionId(202),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.AbsoluteTile(61, 60));
+        var missingLocation = planner.Plan(
+            absolute,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
+        var outOfRange = planner.Plan(
+            absolute,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                location: new MapLocationSnapshot(1, "Mileth", 50, 60)));
+        var offsetOutOfBounds = planner.Plan(
+            new CastSpellIntent(
+                new ClientActionId(203),
+                "Test Spell",
+                slot: 1,
+                ClientPanel.TemuairSpells,
+                SpellTarget.ScreenPoint(100, 80).WithOffset(-101, 0)),
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
 
         Assert.Multiple(() =>
         {
             Assert.That(
-                castResult.Status,
+                missingLocation.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetUnavailable));
+            Assert.That(
+                outOfRange.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetOutOfRange));
+            Assert.That(
+                offsetOutOfBounds.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetOutOfRange));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectSpellInputWhenObservedEvidenceChanged()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(204),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.None);
+        var wrongPanel = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                spellbook: Spellbook(slot: 1)));
+        var wrongSpell = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1, name: "Other Spell")));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                wrongPanel.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.PanelMismatch));
+            Assert.That(
+                wrongSpell.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.SpellMismatch));
+        });
+    }
+
+    [Test]
+    public void ShouldReportUnresolvedSpellTargetKindsAsUnsupported()
+    {
+        var character = new CastSpellIntent(
+            new ClientActionId(205),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.Character("Alt"));
+        var area = new CastSpellIntent(
+            new ClientActionId(206),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.RelativeArea(0, 0, 0, 1));
+        var snapshot = Snapshot(
+            ClientPanel.TemuairSpells,
+            spellbook: Spellbook(slot: 1));
+
+        var characterResult = planner.Plan(character, Target, snapshot);
+        var areaResult = planner.Plan(area, Target, snapshot);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                characterResult.Status,
                 Is.EqualTo(ClientIntentPlanStatus.Unsupported));
             Assert.That(
-                castResult.Failure,
-                Is.EqualTo(ClientIntentPlanFailure.UnsupportedIntent));
+                areaResult.Status,
+                Is.EqualTo(ClientIntentPlanStatus.Unsupported));
+            Assert.That(
+                characterResult.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.UnsupportedTarget));
+            Assert.That(
+                areaResult.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.UnsupportedTarget));
         });
     }
 
@@ -552,13 +759,43 @@ public sealed class Usda741ClientIntentPlannerTests
             .SetName("ShouldPlanTildeForWeaponUnequip");
     }
 
+    private static IEnumerable<TestCaseData> ProjectedTargetCases()
+    {
+        yield return new TestCaseData(
+                SpellTarget.Self,
+                null,
+                315,
+                160)
+            .SetName("ShouldProjectSelfTarget");
+        yield return new TestCaseData(
+                SpellTarget.ScreenPoint(100, 80),
+                null,
+                100,
+                80)
+            .SetName("ShouldProjectScreenPointTarget");
+        yield return new TestCaseData(
+                SpellTarget.RelativeTile(1, 0),
+                null,
+                343,
+                173)
+            .SetName("ShouldProjectRelativeTileTarget");
+        yield return new TestCaseData(
+                SpellTarget.AbsoluteTile(51, 61),
+                new MapLocationSnapshot(1, "Mileth", 50, 60),
+                315,
+                187)
+            .SetName("ShouldProjectAbsoluteTileTarget");
+    }
+
     private static ClientSnapshot Snapshot(
         ClientPanel panel,
         SnapshotQuality quality = SnapshotQuality.Complete,
         ClientPresence presence = ClientPresence.InWorld,
         ClientIdentity? client = null,
         InventorySnapshot? inventory = null,
-        bool isInventoryExpanded = false) =>
+        bool isInventoryExpanded = false,
+        SpellbookSnapshot? spellbook = null,
+        MapLocationSnapshot? location = null) =>
         new(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -568,7 +805,24 @@ public sealed class Usda741ClientIntentPlannerTests
             presence,
             panel,
             inventory: inventory,
+            spellbook: spellbook,
+            location: location,
             isInventoryExpanded: isInventoryExpanded);
+
+    private static SpellbookSnapshot Spellbook(
+        int slot,
+        string name = "Test Spell") =>
+        new(
+        [
+            new SpellSnapshot(
+                name,
+                slot,
+                currentLevel: 1,
+                maximumLevel: 100,
+                castLines: 1,
+                manaCost: 1,
+                cooldown: TimeSpan.Zero)
+        ]);
 
     private static void AssertPlainClick(
         ClientIntentPlanResult result,

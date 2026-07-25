@@ -65,6 +65,18 @@ internal static class Usda741InputMessages
             [up]);
     }
 
+    public static WindowInputPlan Sequence(
+        WindowInputPlan first,
+        WindowInputPlan second)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        return new WindowInputPlan(
+            [.. first.Messages, .. second.Messages],
+            [.. first.CleanupMessages, .. second.CleanupMessages]);
+    }
+
     public static bool TryClick(
         IVirtualKeyMapper mapper,
         ClientPoint point,

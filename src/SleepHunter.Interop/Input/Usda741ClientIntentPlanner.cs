@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 
@@ -67,6 +68,8 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 PlanSkill(useSkill, target, snapshot),
             EquipWeaponIntent equipWeapon =>
                 PlanWeapon(equipWeapon, target, snapshot),
+            CastSpellIntent castSpell =>
+                PlanSpell(castSpell, target, snapshot),
             _ => ClientIntentPlanResult.Unsupported(
                 intent.ActionId,
                 ClientIntentPlanFailure.UnsupportedIntent,
@@ -181,16 +184,11 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 "The observed client panel does not contain the requested skill.");
         }
 
-        var relativeSlot = RelativeSlot(intent.Slot, intent.Panel);
-        var rowSize = intent.Panel == ClientPanel.WorldSkills
-            ? 6
-            : 12;
-        var row = (relativeSlot - 1) / rowSize;
-        var column = (relativeSlot - 1) % rowSize;
-        var basePoint = new Usda741InputMessages.ClientPoint(
-            SlotOriginX + (column * SlotSize),
-            SlotOriginY + (row * SlotSize));
-        if (!TryScalePoint(target, basePoint, out var point))
+        if (!TrySlotPoint(
+                target,
+                intent.Slot,
+                intent.Panel,
+                out var point))
         {
             return CoordinateFailure(intent);
         }
@@ -198,6 +196,67 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         return ClientIntentPlanResult.Planned(
             intent.ActionId,
             Usda741InputMessages.DoubleClick(point));
+    }
+
+    private static ClientIntentPlanResult PlanSpell(
+        CastSpellIntent intent,
+        ClientWindowTarget target,
+        ClientSnapshot snapshot)
+    {
+        if (!snapshot.ActivePanel.IsEquivalentTo(intent.Panel))
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.PanelMismatch,
+                "The observed client panel does not contain the requested spell.");
+        }
+
+        var selectedSpell = snapshot.Spellbook?.Spells.FirstOrDefault(
+            spell => spell.Slot == intent.Slot);
+        if (selectedSpell is null ||
+            !string.Equals(
+                selectedSpell.Name,
+                intent.SpellName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.SpellMismatch,
+                "The requested spell is not present in the observed spell slot.");
+        }
+
+        if (!TrySlotPoint(
+                target,
+                intent.Slot,
+                intent.Panel,
+                out var spellPoint))
+        {
+            return CoordinateFailure(intent);
+        }
+
+        var spellPlan = Usda741InputMessages.DoubleClick(spellPoint);
+        if (intent.Target.Kind == SpellTargetKind.None)
+        {
+            return ClientIntentPlanResult.Planned(
+                intent.ActionId,
+                spellPlan);
+        }
+
+        if (!TryProjectSpellTarget(
+                intent,
+                target,
+                snapshot,
+                out var targetPoint,
+                out var targetFailure))
+        {
+            return targetFailure!;
+        }
+
+        return ClientIntentPlanResult.Planned(
+            intent.ActionId,
+            Usda741InputMessages.Sequence(
+                spellPlan,
+                Usda741InputMessages.Click(targetPoint)));
     }
 
     private ClientIntentPlanResult PlanWeapon(
@@ -339,25 +398,69 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             (ClientPanel.MedeniaSkills, ClientPanel.TemuairSkills) or
             (ClientPanel.MedeniaSpells, ClientPanel.TemuairSpells);
 
-    private static int RelativeSlot(int slot, ClientPanel panel)
+    private static bool TrySlotPoint(
+        ClientWindowTarget target,
+        int slot,
+        ClientPanel panel,
+        out Usda741InputMessages.ClientPoint point)
     {
-        var panelCapacity = panel == ClientPanel.WorldSkills
+        var isWorldPanel = panel is
+            ClientPanel.WorldSkills or
+            ClientPanel.WorldSpells;
+        var panelCapacity = isWorldPanel
             ? 18
             : 36;
-        return ((slot - 1) % panelCapacity) + 1;
+        var relativeSlot = ((slot - 1) % panelCapacity) + 1;
+        var rowSize = isWorldPanel
+            ? 6
+            : 12;
+        var columnOffset = panel == ClientPanel.WorldSpells
+            ? 6
+            : 0;
+        var row = (relativeSlot - 1) / rowSize;
+        var column = ((relativeSlot - 1) % rowSize) + columnOffset;
+        return TryScalePoint(
+            target,
+            new LogicalPoint(
+                SlotOriginX + (column * SlotSize),
+                SlotOriginY + (row * SlotSize)),
+            TargetOffset.Zero,
+            out point);
     }
 
     private static bool TryScalePoint(
         ClientWindowTarget target,
         Usda741InputMessages.ClientPoint basePoint,
+        out Usda741InputMessages.ClientPoint point) =>
+        TryScalePoint(
+            target,
+            new LogicalPoint(basePoint.X, basePoint.Y),
+            TargetOffset.Zero,
+            out point);
+
+    private static bool TryScalePoint(
+        ClientWindowTarget target,
+        LogicalPoint basePoint,
+        TargetOffset offset,
         out Usda741InputMessages.ClientPoint point)
     {
-        var x = (int)(
+        var scaledX =
             basePoint.X *
-            (target.ClientWidth / (double)BaseClientWidth));
-        var y = (int)(
+            (target.ClientWidth / (double)BaseClientWidth);
+        var scaledY =
             basePoint.Y *
-            (target.ClientHeight / (double)BaseClientHeight));
+            (target.ClientHeight / (double)BaseClientHeight);
+        if (scaledX < int.MinValue ||
+            scaledX > int.MaxValue ||
+            scaledY < int.MinValue ||
+            scaledY > int.MaxValue)
+        {
+            point = default;
+            return false;
+        }
+
+        var x = (long)scaledX + offset.X;
+        var y = (long)scaledY + offset.Y;
         if (x < 0 ||
             y < 0 ||
             x >= target.ClientWidth ||
@@ -369,9 +472,111 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             return false;
         }
 
-        point = new Usda741InputMessages.ClientPoint(x, y);
+        point = new Usda741InputMessages.ClientPoint((int)x, (int)y);
         return true;
     }
+
+    private static bool TryProjectSpellTarget(
+        CastSpellIntent intent,
+        ClientWindowTarget target,
+        ClientSnapshot snapshot,
+        out Usda741InputMessages.ClientPoint point,
+        out ClientIntentPlanResult? failure)
+    {
+        LogicalPoint logicalPoint;
+        switch (intent.Target.Kind)
+        {
+            case SpellTargetKind.Self:
+                logicalPoint = new LogicalPoint(315, 160);
+                break;
+
+            case SpellTargetKind.ScreenPoint:
+                logicalPoint = new LogicalPoint(
+                    intent.Target.X!.Value,
+                    intent.Target.Y!.Value);
+                break;
+
+            case SpellTargetKind.RelativeTile:
+                logicalPoint = RelativeTilePoint(
+                    intent.Target.X!.Value,
+                    intent.Target.Y!.Value);
+                break;
+
+            case SpellTargetKind.AbsoluteTile:
+                if (snapshot.Location is not { } location)
+                {
+                    point = default;
+                    failure = ClientIntentPlanResult.Rejected(
+                        intent.ActionId,
+                        ClientIntentPlanFailure.TargetUnavailable,
+                        "Absolute spell targeting requires an observed map location.");
+                    return false;
+                }
+
+                var deltaX = (long)intent.Target.X!.Value - location.X;
+                var deltaY = (long)intent.Target.Y!.Value - location.Y;
+                if (Math.Abs(deltaX) > 10 || Math.Abs(deltaY) > 10)
+                {
+                    point = default;
+                    failure = ClientIntentPlanResult.Rejected(
+                        intent.ActionId,
+                        ClientIntentPlanFailure.TargetOutOfRange,
+                        "The absolute spell target is outside the supported local tile range.");
+                    return false;
+                }
+
+                logicalPoint = RelativeTilePoint(deltaX, deltaY);
+                break;
+
+            case SpellTargetKind.Character:
+                point = default;
+                failure = ClientIntentPlanResult.Unsupported(
+                    intent.ActionId,
+                    ClientIntentPlanFailure.UnsupportedTarget,
+                    "Character spell targeting requires a coherent target-location observation.");
+                return false;
+
+            case SpellTargetKind.RelativeArea:
+            case SpellTargetKind.AbsoluteArea:
+                point = default;
+                failure = ClientIntentPlanResult.Unsupported(
+                    intent.ActionId,
+                    ClientIntentPlanFailure.UnsupportedTarget,
+                    "Area spell targets must be resolved to one tile before input planning.");
+                return false;
+
+            default:
+                point = default;
+                failure = ClientIntentPlanResult.Unsupported(
+                    intent.ActionId,
+                    ClientIntentPlanFailure.UnsupportedTarget,
+                    $"Spell target kind '{intent.Target.Kind}' is not supported.");
+                return false;
+        }
+
+        if (!TryScalePoint(
+                target,
+                logicalPoint,
+                intent.Target.Offset,
+                out point))
+        {
+            failure = ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.TargetOutOfRange,
+                "The projected spell target is outside the guarded client area.");
+            return false;
+        }
+
+        failure = null;
+        return true;
+    }
+
+    private static LogicalPoint RelativeTilePoint(
+        long deltaX,
+        long deltaY) =>
+        new(
+            315 + (((deltaX - deltaY) / 2.0) * 56),
+            160 + (((deltaY + deltaX) / 2.0) * 27));
 
     private static ClientIntentPlanResult CoordinateFailure(
         ClientActionIntent intent) =>
@@ -379,4 +584,6 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
             intent.ActionId,
             ClientIntentPlanFailure.CoordinateOutOfBounds,
             "The planned client coordinate is outside the guarded client area.");
+
+    private readonly record struct LogicalPoint(double X, double Y);
 }
