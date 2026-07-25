@@ -45,7 +45,9 @@ public static class SpellPlanner
             .ToImmutableArray();
         var availability = readiness.ToDictionary(
             entry => entry.Entry.Id,
-            ToQueueAvailability);
+            entry => ToQueueAvailability(
+                entry,
+                request.Policy));
         var queueEvaluation = request.Queue.EvaluateNext(availability);
 
         if (queueEvaluation.SelectedEntry is not { } selectedEntry)
@@ -148,10 +150,14 @@ public static class SpellPlanner
     }
 
     private static SpellQueueAvailability ToQueueAvailability(
-        SpellReadiness readiness) =>
+        SpellReadiness readiness,
+        SpellCastPolicy policy) =>
         readiness.Status switch
         {
             SpellReadinessStatus.Ready => SpellQueueAvailability.Ready,
+            SpellReadinessStatus.CoolingDown
+                when !policy.SkipCoolingDownSpells =>
+                SpellQueueAvailability.Blocked,
             SpellReadinessStatus.WaitingForHealth or
                 SpellReadinessStatus.WaitingForMana or
                 SpellReadinessStatus.CoolingDown =>

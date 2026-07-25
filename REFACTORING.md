@@ -1158,6 +1158,16 @@ As of July 24, 2026:
 - Reuse bounded panel transition attempts for preservation. Publish explicit
   succeeded, timed-out, issue-failed, and cancelled outcomes, and cancel
   preservation on pause, stop, logout, or another lifecycle interruption.
+- Compose persisted queues and current application settings into one atomic
+  queue-replacement command and one immutable automation-configuration command
+  before runtime lifecycle changes.
+- Build staff catalogs per client from the observed character class. Treat
+  `Class="All"` as neutral, include multi-class legacy metadata only when it
+  includes the observed class, and keep the exact class on the runtime
+  candidate so later snapshots revalidate eligibility.
+- Preserve the cooldown-skip setting as an explicit spell policy. Map legacy
+  movement `ForceQuit` to runtime stop, because the deterministic engine does
+  not emit a process-termination intent.
 - Represent flower queues as immutable entries with stable identifiers,
   monotonic interval schedules, deterministic rotation, and interval or
   character-mana conditions. When both conditions are configured, either can

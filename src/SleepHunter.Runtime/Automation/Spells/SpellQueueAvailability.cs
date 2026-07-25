@@ -5,5 +5,6 @@ public enum SpellQueueAvailability
     Missing,
     Ready,
     TemporarilyUnavailable,
+    Blocked,
     Complete
 }

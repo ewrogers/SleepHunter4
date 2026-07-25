@@ -4,6 +4,7 @@ using SleepHunter.Services;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
+using SleepHunter.Services.Runtime;
 using SleepHunter.Services.Serialization;
 using SleepHunter.Views;
 
@@ -63,6 +64,12 @@ namespace SleepHunter
             services.AddSingleton<
                 IMacroConfigurationReader,
                 FileMacroConfigurationReader>();
+            services.AddSingleton<
+                IRuntimeStaffCandidateProvider,
+                RuntimeStaffCandidateProvider>();
+            services.AddSingleton<
+                IRuntimeAutomationSetupFactory,
+                RuntimeAutomationSetupFactory>();
 
             services.AddTransient<IMacroStateSerializer, MacroStateSerializer>();
 

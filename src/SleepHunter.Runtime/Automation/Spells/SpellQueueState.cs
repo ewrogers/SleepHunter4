@@ -215,9 +215,23 @@ public sealed class SpellQueueState : IEquatable<SpellQueueState>
         IReadOnlyDictionary<SpellQueueEntryId, SpellQueueAvailability> availability)
     {
         var state = SetCursor(0);
-        var selected = Entries.FirstOrDefault(
-            entry => GetAvailability(availability, entry.Id) ==
-                     SpellQueueAvailability.Ready);
+        SpellQueueEntry? selected = null;
+        foreach (var entry in Entries)
+        {
+            var entryAvailability = GetAvailability(
+                availability,
+                entry.Id);
+            if (entryAvailability == SpellQueueAvailability.Blocked)
+            {
+                break;
+            }
+
+            if (entryAvailability == SpellQueueAvailability.Ready)
+            {
+                selected = entry;
+                break;
+            }
+        }
 
         return new SpellQueueEvaluation(selected, state);
     }
@@ -236,7 +250,9 @@ public sealed class SpellQueueState : IEquatable<SpellQueueState>
                 return new SpellQueueEvaluation(entry, SetCursor(index));
             }
 
-            if (entryAvailability == SpellQueueAvailability.TemporarilyUnavailable)
+            if (entryAvailability is
+                SpellQueueAvailability.TemporarilyUnavailable or
+                SpellQueueAvailability.Blocked)
             {
                 return new SpellQueueEvaluation(
                     SelectedEntry: null,
@@ -254,8 +270,17 @@ public sealed class SpellQueueState : IEquatable<SpellQueueState>
         {
             var index = (Cursor + offset) % Entries.Length;
             var entry = Entries[index];
-            if (GetAvailability(availability, entry.Id) !=
-                SpellQueueAvailability.Ready)
+            var entryAvailability = GetAvailability(
+                availability,
+                entry.Id);
+            if (entryAvailability == SpellQueueAvailability.Blocked)
+            {
+                return new SpellQueueEvaluation(
+                    SelectedEntry: null,
+                    SetCursor(index));
+            }
+
+            if (entryAvailability != SpellQueueAvailability.Ready)
             {
                 continue;
             }
