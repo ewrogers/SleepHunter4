@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-
 using SleepHunter.Common;
 using SleepHunter.Extensions;
 using SleepHunter.IO.Process;
@@ -14,7 +14,6 @@ using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Settings;
 using SleepHunter.Win32;
-using System.Runtime.InteropServices;
 
 namespace SleepHunter.Models
 {
@@ -39,21 +38,21 @@ namespace SleepHunter.Models
 
         private nint baseCooldownPointer;
 
-        public Player Owner { get; init;  }
+        public Player Owner { get; init; }
 
-        public IEnumerable<Skill> AllSkills => 
+        public IEnumerable<Skill> AllSkills =>
             from s in skills select s;
 
-        public IEnumerable<Skill> TemuairSkills => 
+        public IEnumerable<Skill> TemuairSkills =>
             from s in skills where s.Panel == InterfacePanel.TemuairSkills && s.Slot <= TemuairSkillCount select s;
 
-        public IEnumerable<Skill> MedeniaSkills => 
+        public IEnumerable<Skill> MedeniaSkills =>
             from s in skills where s.Panel == InterfacePanel.MedeniaSkills && s.Slot <= (TemuairSkillCount + MedeniaSkillCount) select s;
 
-        public IEnumerable<Skill> WorldSkills => 
+        public IEnumerable<Skill> WorldSkills =>
             from s in skills where s.Panel == InterfacePanel.WorldSkills && s.Slot <= (TemuairSkillCount + MedeniaSkillCount + WorldSkillCount) select s;
 
-        public IEnumerable<string> ActiveSkills => 
+        public IEnumerable<string> ActiveSkills =>
             from a in activeSkills where a.Value select a.Key;
 
         public Skillbook(Player owner)
@@ -103,17 +102,15 @@ namespace SleepHunter.Models
 
             skillName = skillName.Trim();
 
-            bool? wasActive = null;
-
-            if (activeSkills.ContainsKey(skillName))
-            {
-                wasActive = activeSkills[skillName];
-                activeSkills[skillName] = !wasActive.Value;
-            }
-            else
-            {
-                activeSkills[skillName] = true;
-            }
+            var hasPrevious =
+                activeSkills.TryGetValue(
+                    skillName,
+                    out var previous);
+            bool? wasActive = hasPrevious
+                ? previous
+                : null;
+            activeSkills[skillName] =
+                isActive ?? !previous;
 
             return wasActive;
         }
@@ -548,7 +545,7 @@ namespace SleepHunter.Models
                     })
                     .Where(ptr => IsReadableMemory(processHandle, ptr))
                     .ToList();
-                    
+
 
                 foreach (var ptr in ptrs)
                 {

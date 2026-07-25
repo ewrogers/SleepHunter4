@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
-
 using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
@@ -37,7 +36,14 @@ namespace SleepHunter.Macro
             var success = NativeMethods.RegisterHotKey(windowHandle, hotkey.Id, hotkey.Modifiers, vkey);
 
             if (success)
+            {
                 hotkeys[hotkey.Id] = hotkey;
+            }
+            else
+            {
+                NativeMethods.GlobalDeleteAtom((ushort)hotkey.Id);
+                hotkey.Id = -1;
+            }
 
             return success;
         }

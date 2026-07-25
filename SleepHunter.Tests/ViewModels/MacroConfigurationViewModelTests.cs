@@ -101,8 +101,8 @@ public sealed class MacroConfigurationViewModelTests
                 return ValueTask.CompletedTask;
             });
 
-        await viewModel.LoadCommand.ExecuteAsync("valid.shmacro");
-        await viewModel.LoadCommand.ExecuteAsync("invalid.shmacro");
+        await viewModel.LoadCommand.ExecuteAsync("valid.sh4x");
+        await viewModel.LoadCommand.ExecuteAsync("invalid.sh4x");
 
         Assert.Multiple(() =>
         {
@@ -110,6 +110,38 @@ public sealed class MacroConfigurationViewModelTests
             Assert.That(viewModel.LastError, Is.SameAs(expectedError));
             Assert.That(viewModel.HasError, Is.True);
             Assert.That(commands, Has.Count.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ShouldApplyAnAlreadyLoadedConfigurationWithoutReading()
+    {
+        var loaded = new MacroConfigurationLoadResult(
+            MacroConfiguration.Empty,
+            MacroConfigurationFormat.Current,
+            MacroConfigurationSerializer.CurrentVersion,
+            ImmutableArray<MacroConfigurationWarning>.Empty);
+        var reader = new RecordingReader();
+        var commands = new List<MacroCommand>();
+        var viewModel = new MacroConfigurationViewModel(
+            reader,
+            () => SpellQueueRotation.Priority,
+            (command, _) =>
+            {
+                commands.Add(command);
+                return ValueTask.CompletedTask;
+            });
+
+        await viewModel.ApplyAsync(loaded);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reader.FilePaths, Is.Empty);
+            Assert.That(
+                commands.Single(),
+                Is.TypeOf<ReplaceQueuesCommand>());
+            Assert.That(viewModel.LatestLoad, Is.SameAs(loaded));
+            Assert.That(viewModel.LastError, Is.Null);
         });
     }
 

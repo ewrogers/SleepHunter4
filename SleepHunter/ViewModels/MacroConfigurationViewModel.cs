@@ -58,6 +58,14 @@ namespace SleepHunter.ViewModels
             LatestLoad?.Warnings ??
             ImmutableArray<MacroConfigurationWarning>.Empty;
 
+        public Task ApplyAsync(
+            MacroConfigurationLoadResult loaded,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(loaded);
+            return ApplyCoreAsync(loaded, cancellationToken);
+        }
+
         [RelayCommand]
         private async Task LoadAsync(
             string filePath,
@@ -70,6 +78,27 @@ namespace SleepHunter.ViewModels
                 ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
                 var loaded = await reader
                     .LoadAsync(filePath, cancellationToken);
+                await ApplyCoreAsync(loaded, cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                LastError = exception;
+            }
+        }
+
+        private async Task ApplyCoreAsync(
+            MacroConfigurationLoadResult loaded,
+            CancellationToken cancellationToken)
+        {
+            LastError = null;
+
+            try
+            {
                 var configuration = loaded.Configuration;
                 var rotation =
                     configuration.SpellRotation ??

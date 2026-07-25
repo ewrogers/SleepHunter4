@@ -6,14 +6,14 @@ namespace SleepHunter.Models
 {
     public sealed class FlowerQueueItem : ObservableObject, ICopyable<FlowerQueueItem>
     {
-        private int id;
+        private long id;
         private SpellTarget target = new();
         private DateTime lastUsedTimestamp = DateTime.Now;
         private TimeSpan? interval;
         private TimeSpan intervalRemaining;
         private int? manaThreshold;
 
-        public int Id
+        public long Id
         {
             get => id;
             set => SetProperty(ref id, value);

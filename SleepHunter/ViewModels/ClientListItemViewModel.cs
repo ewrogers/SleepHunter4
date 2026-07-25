@@ -7,11 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Macro;
 using SleepHunter.Models;
-using SleepHunter.Persistence.Serialization;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Runtime;
 using SleepHunter.Settings;
 
@@ -21,8 +21,8 @@ namespace SleepHunter.ViewModels
         ObservableObject,
         IDisposable
     {
-        private readonly IRuntimeMacroConfigurationAdapter
-            configurationAdapter;
+        private readonly IPlayerMacroConfigurationMapper
+            configurationMapper;
         private readonly Func<UserSettings> getSettings;
         private readonly IRuntimeAutomationSetupFactory setupFactory;
         private bool isDisposed;
@@ -34,7 +34,7 @@ namespace SleepHunter.ViewModels
                 player,
                 macroConfiguration: null,
                 runtime,
-                configurationAdapter: null,
+                configurationMapper: null,
                 setupFactory: null,
                 getSettings: null)
         {
@@ -44,14 +44,14 @@ namespace SleepHunter.ViewModels
             Player player,
             PlayerMacroConfiguration macroConfiguration,
             ClientRuntimeViewModel runtime,
-            IRuntimeMacroConfigurationAdapter configurationAdapter,
+            IPlayerMacroConfigurationMapper configurationMapper,
             IRuntimeAutomationSetupFactory setupFactory,
             Func<UserSettings> getSettings)
         {
             Player = player ??
                 throw new ArgumentNullException(nameof(player));
             MacroConfiguration = macroConfiguration;
-            this.configurationAdapter = configurationAdapter;
+            this.configurationMapper = configurationMapper;
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
 
@@ -83,13 +83,6 @@ namespace SleepHunter.ViewModels
 
         [ObservableProperty]
         public partial Exception LastAutomationError { get; private set; }
-
-        [ObservableProperty]
-        public partial MacroConfigurationLoadResult LastConfigurationLoad
-        {
-            get;
-            private set;
-        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsMacroEditingEnabled))]
@@ -362,7 +355,7 @@ namespace SleepHunter.ViewModels
 
         private bool CanPrepareAutomation() =>
             MacroConfiguration is not null &&
-            configurationAdapter is not null &&
+            configurationMapper is not null &&
             setupFactory is not null &&
             getSettings is not null &&
             Runtime?.IsCaptureHealthy == true &&
@@ -396,18 +389,17 @@ namespace SleepHunter.ViewModels
             var settings = getSettings?.Invoke() ??
                 throw new InvalidOperationException(
                     "The current user settings are unavailable.");
-            var loaded = configurationAdapter?.Adapt(
+            var configuration = configurationMapper?.CreateSnapshot(
                 macroConfiguration) ??
                 throw new InvalidOperationException(
-                    "The macro configuration adapter is unavailable.");
+                    "The macro configuration mapper is unavailable.");
             var setup = setupFactory?.Create(
-                loaded.Configuration,
+                configuration,
                 settings,
                 snapshot.Character.Class) ??
                 throw new InvalidOperationException(
                     "The runtime automation setup is unavailable.");
 
-            LastConfigurationLoad = loaded;
             await runtime
                 .SendCommandAsync(
                     setup.ReplaceQueues,

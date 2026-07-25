@@ -1,5 +1,6 @@
 ﻿using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation.Skills;
 
 namespace SleepHunter.Tests.Macro;
 
@@ -49,6 +50,11 @@ public sealed class PlayerMacroConfigurationTests
                 configuration.FlowerTargets,
                 Is.EqualTo(new[] { flower }));
             Assert.That(
+                configuration.QueuedSpells.Select(
+                    spell => spell.Id),
+                Is.EqualTo(new long[] { 2, 1 }));
+            Assert.That(flower.Id, Is.EqualTo(1));
+            Assert.That(
                 configuration.IsSpellInQueue(" FIRST "),
                 Is.True);
             Assert.That(
@@ -78,6 +84,77 @@ public sealed class PlayerMacroConfigurationTests
                 removedFlowers,
                 Is.EqualTo(new[] { flower }));
         });
+    }
+
+    [Test]
+    public void ShouldOwnStableSkillConfigurationAndExplicitActiveState()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+
+        Assert.That(
+            configuration.ToggleSkill("Assail"),
+            Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                configuration.Skills.Single().Name,
+                Is.EqualTo("Assail"));
+            Assert.That(
+                configuration.Skills.Single().Id.Value,
+                Is.EqualTo(1));
+            Assert.That(
+                player.Skillbook.IsActive("Assail"),
+                Is.True);
+        });
+        Assert.That(
+            configuration.ToggleSkill("ASSAIL"),
+            Is.False);
+        Assert.That(configuration.Skills, Is.Empty);
+        Assert.That(
+            player.Skillbook.IsActive("Assail"),
+            Is.False);
+
+        configuration.ReplaceSkills(
+        [
+            new SkillQueueEntry(
+                new SkillQueueEntryId(41),
+                "Unknown")
+        ]);
+        var snapshot = configuration.GetSkillQueueSnapshot();
+        snapshot.Clear();
+
+        Assert.That(
+            configuration.Skills.Single().Id.Value,
+            Is.EqualTo(41));
+        Assert.That(
+            player.Skillbook.IsActive("Unknown"),
+            Is.True);
+
+        configuration.ClearSkills();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(configuration.Skills, Is.Empty);
+            Assert.That(
+                player.Skillbook.IsActive("Unknown"),
+                Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldHonorExplicitSkillbookActiveState()
+    {
+        using var player = CreatePlayer();
+
+        player.Skillbook.ToggleActive("Assail", isActive: true);
+        player.Skillbook.ToggleActive("Assail", isActive: true);
+
+        Assert.That(player.Skillbook.IsActive("Assail"), Is.True);
+
+        player.Skillbook.ToggleActive("Assail", isActive: false);
+
+        Assert.That(player.Skillbook.IsActive("Assail"), Is.False);
     }
 
     [Test]

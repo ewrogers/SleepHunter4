@@ -2,12 +2,13 @@
 using System.Windows.Media;
 
 using SleepHunter.Common;
+using SleepHunter.Runtime.Automation;
 
 namespace SleepHunter.Models
 {
     public sealed class SpellQueueItem : ObservableObject, ICopyable<SpellQueueItem>
     {
-        private int id;
+        private long id;
         private ImageSource icon;
         private string name;
         private SpellTarget target = new();
@@ -20,8 +21,9 @@ namespace SleepHunter.Models
         private bool isActive;
         private bool isOnCooldown;
         private bool isWaitingOnHealth;
+        private HealthCondition healthCondition = HealthCondition.Any;
 
-        public int Id
+        public long Id
         {
             get => id;
             set => SetProperty(ref id, value);
@@ -123,6 +125,14 @@ namespace SleepHunter.Models
             set => SetProperty(ref isWaitingOnHealth, value);
         }
 
+        public HealthCondition HealthCondition
+        {
+            get => healthCondition;
+            set => SetProperty(
+                ref healthCondition,
+                value ?? HealthCondition.Any);
+        }
+
         public void CopyTo(SpellQueueItem other) => CopyTo(other, true, false);
 
         public void CopyTo(SpellQueueItem other, bool copyId) => CopyTo(other, copyId, false);
@@ -143,6 +153,7 @@ namespace SleepHunter.Models
             other.IsActive = IsActive;
             other.isOnCooldown = IsOnCooldown;
             other.IsWaitingOnHealth = IsWaitingOnHealth;
+            other.HealthCondition = HealthCondition;
         }
 
         public override string ToString() => string.Format("{0} on {1}", name, target.ToString());

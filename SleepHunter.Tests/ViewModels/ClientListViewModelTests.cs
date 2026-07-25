@@ -6,7 +6,6 @@ using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
 using SleepHunter.Models;
-using SleepHunter.Persistence.Serialization;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Skills;
@@ -17,8 +16,8 @@ using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
+using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Runtime;
-using SleepHunter.Services.Serialization;
 using SleepHunter.Settings;
 using SleepHunter.ViewModels;
 
@@ -199,8 +198,7 @@ public sealed class ClientListViewModelTests
             player,
             macroConfiguration,
             runtime,
-            new RuntimeMacroConfigurationAdapter(
-                new LegacyMacroConfigurationSerializer()),
+            new PlayerMacroConfigurationMapper(),
             new RuntimeAutomationSetupFactory(
                 new EmptyStaffCandidateProvider()),
             () => new UserSettings
@@ -265,10 +263,6 @@ public sealed class ClientListViewModelTests
                 Is.True);
             Assert.That(start, Is.TypeOf<StartMacroCommand>());
             Assert.That(item.LastAutomationError, Is.Null);
-            Assert.That(
-                item.LastConfigurationLoad?.Format,
-                Is.EqualTo(
-                    MacroConfigurationFormat.LegacyV4));
         });
 
         host.PublishView(CreateView(

@@ -154,6 +154,13 @@ public sealed class MacroConfigurationSerializerTests
                 result.Configuration.CreateFlowerQueue().Entries,
                 Is.EqualTo(configuration.Flowers));
             Assert.That(secondWriter.ToString(), Is.EqualTo(writer.ToString()));
+            Assert.That(
+                writer.ToString().TrimStart(),
+                Does.StartWith("{"));
+            Assert.That(
+                writer.ToString(),
+                Does.Contain(
+                    "\"format\": \"SleepHunter.MacroConfiguration\""));
         });
     }
 
@@ -183,12 +190,22 @@ public sealed class MacroConfigurationSerializerTests
     [Test]
     public void ShouldRejectUnsupportedVersionAndDocumentTypeDeclarations()
     {
-        const string unsupported =
-            "<MacroConfiguration Version=\"99\" />";
+        const string unsupported = """
+            {
+              "format": "SleepHunter.MacroConfiguration",
+              "version": "99",
+              "metadata": {},
+              "skills": [],
+              "spells": [],
+              "flowering": {
+                "queue": []
+              }
+            }
+            """;
         const string dtd =
-            "<!DOCTYPE MacroConfiguration [<!ENTITY x \"value\">]>" +
-            "<MacroConfiguration Version=\"1\"><Metadata><Name>&x;</Name>" +
-            "</Metadata></MacroConfiguration>";
+            "<!DOCTYPE MacroState [<!ENTITY x \"value\">]>" +
+            "<MacroState Version=\"4.11\"><Name>&x;</Name>" +
+            "</MacroState>";
 
         Assert.Multiple(() =>
         {
@@ -202,6 +219,101 @@ public sealed class MacroConfigurationSerializerTests
                     new StringReader(dtd)),
                 Throws.TypeOf<MacroConfigurationException>()
                     .With.Message.Contains("DTD"));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectUnknownCommentedOrNullJsonEntries()
+    {
+        const string unknown = """
+            {
+              "format": "SleepHunter.MacroConfiguration",
+              "version": "1",
+              "metadata": {},
+              "skills": [],
+              "spells": [],
+              "flowering": {
+                "queue": []
+              },
+              "unexpected": true
+            }
+            """;
+        const string commented = """
+            {
+              "format": "SleepHunter.MacroConfiguration",
+              "version": "1",
+              // Comments are not part of the schema.
+              "metadata": {},
+              "skills": [],
+              "spells": [],
+              "flowering": {
+                "queue": []
+              }
+            }
+            """;
+        const string nullEntry = """
+            {
+              "format": "SleepHunter.MacroConfiguration",
+              "version": "1",
+              "metadata": {},
+              "skills": [null],
+              "spells": [],
+              "flowering": {
+                "queue": []
+              }
+            }
+            """;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(unknown)),
+                Throws.TypeOf<MacroConfigurationException>());
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(commented)),
+                Throws.TypeOf<MacroConfigurationException>());
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(nullEntry)),
+                Throws.TypeOf<MacroConfigurationException>()
+                    .With.Message.Contains("null entries"));
+        });
+    }
+
+    [Test]
+    public void ShouldAcceptUtf8BomAndRejectCurrentXmlOrOversizedInput()
+    {
+        using var writer = new StringWriter();
+        MacroConfigurationSerializer.Save(
+            new MacroConfiguration(name: "JSON"),
+            writer);
+        var withBom = $"\uFEFF{writer}";
+        const string retiredCurrentXml =
+            "<MacroConfiguration Version=\"1\" />";
+        var oversized = new string(
+            ' ',
+            (4 * 1024 * 1024) + 1);
+
+        var loaded = MacroConfigurationSerializer.Load(
+            new StringReader(withBom));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                loaded.Configuration.Name,
+                Is.EqualTo("JSON"));
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(retiredCurrentXml)),
+                Throws.TypeOf<MacroConfigurationException>()
+                    .With.Message.Contains("Unsupported"));
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(oversized)),
+                Throws.TypeOf<MacroConfigurationException>()
+                    .With.Message.Contains("cannot exceed"));
         });
     }
 
@@ -266,6 +378,45 @@ public sealed class MacroConfigurationSerializerTests
                 Assert.That(
                     Directory.EnumerateFiles(directory),
                     Is.EqualTo(new[] { filePath }));
+            });
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Test]
+    public void ShouldWriteJsonRegardlessOfRequestedFileExtension()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            $"SleepHunter.Persistence.Tests.{Guid.NewGuid():N}");
+        var filePath = Path.Combine(
+            directory,
+            $"requested{MacroConfigurationSerializer.LegacyFileExtension}");
+
+        try
+        {
+            MacroConfigurationSerializer.Save(
+                new MacroConfiguration(name: "current"),
+                filePath);
+
+            var document = File.ReadAllText(filePath);
+            var loaded = MacroConfigurationSerializer.Load(filePath);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(document.TrimStart(), Does.StartWith("{"));
+                Assert.That(
+                    loaded.Format,
+                    Is.EqualTo(MacroConfigurationFormat.Current));
+                Assert.That(
+                    loaded.Configuration.Name,
+                    Is.EqualTo("current"));
             });
         }
         finally
