@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
@@ -22,7 +23,9 @@ public sealed record MacroState
         ClientSnapshot? latestSnapshot,
         MacroTimestamp? lastTransitionAt,
         PendingAction? pendingAction,
-        SpellQueueState? spellQueue = null)
+        SpellQueueState? spellQueue = null,
+        PanelTransitionState? panelTransition = null,
+        long nextClientActionId = 1)
     {
         if (revision < 0)
         {
@@ -47,6 +50,14 @@ public sealed record MacroState
                 nameof(pendingAction));
         }
 
+        if (nextClientActionId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(nextClientActionId),
+                nextClientActionId,
+                "The next client action identifier must be positive.");
+        }
+
         Revision = revision;
         Lifecycle = lifecycle;
         StopReason = stopReason;
@@ -54,6 +65,8 @@ public sealed record MacroState
         LastTransitionAt = lastTransitionAt;
         PendingAction = pendingAction;
         SpellQueue = spellQueue ?? SpellQueueState.Empty;
+        PanelTransition = panelTransition;
+        NextClientActionId = nextClientActionId;
     }
 
     public long Revision { get; }
@@ -69,4 +82,8 @@ public sealed record MacroState
     public PendingAction? PendingAction { get; }
 
     public SpellQueueState SpellQueue { get; }
+
+    public PanelTransitionState? PanelTransition { get; }
+
+    internal long NextClientActionId { get; }
 }

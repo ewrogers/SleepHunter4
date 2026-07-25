@@ -1,8 +1,10 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -24,6 +26,11 @@ public sealed class MacroEngine : IMacroEngine
                 HandleCommand(currentState, commandReceived.Command, currentTime),
             ClientSnapshotObserved snapshotObserved =>
                 HandleSnapshot(currentState, snapshotObserved.Snapshot, currentTime),
+            ClientActionDeadlineElapsed deadlineElapsed =>
+                HandleClientActionDeadline(
+                    currentState,
+                    deadlineElapsed,
+                    currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
                 input,
@@ -57,6 +64,11 @@ public sealed class MacroEngine : IMacroEngine
                 MacroStopReason.None,
                 currentTime),
             StopMacroCommand => Stop(currentState, currentTime),
+            RequestPanelTransitionCommand requestPanel =>
+                RequestPanelTransition(
+                    currentState,
+                    requestPanel,
+                    currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
@@ -122,7 +134,8 @@ public sealed class MacroEngine : IMacroEngine
             MacroStopReason.UserRequested,
             currentState.LatestSnapshot,
             currentTime,
-            pendingAction: null);
+            pendingAction: null,
+            panelTransition: CancelPendingPanelTransition(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -145,7 +158,10 @@ public sealed class MacroEngine : IMacroEngine
             currentTime,
             pendingAction: nextLifecycle == MacroLifecycle.Running
                 ? currentState.PendingAction
-                : null);
+                : null,
+            panelTransition: nextLifecycle == MacroLifecycle.Running
+                ? currentState.PanelTransition
+                : CancelPendingPanelTransition(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -183,6 +199,21 @@ public sealed class MacroEngine : IMacroEngine
         var pendingAction = clientLoggedOut
             ? null
             : currentState.PendingAction;
+        var panelTransition = clientLoggedOut
+            ? CancelPendingPanelTransition(currentState)
+            : currentState.PanelTransition;
+
+        if (!clientLoggedOut &&
+            CanConfirmPanelTransition(currentState.PendingAction, snapshot))
+        {
+            var switchIntent = (SwitchPanelIntent)currentState.PendingAction!.Intent;
+            panelTransition = PanelTransitionState.Succeeded(
+                switchIntent.TargetPanel,
+                currentState.PendingAction.Attempt,
+                currentState.PendingAction.MaximumAttempts,
+                switchIntent.ActionId);
+            pendingAction = null;
+        }
 
         return Changed(
             currentState,
@@ -190,8 +221,174 @@ public sealed class MacroEngine : IMacroEngine
             stopReason,
             snapshot,
             lastTransitionAt,
-            pendingAction);
+            pendingAction,
+            panelTransition: panelTransition);
     }
+
+    private static MacroDecision RequestPanelTransition(
+        MacroState currentState,
+        RequestPanelTransitionCommand command,
+        MacroTimestamp currentTime)
+    {
+        if (currentState.Lifecycle != MacroLifecycle.Running ||
+            currentState.LatestSnapshot is not
+            {
+                Presence: ClientPresence.InWorld
+            } latestSnapshot)
+        {
+            return Unchanged(currentState);
+        }
+
+        if (latestSnapshot.ActivePanel.IsEquivalentTo(command.TargetPanel))
+        {
+            if (currentState.PendingAction is not null &&
+                currentState.PendingAction.Intent is not SwitchPanelIntent)
+            {
+                return Unchanged(currentState);
+            }
+
+            var transition = PanelTransitionState.Succeeded(
+                command.TargetPanel,
+                attempt: 0,
+                maximumAttempts: 0,
+                actionId: null);
+
+            if (currentState.PendingAction is null &&
+                currentState.PanelTransition == transition)
+            {
+                return Unchanged(currentState);
+            }
+
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                currentState.LatestSnapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                panelTransition: transition);
+        }
+
+        if (currentState.PendingAction is { } pendingAction)
+        {
+            if (pendingAction.Intent is not SwitchPanelIntent switchIntent ||
+                switchIntent.TargetPanel == command.TargetPanel)
+            {
+                return Unchanged(currentState);
+            }
+        }
+
+        return IssuePanelTransitionAttempt(
+            currentState,
+            command.TargetPanel,
+            command.Policy.AttemptTimeout,
+            attempt: 1,
+            command.Policy.MaximumAttempts,
+            currentTime);
+    }
+
+    private static MacroDecision HandleClientActionDeadline(
+        MacroState currentState,
+        ClientActionDeadlineElapsed deadlineElapsed,
+        MacroTimestamp currentTime)
+    {
+        if (currentState.Lifecycle != MacroLifecycle.Running ||
+            currentState.PendingAction is not { } pendingAction ||
+            pendingAction.Intent.ActionId != deadlineElapsed.ActionId ||
+            currentTime < pendingAction.Deadline ||
+            pendingAction.Intent is not SwitchPanelIntent switchIntent ||
+            currentState.PanelTransition is not { } panelTransition)
+        {
+            return Unchanged(currentState);
+        }
+
+        if (pendingAction.Attempt >= pendingAction.MaximumAttempts)
+        {
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                currentState.LatestSnapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                panelTransition: panelTransition.TimedOut());
+        }
+
+        return IssuePanelTransitionAttempt(
+            currentState,
+            switchIntent.TargetPanel,
+            pendingAction.AttemptTimeout,
+            checked(pendingAction.Attempt + 1),
+            pendingAction.MaximumAttempts,
+            currentTime);
+    }
+
+    private static MacroDecision IssuePanelTransitionAttempt(
+        MacroState currentState,
+        ClientPanel targetPanel,
+        TimeSpan attemptTimeout,
+        int attempt,
+        int maximumAttempts,
+        MacroTimestamp currentTime)
+    {
+        var actionId = new ClientActionId(currentState.NextClientActionId);
+        var intent = new SwitchPanelIntent(actionId, targetPanel);
+        var deadline = currentTime.Add(attemptTimeout);
+        var pendingAction = new PendingAction(
+            intent,
+            currentTime,
+            deadline,
+            attempt,
+            maximumAttempts,
+            currentState.LatestSnapshot?.Sequence);
+        var transition = PanelTransitionState.Pending(
+            targetPanel,
+            attempt,
+            maximumAttempts,
+            actionId);
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            pendingAction,
+            panelTransition: transition,
+            nextClientActionId: checked(currentState.NextClientActionId + 1),
+            intent: intent,
+            scheduledEvents:
+            [
+                new ScheduledMacroEvent(
+                    new ClientActionDeadlineElapsed(actionId),
+                    deadline)
+            ]);
+    }
+
+    private static bool CanConfirmPanelTransition(
+        PendingAction? pendingAction,
+        ClientSnapshot snapshot)
+    {
+        if (pendingAction?.Intent is not SwitchPanelIntent switchIntent ||
+            !snapshot.ActivePanel.IsEquivalentTo(switchIntent.TargetPanel) ||
+            snapshot.CaptureStartedAt <= pendingAction.IssuedAt)
+        {
+            return false;
+        }
+
+        return pendingAction.BaselineSnapshotSequence is not { } baseline ||
+               snapshot.Sequence > baseline;
+    }
+
+    private static PanelTransitionState? CancelPendingPanelTransition(
+        MacroState currentState) =>
+        currentState.PendingAction?.Intent is SwitchPanelIntent &&
+        currentState.PanelTransition is
+        {
+            Status: PanelTransitionStatus.Pending
+        } transition
+            ? transition.Cancelled()
+            : currentState.PanelTransition;
 
     private static MacroDecision ChangeSpellQueue(
         MacroState currentState,
@@ -219,8 +416,17 @@ public sealed class MacroEngine : IMacroEngine
         ClientSnapshot? latestSnapshot,
         MacroTimestamp? lastTransitionAt,
         PendingAction? pendingAction,
-        SpellQueueState? spellQueue = null)
+        SpellQueueState? spellQueue = null,
+        PanelTransitionState? panelTransition = null,
+        long? nextClientActionId = null,
+        MacroIntent? intent = null,
+        ImmutableArray<ScheduledMacroEvent> scheduledEvents = default)
     {
+        if (scheduledEvents.IsDefault)
+        {
+            scheduledEvents = ImmutableArray<ScheduledMacroEvent>.Empty;
+        }
+
         var nextState = new MacroState(
             checked(currentState.Revision + 1),
             lifecycle,
@@ -228,13 +434,15 @@ public sealed class MacroEngine : IMacroEngine
             latestSnapshot,
             lastTransitionAt,
             pendingAction,
-            spellQueue ?? currentState.SpellQueue);
+            spellQueue ?? currentState.SpellQueue,
+            panelTransition ?? currentState.PanelTransition,
+            nextClientActionId ?? currentState.NextClientActionId);
 
         return new MacroDecision(
             nextState,
             ImmutableArray<MacroEvent>.Empty,
-            ImmutableArray<ScheduledMacroEvent>.Empty,
-            intent: null,
+            scheduledEvents,
+            intent,
             MacroViewSnapshot.FromState(nextState));
     }
 

@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Commands;
+﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Hosting;
 using SleepHunter.Runtime.Intents;
@@ -105,6 +106,61 @@ public sealed class MacroSessionTests
     }
 
     [Test]
+    public async Task ShouldRetryAndConfirmPanelTransitionThroughSession()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var session = new MacroSession(
+            new MacroEngine(),
+            new MacroClock(timeProvider));
+        var policy = new PanelTransitionPolicy(
+            TimeSpan.FromMilliseconds(100),
+            maximumAttempts: 2);
+
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 1,
+                MacroTimestamp.Zero,
+                ClientPanel.Inventory));
+        await session.Views.ReadUntilAsync(view => view.Revision == 1);
+        await session.SendCommandAsync(new StartMacroCommand());
+        await session.Views.ReadUntilAsync(view => view.Revision == 2);
+        await session.SendCommandAsync(
+            new RequestPanelTransitionCommand(
+                ClientPanel.TemuairSpells,
+                policy));
+
+        var firstIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+            intent => intent is SwitchPanelIntent);
+        await session.Views.ReadUntilAsync(view => view.Revision == 3);
+        timeProvider.Advance(policy.AttemptTimeout);
+        var retryIntent = (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+            intent =>
+                intent is SwitchPanelIntent switchPanel &&
+                switchPanel.ActionId != firstIntent.ActionId);
+
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var confirmationTime = new MacroTimestamp(
+            policy.AttemptTimeout + TimeSpan.FromTicks(1));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 2,
+                confirmationTime,
+                ClientPanel.TemuairSpells));
+        var confirmed = await session.Views.ReadUntilAsync(
+            view =>
+                view.PanelTransition?.Status ==
+                PanelTransitionStatus.Succeeded);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstIntent.ActionId.Value, Is.EqualTo(1));
+            Assert.That(retryIntent.ActionId.Value, Is.EqualTo(2));
+            Assert.That(confirmed.PendingActionId, Is.Null);
+            Assert.That(confirmed.PanelTransition?.Attempt, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public async Task ShouldAwaitShutdownAndRejectNewInputAfterDisposal()
     {
         var timeProvider = new ManualTimeProvider();
@@ -160,12 +216,14 @@ public sealed class MacroSessionTests
 
     private static ClientSnapshot CreateSnapshot(
         long sequence,
-        MacroTimestamp capturedAt) =>
+        MacroTimestamp capturedAt,
+        ClientPanel activePanel = ClientPanel.Unknown) =>
         new(
             new SnapshotSequence(sequence),
             capturedAt,
             capturedAt,
             new ClientIdentity("session-client", "test"),
             SnapshotQuality.Complete,
-            ClientPresence.InWorld);
+            ClientPresence.InWorld,
+            activePanel);
 }

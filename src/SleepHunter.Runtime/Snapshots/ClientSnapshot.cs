@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Time;
+﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Snapshots;
 
@@ -10,7 +11,8 @@ public sealed record ClientSnapshot
         MacroTimestamp captureCompletedAt,
         ClientIdentity client,
         SnapshotQuality quality,
-        ClientPresence presence)
+        ClientPresence presence,
+        ClientPanel activePanel = ClientPanel.Unknown)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -29,12 +31,21 @@ public sealed record ClientSnapshot
                 nameof(captureCompletedAt));
         }
 
+        if (!Enum.IsDefined(activePanel))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(activePanel),
+                activePanel,
+                "The observed client panel is not supported.");
+        }
+
         Sequence = sequence;
         CaptureStartedAt = captureStartedAt;
         CaptureCompletedAt = captureCompletedAt;
         Client = client;
         Quality = quality;
         Presence = presence;
+        ActivePanel = activePanel;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -48,6 +59,8 @@ public sealed record ClientSnapshot
     public SnapshotQuality Quality { get; }
 
     public ClientPresence Presence { get; }
+
+    public ClientPanel ActivePanel { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }

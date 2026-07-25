@@ -31,6 +31,14 @@ public sealed class PendingActionTests
                     new MacroTimestamp(TimeSpan.FromSeconds(1)),
                     attempt: 0),
                 Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(
+                () => new PendingAction(
+                    intent,
+                    MacroTimestamp.Zero,
+                    new MacroTimestamp(TimeSpan.FromSeconds(1)),
+                    attempt: 2,
+                    maximumAttempts: 1),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
         });
     }
 

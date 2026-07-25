@@ -129,7 +129,11 @@ internal sealed class IntentMacroEngine : IMacroEngine
         return new MacroDecision(
             nextState,
             ImmutableArray<MacroEvent>.Empty,
-            ImmutableArray<ScheduledMacroEvent>.Empty,
+            [
+                new ScheduledMacroEvent(
+                    new ClientActionDeadlineElapsed(intent.ActionId),
+                    pendingAction.Deadline)
+            ],
             intent,
             MacroViewSnapshot.FromState(nextState));
     }

@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Commands;
+﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Snapshots;
@@ -41,21 +42,27 @@ internal sealed class MacroScenario
     public MacroDecision Send(MacroCommand command) =>
         Apply(new MacroCommandReceived(command));
 
+    public MacroDecision Dispatch(MacroEvent input) => Apply(input);
+
     public MacroDecision Observe(
         long sequence,
         SnapshotQuality quality = SnapshotQuality.Complete,
         ClientPresence presence = ClientPresence.InWorld,
         ClientIdentity? client = null,
+        ClientPanel activePanel = ClientPanel.Unknown,
+        MacroTimestamp? captureStartedAt = null,
         MacroTimestamp? captureCompletedAt = null)
     {
+        var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(sequence),
-            completedAt,
+            startedAt,
             completedAt,
             client ?? Client,
             quality,
-            presence);
+            presence,
+            activePanel);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }

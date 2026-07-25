@@ -1,4 +1,6 @@
-﻿using SleepHunter.Runtime.Intents;
+﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -43,6 +45,46 @@ internal static class MacroDecisionInvariants
                 throw new InvalidOperationException(
                     "Client action intents require matching bounded pending action state.");
             }
+
+            var pendingAction = decision.State.PendingAction!;
+            var matchingDeadlines = decision.ScheduledEvents.Count(
+                scheduledEvent =>
+                    scheduledEvent.Input is ClientActionDeadlineElapsed deadline &&
+                    deadline.ActionId == clientActionIntent.ActionId &&
+                    scheduledEvent.DueAt == pendingAction.Deadline);
+
+            if (matchingDeadlines != 1)
+            {
+                throw new InvalidOperationException(
+                    "Client action intents require exactly one matching deadline event.");
+            }
+        }
+
+        var pendingSwitchIntent =
+            decision.State.PendingAction?.Intent as SwitchPanelIntent;
+        var pendingPanelTransition = decision.State.PanelTransition is
+        {
+            Status: PanelTransitionStatus.Pending
+        };
+
+        if ((pendingSwitchIntent is not null) != pendingPanelTransition)
+        {
+            throw new InvalidOperationException(
+                "Pending panel transition state must match its client action.");
+        }
+
+        if (pendingSwitchIntent is not null &&
+            (decision.State.PanelTransition!.ActionId !=
+             pendingSwitchIntent.ActionId ||
+             decision.State.PanelTransition.TargetPanel !=
+             pendingSwitchIntent.TargetPanel ||
+             decision.State.PanelTransition.Attempt !=
+             decision.State.PendingAction!.Attempt ||
+             decision.State.PanelTransition.MaximumAttempts !=
+             decision.State.PendingAction.MaximumAttempts))
+        {
+            throw new InvalidOperationException(
+                "Pending panel transition metadata must match its client action.");
         }
 
         if (decision.ScheduledEvents.Any(

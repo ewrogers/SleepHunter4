@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Intents;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Actions;
@@ -9,7 +10,9 @@ public sealed record PendingAction
         ClientActionIntent intent,
         MacroTimestamp issuedAt,
         MacroTimestamp deadline,
-        int attempt)
+        int attempt,
+        int maximumAttempts = 1,
+        SnapshotSequence? baselineSnapshotSequence = null)
     {
         ArgumentNullException.ThrowIfNull(intent);
 
@@ -37,10 +40,20 @@ public sealed record PendingAction
                 "Pending action attempts must be positive.");
         }
 
+        if (maximumAttempts < attempt)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maximumAttempts),
+                maximumAttempts,
+                "Maximum attempts cannot be lower than the current attempt.");
+        }
+
         Intent = intent;
         IssuedAt = issuedAt;
         Deadline = deadline;
         Attempt = attempt;
+        MaximumAttempts = maximumAttempts;
+        BaselineSnapshotSequence = baselineSnapshotSequence;
     }
 
     public ClientActionIntent Intent { get; }
@@ -50,4 +63,10 @@ public sealed record PendingAction
     public MacroTimestamp Deadline { get; }
 
     public int Attempt { get; }
+
+    public int MaximumAttempts { get; }
+
+    public SnapshotSequence? BaselineSnapshotSequence { get; }
+
+    public TimeSpan AttemptTimeout => Deadline.Elapsed - IssuedAt.Elapsed;
 }
