@@ -75,6 +75,43 @@ namespace SleepHunter.Tests.Models
         }
 
         [Test]
+        public void ShouldShowClientReportedSpellActionDelayWithoutALocalTimestamp()
+        {
+            var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Local);
+
+            Assert.That(
+                Spellbook.IsSpellCooldownActive(true, null, TimeSpan.Zero, now),
+                Is.True);
+        }
+
+        [Test]
+        public void ShouldRetainLocalSpellCooldownFallback()
+        {
+            var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Local);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(
+                    Spellbook.IsSpellCooldownActive(
+                        false,
+                        now - TimeSpan.FromSeconds(1),
+                        TimeSpan.FromSeconds(2),
+                        now),
+                    Is.True);
+                Assert.That(
+                    Spellbook.IsSpellCooldownActive(
+                        false,
+                        now - TimeSpan.FromSeconds(3),
+                        TimeSpan.FromSeconds(2),
+                        now),
+                    Is.False);
+                Assert.That(
+                    Spellbook.IsSpellCooldownActive(false, null, TimeSpan.FromSeconds(2), now),
+                    Is.False);
+            });
+        }
+
+        [Test]
         public void ShouldCalculateSkillCooldownAcrossTickCountWraparound()
         {
             var skill = new Skill

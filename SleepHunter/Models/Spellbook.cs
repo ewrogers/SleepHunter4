@@ -488,17 +488,28 @@ namespace SleepHunter.Models
                     continue;
                 }
 
-                if (!spellCooldownTimestamps.TryGetValue(spells[i].Name, out var lastUsedTimestamp))
-                {
-                    spells[i].IsOnCooldown = false;
-                    continue;
-                }
-
-                var cooldownTicks = spells[i].Cooldown.TotalSeconds * TimeSpan.TicksPerSecond;
-                var readyAtTicks = lastUsedTimestamp.Ticks + cooldownTicks;
-
-                spells[i].IsOnCooldown = readyAtTicks > DateTime.Now.Ticks;
+                var hasTimestamp = spellCooldownTimestamps.TryGetValue(spellName, out var lastUsedTimestamp);
+                spells[i].IsOnCooldown = IsSpellCooldownActive(
+                    spells[i].IsActionDelayed,
+                    hasTimestamp ? lastUsedTimestamp : null,
+                    spells[i].Cooldown,
+                    DateTime.Now);
             }
+        }
+
+        internal static bool IsSpellCooldownActive(
+            bool isActionDelayed,
+            DateTime? lastUsedTimestamp,
+            TimeSpan cooldown,
+            DateTime now)
+        {
+            if (isActionDelayed)
+                return true;
+
+            if (!lastUsedTimestamp.HasValue)
+                return false;
+
+            return lastUsedTimestamp.Value.Ticks + cooldown.Ticks > now.Ticks;
         }
     }
 }
