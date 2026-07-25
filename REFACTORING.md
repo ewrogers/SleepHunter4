@@ -251,6 +251,13 @@ machine-specific .NET 7 reference paths and an apparent
 the real updater dependency graph. Remove it and add an ignore rule for WPF
 temporary project files during repository scaffolding.
 
+GitHub Dependabot reports that generated project as the source of an open
+high-severity `GHSA-555c-2p6r-68mm` alert because it references
+`Microsoft.Windows.Compatibility` 7.0.1. The real solution restore does not
+include that project, which is why the solution-level NuGet vulnerability audit
+does not report the package. Delete the generated project rather than updating
+and preserving a dependency that the real updater does not use.
+
 ### Audit Procedure
 
 Dependency changes should follow this sequence:
