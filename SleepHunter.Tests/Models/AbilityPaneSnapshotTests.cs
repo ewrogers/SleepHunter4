@@ -92,5 +92,36 @@ namespace SleepHunter.Tests.Models
                 Assert.That(skill.GetRemainingCooldownMilliseconds(0), Is.EqualTo(100));
             });
         }
+
+        [Test]
+        public void ShouldNotTreatRetainedSkillProgressAsAnActiveCooldown()
+        {
+            var snapshot = new byte[0x1B8];
+            snapshot[0x182] = 1;
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x184, 4), 29);
+            snapshot[0x190] = 0;
+
+            var record = Skillbook.ParseSkillPaneSnapshot(snapshot);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(record.CooldownProgress, Is.EqualTo(29));
+                Assert.That(record.CooldownVisualActive, Is.False);
+                Assert.That(record.IsCooldownActive, Is.False);
+            });
+        }
+
+        [Test]
+        public void ShouldUseTheSkillVisualFlagAtTheStartOfCooldown()
+        {
+            var snapshot = new byte[0x1B8];
+            snapshot[0x182] = 1;
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x184, 4), 0);
+            snapshot[0x190] = 1;
+
+            var record = Skillbook.ParseSkillPaneSnapshot(snapshot);
+
+            Assert.That(record.IsCooldownActive, Is.True);
+        }
     }
 }

@@ -301,7 +301,7 @@ namespace SleepHunter.Models
                 skill.CooldownProgress = record.CooldownProgress;
                 skill.CooldownStartMilliseconds = record.CooldownStartMilliseconds;
                 skill.CooldownEndMilliseconds = record.CooldownEndMilliseconds;
-                skill.IsOnCooldown = record.CooldownVisualActive || record.CooldownProgress > 0;
+                skill.IsOnCooldown = record.IsCooldownActive;
                 skill.IsActionDelayed = record.ActionDelayActive;
                 skill.ClientNameSuffixLeft = record.NameSuffixLeft;
                 skill.ClientNameSuffixRight = record.NameSuffixRight;
@@ -346,7 +346,12 @@ namespace SleepHunter.Models
             bool ActionDelayActive,
             int NameSuffixLeft,
             int NameSuffixRight,
-            int BaseNameLength);
+            int BaseNameLength)
+        {
+            // The progress counter is retained after the owning timer clears. The
+            // separate visual-active byte is the client's cooldown lifecycle flag.
+            public bool IsCooldownActive => CooldownVisualActive;
+        }
 
         private static string ReadNullTerminatedAscii(ReadOnlySpan<byte> bytes)
         {
