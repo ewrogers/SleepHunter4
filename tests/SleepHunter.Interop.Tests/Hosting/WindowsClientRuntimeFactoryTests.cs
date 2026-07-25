@@ -30,11 +30,13 @@ public sealed class WindowsClientRuntimeFactoryTests
                 TimeSpan.FromSeconds(1)),
             TimeProvider.System);
 
-        await WaitUntilAsync(() => host.LatestCaptureResult is not null);
+        var capture = await host.Captures.ReadUntilAsync(
+            current => current.Result.Metrics.Sequence.Value == 1);
 
         Assert.Multiple(() =>
         {
             Assert.That(host.Client, Is.EqualTo(client));
+            Assert.That(capture.Result.Succeeded, Is.False);
             Assert.That(host.LatestCaptureResult?.Succeeded, Is.False);
             Assert.That(host.LastIntentIssueResult, Is.Null);
             Assert.That(host.CaptureStatistics.SampleCount, Is.EqualTo(1));
@@ -82,24 +84,4 @@ public sealed class WindowsClientRuntimeFactoryTests
             Throws.TypeOf<NotSupportedException>());
     }
 
-    private static async Task WaitUntilAsync(Func<bool> predicate)
-    {
-        using var timeout = new CancellationTokenSource(
-            TimeSpan.FromSeconds(5));
-        try
-        {
-            while (!predicate())
-            {
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(1),
-                    timeout.Token);
-            }
-        }
-        catch (OperationCanceledException)
-            when (timeout.IsCancellationRequested)
-        {
-            throw new TimeoutException(
-                "The expected attachment state was not observed.");
-        }
-    }
 }

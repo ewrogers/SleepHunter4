@@ -7,7 +7,7 @@ public sealed class ClientSnapshotScheduler : IAsyncDisposable
 {
     private readonly IClientSnapshotCapture capture;
     private readonly CancellationTokenSource disposeCancellation = new();
-    private readonly Channel<SnapshotCaptureResult> results;
+    private readonly Channel<SnapshotCaptureObservation> results;
     private readonly SnapshotCaptureSchedule schedule;
     private readonly SnapshotTimingAggregator timing;
     private readonly TimeProvider timeProvider;
@@ -54,7 +54,7 @@ public sealed class ClientSnapshotScheduler : IAsyncDisposable
         timing = new SnapshotTimingAggregator(schedule.TimingWindowCapacity);
         statistics = SnapshotCaptureStatistics.Empty(
             schedule.TimingWindowCapacity);
-        results = Channel.CreateBounded<SnapshotCaptureResult>(
+        results = Channel.CreateBounded<SnapshotCaptureObservation>(
             new BoundedChannelOptions(1)
             {
                 AllowSynchronousContinuations = false,
@@ -73,7 +73,8 @@ public sealed class ClientSnapshotScheduler : IAsyncDisposable
 
     public SnapshotSequence FirstSequence => firstSequence;
 
-    public ChannelReader<SnapshotCaptureResult> Results => results.Reader;
+    public ChannelReader<SnapshotCaptureObservation> Results =>
+        results.Reader;
 
     public SnapshotCaptureStatistics Statistics =>
         Volatile.Read(ref statistics);
@@ -165,12 +166,14 @@ public sealed class ClientSnapshotScheduler : IAsyncDisposable
 
         timing.Record(result);
         var updatedStatistics = timing.CreateStatistics();
-        if (!results.Writer.TryWrite(result))
+        Volatile.Write(ref statistics, updatedStatistics);
+        if (!results.Writer.TryWrite(
+                new SnapshotCaptureObservation(
+                    result,
+                    updatedStatistics)))
         {
             throw new InvalidOperationException(
                 "The snapshot result channel is unavailable.");
         }
-
-        Volatile.Write(ref statistics, updatedStatistics);
     }
 }

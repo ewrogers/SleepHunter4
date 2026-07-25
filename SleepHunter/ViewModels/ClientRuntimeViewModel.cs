@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Interop.Hosting;
+using SleepHunter.Interop.Snapshots;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
@@ -15,6 +16,7 @@ namespace SleepHunter.ViewModels
         IAsyncDisposable
     {
         private readonly CancellationTokenSource disposeCancellation = new();
+        private readonly Task capturePump;
         private readonly IClientRuntimeHost host;
         private readonly IUiDispatcher uiDispatcher;
         private readonly Task viewPump;
@@ -22,6 +24,7 @@ namespace SleepHunter.ViewModels
         private MacroViewSnapshot current;
         private int disposeState;
         private volatile bool isHostAvailable = true;
+        private SnapshotCaptureObservation latestCapture;
 
         public ClientRuntimeViewModel(
             IClientRuntimeHost host,
@@ -53,6 +56,7 @@ namespace SleepHunter.ViewModels
                     cancellationToken),
                 CanStop);
 
+            capturePump = PumpCapturesAsync(disposeCancellation.Token);
             viewPump = PumpViewsAsync(disposeCancellation.Token);
         }
 
@@ -67,6 +71,45 @@ namespace SleepHunter.ViewModels
                     NotifyCommands();
             }
         }
+
+        public SnapshotCaptureObservation LatestCapture
+        {
+            get => latestCapture;
+            private set
+            {
+                if (!SetProperty(ref latestCapture, value))
+                    return;
+
+                OnPropertyChanged(nameof(CaptureError));
+                OnPropertyChanged(nameof(CaptureSequence));
+                OnPropertyChanged(nameof(CaptureStatistics));
+                OnPropertyChanged(nameof(HasCapture));
+                OnPropertyChanged(nameof(IsCaptureHealthy));
+                OnPropertyChanged(nameof(LatestCaptureResult));
+                OnPropertyChanged(nameof(LatestSnapshot));
+            }
+        }
+
+        public SnapshotCaptureError CaptureError =>
+            LatestCapture?.Result.Error;
+
+        public SnapshotSequence? CaptureSequence =>
+            LatestCapture?.Result.Metrics.Sequence;
+
+        public SnapshotCaptureStatistics CaptureStatistics =>
+            LatestCapture?.Statistics ??
+            host.CaptureStatistics;
+
+        public bool HasCapture => LatestCapture is not null;
+
+        public bool IsCaptureHealthy =>
+            LatestCapture?.Result.Succeeded == true;
+
+        public SnapshotCaptureResult LatestCaptureResult =>
+            LatestCapture?.Result;
+
+        public ClientSnapshot LatestSnapshot =>
+            LatestCapture?.Result.Snapshot;
 
         public IAsyncRelayCommand StartCommand { get; }
 
@@ -90,7 +133,9 @@ namespace SleepHunter.ViewModels
                 Interlocked.Exchange(ref disposeState, 1) == 0;
             if (!isFirstDispose)
             {
-                await viewPump.ConfigureAwait(false);
+                await Task
+                    .WhenAll(capturePump, viewPump)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -103,8 +148,12 @@ namespace SleepHunter.ViewModels
 
             try
             {
-                await host.DisposeAsync().ConfigureAwait(false);
-                await viewPump.ConfigureAwait(false);
+                await Task
+                    .WhenAll(
+                        host.DisposeAsync().AsTask(),
+                        capturePump,
+                        viewPump)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -120,6 +169,28 @@ namespace SleepHunter.ViewModels
             return host
                 .SendCommandAsync(command, cancellationToken)
                 .AsTask();
+        }
+
+        private async Task PumpCapturesAsync(
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await foreach (var capture in host.Captures
+                                   .ReadAllAsync(cancellationToken)
+                                   .ConfigureAwait(false))
+                {
+                    await uiDispatcher
+                        .InvokeAsync(
+                            () => LatestCapture = capture,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
         }
 
         private async Task PumpViewsAsync(

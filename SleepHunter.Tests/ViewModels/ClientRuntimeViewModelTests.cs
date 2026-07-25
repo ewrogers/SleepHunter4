@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
+using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
@@ -10,12 +11,17 @@ using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
 using SleepHunter.ViewModels;
 
 namespace SleepHunter.Tests.ViewModels;
 
 public sealed class ClientRuntimeViewModelTests
 {
+    private static readonly ClientIdentity Client = new(
+        "process:1234",
+        "USDA 7.41");
+
     [Test]
     public async Task ShouldProjectViewsAndRouteLifecycleCommands()
     {
@@ -92,6 +98,54 @@ public sealed class ClientRuntimeViewModelTests
     }
 
     [Test]
+    public async Task ShouldProjectCaptureHealthAndStatistics()
+    {
+        var host = new RecordingRuntimeHost();
+        var dispatcher = new RecordingUiDispatcher();
+        await using var viewModel = new ClientRuntimeViewModel(
+            host,
+            dispatcher);
+
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 1,
+            succeeded: false));
+        await WaitUntilAsync(
+            () => viewModel.CaptureSequence?.Value == 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasCapture, Is.True);
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.LatestSnapshot, Is.Null);
+            Assert.That(
+                viewModel.CaptureError?.Failure,
+                Is.EqualTo(SnapshotCaptureFailure.MappingReadFailed));
+            Assert.That(
+                viewModel.CaptureStatistics.FailedCount,
+                Is.EqualTo(1));
+        });
+
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 2,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => viewModel.CaptureSequence?.Value == 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsCaptureHealthy, Is.True);
+            Assert.That(viewModel.CaptureError, Is.Null);
+            Assert.That(
+                viewModel.LatestSnapshot?.Client,
+                Is.EqualTo(Client));
+            Assert.That(
+                viewModel.CaptureStatistics.SucceededCount,
+                Is.EqualTo(1));
+            Assert.That(dispatcher.InvocationCount, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public async Task ShouldDisposeTheOwnedHostAndDisableCommands()
     {
         var host = new RecordingRuntimeHost();
@@ -165,6 +219,67 @@ public sealed class ClientRuntimeViewModelTests
             TargetRotationState.Empty,
             LastActionIssue: null);
 
+    private static SnapshotCaptureObservation CreateCapture(
+        long sequenceValue,
+        bool succeeded)
+    {
+        var sequence = new SnapshotSequence(sequenceValue);
+        var timestamp = new MacroTimestamp(
+            TimeSpan.FromTicks(sequenceValue));
+        var reads = new MemoryReadMetrics(
+            RequestCount: 0,
+            TransportReadCount: 0,
+            FailedReadCount: succeeded ? 0 : 1,
+            RequestedBytes: 0,
+            BytesRead: 0);
+        var metrics = new SnapshotCaptureMetrics(
+            sequence,
+            timestamp,
+            timestamp,
+            ImmutableArray<SnapshotSectionMetrics>.Empty,
+            reads);
+        var failure = SnapshotCaptureFailure.MappingReadFailed;
+        var result = succeeded
+            ? new SnapshotCaptureResult(
+                new ClientSnapshot(
+                    sequence,
+                    timestamp,
+                    timestamp,
+                    Client,
+                    SnapshotQuality.Complete,
+                    ClientPresence.InWorld),
+                SnapshotQuality.Complete,
+                error: null,
+                metrics)
+            : new SnapshotCaptureResult(
+                snapshot: null,
+                SnapshotQuality.Partial,
+                new SnapshotCaptureError(
+                    SnapshotSection.Presence,
+                    failure,
+                    "The scripted capture failed."),
+                metrics);
+        var statistics = new SnapshotCaptureStatistics(
+            windowCapacity: 1,
+            succeededCount: succeeded ? 1 : 0,
+            failedCount: succeeded ? 0 : 1,
+            new SnapshotDurationStatistics(
+                sampleCount: 1,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                TimeSpan.Zero),
+            reads,
+            succeeded
+                ? ImmutableDictionary<SnapshotCaptureFailure, int>.Empty
+                : ImmutableDictionary<SnapshotCaptureFailure, int>
+                    .Empty
+                    .Add(failure, 1),
+            ImmutableArray<SnapshotSectionStatistics>.Empty);
+        return new SnapshotCaptureObservation(
+            result,
+            statistics);
+    }
+
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
         using var timeout = new CancellationTokenSource(
@@ -188,6 +303,8 @@ public sealed class ClientRuntimeViewModelTests
 
     private sealed class RecordingRuntimeHost : IClientRuntimeHost
     {
+        private readonly Channel<SnapshotCaptureObservation> captures =
+            Channel.CreateUnbounded<SnapshotCaptureObservation>();
         private readonly Channel<MacroCommand> commands =
             Channel.CreateUnbounded<MacroCommand>();
         private readonly TaskCompletionSource completion =
@@ -195,9 +312,11 @@ public sealed class ClientRuntimeViewModelTests
         private readonly Channel<MacroViewSnapshot> views =
             Channel.CreateUnbounded<MacroViewSnapshot>();
 
-        public ClientIdentity Client { get; } = new(
-            "process:1234",
-            "USDA 7.41");
+        public ClientIdentity Client { get; } =
+            ClientRuntimeViewModelTests.Client;
+
+        public ChannelReader<SnapshotCaptureObservation> Captures =>
+            captures.Reader;
 
         public ChannelReader<MacroViewSnapshot> Views => views.Reader;
 
@@ -231,6 +350,7 @@ public sealed class ClientRuntimeViewModelTests
             if (!IsDisposed)
             {
                 IsDisposed = true;
+                captures.Writer.TryComplete();
                 views.Writer.TryComplete();
                 commands.Writer.TryComplete();
                 completion.TrySetResult();
@@ -245,6 +365,15 @@ public sealed class ClientRuntimeViewModelTests
             {
                 throw new InvalidOperationException(
                     "The test view channel is unavailable.");
+            }
+        }
+
+        public void PublishCapture(SnapshotCaptureObservation capture)
+        {
+            if (!captures.Writer.TryWrite(capture))
+            {
+                throw new InvalidOperationException(
+                    "The test capture channel is unavailable.");
             }
         }
 
