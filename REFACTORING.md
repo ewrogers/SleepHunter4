@@ -907,6 +907,20 @@ As of July 24, 2026:
 - Defer a due dialog close until the active bounded client action ends. Dialog
   cancellation itself is a single-attempt bounded action and is cancelled by
   pause, stop, or logout.
+- Represent flower queues as immutable entries with stable identifiers,
+  monotonic interval schedules, deterministic rotation, and interval or
+  character-mana conditions. When both conditions are configured, either can
+  make the entry ready.
+- Keep flower target selection separate from spell execution. Target planning
+  consumes immutable observations from all clients and never reaches into a
+  global macro or player manager.
+- Require coherent map locations before selecting character or tile flower
+  targets. Character targets must be logged in, on the same exact map, and
+  within the configured X and Y bounds.
+- When alternate characters are prioritized, select the eligible character
+  waiting longest since its last flower and rotate fairly among configured
+  character entries. Exclude the source client, stopped macros, logged-out
+  clients, and out-of-range clients.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

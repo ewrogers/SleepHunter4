@@ -102,6 +102,11 @@ public sealed class ClientSnapshotTests
                 manaCost: 0,
                 cooldown: TimeSpan.Zero)
         ]);
+        var location = new MapLocationSnapshot(
+            mapNumber: 1,
+            mapName: "map",
+            x: 50,
+            y: 50);
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -115,7 +120,8 @@ public sealed class ClientSnapshotTests
             equipment,
             vitals,
             spellbook,
-            skillbook);
+            skillbook,
+            location);
 
         Assert.Multiple(() =>
         {
@@ -125,6 +131,7 @@ public sealed class ClientSnapshotTests
             Assert.That(snapshot.Vitals, Is.EqualTo(vitals));
             Assert.That(snapshot.Spellbook, Is.EqualTo(spellbook));
             Assert.That(snapshot.Skillbook, Is.EqualTo(skillbook));
+            Assert.That(snapshot.Location, Is.EqualTo(location));
         });
     }
 }
