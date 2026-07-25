@@ -133,6 +133,48 @@ public sealed class AutomationCycleScenarioTests
     }
 
     [Test]
+    public void ShouldWaitUntilTheUserStopsChatting()
+    {
+        var scenario = new MacroScenario(issueActions: false);
+        var entry = SpellEntry();
+        var spellbook = new SpellbookSnapshot(
+            [Spell(entry.Name, slot: 1)]);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            isUserChatting: true);
+        scenario.Send(new AddSpellQueueEntryCommand(entry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    spellPolicy: TestSpellPolicy)));
+        var started = scenario.Start();
+
+        var blocked = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            isUserChatting: false);
+        var resumed = scenario.Dispatch(
+            observed.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(blocked.State, Is.SameAs(started.State));
+            Assert.That(blocked.Intent, Is.Null);
+            Assert.That(blocked.PublishedView, Is.Null);
+            Assert.That(resumed.Intent, Is.TypeOf<CastSpellIntent>());
+        });
+    }
+
+    [Test]
     public void ShouldFallThroughUnavailableCategoriesAndIssueOneIntent()
     {
         var scenario = new MacroScenario(issueActions: false);

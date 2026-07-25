@@ -4,5 +4,7 @@ public enum MacroStopReason
 {
     None,
     UserRequested,
-    ClientLoggedOut
+    ClientLoggedOut,
+    MapChanged,
+    CoordinatesChanged
 }

@@ -17,7 +17,8 @@ public sealed record AutomationConfiguration
         SpellStaffCatalog? spellStaffCatalog = null,
         SkillExecutionPolicy? skillPolicy = null,
         FlowerExecutionPolicy? flowerPolicy = null,
-        FlowerStaffCatalog? flowerStaffCatalog = null)
+        FlowerStaffCatalog? flowerStaffCatalog = null,
+        ObservationChangePolicy? observationChanges = null)
     {
         SpellsEnabled = spellsEnabled;
         SkillsEnabled = skillsEnabled;
@@ -29,6 +30,8 @@ public sealed record AutomationConfiguration
         FlowerPolicy = flowerPolicy ?? FlowerExecutionPolicy.Default;
         FlowerStaffCatalog =
             flowerStaffCatalog ?? FlowerStaffCatalog.Empty;
+        ObservationChanges =
+            observationChanges ?? ObservationChangePolicy.Default;
     }
 
     public bool SpellsEnabled { get; }
@@ -48,6 +51,8 @@ public sealed record AutomationConfiguration
     public FlowerExecutionPolicy FlowerPolicy { get; }
 
     public FlowerStaffCatalog FlowerStaffCatalog { get; }
+
+    public ObservationChangePolicy ObservationChanges { get; }
 
     public bool IsEnabled =>
         SpellsEnabled ||

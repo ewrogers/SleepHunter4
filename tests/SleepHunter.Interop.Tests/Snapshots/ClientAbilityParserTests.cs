@@ -75,7 +75,8 @@ public sealed class ClientAbilityParserTests
                     "ard cradh",
                     castLines: 3,
                     manaCost: 500,
-                    TimeSpan.FromSeconds(4))
+                    TimeSpan.FromSeconds(4),
+                    opensDialog: true)
             ]);
 
         var spellbook = ClientAbilityParser.ParseCompactSpells(
@@ -95,7 +96,8 @@ public sealed class ClientAbilityParserTests
                         maximumLevel: 100,
                         castLines: 3,
                         manaCost: 500,
-                        TimeSpan.FromSeconds(4))
+                        TimeSpan.FromSeconds(4),
+                        opensDialog: true)
                 }));
     }
 

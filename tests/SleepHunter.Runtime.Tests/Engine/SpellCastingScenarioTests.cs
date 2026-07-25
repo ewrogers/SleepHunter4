@@ -1,5 +1,6 @@
 ﻿using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
@@ -82,6 +83,58 @@ public sealed class SpellCastingScenarioTests
                     scenario.CurrentTime),
                 Is.EqualTo(
                     new MacroTimestamp(TimeSpan.FromMilliseconds(5021))));
+        });
+    }
+
+    [Test]
+    public void ShouldScheduleDialogCloseForOpeningSpell()
+    {
+        var dialogPolicy = new DialogPolicy(
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(25));
+        var policy = new SpellExecutionPolicy(
+            TestPolicy.Cast,
+            TestPolicy.PanelTransition,
+            TestPolicy.AllowStaffSwitching,
+            TestPolicy.StaffEquipment,
+            dialogPolicy);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            Entry("spell", SpellTarget.Self),
+            Spell(
+                "spell",
+                slot: 1,
+                opensDialog: true));
+
+        var requested = scenario.Send(
+            new CastNextSpellCommand(policy));
+        var castDeadline = requested.ScheduledEvents.Single(
+            scheduledEvent =>
+                scheduledEvent.Input is ClientActionDeadlineElapsed);
+        var dialogDue = requested.ScheduledEvents.Single(
+            scheduledEvent =>
+                scheduledEvent.Input is DialogCloseDue);
+        scenario.AdvanceBy(
+            castDeadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(castDeadline.Input);
+        scenario.AdvanceBy(
+            dialogDue.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+
+        var closeRequested = scenario.Dispatch(dialogDue.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                requested.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.Scheduled));
+            Assert.That(
+                requested.State.Dialog?.DueAt,
+                Is.EqualTo(dialogDue.DueAt));
+            Assert.That(
+                closeRequested.Intent,
+                Is.TypeOf<CancelDialogIntent>());
         });
     }
 
@@ -761,7 +814,8 @@ public sealed class SpellCastingScenarioTests
         int slot,
         int castLines = 1,
         int manaCost = 0,
-        TimeSpan? cooldown = null) =>
+        TimeSpan? cooldown = null,
+        bool opensDialog = false) =>
         new(
             name,
             slot,
@@ -769,7 +823,8 @@ public sealed class SpellCastingScenarioTests
             maximumLevel: 100,
             castLines,
             manaCost,
-            cooldown ?? TimeSpan.Zero);
+            cooldown ?? TimeSpan.Zero,
+            opensDialog: opensDialog);
 
     private static VitalsSnapshot Vitals(
         int mana = 100,

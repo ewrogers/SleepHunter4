@@ -114,7 +114,8 @@ public sealed record SpellSnapshotMetadata
         string name,
         int castLines,
         int manaCost,
-        TimeSpan cooldown)
+        TimeSpan cooldown,
+        bool opensDialog = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -146,6 +147,7 @@ public sealed record SpellSnapshotMetadata
         CastLines = castLines;
         ManaCost = manaCost;
         Cooldown = cooldown;
+        OpensDialog = opensDialog;
     }
 
     public string Name { get; }
@@ -155,4 +157,6 @@ public sealed record SpellSnapshotMetadata
     public int ManaCost { get; }
 
     public TimeSpan Cooldown { get; }
+
+    public bool OpensDialog { get; }
 }

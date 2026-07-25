@@ -1140,11 +1140,18 @@ As of July 24, 2026:
 - Do not automatically retry a skill or assail intent because replaying an
   uncertain activation can trigger the action twice.
 - Represent delayed dialog cleanup as scheduled `DialogCloseDue` events and
-  `CancelDialogIntent`, not callbacks. A newer dialog-opening skill supersedes
-  an older close event through its recorded due time.
+  `CancelDialogIntent`, not callbacks. A newer dialog-opening spell or skill
+  supersedes an older close event through its recorded due time.
 - Defer a due dialog close until the active bounded client action ends. Dialog
   cancellation itself is a single-attempt bounded action and is cancelled by
   pause, stop, or logout.
+- Treat the coherent user-chatting observation as an automation gate. Continue
+  accepting snapshots while the user types, but do not select a new automatic
+  action until a later snapshot shows that typing has ended.
+- Apply map-change policy before coordinate-change policy when both change in
+  one accepted snapshot. Continue, pause, and stop are explicit configuration
+  choices. An interruption accepts the new snapshot, cancels in-flight work,
+  and never terminates the client process.
 - Represent flower queues as immutable entries with stable identifiers,
   monotonic interval schedules, deterministic rotation, and interval or
   character-mana conditions. When both conditions are configured, either can
