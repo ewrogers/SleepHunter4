@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added disabled-by-default runtime automation configuration and deterministic observation-driven cycles for spells, flowering, and skills
 - Added typed numeric memory variables for byte, signed-byte, 16-bit, and 32-bit values while preserving legacy formatted-string mappings for older client profiles
 - Expanded supported-client character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
 - Added the parsed 64-entry group-member cache, including names and starred state
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
 - Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures
+- Projected immutable automation configuration and enabled state through the Community Toolkit runtime ViewModel
 
 ### Removed
 

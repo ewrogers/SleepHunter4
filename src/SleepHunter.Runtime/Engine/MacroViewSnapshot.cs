@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Flowering;
@@ -19,6 +20,7 @@ public sealed record MacroViewSnapshot(
     ClientPresence Presence,
     MacroTimestamp? LastTransitionAt,
     ClientActionId? PendingActionId,
+    AutomationConfiguration Automation,
     SpellQueueState SpellQueue,
     PanelTransitionState? PanelTransition,
     StaffSwitchState? StaffSwitch,
@@ -49,6 +51,7 @@ public sealed record MacroViewSnapshot(
             state.LatestSnapshot?.Presence ?? ClientPresence.Unknown,
             state.LastTransitionAt,
             state.PendingAction?.Intent.ActionId,
+            state.Automation,
             state.SpellQueue,
             state.PanelTransition,
             state.StaffSwitch,

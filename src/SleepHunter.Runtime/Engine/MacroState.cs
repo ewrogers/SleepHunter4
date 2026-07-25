@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Flowering;
@@ -45,7 +46,8 @@ public sealed record MacroState
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null,
-        ClientActionIssue? lastActionIssue = null)
+        ClientActionIssue? lastActionIssue = null,
+        AutomationConfiguration? automation = null)
     {
         if (revision < 0)
         {
@@ -104,6 +106,7 @@ public sealed record MacroState
         FlowerTargetRotations =
             flowerTargetRotations ?? TargetRotationState.Empty;
         LastActionIssue = lastActionIssue;
+        Automation = automation ?? AutomationConfiguration.Disabled;
     }
 
     public long Revision { get; }
@@ -152,5 +155,42 @@ public sealed record MacroState
 
     public ClientActionIssue? LastActionIssue { get; }
 
+    public AutomationConfiguration Automation { get; }
+
     internal long NextClientActionId { get; }
+
+    internal bool HasSameContent(MacroState other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+
+        return WithRevision(0) == other.WithRevision(0);
+    }
+
+    internal MacroState WithRevision(long revision) =>
+        new(
+            revision,
+            Lifecycle,
+            StopReason,
+            LatestSnapshot,
+            LastTransitionAt,
+            PendingAction,
+            SpellQueue,
+            PanelTransition,
+            NextClientActionId,
+            StaffSwitch,
+            SpellCooldowns,
+            SpellCast,
+            SkillQueue,
+            SkillCooldowns,
+            SkillUse,
+            Disarm,
+            Dialog,
+            FlowerQueue,
+            FlowerSchedules,
+            ClientRoster,
+            Flower,
+            SpellTargetRotations,
+            FlowerTargetRotations,
+            LastActionIssue,
+            Automation);
 }

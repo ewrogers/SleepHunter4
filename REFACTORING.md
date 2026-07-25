@@ -390,6 +390,20 @@ One iteration:
 No engine path should use `Thread.Sleep`, synchronous task waiting, or an
 unbounded polling loop.
 
+Runtime-owned automation is disabled by default and enabled through one
+immutable `AutomationConfiguration`. Accepted snapshots, roster observations,
+queue changes, and start or resume transitions can raise one immediate
+automation-cycle event. A cycle evaluates flowering and spells in the
+configured order, then skills, and stops after producing one bounded intent.
+The cycle does not add a second timer. Snapshot capture cadence provides the
+normal observation tick, while scheduled events remain responsible for action
+deadlines and deferred dialog work.
+
+After a spell or skill action completes, automation waits for a coherent
+snapshot whose capture began after the completed action. Repeated cycles that
+produce identical planning state are collapsed without another state revision
+or view publication.
+
 ## Snapshot and Observation Strategy
 
 Snapshot capture and engine execution are independently scheduled. The engine
@@ -965,6 +979,15 @@ As of July 24, 2026:
 - Use a single-owner event loop with reliable commands and coalesced snapshots.
 - Schedule the engine from events and deadlines rather than a high-speed fixed
   tick.
+- Keep runtime-owned automation disabled until composition supplies one
+  immutable configuration containing feature toggles, category order, policies,
+  and derived staff catalogs.
+- Raise automation cycles from accepted observations and relevant commands,
+  evaluate at most one action-producing category per cycle, and require a fresh
+  post-action snapshot before another category can act.
+- Use snapshot capture cadence as the normal automation observation tick. Do
+  not add a second periodic automation timer, and do not publish repeated
+  planning state when no observable value changed.
 - Schedule snapshot capture independently and choose its cadence through
   measurement.
 - Require composition to supply the capture interval explicitly until
