@@ -759,6 +759,14 @@ commands for load, save, and spell-queue visibility. WPF owns only the
 file-dialog and message adapter, while `MainWindow` calls the same application
 boundary for login, logout, and shutdown autosaves.
 
+The remaining application-shell polling now runs through a focused client
+polling coordinator. Process discovery and legacy client observation retain
+independent, dynamically read cadences, execute immediately on startup, use an
+injected `TimeProvider` for deterministic tests, and marshal only process
+reconciliation to the UI dispatcher. Cancellation replaces
+`BackgroundWorker` recursion and `Thread.Sleep`, and shutdown awaits both loops
+before saving macro state or disposing runtime hosts.
+
 New WPF ViewModels will use
 [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 where its focused building blocks apply. Planned uses include:
