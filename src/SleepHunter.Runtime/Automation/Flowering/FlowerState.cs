@@ -153,6 +153,8 @@ public sealed record FlowerState
                 FlowerStatus.StaffUnavailable,
             SpellCastStatus.PanelUnavailable =>
                 FlowerStatus.PanelUnavailable,
+            SpellCastStatus.IssueFailed =>
+                FlowerStatus.IssueFailed,
             SpellCastStatus.Cancelled =>
                 FlowerStatus.Cancelled,
             _ => FlowerStatus.SpellUnavailable

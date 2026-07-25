@@ -49,6 +49,9 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.Dispatch?.Status,
                 Is.EqualTo(WindowInputDispatchStatus.Issued));
+            Assert.That(
+                result.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.Issued));
             Assert.That(sink.Attempts, Has.Count.EqualTo(2));
         });
     }
@@ -78,6 +81,9 @@ public sealed class ClientIntentExecutorTests
                 result.Plan.Failure,
                 Is.EqualTo(ClientIntentPlanFailure.SnapshotUnavailable));
             Assert.That(result.Dispatch, Is.Null);
+            Assert.That(
+                result.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.Rejected));
             Assert.That(sink.Attempts, Is.Empty);
         });
     }
@@ -103,6 +109,9 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.Dispatch?.Validation?.Failure,
                 Is.EqualTo(ClientWindowValidationFailure.ProcessMismatch));
+            Assert.That(
+                result.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.Rejected));
             Assert.That(sink.Attempts, Is.Empty);
         });
     }
@@ -126,7 +135,50 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.Dispatch?.PostedCleanupMessageCount,
                 Is.EqualTo(1));
+            Assert.That(
+                result.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.PartiallyIssued));
             Assert.That(sink.Attempts, Has.Count.EqualTo(3));
+        });
+    }
+
+    [Test]
+    public void ShouldMapFailedAndUnsupportedIssuance()
+    {
+        var failed = CreateExecutor(
+            ClientWindowValidationResult.Valid,
+            new RecordingMessageSink(failedAttemptIndex: 0))
+            .Execute(Intent, Target, Snapshot);
+        var unsupportedClient = new ClientIdentity(
+            "process:1234",
+            "unsupported");
+        var unsupportedTarget = new ClientWindowTarget(
+            unsupportedClient,
+            Target.ProcessId,
+            Target.WindowHandle,
+            Target.ClientWidth,
+            Target.ClientHeight);
+        var unsupportedSnapshot = new ClientSnapshot(
+            Snapshot.Sequence,
+            Snapshot.CaptureStartedAt,
+            Snapshot.CaptureCompletedAt,
+            unsupportedClient,
+            Snapshot.Quality,
+            Snapshot.Presence,
+            Snapshot.ActivePanel);
+        var unsupported = CreateExecutor(
+            ClientWindowValidationResult.Valid,
+            new RecordingMessageSink())
+            .Execute(Intent, unsupportedTarget, unsupportedSnapshot);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                failed.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.Failed));
+            Assert.That(
+                unsupported.ToActionIssue().Status,
+                Is.EqualTo(ClientActionIssueStatus.Unsupported));
         });
     }
 

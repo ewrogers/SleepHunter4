@@ -60,6 +60,9 @@ public sealed record DialogState
     internal DialogState Closed() =>
         this with { Status = DialogStatus.Closed };
 
+    internal DialogState IssueFailed() =>
+        this with { Status = DialogStatus.IssueFailed };
+
     internal DialogState Cancelled() =>
         this with { Status = DialogStatus.Cancelled };
 }

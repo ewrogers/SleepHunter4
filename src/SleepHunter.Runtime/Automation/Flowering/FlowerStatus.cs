@@ -16,5 +16,6 @@ public enum FlowerStatus
     SelectionInvalidated,
     StaffUnavailable,
     PanelUnavailable,
+    IssueFailed,
     Cancelled
 }

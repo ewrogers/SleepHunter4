@@ -5,5 +5,6 @@ public enum PanelTransitionStatus
     Pending,
     Succeeded,
     TimedOut,
+    IssueFailed,
     Cancelled
 }

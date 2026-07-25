@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
@@ -81,6 +82,36 @@ public sealed class SpellCastingScenarioTests
                     scenario.CurrentTime),
                 Is.EqualTo(
                     new MacroTimestamp(TimeSpan.FromMilliseconds(5021))));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenSpellIssuanceFails()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            Entry("spell", SpellTarget.Self),
+            Spell("spell", slot: 1),
+            issueActions: false);
+        var requested = scenario.Send(
+            new CastNextSpellCommand(TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((CastSpellIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.Failed)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.PendingAction, Is.Null);
+            Assert.That(
+                failed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.IssueFailed));
+            Assert.That(
+                failed.State.LastActionIssue?.Status,
+                Is.EqualTo(ClientActionIssueStatus.Failed));
         });
     }
 
@@ -698,9 +729,10 @@ public sealed class SpellCastingScenarioTests
         SpellQueueEntry entry,
         SpellSnapshot spell,
         int mana = 100,
-        MapLocationSnapshot? location = null)
+        MapLocationSnapshot? location = null,
+        bool issueActions = true)
     {
-        var scenario = new MacroScenario();
+        var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Send(new AddSpellQueueEntryCommand(entry));
         scenario.Observe(
             sequence: 1,

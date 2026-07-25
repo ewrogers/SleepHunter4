@@ -7,5 +7,6 @@ public enum DisarmStatus
     Succeeded,
     SnapshotUnavailable,
     TimedOut,
+    IssueFailed,
     Cancelled
 }

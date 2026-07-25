@@ -43,6 +43,53 @@ public sealed class PendingActionTests
     }
 
     [Test]
+    public void ShouldRecordIssuanceWithoutMutatingTheRequest()
+    {
+        var intent = new TestClientActionIntent(new ClientActionId(1));
+        var requestedAt = new MacroTimestamp(TimeSpan.FromMilliseconds(100));
+        var issuedAt = new MacroTimestamp(TimeSpan.FromMilliseconds(125));
+        var pendingAction = new PendingAction(
+            intent,
+            requestedAt,
+            new MacroTimestamp(TimeSpan.FromSeconds(1)),
+            attempt: 2,
+            maximumAttempts: 3,
+            new SnapshotSequence(7));
+
+        var issuedAction = pendingAction.MarkIssued(issuedAt);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(pendingAction.IsIssued, Is.False);
+            Assert.That(pendingAction.IssuedAt, Is.Null);
+            Assert.That(issuedAction.IsIssued, Is.True);
+            Assert.That(issuedAction.IssuedAt, Is.EqualTo(issuedAt));
+            Assert.That(issuedAction.RequestedAt, Is.EqualTo(requestedAt));
+            Assert.That(issuedAction.Intent, Is.SameAs(intent));
+            Assert.That(issuedAction.Attempt, Is.EqualTo(2));
+            Assert.That(issuedAction.MaximumAttempts, Is.EqualTo(3));
+            Assert.That(
+                issuedAction.BaselineSnapshotSequence,
+                Is.EqualTo(new SnapshotSequence(7)));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectIssuanceBeforeTheRequest()
+    {
+        var pendingAction = new PendingAction(
+            new TestClientActionIntent(new ClientActionId(1)),
+            new MacroTimestamp(TimeSpan.FromMilliseconds(100)),
+            new MacroTimestamp(TimeSpan.FromSeconds(1)),
+            attempt: 1);
+
+        Assert.That(
+            () => pendingAction.MarkIssued(
+                new MacroTimestamp(TimeSpan.FromMilliseconds(99))),
+            Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
     public void ShouldClearPendingActionWhenPaused()
     {
         var engine = new MacroEngine();

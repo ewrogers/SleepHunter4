@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Dialogs;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -67,6 +68,44 @@ public sealed class DialogScenarioTests
                 closed.State.Dialog?.Status,
                 Is.EqualTo(DialogStatus.Closed));
             Assert.That(closed.State.PendingAction, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenDialogCloseIssuanceFails()
+    {
+        var scenario = CreateRunningScenario(issueActions: false);
+        var skillRequested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+        var skillIntent = (UseSkillIntent)skillRequested.Intent!;
+        scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    skillIntent.ActionId,
+                    ClientActionIssueStatus.Issued)));
+        scenario.AdvanceBy(TestPolicy.ActionDuration);
+        scenario.Dispatch(
+            skillRequested.ScheduledEvents.Single(
+                scheduledEvent =>
+                    scheduledEvent.Input is ClientActionDeadlineElapsed).Input);
+        var dialogDue = skillRequested.ScheduledEvents.Single(
+            scheduledEvent => scheduledEvent.Input is DialogCloseDue);
+        AdvanceTo(scenario, dialogDue.DueAt);
+        var closeRequested = scenario.Dispatch(dialogDue.Input);
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((CancelDialogIntent)closeRequested.Intent!).ActionId,
+                    ClientActionIssueStatus.PartiallyIssued)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.PendingAction, Is.Null);
+            Assert.That(
+                failed.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.IssueFailed));
         });
     }
 
@@ -228,6 +267,10 @@ public sealed class DialogScenarioTests
 
         var skillIntent = await session.Intents.ReadUntilAsync(
             intent => intent is UseSkillIntent);
+        await session.ReportActionIssueAsync(
+            new ClientActionIssue(
+                ((UseSkillIntent)skillIntent).ActionId,
+                ClientActionIssueStatus.Issued));
         timeProvider.Advance(TestPolicy.ActionDuration);
         await session.Views.ReadUntilAsync(
             view => view.SkillUse?.Status == SkillUseStatus.Succeeded);
@@ -235,6 +278,10 @@ public sealed class DialogScenarioTests
             TestDialogPolicy.CloseDelay - TestPolicy.ActionDuration);
         var closeIntent = await session.Intents.ReadUntilAsync(
             intent => intent is CancelDialogIntent);
+        await session.ReportActionIssueAsync(
+            new ClientActionIssue(
+                ((CancelDialogIntent)closeIntent).ActionId,
+                ClientActionIssueStatus.Issued));
         timeProvider.Advance(TestDialogPolicy.ActionDuration);
         var closed = await session.Views.ReadUntilAsync(
             view => view.Dialog?.Status == DialogStatus.Closed);
@@ -250,9 +297,10 @@ public sealed class DialogScenarioTests
         });
     }
 
-    private static MacroScenario CreateRunningScenario()
+    private static MacroScenario CreateRunningScenario(
+        bool issueActions = true)
     {
-        var scenario = new MacroScenario();
+        var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Send(new AddSkillQueueEntryCommand(Entry()));
         scenario.Observe(
             sequence: 1,

@@ -1,9 +1,11 @@
-﻿using SleepHunter.Runtime.Automation;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
+using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Tests.Scenarios;
@@ -75,6 +77,62 @@ public sealed class SkillUseScenarioTests
             Assert.That(
                 cooling.State.SkillUse?.Status,
                 Is.EqualTo(SkillUseStatus.CoolingDown));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenSkillIssuanceFails()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSkills,
+            Entry(1, "skill"),
+            Skill("skill"),
+            issueActions: false);
+        var requested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((UseSkillIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.Rejected)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.SkillUse?.Status,
+                Is.EqualTo(SkillUseStatus.IssueFailed));
+        });
+    }
+
+    [Test]
+    public void ShouldPauseWhenDisarmIssuanceFails()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSkills,
+            Entry(1, "skill"),
+            Skill("skill", requiresDisarm: true),
+            equipment: new EquipmentSnapshot("weapon"),
+            issueActions: false);
+        var requested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    ((DisarmIntent)requested.Intent!).ActionId,
+                    ClientActionIssueStatus.Failed)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.Disarm?.Status,
+                Is.EqualTo(DisarmStatus.IssueFailed));
+            Assert.That(
+                failed.State.SkillUse?.Status,
+                Is.EqualTo(SkillUseStatus.IssueFailed));
         });
     }
 
@@ -512,9 +570,10 @@ public sealed class SkillUseScenarioTests
         SkillQueueEntry entry,
         SkillSnapshot skill,
         EquipmentSnapshot? equipment = null,
-        int health = 100)
+        int health = 100,
+        bool issueActions = true)
     {
-        var scenario = new MacroScenario();
+        var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Send(new AddSkillQueueEntryCommand(entry));
         scenario.Observe(
             sequence: 1,

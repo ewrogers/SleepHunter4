@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Flowering;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
@@ -47,6 +48,10 @@ public sealed class FlowerSessionTests
 
         var intent = (CastSpellIntent)await session.Intents.ReadUntilAsync(
             value => value is CastSpellIntent);
+        await session.ReportActionIssueAsync(
+            new ClientActionIssue(
+                intent.ActionId,
+                ClientActionIssueStatus.Issued));
         timeProvider.Advance(timing.CalculateDuration(castLines: 1));
         var completed = await session.Views.ReadUntilAsync(
             view => view.Flower?.Status == FlowerStatus.Succeeded);

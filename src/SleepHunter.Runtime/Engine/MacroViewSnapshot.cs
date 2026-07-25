@@ -34,7 +34,8 @@ public sealed record MacroViewSnapshot(
     ClientRosterSequence? ClientRosterSequence,
     FlowerState? Flower,
     TargetRotationState SpellTargetRotations,
-    TargetRotationState FlowerTargetRotations)
+    TargetRotationState FlowerTargetRotations,
+    ClientActionIssue? LastActionIssue)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -63,6 +64,7 @@ public sealed record MacroViewSnapshot(
             state.ClientRoster.Sequence,
             state.Flower,
             state.SpellTargetRotations,
-            state.FlowerTargetRotations);
+            state.FlowerTargetRotations,
+            state.LastActionIssue);
     }
 }

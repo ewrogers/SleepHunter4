@@ -46,6 +46,11 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     clientRosterObserved.Snapshot,
                     currentTime),
+            ClientActionIssueObserved issueObserved =>
+                HandleClientActionIssue(
+                    currentState,
+                    issueObserved.Issue,
+                    issueObserved.ObservedAt ?? currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
                 input,
@@ -550,6 +555,16 @@ public sealed partial class MacroEngine : IMacroEngine
             return Unchanged(currentState);
         }
 
+        if (!pendingAction.IsIssued)
+        {
+            return HandleClientActionIssue(
+                currentState,
+                new ClientActionIssue(
+                    pendingAction.Intent.ActionId,
+                    ClientActionIssueStatus.TimedOut),
+                currentTime);
+        }
+
         return pendingAction.Intent switch
         {
             SwitchPanelIntent switchIntent => HandlePanelDeadline(
@@ -739,7 +754,8 @@ public sealed partial class MacroEngine : IMacroEngine
         PendingAction pendingAction,
         ClientSnapshot snapshot)
     {
-        if (snapshot.CaptureStartedAt <= pendingAction.IssuedAt)
+        if (pendingAction.IssuedAt is not { } issuedAt ||
+            snapshot.CaptureStartedAt <= issuedAt)
         {
             return false;
         }
@@ -826,7 +842,8 @@ public sealed partial class MacroEngine : IMacroEngine
         ClientRosterSnapshot? clientRoster = null,
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
-        TargetRotationState? flowerTargetRotations = null)
+        TargetRotationState? flowerTargetRotations = null,
+        ClientActionIssue? lastActionIssue = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -856,7 +873,8 @@ public sealed partial class MacroEngine : IMacroEngine
             clientRoster ?? currentState.ClientRoster,
             flower ?? currentState.Flower,
             spellTargetRotations ?? currentState.SpellTargetRotations,
-            flowerTargetRotations ?? currentState.FlowerTargetRotations);
+            flowerTargetRotations ?? currentState.FlowerTargetRotations,
+            lastActionIssue ?? currentState.LastActionIssue);
 
         return new MacroDecision(
             nextState,

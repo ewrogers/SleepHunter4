@@ -5,5 +5,6 @@ public enum DialogStatus
     Scheduled,
     Closing,
     Closed,
+    IssueFailed,
     Cancelled
 }

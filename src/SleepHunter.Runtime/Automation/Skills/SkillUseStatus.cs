@@ -17,5 +17,6 @@ public enum SkillUseStatus
     SelectionInvalidated,
     DisarmUnavailable,
     PanelUnavailable,
+    IssueFailed,
     Cancelled
 }
