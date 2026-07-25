@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-
+using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Snapshots;
@@ -82,7 +82,8 @@ public sealed class MacroEngine : IMacroEngine
             MacroLifecycle.Running,
             MacroStopReason.None,
             currentState.LatestSnapshot,
-            currentTime);
+            currentTime,
+            pendingAction: null);
     }
 
     private static MacroDecision Stop(
@@ -99,7 +100,8 @@ public sealed class MacroEngine : IMacroEngine
             MacroLifecycle.Stopped,
             MacroStopReason.UserRequested,
             currentState.LatestSnapshot,
-            currentTime);
+            currentTime,
+            pendingAction: null);
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -119,7 +121,10 @@ public sealed class MacroEngine : IMacroEngine
             nextLifecycle,
             stopReason,
             currentState.LatestSnapshot,
-            currentTime);
+            currentTime,
+            pendingAction: nextLifecycle == MacroLifecycle.Running
+                ? currentState.PendingAction
+                : null);
     }
 
     private static MacroDecision HandleSnapshot(
@@ -154,13 +159,17 @@ public sealed class MacroEngine : IMacroEngine
         var lastTransitionAt = clientLoggedOut
             ? currentTime
             : currentState.LastTransitionAt;
+        var pendingAction = clientLoggedOut
+            ? null
+            : currentState.PendingAction;
 
         return Changed(
             currentState,
             lifecycle,
             stopReason,
             snapshot,
-            lastTransitionAt);
+            lastTransitionAt,
+            pendingAction);
     }
 
     private static MacroDecision Changed(
@@ -168,20 +177,22 @@ public sealed class MacroEngine : IMacroEngine
         MacroLifecycle lifecycle,
         MacroStopReason stopReason,
         ClientSnapshot? latestSnapshot,
-        MacroTimestamp? lastTransitionAt)
+        MacroTimestamp? lastTransitionAt,
+        PendingAction? pendingAction)
     {
         var nextState = new MacroState(
             checked(currentState.Revision + 1),
             lifecycle,
             stopReason,
             latestSnapshot,
-            lastTransitionAt);
+            lastTransitionAt,
+            pendingAction);
 
         return new MacroDecision(
             nextState,
             ImmutableArray<MacroEvent>.Empty,
-            effect: null,
-            nextDeadline: null,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
             MacroViewSnapshot.FromState(nextState));
     }
 
@@ -189,7 +200,7 @@ public sealed class MacroEngine : IMacroEngine
         new(
             currentState,
             ImmutableArray<MacroEvent>.Empty,
-            effect: null,
-            nextDeadline: null,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
             publishedView: null);
 }

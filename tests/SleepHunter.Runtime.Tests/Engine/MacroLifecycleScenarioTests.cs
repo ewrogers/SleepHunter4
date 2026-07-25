@@ -51,7 +51,7 @@ public sealed class MacroLifecycleScenarioTests
                     MacroStopReason.UserRequested
                 }));
             Assert.That(
-                scenario.Decisions.Select(decision => decision.Effect),
+                scenario.Decisions.Select(decision => decision.Intent),
                 Is.All.Null);
         });
     }

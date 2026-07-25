@@ -2,4 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SleepHunter.Runtime.Tests" />
+  </ItemGroup>
 </Project>

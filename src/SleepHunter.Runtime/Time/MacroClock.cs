@@ -13,6 +13,8 @@ public sealed class MacroClock
         originTimestamp = timeProvider.GetTimestamp();
     }
 
+    internal TimeProvider TimeProvider => timeProvider;
+
     public MacroTimestamp GetCurrentTimestamp()
     {
         var elapsed = timeProvider.GetElapsedTime(

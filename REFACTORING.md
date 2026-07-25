@@ -21,7 +21,7 @@ were being built today:
 - A single owner for mutable macro state.
 - Immutable, sequenced client snapshots.
 - Channels for reliable commands and coalesced observations.
-- Explicit actions, pending transitions, deadlines, and failure outcomes.
+- Explicit intents, pending actions, deadlines, and failure outcomes.
 - Virtual time and simulation support.
 - No WPF, process-memory, window-input, or scripting dependencies in engine
   decisions.
@@ -120,8 +120,8 @@ Observations/
 Actions/
 ```
 
-The engine area contains deterministic state, events, decisions, and effects.
-The session area contains channels, scheduling, lifecycle, and effect dispatch.
+The engine area contains deterministic state, events, decisions, and intents.
+The session area contains channels, scheduling, lifecycle, and intent dispatch.
 Keeping them in one assembly avoids premature project fragmentation while tests
 and namespace rules preserve the logical boundary.
 
@@ -286,8 +286,8 @@ The runtime will model behavior using immutable values with explicit meaning:
   modification.
 - `MacroEvent`: an observation, deadline, action result, or lifecycle event.
 - `MacroState`: all state exclusively owned by one macro session.
-- `MacroDecision`: a deterministic state transition and its resulting effects.
-- `MacroEffect`: a requested external operation.
+- `MacroDecision`: a deterministic state transition and its resulting intents.
+- `MacroIntent`: a requested external operation.
 - `PendingAction`: an issued operation awaiting confirmation or failure.
 - `MacroViewSnapshot`: immutable state published to UI and scripting consumers.
 
@@ -302,7 +302,7 @@ The core decision function is conceptually:
 Decide(current state, input event, current time)
     -> new state
     -> zero or more internal events
-    -> zero or one external client action
+    -> zero or one external client intent
     -> next deadline
 ```
 
@@ -310,7 +310,7 @@ Given the same state, event, snapshot, and time, it must produce the same
 result. It may not read wall-clock time, client memory, settings files, or WPF
 state.
 
-The engine should emit at most one exclusive external client action before
+The engine should emit at most one exclusive external client intent before
 waiting for a new event or observation. This makes input ordering and action
 confirmation explicit.
 
@@ -349,7 +349,7 @@ One iteration:
 1. Drains available reliable commands in a defined order.
 2. Accepts the newest valid snapshot and rejects stale snapshots.
 3. Advances the deterministic state machine.
-4. Dispatches any permitted client action.
+4. Dispatches any permitted client intent.
 5. Publishes an immutable view snapshot when observable state changes.
 6. Calculates the next deadline and awaits the next input.
 
@@ -409,8 +409,8 @@ Client actions never wait for completion inside the executor.
 
 The action sequence is:
 
-1. The engine emits an action.
-2. Interop sends the input and returns an issuance result.
+1. The engine emits an intent.
+2. Interop executes the intent and returns an issuance result.
 3. The session records a pending action with an expected condition and
    deadline.
 4. A newer snapshot confirms success, reports an invalid condition, or reaches
@@ -494,7 +494,7 @@ Test individual policies and transitions without threads or a live client:
 ### Scenario Simulation
 
 A simulation harness provides scripted snapshots, commands, and virtual time.
-Tests assert the exact actions requested and the states published over a
+Tests assert the exact intents requested and the states published over a
 complete scenario.
 
 Examples include:
@@ -527,7 +527,7 @@ A smaller test layer exercises the channel-driven session:
 - Snapshot coalescing.
 - Concurrent command producers.
 - Cancellation and awaited disposal.
-- No actions emitted after shutdown.
+- No intents emitted after shutdown.
 
 ### Interop Tests
 
@@ -690,7 +690,7 @@ request.
 
 ### PR 2: Runtime Values and Simulator
 
-- Add state, command, event, effect, decision, and snapshot primitives.
+- Add state, command, event, intent, decision, and snapshot primitives.
 - Add virtual-time support.
 - Add the pure step contract and scenario harness.
 - Add lifecycle and invariant tests.
@@ -718,7 +718,7 @@ request.
 
 ### PR 6: Interop Action Execution
 
-- Translate runtime actions into client input.
+- Translate runtime intents into client input.
 - Preserve guards and version-specific behavior.
 - Test action translation and cancellation without live input.
 
@@ -794,6 +794,8 @@ As of July 24, 2026:
 - Require a complete in-world snapshot before a macro can enter the running
   state.
 - Use `IMacroEngine.Decide` as the pure state-transition contract.
+- Name requested external operations `MacroIntent` values so execution remains
+  separate from deterministic decisions.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.

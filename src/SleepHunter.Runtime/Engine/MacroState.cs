@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Snapshots;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -10,14 +11,16 @@ public sealed record MacroState
         MacroLifecycle.Stopped,
         MacroStopReason.None,
         latestSnapshot: null,
-        lastTransitionAt: null);
+        lastTransitionAt: null,
+        pendingAction: null);
 
     internal MacroState(
         long revision,
         MacroLifecycle lifecycle,
         MacroStopReason stopReason,
         ClientSnapshot? latestSnapshot,
-        MacroTimestamp? lastTransitionAt)
+        MacroTimestamp? lastTransitionAt,
+        PendingAction? pendingAction)
     {
         if (revision < 0)
         {
@@ -35,11 +38,19 @@ public sealed record MacroState
                 nameof(stopReason));
         }
 
+        if (lifecycle != MacroLifecycle.Running && pendingAction is not null)
+        {
+            throw new ArgumentException(
+                "Only running macro state can contain a pending action.",
+                nameof(pendingAction));
+        }
+
         Revision = revision;
         Lifecycle = lifecycle;
         StopReason = stopReason;
         LatestSnapshot = latestSnapshot;
         LastTransitionAt = lastTransitionAt;
+        PendingAction = pendingAction;
     }
 
     public long Revision { get; }
@@ -51,4 +62,6 @@ public sealed record MacroState
     public ClientSnapshot? LatestSnapshot { get; }
 
     public MacroTimestamp? LastTransitionAt { get; }
+
+    public PendingAction? PendingAction { get; }
 }
