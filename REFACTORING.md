@@ -1172,11 +1172,11 @@ As of July 24, 2026:
   latest-value observation stream that includes failures and rolling timing
   statistics. Project that stream into bindable WPF state without adding a
   polling loop.
-- Attach one read-only shadow runtime to each discovered USDA 7.41 client
-  before UI cutover. Use only query and virtual-memory-read process rights,
-  reject runtime commands at the shadow host boundary, skip unsupported
-  clients, and await host disposal during client removal and application
-  shutdown.
+- Attach one shadow runtime to each discovered USDA 7.41 client before UI
+  cutover. Use only query and virtual-memory-read process rights, accept only
+  atomic queue replacement commands at the shadow host boundary, reject
+  lifecycle and action-producing commands, skip unsupported clients, and await
+  host disposal during client removal and application shutdown.
 - Make the client card the first vertical MVVM slice. Prefer coherent runtime
   character, presence, location, and vitals observations, fall back per section
   when the runtime observation is unavailable, and leave automation authority

@@ -75,7 +75,7 @@ namespace SleepHunter.Services.Runtime
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 using var mappingStream = File.OpenRead(mappingPath);
-                host = new ReadOnlyClientRuntimeHost(
+                host = new ShadowClientRuntimeHost(
                     factory.Attach(
                         mappingStream,
                         descriptor.Client,
@@ -129,7 +129,7 @@ namespace SleepHunter.Services.Runtime
             }
 
             logger.LogInfo(
-                $"Attached read-only shadow runtime to process {descriptor.ProcessId}.");
+                $"Attached configurable shadow runtime to process {descriptor.ProcessId}.");
             return true;
         }
 
