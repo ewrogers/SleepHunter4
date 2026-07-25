@@ -1,4 +1,4 @@
-
+﻿
 # SleepHunter
 <img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
 Dark Ages Automation Tool + Updater
@@ -10,11 +10,11 @@ Dark Ages Automation Tool + Updater
 ## Requirements ✅
 
 - [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
-- .NET 9.0 Desktop Runtime
-    - Windows arm64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-arm64-installer)
-    - Windows x64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-x64-installer)
-    - Windows x86 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-x86-installer)
-- Windows 7, 10, 11 (64-bit)
+- .NET 10.0 Desktop Runtime
+    - Windows arm64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-arm64-installer)
+    - Windows x64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-x64-installer)
+    - Windows x86 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.10-windows-x86-installer)
+- A [Windows version supported by .NET 10](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md) (64-bit)
 
 ## Installation 💾
 
@@ -181,6 +181,6 @@ dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true --self-contained 
 
 ```
 
-You should then see the binaries in `$PROJECT_ROOT/bin/Release/.net9.0-windows/win-x64/publish`.
+You should then see the binaries in `$PROJECT_ROOT/bin/Release/net10.0-windows7.0/win-x64/publish`.
 
 Unfortunately, it seems publishing through VS 2022 does not respect the `PublishSingleFile` property, even when specified in the `.csproj` file.
