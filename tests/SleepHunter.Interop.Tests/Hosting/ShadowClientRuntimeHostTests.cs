@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -39,6 +40,9 @@ public sealed class ShadowClientRuntimeHostTests
         MacroCommand[] commands =
         [
             new StartMacroCommand(),
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true)),
             new ReplaceSpellQueueCommand(
                 Array.Empty<SpellQueueEntry>(),
                 SpellQueueRotation.Priority),

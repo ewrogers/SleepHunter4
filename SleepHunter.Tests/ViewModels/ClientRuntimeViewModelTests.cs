@@ -4,6 +4,7 @@ using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
@@ -53,6 +54,7 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(viewModel.PauseCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.StopCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.IsAutomationEnabled, Is.False);
         });
 
         await viewModel.StartCommand.ExecuteAsync(null);
@@ -60,7 +62,13 @@ public sealed class ClientRuntimeViewModelTests
             await host.ReadCommandAsync(),
             Is.TypeOf<StartMacroCommand>());
 
-        host.PublishView(CreateView(1, MacroLifecycle.Running));
+        var automation = new AutomationConfiguration(
+            spellsEnabled: true);
+        host.PublishView(
+            CreateView(
+                1,
+                MacroLifecycle.Running,
+                automation));
         await WaitUntilAsync(() => viewModel.Current?.Revision == 1);
         Assert.Multiple(() =>
         {
@@ -68,6 +76,8 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(viewModel.PauseCommand.CanExecute(null), Is.True);
             Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.StopCommand.CanExecute(null), Is.True);
+            Assert.That(viewModel.Automation, Is.SameAs(automation));
+            Assert.That(viewModel.IsAutomationEnabled, Is.True);
         });
 
         await viewModel.PauseCommand.ExecuteAsync(null);
@@ -205,7 +215,8 @@ public sealed class ClientRuntimeViewModelTests
 
     private static MacroViewSnapshot CreateView(
         long revision,
-        MacroLifecycle lifecycle) =>
+        MacroLifecycle lifecycle,
+        AutomationConfiguration? automation = null) =>
         new(
             revision,
             lifecycle,
@@ -214,6 +225,7 @@ public sealed class ClientRuntimeViewModelTests
             ClientPresence.Unknown,
             LastTransitionAt: null,
             PendingActionId: null,
+            automation ?? AutomationConfiguration.Disabled,
             SpellQueueState.Empty,
             PanelTransition: null,
             StaffSwitch: null,

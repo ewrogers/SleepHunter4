@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Flowering;
@@ -51,12 +52,18 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     issueObserved.Issue,
                     issueObserved.ObservedAt ?? currentTime),
+            AutomationCycleRequested =>
+                RunAutomationCycle(currentState, currentTime),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(input),
                 input,
                 "Unsupported macro event.")
         };
 
+        decision = RequestAutomationCycleAfter(
+            currentState,
+            input,
+            decision);
         MacroDecisionInvariants.EnsureValid(currentState, decision, currentTime);
         return decision;
     }
@@ -84,6 +91,10 @@ public sealed partial class MacroEngine : IMacroEngine
                 MacroStopReason.None,
                 currentTime),
             StopMacroCommand => Stop(currentState, currentTime),
+            ConfigureAutomationCommand configureAutomation =>
+                ConfigureAutomation(
+                    currentState,
+                    configureAutomation),
             RequestPanelTransitionCommand requestPanel =>
                 RequestPanelTransition(
                     currentState,
@@ -898,7 +909,8 @@ public sealed partial class MacroEngine : IMacroEngine
         FlowerState? flower = null,
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null,
-        ClientActionIssue? lastActionIssue = null)
+        ClientActionIssue? lastActionIssue = null,
+        AutomationConfiguration? automation = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -929,7 +941,8 @@ public sealed partial class MacroEngine : IMacroEngine
             flower ?? currentState.Flower,
             spellTargetRotations ?? currentState.SpellTargetRotations,
             flowerTargetRotations ?? currentState.FlowerTargetRotations,
-            lastActionIssue ?? currentState.LastActionIssue);
+            lastActionIssue ?? currentState.LastActionIssue,
+            automation ?? currentState.Automation);
 
         return new MacroDecision(
             nextState,

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
@@ -44,6 +45,8 @@ namespace SleepHunter.ViewModels
         [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
         [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
         [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+        [NotifyPropertyChangedFor(nameof(Automation))]
+        [NotifyPropertyChangedFor(nameof(IsAutomationEnabled))]
         public partial MacroViewSnapshot Current { get; private set; }
 
         [ObservableProperty]
@@ -80,6 +83,11 @@ namespace SleepHunter.ViewModels
 
         public ClientSnapshot LatestSnapshot =>
             LatestCapture?.Result.Snapshot;
+
+        public AutomationConfiguration Automation =>
+            Current?.Automation ?? AutomationConfiguration.Disabled;
+
+        public bool IsAutomationEnabled => Automation.IsEnabled;
 
         public ValueTask SendCommandAsync(
             MacroCommand command,
