@@ -89,7 +89,7 @@ internal static class MacroDecisionInvariants
         }
 
         var pendingWeaponIntent =
-            decision.State.PendingAction?.Intent as SetEquippedWeaponIntent;
+            decision.State.PendingAction?.Intent as EquipWeaponIntent;
         var changingWeapon = decision.State.StaffSwitch is
         {
             Status: StaffSwitchStatus.ChangingWeapon
@@ -135,7 +135,7 @@ internal static class MacroDecisionInvariants
     }
 
     private static bool DoesWeaponIntentMatchSelection(
-        SetEquippedWeaponIntent intent,
+        EquipWeaponIntent intent,
         StaffSelection? selection)
     {
         if (selection is null)

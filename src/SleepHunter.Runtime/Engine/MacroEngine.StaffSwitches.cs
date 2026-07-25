@@ -80,7 +80,7 @@ public sealed partial class MacroEngine
     private static MacroDecision HandleStaffEquipmentDeadline(
         MacroState currentState,
         PendingAction pendingAction,
-        SetEquippedWeaponIntent weaponIntent,
+        EquipWeaponIntent weaponIntent,
         MacroTimestamp currentTime)
     {
         if (currentState.StaffSwitch is not
@@ -161,11 +161,11 @@ public sealed partial class MacroEngine
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = selection.Action switch
         {
-            StaffSelectionAction.Equip => new SetEquippedWeaponIntent(
+            StaffSelectionAction.Equip => new EquipWeaponIntent(
                 actionId,
                 selection.Staff!.Name,
                 selection.InventorySlot),
-            StaffSelectionAction.Unequip => new SetEquippedWeaponIntent(
+            StaffSelectionAction.Unequip => new EquipWeaponIntent(
                 actionId,
                 staffName: null,
                 inventorySlot: null),
@@ -211,7 +211,7 @@ public sealed partial class MacroEngine
         PendingAction? pendingAction,
         ClientSnapshot snapshot)
     {
-        if (pendingAction?.Intent is not SetEquippedWeaponIntent weaponIntent ||
+        if (pendingAction?.Intent is not EquipWeaponIntent weaponIntent ||
             snapshot.Equipment is not { } equipment)
         {
             return false;

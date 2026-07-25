@@ -117,7 +117,7 @@ public sealed class MacroDecisionInvariantTests
             castLines: 1,
             staff,
             inventorySlot: 7);
-        var intent = new SetEquippedWeaponIntent(
+        var intent = new EquipWeaponIntent(
             new ClientActionId(1),
             staff.Name,
             inventorySlot: 7);

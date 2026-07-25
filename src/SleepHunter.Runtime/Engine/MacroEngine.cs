@@ -359,7 +359,7 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction,
                 switchIntent,
                 currentTime),
-            SetEquippedWeaponIntent weaponIntent => HandleStaffEquipmentDeadline(
+            EquipWeaponIntent weaponIntent => HandleStaffEquipmentDeadline(
                 currentState,
                 pendingAction,
                 weaponIntent,
