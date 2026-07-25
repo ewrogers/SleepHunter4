@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 - Replaced the window-owned process and client `BackgroundWorker` loops with independently paced, cancellable async polling that is awaited during shutdown
+- Moved global hotkey assignment, transfer, clearing, and rollback behavior into a tested application service
 
 ### Removed
 
@@ -62,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored selected macro queue notifications by correcting the reversed subscription guard
 - Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
 - Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available
+- Corrected global hotkey reassignment to release the active registration instead of an unregistered replacement value, while retaining the previous assignment when a native operation fails
 
 ## [4.11.2] - 2026-07-24
 

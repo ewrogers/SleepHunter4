@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SleepHunter.Macro;
 using SleepHunter.Persistence.Serialization;
+using SleepHunter.Services.Hotkeys;
 using SleepHunter.Services.Logging;
 
 namespace SleepHunter.Services.Configuration

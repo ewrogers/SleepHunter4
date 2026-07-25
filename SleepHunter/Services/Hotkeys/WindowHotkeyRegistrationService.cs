@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Windows.Input;
 using SleepHunter.Macro;
 
-namespace SleepHunter.Services.Configuration
+namespace SleepHunter.Services.Hotkeys
 {
     public sealed class WindowHotkeyRegistrationService :
         IHotkeyRegistrationService
@@ -20,6 +21,13 @@ namespace SleepHunter.Services.Configuration
             HotkeyManager.Instance.RegisterHotkey(
                 GetWindowHandle(),
                 hotkey);
+
+        public Hotkey Find(
+            Key key,
+            ModifierKeys modifiers) =>
+            HotkeyManager.Instance.GetHotkey(
+                key,
+                modifiers);
 
         public bool Unregister(Hotkey hotkey) =>
             HotkeyManager.Instance.UnregisterHotkey(

@@ -24,6 +24,7 @@ using SleepHunter.Models;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Services.Clients;
 using SleepHunter.Services.Configuration;
+using SleepHunter.Services.Hotkeys;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Services.Runtime;
@@ -49,6 +50,7 @@ namespace SleepHunter.Views
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
+        private readonly HotkeyAssignmentService hotkeyAssignments;
         private readonly IPlayerMacroConfigurationMapper
             macroConfigurationMapper;
         private readonly PlayerMacroConfigurationManager
@@ -101,13 +103,18 @@ namespace SleepHunter.Views
                 () => AbilitySnapshotCatalogFactory.Create(
                     SkillMetadataManager.Instance.Skills,
                     SpellMetadataManager.Instance.Spells));
+            var hotkeyRegistration =
+                new WindowHotkeyRegistrationService(
+                    () => new WindowInteropHelper(this).Handle);
+            hotkeyAssignments = new HotkeyAssignmentService(
+                hotkeyRegistration,
+                logger);
             var macroPersistence =
                 new MacroConfigurationPersistenceService(
                     macroConfigurationReader,
                     macroConfigurationWriter,
                     macroConfigurationMapper,
-                    new WindowHotkeyRegistrationService(
-                        () => new WindowInteropHelper(this).Handle),
+                    hotkeyRegistration,
                     logger,
                     Environment.CurrentDirectory);
             clientList = new ClientListViewModel(
@@ -1581,14 +1588,20 @@ namespace SleepHunter.Views
             {
                 if (e.Key is Key.Delete or Key.Back or Key.Escape)
                 {
-                    if (player.Hotkey != null)
+                    var clearResult =
+                        hotkeyAssignments.Clear(player);
+                    if (!clearResult.Succeeded)
                     {
-                        logger.LogInfo($"Clearing hotkey for character: {player.Name}");
-                        HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
+                        this.ShowMessageBox("Clear Hotkey Error",
+                            "There was an error clearing the hotkey, please try again.",
+                            "If this continues, try restarting the application.",
+                            MessageBoxButton.OK,
+                            420, 240);
                     }
 
-                    player.Hotkey = null;
+                    e.Handled = true;
                 }
+
                 return;
             }
 
@@ -1604,40 +1617,18 @@ namespace SleepHunter.Views
                 modifiers |= ModifierKeys.Windows;
 
             var hotkey = new Hotkey(modifiers, key);
-            var oldHotkey = HotkeyManager.Instance.GetHotkey(hotkey.Key, hotkey.Modifiers);
-
-            if (oldHotkey != null)
+            var assignmentResult = hotkeyAssignments.Assign(
+                player,
+                hotkey,
+                PlayerManager.Instance.AllClients);
+            if (!assignmentResult.Succeeded)
             {
-                foreach (var p in PlayerManager.Instance.AllClients)
-                {
-                    if (!p.HasHotkey)
-                        continue;
-
-                    if (p.Hotkey.Key == hotkey.Key && p.Hotkey.Modifiers == hotkey.Modifiers)
-                        p.Hotkey = null;
-                }
-            }
-
-            HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, hotkey);
-
-            if (!HotkeyManager.Instance.RegisterHotkey(windowSource.Handle, hotkey))
-            {
-                logger.LogError($"Unable to set hotkey {hotkey.Modifiers}+{hotkey.Key} for character: {player.Name}");
-
                 this.ShowMessageBox("Set Hotkey Error",
                    "There was an error setting the hotkey, please try again.",
                    "If this continues, try restarting the application.",
                    MessageBoxButton.OK,
                    420, 240);
             }
-            else
-            {
-                if (player.Hotkey != null)
-                    HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
-
-                player.Hotkey = hotkey;
-            }
-
             e.Handled = true;
         }
 
