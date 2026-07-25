@@ -865,6 +865,24 @@ As of July 24, 2026:
   another spell can be selected.
 - Do not automatically retry a cast intent because replaying an uncertain cast
   can spend mana or affect a target twice.
+- Represent active skills as an ordered, identifier-based queue with a stable
+  round-robin cursor. Select at most one ready skill action per engine
+  decision.
+- Build immutable skillbook snapshot sections from observed skill state and
+  metadata outside the runtime. Keep pane selection and raw cooldown parsing in
+  interop.
+- Treat minimum skill and spell health as an exclusive boundary and maximum
+  health as an inclusive boundary, matching the existing metadata behavior.
+- Require vitals for planning when mana checks are enabled or a queued skill or
+  spell has a health condition. Do not require an unrelated snapshot section
+  when neither rule applies.
+- Combine observed skill action-delay state with runtime-owned monotonic
+  cooldown deadlines. A skill becomes ready at the exact local deadline.
+- Model space-bar and individual-slot assails as policy choices that resolve to
+  semantic action kinds. Keep key and mouse translation in the future client
+  action adapter.
+- Derive disarm requirements from explicit skill metadata and the
+  disarm-for-assails policy before any client action is requested.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
@@ -888,6 +906,9 @@ them:
 - Exact intent issuance-result protocol between the session and interop
   executors.
 - Radius-target progression and client-coordinate projection.
+- Whether safe skill or assail actions may interleave with an active spell cast
+  window while preserving the single-writer pending-action invariant.
+- Exact dialog cancellation sequencing when other client actions become ready.
 - Legacy macro-state compatibility and migration details.
 - Lua script trust model and capabilities.
 - MoonSharp package and version.

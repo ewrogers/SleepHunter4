@@ -56,7 +56,8 @@ internal sealed class MacroScenario
         InventorySnapshot? inventory = null,
         EquipmentSnapshot? equipment = null,
         VitalsSnapshot? vitals = null,
-        SpellbookSnapshot? spellbook = null)
+        SpellbookSnapshot? spellbook = null,
+        SkillbookSnapshot? skillbook = null)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -72,7 +73,8 @@ internal sealed class MacroScenario
             inventory,
             equipment,
             vitals,
-            spellbook);
+            spellbook,
+            skillbook);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }

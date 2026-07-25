@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Panels;
+﻿using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
@@ -208,6 +209,44 @@ public sealed class SpellCastingScenarioTests
             Assert.That(
                 confirmed.State.SpellCast?.Status,
                 Is.EqualTo(SpellCastStatus.WaitingForMana));
+        });
+    }
+
+    [Test]
+    public void ShouldRevalidateHealthAfterPanelConfirmation()
+    {
+        var entry = Entry(
+            "spell",
+            healthCondition: new HealthCondition(
+                minimumPercentExclusive: 90));
+        var spell = Spell("spell", slot: 73);
+        var scenario = new MacroScenario();
+        scenario.Send(new AddSpellQueueEntryCommand(entry));
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.Stats,
+            vitals: Vitals(health: 91),
+            spellbook: Spellbook(spell));
+        scenario.Start();
+
+        scenario.Send(new CastNextSpellCommand(TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var confirmed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.WorldSpells,
+            vitals: Vitals(health: 90),
+            spellbook: Spellbook(spell));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(confirmed.Intent, Is.Null);
+            Assert.That(confirmed.State.PendingAction, Is.Null);
+            Assert.That(
+                confirmed.State.PanelTransition?.Status,
+                Is.EqualTo(PanelTransitionStatus.Succeeded));
+            Assert.That(
+                confirmed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.WaitingForHealth));
         });
     }
 
@@ -517,12 +556,14 @@ public sealed class SpellCastingScenarioTests
     private static SpellQueueEntry Entry(
         string name,
         SpellTarget? target = null,
-        long id = 1) =>
+        long id = 1,
+        HealthCondition? healthCondition = null) =>
         new(
             new SpellQueueEntryId(id),
             name,
             targetLevel: null,
-            target);
+            target,
+            healthCondition);
 
     private static SpellSnapshot Spell(
         string name,
@@ -539,9 +580,11 @@ public sealed class SpellCastingScenarioTests
             manaCost,
             cooldown ?? TimeSpan.Zero);
 
-    private static VitalsSnapshot Vitals(int mana = 100) =>
+    private static VitalsSnapshot Vitals(
+        int mana = 100,
+        int health = 100) =>
         new(
-            currentHealth: 100,
+            currentHealth: health,
             maximumHealth: 100,
             currentMana: mana,
             maximumMana: 100);

@@ -5,6 +5,7 @@ public enum SpellCastStatus
     QueueEmpty,
     SnapshotUnavailable,
     Waiting,
+    WaitingForHealth,
     WaitingForMana,
     CoolingDown,
     Complete,

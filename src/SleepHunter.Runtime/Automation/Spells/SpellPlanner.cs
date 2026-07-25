@@ -20,8 +20,12 @@ public static class SpellPlanner
                 []);
         }
 
+        var requiresVitals =
+            request.Policy.RequireMana ||
+            request.Queue.Entries.Any(
+                entry => entry.HealthCondition.IsRestricted);
         if (request.Spellbook is null ||
-            request.Policy.RequireMana && request.Vitals is null)
+            requiresVitals && request.Vitals is null)
         {
             return CreateWithoutSelection(
                 SpellPlanStatus.SnapshotUnavailable,
@@ -117,6 +121,16 @@ public static class SpellPlanner
                 readyAt);
         }
 
+        if (entry.HealthCondition.IsRestricted &&
+            !entry.HealthCondition.IsSatisfiedBy(vitals!))
+        {
+            return new SpellReadiness(
+                entry,
+                spell,
+                SpellReadinessStatus.WaitingForHealth,
+                readyAt: null);
+        }
+
         if (policy.RequireMana && spell.ManaCost > vitals!.CurrentMana)
         {
             return new SpellReadiness(
@@ -138,7 +152,8 @@ public static class SpellPlanner
         readiness.Status switch
         {
             SpellReadinessStatus.Ready => SpellQueueAvailability.Ready,
-            SpellReadinessStatus.WaitingForMana or
+            SpellReadinessStatus.WaitingForHealth or
+                SpellReadinessStatus.WaitingForMana or
                 SpellReadinessStatus.CoolingDown =>
                 SpellQueueAvailability.TemporarilyUnavailable,
             SpellReadinessStatus.Complete or
@@ -152,6 +167,7 @@ public static class SpellPlanner
     {
         if (readiness.Any(
                 entry => entry.Status is
+                    SpellReadinessStatus.WaitingForHealth or
                     SpellReadinessStatus.WaitingForMana or
                     SpellReadinessStatus.CoolingDown))
         {

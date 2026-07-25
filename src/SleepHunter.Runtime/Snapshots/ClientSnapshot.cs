@@ -17,7 +17,8 @@ public sealed record ClientSnapshot
         InventorySnapshot? inventory = null,
         EquipmentSnapshot? equipment = null,
         VitalsSnapshot? vitals = null,
-        SpellbookSnapshot? spellbook = null)
+        SpellbookSnapshot? spellbook = null,
+        SkillbookSnapshot? skillbook = null)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -56,6 +57,7 @@ public sealed record ClientSnapshot
         Equipment = equipment;
         Vitals = vitals;
         Spellbook = spellbook;
+        Skillbook = skillbook;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -81,6 +83,8 @@ public sealed record ClientSnapshot
     public VitalsSnapshot? Vitals { get; }
 
     public SpellbookSnapshot? Spellbook { get; }
+
+    public SkillbookSnapshot? Skillbook { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }
