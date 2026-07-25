@@ -92,6 +92,16 @@ public sealed class ClientSnapshotTests
                 manaCost: 10,
                 cooldown: TimeSpan.Zero)
         ]);
+        var skillbook = new SkillbookSnapshot(
+        [
+            new SkillSnapshot(
+                "skill",
+                slot: 1,
+                currentLevel: 1,
+                maximumLevel: 100,
+                manaCost: 0,
+                cooldown: TimeSpan.Zero)
+        ]);
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -104,7 +114,8 @@ public sealed class ClientSnapshotTests
             inventory,
             equipment,
             vitals,
-            spellbook);
+            spellbook,
+            skillbook);
 
         Assert.Multiple(() =>
         {
@@ -113,6 +124,7 @@ public sealed class ClientSnapshotTests
             Assert.That(snapshot.Equipment, Is.EqualTo(equipment));
             Assert.That(snapshot.Vitals, Is.EqualTo(vitals));
             Assert.That(snapshot.Spellbook, Is.EqualTo(spellbook));
+            Assert.That(snapshot.Skillbook, Is.EqualTo(skillbook));
         });
     }
 }

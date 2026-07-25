@@ -4,6 +4,7 @@ public enum SpellReadinessStatus
 {
     Missing,
     Ready,
+    WaitingForHealth,
     WaitingForMana,
     CoolingDown,
     Complete,

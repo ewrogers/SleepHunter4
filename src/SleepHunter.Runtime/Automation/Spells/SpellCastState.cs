@@ -167,6 +167,9 @@ public sealed record SpellCastState
 
     private static SpellCastStatus GetWaitingStatus(SpellCastPlan plan)
     {
+        var waitingForHealth = plan.Readiness.Any(
+            readiness =>
+                readiness.Status == SpellReadinessStatus.WaitingForHealth);
         var waitingForMana = plan.Readiness.Any(
             readiness =>
                 readiness.Status == SpellReadinessStatus.WaitingForMana);
@@ -174,10 +177,11 @@ public sealed record SpellCastState
             readiness =>
                 readiness.Status == SpellReadinessStatus.CoolingDown);
 
-        return (waitingForMana, coolingDown) switch
+        return (waitingForHealth, waitingForMana, coolingDown) switch
         {
-            (true, false) => SpellCastStatus.WaitingForMana,
-            (false, true) => SpellCastStatus.CoolingDown,
+            (true, false, false) => SpellCastStatus.WaitingForHealth,
+            (false, true, false) => SpellCastStatus.WaitingForMana,
+            (false, false, true) => SpellCastStatus.CoolingDown,
             _ => SpellCastStatus.Waiting
         };
     }

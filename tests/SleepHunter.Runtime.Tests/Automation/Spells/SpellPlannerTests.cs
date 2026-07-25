@@ -1,4 +1,5 @@
-﻿using SleepHunter.Runtime.Automation.Spells;
+﻿using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -161,6 +162,51 @@ public sealed class SpellPlannerTests
     }
 
     [Test]
+    public void ShouldHonorQueueEntryHealthConditionWithoutManaPolicy()
+    {
+        var entry = CreateEntry(
+            1,
+            "spell",
+            healthCondition: new HealthCondition(
+                minimumPercentExclusive: 90));
+        var queue = CreateQueue(entry);
+        var spellbook = Spellbook("spell");
+        var policy = new SpellCastPolicy(
+            requireMana: false,
+            SpellCastTimingPolicy.Default);
+        var missingVitals = SpellPlanner.Plan(
+            CreateRequest(
+                queue,
+                vitals: null,
+                spellbook,
+                policy: policy));
+        var blocked = SpellPlanner.Plan(
+            CreateRequest(
+                queue,
+                Vitals(health: 90),
+                spellbook,
+                policy: policy));
+        var ready = SpellPlanner.Plan(
+            CreateRequest(
+                queue,
+                Vitals(health: 91),
+                spellbook,
+                policy: policy));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                missingVitals.Status,
+                Is.EqualTo(SpellPlanStatus.SnapshotUnavailable));
+            Assert.That(blocked.Status, Is.EqualTo(SpellPlanStatus.Waiting));
+            Assert.That(
+                blocked.Readiness.Single().Status,
+                Is.EqualTo(SpellReadinessStatus.WaitingForHealth));
+            Assert.That(ready.Status, Is.EqualTo(SpellPlanStatus.Ready));
+        });
+    }
+
+    [Test]
     public void ShouldHonorLocalCooldownUntilExactReadyTime()
     {
         var entry = CreateEntry(1, "spell");
@@ -281,12 +327,19 @@ public sealed class SpellPlannerTests
     private static SpellQueueEntry CreateEntry(
         long id,
         string name,
-        int? targetLevel = null) =>
-        new(new SpellQueueEntryId(id), name, targetLevel);
-
-    private static VitalsSnapshot Vitals(int mana = 100) =>
+        int? targetLevel = null,
+        HealthCondition? healthCondition = null) =>
         new(
-            currentHealth: 100,
+            new SpellQueueEntryId(id),
+            name,
+            targetLevel,
+            healthCondition: healthCondition);
+
+    private static VitalsSnapshot Vitals(
+        int mana = 100,
+        int health = 100) =>
+        new(
+            currentHealth: health,
             maximumHealth: 100,
             currentMana: mana,
             maximumMana: 100);
