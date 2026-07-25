@@ -152,9 +152,6 @@ namespace SleepHunter.Views
             ToggleSpells(false);
             ToggleSpellQueue(false);
 
-            RefreshSpellQueue();
-            RefreshFlowerQueue();
-
             StartUpdateTimers();
         }
 
@@ -659,35 +656,6 @@ namespace SleepHunter.Views
             await Dispatcher.SwitchToUIThread();
 
             // Do some stuff with inventory on UI thread
-        }
-
-        private async void RefreshSpellQueue()
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            if (selectedMacro != null)
-                spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
-
-            var hasItemsInQueue = selectedMacro != null && selectedMacro.QueuedSpells.Count > 0;
-
-            removeSelectedSpellButton.IsEnabled = hasItemsInQueue;
-            removeAllSpellsButton.IsEnabled = hasItemsInQueue;
-
-            spellQueueListBox.ItemsSource = selectedMacro?.QueuedSpells ?? null;
-            spellQueueListBox.Items.Refresh();
-        }
-
-        private async void RefreshFlowerQueue()
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            var hasItemsInQueue = selectedMacro != null && selectedMacro.FlowerQueueCount > 0;
-
-            removeSelectedFlowerTargetButton.IsEnabled = hasItemsInQueue;
-            removeAllFlowerTargetsButton.IsEnabled = hasItemsInQueue;
-
-            flowerListBox.ItemsSource = selectedMacro?.FlowerTargets ?? null;
-            flowerListBox.Items.Refresh();
         }
 
         private void LoadVersions()
@@ -1688,8 +1656,6 @@ namespace SleepHunter.Views
             finally
             {
                 UpdateToolbarState();
-                RefreshSpellQueue();
-                RefreshFlowerQueue();
 
                 if (selectedMacro != null &&
                     selectedMacro == configuration)
@@ -1847,26 +1813,6 @@ namespace SleepHunter.Views
             dialog.SpellQueueItem.CopyTo(queueItem);
         }
 
-        private void spellQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (sender is not ListBoxItem listBoxItem)
-                return;
-
-            if (listBoxItem.Content is not SpellQueueItem spell)
-                return;
-
-            if (selectedMacro == null)
-                return;
-
-            if (e.Key is Key.Delete or Key.Back)
-            {
-                logger.LogInfo($"Removing spell '{spell.Name}' from spell queue for character: {selectedMacro.Client.Name}");
-
-                if (selectedMacro.RemoveFromSpellQueue(spell))
-                    RefreshSpellQueue();
-            }
-        }
-
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed || sender is not ListBoxItem draggedItem)
@@ -1883,29 +1829,19 @@ namespace SleepHunter.Views
             if (e.Effects != DragDropEffects.Move)
                 return;
 
-            var droppedItem = e.Data.GetData(typeof(SpellQueueItem)) as SpellQueueItem;
-            var target = (sender as ListBoxItem)?.DataContext as SpellQueueItem;
-
-            var removedIndex = spellQueueListBox.Items.IndexOf(droppedItem);
-            var targetIndex = spellQueueListBox.Items.IndexOf(target);
+            if (e.Data.GetData(typeof(SpellQueueItem)) is not
+                    SpellQueueItem droppedItem ||
+                (sender as ListBoxItem)?.DataContext is not
+                    SpellQueueItem target ||
+                clientList.SelectedClient?.MacroEditor is not
+                { } editor)
+            {
+                return;
+            }
 
             logger.LogInfo($"Drop spell queue item: {droppedItem} (target = {target})");
 
-            if (removedIndex < targetIndex)
-            {
-                selectedMacro.AddToSpellQueue(droppedItem, targetIndex + 1);
-                selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex);
-            }
-            else
-            {
-                if (selectedMacro.QueuedSpells.Count + 1 > removedIndex + 1)
-                {
-                    selectedMacro.AddToSpellQueue(droppedItem, targetIndex);
-                    selectedMacro.RemoveFromSpellQueueAtIndex(removedIndex + 1);
-                }
-            }
-
-            RefreshSpellQueue();
+            editor.MoveSpell(droppedItem, target);
         }
 
         private void spellQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
@@ -1945,26 +1881,6 @@ namespace SleepHunter.Views
             dialog.FlowerQueueItem.CopyTo(queueItem);
         }
 
-        private void flowerQueueListBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (sender is not ListBoxItem listBoxItem)
-                return;
-
-            if (listBoxItem.Content is not FlowerQueueItem flower)
-                return;
-
-            if (selectedMacro == null)
-                return;
-
-            if (e.Key is Key.Delete or Key.Back)
-            {
-                logger.LogInfo($"Removing '{flower.Target}' from flower queue for character: {selectedMacro.Name}");
-
-                if (selectedMacro.RemoveFromFlowerQueue(flower))
-                    RefreshFlowerQueue();
-            }
-        }
-
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed || sender is not ListBoxItem draggedItem)
@@ -1981,29 +1897,19 @@ namespace SleepHunter.Views
             if (e.Effects != DragDropEffects.Move)
                 return;
 
-            var droppedItem = e.Data.GetData(typeof(FlowerQueueItem)) as FlowerQueueItem;
-            var target = (sender as ListBoxItem)?.DataContext as FlowerQueueItem;
-
-            var removedIndex = flowerListBox.Items.IndexOf(droppedItem);
-            var targetIndex = flowerListBox.Items.IndexOf(target);
+            if (e.Data.GetData(typeof(FlowerQueueItem)) is not
+                    FlowerQueueItem droppedItem ||
+                (sender as ListBoxItem)?.DataContext is not
+                    FlowerQueueItem target ||
+                clientList.SelectedClient?.MacroEditor is not
+                { } editor)
+            {
+                return;
+            }
 
             logger.LogInfo($"Drop flower queue item: {droppedItem} (target = {target})");
 
-            if (removedIndex < targetIndex)
-            {
-                selectedMacro.AddToFlowerQueue(droppedItem, targetIndex + 1);
-                selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex);
-            }
-            else
-            {
-                if (selectedMacro.FlowerTargets.Count + 1 > removedIndex + 1)
-                {
-                    selectedMacro.AddToFlowerQueue(droppedItem, targetIndex);
-                    selectedMacro.RemoveFromFlowerQueueAtIndex(removedIndex + 1);
-                }
-            }
-
-            RefreshFlowerQueue();
+            editor.MoveFlower(droppedItem, target);
         }
 
         private void flowerQueueListBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
@@ -2021,9 +1927,6 @@ namespace SleepHunter.Views
                     SelectedItem: ClientListItemViewModel item
                 })
             {
-                if (selectedMacro != null)
-                    selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
-
                 selectedMacro = null;
                 UpdateWindowTitle();
                 ToggleInventory(false);
@@ -2035,13 +1938,8 @@ namespace SleepHunter.Views
             }
 
             var player = item.Player;
-            var macroConfiguration =
-                macroConfigurations.GetOrCreate(player);
-
-            UnsubscribeMacroHandlers(selectedMacro);
             var prevSelectedMacro = selectedMacro;
-            selectedMacro = macroConfiguration;
-            SubscribeMacroHandlers(selectedMacro);
+            selectedMacro = item.MacroConfiguration;
 
             UpdateWindowTitle();
             UpdateToolbarState();
@@ -2065,56 +1963,13 @@ namespace SleepHunter.Views
             {
                 RefreshInventory();
 
-                spellQueueRotationComboBox.SelectedValue = selectedMacro.SpellQueueRotation;
-
-                spellQueueListBox.ItemsSource = selectedMacro.QueuedSpells;
-                RefreshSpellQueue();
-
                 if (selectedMacro.QueuedSpells.Count > 0)
                     ToggleSpellQueue(true);
-
-                flowerListBox.ItemsSource = selectedMacro.FlowerTargets;
-                RefreshFlowerQueue();
-
-                flowerVineyardCheckBox.IsChecked = selectedMacro.UseLyliacVineyard && player.HasLyliacVineyard;
-                flowerAlternateCharactersCheckBox.IsChecked = selectedMacro.FlowerAlternateCharacters && player.HasLyliacPlant;
-
-                foreach (var spell in selectedMacro.QueuedSpells)
-                    spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
-
             }
             else
             {
                 ToggleSpellQueue(false);
             }
-        }
-
-        private void SubscribeMacroHandlers(PlayerMacroConfiguration state)
-        {
-            if (state == null)
-                return;
-
-            state.PropertyChanged += SelectedMacro_PropertyChanged;
-
-            state.SpellAdded += selectedMacro_SpellQueueChanged;
-            state.SpellRemoved += selectedMacro_SpellQueueChanged;
-
-            state.FlowerTargetAdded += selectedMacro_FlowerQueueChanged;
-            state.FlowerTargetRemoved += selectedMacro_FlowerQueueChanged;
-        }
-
-        private void UnsubscribeMacroHandlers(PlayerMacroConfiguration state)
-        {
-            if (state == null)
-                return;
-
-            state.PropertyChanged -= SelectedMacro_PropertyChanged;
-
-            state.SpellAdded -= selectedMacro_SpellQueueChanged;
-            state.SpellRemoved -= selectedMacro_SpellQueueChanged;
-
-            state.FlowerTargetAdded -= selectedMacro_FlowerQueueChanged;
-            state.FlowerTargetRemoved -= selectedMacro_FlowerQueueChanged;
         }
 
         private void clientListBox_KeyDown(object sender, KeyEventArgs e)
@@ -2207,24 +2062,6 @@ namespace SleepHunter.Views
             }
 
             e.Handled = true;
-        }
-
-        private void selectedMacro_SpellQueueChanged(object sender, SpellQueueItemEventArgs e)
-        {
-            if (sender is not PlayerMacroConfiguration macro)
-                return;
-
-            spellQueueListBox.ItemsSource = macro.QueuedSpells;
-            RefreshSpellQueue();
-        }
-
-        private void selectedMacro_FlowerQueueChanged(object sender, FlowerQueueItemEventArgs e)
-        {
-            if (sender is not PlayerMacroConfiguration macro)
-                return;
-
-            flowerListBox.ItemsSource = macro.FlowerTargets;
-            RefreshFlowerQueue();
         }
 
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -2369,31 +2206,8 @@ namespace SleepHunter.Views
 
             selectedMacro.AddToSpellQueue(queueItem);
             ToggleSpellQueue(true);
-            RefreshSpellQueue();
 
             logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
-        }
-
-        private void removeSelectedSpellButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null || spellQueueListBox.SelectedItem is not SpellQueueItem selectedSpell)
-                return;
-
-            selectedMacro.RemoveFromSpellQueue(selectedSpell);
-            RefreshSpellQueue();
-
-            logger.LogInfo($"Spell '{selectedSpell.Name}' removed from spell queue for character: {selectedMacro.Client.Name}");
-        }
-
-        private void removeAllSpellsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            selectedMacro.ClearSpellQueue();
-            RefreshSpellQueue();
-
-            logger.LogInfo($"Spell queue cleared for character: {selectedMacro.Client.Name}");
         }
 
         private void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
@@ -2415,31 +2229,8 @@ namespace SleepHunter.Views
             queueItem.LastUsedTimestamp = DateTime.Now;
 
             selectedMacro.AddToFlowerQueue(queueItem);
-            RefreshFlowerQueue();
 
             logger.LogInfo($"Added '{queueItem.Target}' to flower queue for character: {selectedMacro.Client.Name}");
-        }
-
-        private void removeSelectedFlowerTargetButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null || flowerListBox.SelectedItem is not FlowerQueueItem selectedTarget)
-                return;
-
-            selectedMacro.RemoveFromFlowerQueue(selectedTarget);
-            RefreshFlowerQueue();
-
-            logger.LogInfo($"Removed '{selectedTarget.Target}' from flower queue for character: {selectedMacro.Client.Name}");
-        }
-
-        private void removeAllFlowerTargetsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            selectedMacro.ClearFlowerQueue();
-            RefreshFlowerQueue();
-
-            logger.LogInfo($"Cleared flower queue for character: {selectedMacro.Client.Name}");
         }
 
         private void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -2486,48 +2277,6 @@ namespace SleepHunter.Views
                 PlayerManager.Instance.ShowAllClients = settings.ShowAllProcesses;
                 UpdateClientList();
             }
-        }
-
-        private void SelectedMacro_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is not PlayerMacroConfiguration macro)
-                return;
-
-            // Update Spell Queue Rotation
-            if (string.Equals(nameof(macro.SpellQueueRotation), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-                spellQueueRotationComboBox.SelectedValue = macro.SpellQueueRotation;
-        }
-
-        private void spellQueueRotationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (selectedMacro == null || e.AddedItems.Count < 1)
-                return;
-
-            if (e.AddedItems[0] is not UserSetting selection)
-                return;
-
-            if (!Enum.TryParse<SpellRotationMode>(selection.Value as string, out var newRotationMode))
-                return;
-
-            selectedMacro.SpellQueueRotation = newRotationMode;
-        }
-
-        private void flowerVineyardCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            if (flowerVineyardCheckBox != null)
-                selectedMacro.UseLyliacVineyard = flowerVineyardCheckBox.IsChecked.Value;
-        }
-
-        private void flowerAlternateCharactersCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            if (selectedMacro == null)
-                return;
-
-            if (flowerAlternateCharactersCheckBox != null)
-                selectedMacro.FlowerAlternateCharacters = flowerAlternateCharactersCheckBox.IsChecked.Value;
         }
 
         private void UpdateWindowTitle()

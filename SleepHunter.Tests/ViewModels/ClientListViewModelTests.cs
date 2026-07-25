@@ -230,6 +230,10 @@ public sealed class ClientListViewModelTests
 
         Assert.Multiple(() =>
         {
+            Assert.That(item.MacroEditor, Is.Not.Null);
+            Assert.That(
+                item.MacroEditor.ClearSpellsCommand.CanExecute(null),
+                Is.True);
             Assert.That(
                 macroConfiguration.QueuedSpells.Single().CurrentLevel,
                 Is.EqualTo(5));
@@ -275,6 +279,9 @@ public sealed class ClientListViewModelTests
             Assert.That(
                 item.ToggleMacroCommand.CanExecute(null),
                 Is.True);
+            Assert.That(
+                item.MacroEditor.ClearSpellsCommand.CanExecute(null),
+                Is.False);
         });
 
         await item.ToggleMacroCommand.ExecuteAsync(null);
@@ -287,7 +294,13 @@ public sealed class ClientListViewModelTests
             MacroLifecycle.Paused));
         await WaitUntilAsync(
             () => item.StartOrResumeMacroCommand.CanExecute(null));
-        Assert.That(item.StartMacroLabel, Is.EqualTo("Resume Macro"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.StartMacroLabel, Is.EqualTo("Resume Macro"));
+            Assert.That(
+                item.MacroEditor.ClearSpellsCommand.CanExecute(null),
+                Is.True);
+        });
 
         await item.StartOrResumeMacroCommand.ExecuteAsync(null);
 

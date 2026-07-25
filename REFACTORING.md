@@ -716,8 +716,18 @@ and the newest failed capture fall back to the corresponding legacy
 observation, while a small runtime badge exposes capture status. The client
 list owns the selected item through a generated observable property and a
 two-way XAML binding, clearing selection when its client is removed. Inventory,
-abilities, queues, hotkeys, and all macro controls continue to unwrap the
-legacy `Player` until their own slices are cut over.
+equipment, ability panes, hotkey editing, process launch, and secondary window
+operations continue to unwrap the legacy `Player` until their own slices are
+cut over.
+
+The spell and flower queue editor is now a separate vertical slice.
+`MacroEditorViewModel` exposes source-generated Toolkit commands for selected
+entry removal and queue clearing, invalidates them when the runtime changes
+editing availability, and delegates deterministic reordering to the editable
+configuration. Read-only observable queue projections replace custom queue
+events and manual `Items.Refresh` calls. Rotation and flowering options use
+two-way bindings. MainWindow retains only target-dialog and drag gesture
+mechanics for these queues.
 
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:

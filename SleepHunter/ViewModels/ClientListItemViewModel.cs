@@ -51,6 +51,11 @@ namespace SleepHunter.ViewModels
             Player = player ??
                 throw new ArgumentNullException(nameof(player));
             MacroConfiguration = macroConfiguration;
+            MacroEditor = macroConfiguration is null
+                ? null
+                : new MacroEditorViewModel(
+                    macroConfiguration,
+                    () => IsMacroEditingEnabled);
             this.configurationMapper = configurationMapper;
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
@@ -70,6 +75,8 @@ namespace SleepHunter.ViewModels
         public Player Player { get; }
 
         public PlayerMacroConfiguration MacroConfiguration { get; }
+
+        public MacroEditorViewModel MacroEditor { get; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasRuntime))]
@@ -229,6 +236,7 @@ namespace SleepHunter.ViewModels
                     OnObservedPropertyChanged;
             }
 
+            MacroEditor?.Dispose();
             isDisposed = true;
         }
 
@@ -512,6 +520,7 @@ namespace SleepHunter.ViewModels
             PauseMacroCommand.NotifyCanExecuteChanged();
             StopMacroCommand.NotifyCanExecuteChanged();
             ToggleMacroCommand.NotifyCanExecuteChanged();
+            MacroEditor?.NotifyEditingStateChanged();
         }
     }
 }
