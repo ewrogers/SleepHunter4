@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Commands;
@@ -80,6 +82,11 @@ public sealed partial class MacroEngine : IMacroEngine
                     currentState,
                     castNextSpell,
                     currentTime),
+            UseNextSkillCommand useNextSkill =>
+                UseNextSkill(
+                    currentState,
+                    useNextSkill,
+                    currentTime),
             AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
@@ -100,6 +107,23 @@ public sealed partial class MacroEngine : IMacroEngine
             SetSpellQueueRotationCommand setRotation => ChangeSpellQueue(
                 currentState,
                 currentState.SpellQueue.SetRotation(setRotation.Rotation)),
+            AddSkillQueueEntryCommand addSkill => ChangeSkillQueue(
+                currentState,
+                currentState.SkillQueue.Add(addSkill.Entry, addSkill.Index)),
+            UpdateSkillQueueEntryCommand updateSkill => ChangeSkillQueue(
+                currentState,
+                currentState.SkillQueue.Update(updateSkill.Entry)),
+            RemoveSkillQueueEntryCommand removeSkill => ChangeSkillQueue(
+                currentState,
+                currentState.SkillQueue.Remove(removeSkill.EntryId)),
+            MoveSkillQueueEntryCommand moveSkill => ChangeSkillQueue(
+                currentState,
+                currentState.SkillQueue.Move(
+                    moveSkill.EntryId,
+                    moveSkill.TargetIndex)),
+            ClearSkillQueueCommand => ChangeSkillQueue(
+                currentState,
+                currentState.SkillQueue.Clear()),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(command),
                 command,
@@ -148,7 +172,9 @@ public sealed partial class MacroEngine : IMacroEngine
             pendingAction: null,
             panelTransition: CancelPendingPanelTransition(currentState),
             staffSwitch: CancelPendingStaffSwitch(currentState),
-            spellCast: CancelPendingSpellCast(currentState));
+            spellCast: CancelPendingSpellCast(currentState),
+            skillUse: CancelPendingSkillUse(currentState),
+            disarm: CancelPendingDisarm(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -180,7 +206,13 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingStaffSwitch(currentState),
             spellCast: nextLifecycle == MacroLifecycle.Running
                 ? currentState.SpellCast
-                : CancelPendingSpellCast(currentState));
+                : CancelPendingSpellCast(currentState),
+            skillUse: nextLifecycle == MacroLifecycle.Running
+                ? currentState.SkillUse
+                : CancelPendingSkillUse(currentState),
+            disarm: nextLifecycle == MacroLifecycle.Running
+                ? currentState.Disarm
+                : CancelPendingDisarm(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -227,6 +259,12 @@ public sealed partial class MacroEngine : IMacroEngine
         var spellCast = clientLoggedOut
             ? CancelPendingSpellCast(currentState)
             : currentState.SpellCast;
+        var skillUse = clientLoggedOut
+            ? CancelPendingSkillUse(currentState)
+            : currentState.SkillUse;
+        var disarm = clientLoggedOut
+            ? CancelPendingDisarm(currentState)
+            : currentState.Disarm;
 
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
@@ -330,6 +368,44 @@ public sealed partial class MacroEngine : IMacroEngine
                     panelTransition,
                     staffSwitch);
             }
+
+            if (skillUse is
+                {
+                    Status: SkillUseStatus.WaitingForPanel
+                } &&
+                skillUse.Plan.SelectedSkill?.Panel is { } skillPanel &&
+                switchIntent.TargetPanel.IsEquivalentTo(skillPanel))
+            {
+                return ContinueSkillUseAfterPanel(
+                    currentState,
+                    skillUse,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    disarm);
+            }
+        }
+
+        if (!clientLoggedOut &&
+            CanConfirmDisarm(currentState.PendingAction, snapshot))
+        {
+            pendingAction = null;
+            disarm = currentState.Disarm?.Succeeded();
+
+            if (skillUse is
+                {
+                    Status: SkillUseStatus.WaitingForDisarm
+                } &&
+                disarm is not null)
+            {
+                return ContinueSkillUseAfterDisarm(
+                    currentState,
+                    skillUse,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    disarm);
+            }
         }
 
         if (!clientLoggedOut &&
@@ -363,7 +439,9 @@ public sealed partial class MacroEngine : IMacroEngine
             pendingAction,
             panelTransition: panelTransition,
             staffSwitch: staffSwitch,
-            spellCast: spellCast);
+            spellCast: spellCast,
+            skillUse: skillUse,
+            disarm: disarm);
     }
 
     private static MacroDecision RequestPanelTransition(
@@ -387,6 +465,10 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.SpellCast is
             {
                 Status: SpellCastStatus.WaitingForPanel
+            } ||
+            currentState.SkillUse is
+            {
+                Status: SkillUseStatus.WaitingForPanel
             })
         {
             return Unchanged(currentState);
@@ -470,6 +552,21 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction,
                 castSpellIntent,
                 currentTime),
+            DisarmIntent disarmIntent => HandleDisarmDeadline(
+                currentState,
+                pendingAction,
+                disarmIntent,
+                currentTime),
+            UseSkillIntent useSkillIntent => HandleSkillActionDeadline(
+                currentState,
+                pendingAction,
+                useSkillIntent,
+                currentTime),
+            AssailIntent assailIntent => HandleSkillActionDeadline(
+                currentState,
+                pendingAction,
+                assailIntent,
+                currentTime),
             _ => Unchanged(currentState)
         };
     }
@@ -503,6 +600,12 @@ public sealed partial class MacroEngine : IMacroEngine
                 } waitingForPanel => waitingForPanel.PanelUnavailable(),
                 _ => currentState.SpellCast
             };
+            var skillUse = currentState.SkillUse is
+            {
+                Status: SkillUseStatus.WaitingForPanel
+            } waitingForSkillPanel
+                ? waitingForSkillPanel.PanelUnavailable()
+                : currentState.SkillUse;
 
             return Changed(
                 currentState,
@@ -513,7 +616,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 pendingAction: null,
                 panelTransition: panelTransition.TimedOut(),
                 staffSwitch: staffSwitch,
-                spellCast: spellCast);
+                spellCast: spellCast,
+                skillUse: skillUse);
         }
 
         return IssuePanelTransitionAttempt(
@@ -525,7 +629,10 @@ public sealed partial class MacroEngine : IMacroEngine
             currentTime,
             currentState.StaffSwitch,
             currentState.SpellCast,
-            currentState.SpellCooldowns);
+            currentState.SpellCooldowns,
+            currentState.SkillUse,
+            currentState.SkillCooldowns,
+            currentState.Disarm);
     }
 
     private static MacroDecision IssuePanelTransitionAttempt(
@@ -537,7 +644,10 @@ public sealed partial class MacroEngine : IMacroEngine
         MacroTimestamp currentTime,
         StaffSwitchState? staffSwitch = null,
         SpellCastState? spellCast = null,
-        SpellCooldownState? spellCooldowns = null)
+        SpellCooldownState? spellCooldowns = null,
+        SkillUseState? skillUse = null,
+        SkillCooldownState? skillCooldowns = null,
+        DisarmState? disarm = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new SwitchPanelIntent(actionId, targetPanel);
@@ -566,6 +676,9 @@ public sealed partial class MacroEngine : IMacroEngine
             staffSwitch: staffSwitch,
             spellCooldowns: spellCooldowns,
             spellCast: spellCast,
+            skillCooldowns: skillCooldowns,
+            skillUse: skillUse,
+            disarm: disarm,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -631,6 +744,25 @@ public sealed partial class MacroEngine : IMacroEngine
             spellQueue);
     }
 
+    private static MacroDecision ChangeSkillQueue(
+        MacroState currentState,
+        SkillQueueState skillQueue)
+    {
+        if (currentState.SkillQueue.Equals(skillQueue))
+        {
+            return Unchanged(currentState);
+        }
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            currentState.PendingAction,
+            skillQueue: skillQueue);
+    }
+
     private static MacroDecision Changed(
         MacroState currentState,
         MacroLifecycle lifecycle,
@@ -645,7 +777,11 @@ public sealed partial class MacroEngine : IMacroEngine
         ImmutableArray<ScheduledMacroEvent> scheduledEvents = default,
         StaffSwitchState? staffSwitch = null,
         SpellCooldownState? spellCooldowns = null,
-        SpellCastState? spellCast = null)
+        SpellCastState? spellCast = null,
+        SkillQueueState? skillQueue = null,
+        SkillCooldownState? skillCooldowns = null,
+        SkillUseState? skillUse = null,
+        DisarmState? disarm = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -664,7 +800,11 @@ public sealed partial class MacroEngine : IMacroEngine
             nextClientActionId ?? currentState.NextClientActionId,
             staffSwitch ?? currentState.StaffSwitch,
             spellCooldowns ?? currentState.SpellCooldowns,
-            spellCast ?? currentState.SpellCast);
+            spellCast ?? currentState.SpellCast,
+            skillQueue ?? currentState.SkillQueue,
+            skillCooldowns ?? currentState.SkillCooldowns,
+            skillUse ?? currentState.SkillUse,
+            disarm ?? currentState.Disarm);
 
         return new MacroDecision(
             nextState,

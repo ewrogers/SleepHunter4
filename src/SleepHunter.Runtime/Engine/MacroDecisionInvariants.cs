@@ -1,4 +1,6 @@
-﻿using SleepHunter.Runtime.Automation.Panels;
+﻿using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Events;
@@ -185,6 +187,89 @@ internal static class MacroDecisionInvariants
                 "Spell casting can wait only on its pending spell panel action.");
         }
 
+        var pendingDisarmIntent =
+            decision.State.PendingAction?.Intent as DisarmIntent;
+        var disarming = decision.State.Disarm is
+        {
+            Status: DisarmStatus.Disarming
+        };
+
+        if ((pendingDisarmIntent is not null) != disarming)
+        {
+            throw new InvalidOperationException(
+                "Pending disarm state must match its client action.");
+        }
+
+        if (pendingDisarmIntent is not null &&
+            (decision.State.Disarm!.ActionId != pendingDisarmIntent.ActionId ||
+             decision.State.Disarm.Attempt !=
+             decision.State.PendingAction!.Attempt ||
+             decision.State.Disarm.MaximumAttempts !=
+             decision.State.PendingAction.MaximumAttempts ||
+             decision.State.SkillUse is not
+             {
+                 Status: SkillUseStatus.WaitingForDisarm
+             }))
+        {
+            throw new InvalidOperationException(
+                "Pending disarm metadata must match its skill action.");
+        }
+
+        var pendingSkillIntent =
+            decision.State.PendingAction?.Intent as UseSkillIntent;
+        var pendingAssailIntent =
+            decision.State.PendingAction?.Intent as AssailIntent;
+        var actingSkill = decision.State.SkillUse is
+        {
+            Status: SkillUseStatus.Using or SkillUseStatus.Assailing
+        };
+
+        if (((pendingSkillIntent is not null) ||
+             (pendingAssailIntent is not null)) != actingSkill)
+        {
+            throw new InvalidOperationException(
+                "Pending skill use state must match its client action.");
+        }
+
+        if ((pendingSkillIntent is not null ||
+             pendingAssailIntent is not null) &&
+            (decision.State.SkillUse!.ActionId !=
+             decision.State.PendingAction!.Intent.ActionId ||
+             decision.State.SkillUse.CompletesAt !=
+             decision.State.PendingAction.Deadline ||
+             decision.State.PendingAction.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1 ||
+             !DoesSkillIntentMatchPlan(
+                 decision.State.PendingAction.Intent,
+                 decision.State.SkillUse.Plan)))
+        {
+            throw new InvalidOperationException(
+                "Pending skill use metadata must match its client action.");
+        }
+
+        if (decision.State.SkillUse is
+            {
+                Status: SkillUseStatus.WaitingForPanel,
+                Plan.SelectedSkill: { } waitingSkill
+            } &&
+            (pendingSwitchIntent is null ||
+             !pendingSwitchIntent.TargetPanel.IsEquivalentTo(
+                 waitingSkill.Panel)))
+        {
+            throw new InvalidOperationException(
+                "Skill use can wait only on its pending skill panel action.");
+        }
+
+        if (decision.State.SkillUse is
+            {
+                Status: SkillUseStatus.WaitingForDisarm
+            } &&
+            pendingDisarmIntent is null)
+        {
+            throw new InvalidOperationException(
+                "Skill use can wait only on its pending disarm action.");
+        }
+
         if (decision.ScheduledEvents.Any(
                 scheduledEvent => scheduledEvent.DueAt < currentTime))
         {
@@ -230,4 +315,27 @@ internal static class MacroDecisionInvariants
         spell.Slot == intent.Slot &&
         spell.Panel == intent.Panel &&
         entry.Target == intent.Target;
+
+    private static bool DoesSkillIntentMatchPlan(
+        ClientActionIntent intent,
+        SkillPlan plan) =>
+        plan.SelectedSkill is { } skill &&
+        intent switch
+        {
+            UseSkillIntent useSkill =>
+                plan.ActionKind == SkillActionKind.UseSkill &&
+                string.Equals(
+                    skill.Name,
+                    useSkill.SkillName,
+                    StringComparison.OrdinalIgnoreCase) &&
+                skill.Slot == useSkill.Slot &&
+                skill.Panel == useSkill.Panel,
+            AssailIntent assail =>
+                plan.ActionKind == SkillActionKind.Assail &&
+                string.Equals(
+                    skill.Name,
+                    assail.SkillName,
+                    StringComparison.OrdinalIgnoreCase),
+            _ => false
+        };
 }

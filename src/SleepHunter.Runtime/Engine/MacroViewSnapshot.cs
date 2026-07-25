@@ -1,5 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Snapshots;
@@ -19,7 +21,11 @@ public sealed record MacroViewSnapshot(
     PanelTransitionState? PanelTransition,
     StaffSwitchState? StaffSwitch,
     SpellCooldownState SpellCooldowns,
-    SpellCastState? SpellCast)
+    SpellCastState? SpellCast,
+    SkillQueueState SkillQueue,
+    SkillCooldownState SkillCooldowns,
+    SkillUseState? SkillUse,
+    DisarmState? Disarm)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -37,6 +43,10 @@ public sealed record MacroViewSnapshot(
             state.PanelTransition,
             state.StaffSwitch,
             state.SpellCooldowns,
-            state.SpellCast);
+            state.SpellCast,
+            state.SkillQueue,
+            state.SkillCooldowns,
+            state.SkillUse,
+            state.Disarm);
     }
 }

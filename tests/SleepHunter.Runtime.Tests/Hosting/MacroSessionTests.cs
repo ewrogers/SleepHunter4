@@ -1,4 +1,6 @@
-﻿using SleepHunter.Runtime.Automation.Panels;
+﻿using SleepHunter.Runtime.Automation.Equipment;
+using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
@@ -319,6 +321,93 @@ public sealed class MacroSessionTests
     }
 
     [Test]
+    public async Task ShouldSequenceDisarmPanelAndSkillThroughSession()
+    {
+        var timeProvider = new ManualTimeProvider();
+        await using var session = new MacroSession(
+            new MacroEngine(),
+            new MacroClock(timeProvider));
+        var entry = new SkillQueueEntry(
+            new SkillQueueEntryId(1),
+            "skill");
+        var skill = new SkillSnapshot(
+            entry.Name,
+            slot: 1,
+            currentLevel: 0,
+            maximumLevel: 100,
+            manaCost: 0,
+            cooldown: TimeSpan.Zero,
+            requiresDisarm: true);
+        var policy = new SkillExecutionPolicy(
+            SkillUsePolicy.Default,
+            new PanelTransitionPolicy(
+                TimeSpan.FromMilliseconds(100),
+                maximumAttempts: 2),
+            new DisarmPolicy(
+                TimeSpan.FromMilliseconds(100),
+                maximumAttempts: 2),
+            TimeSpan.FromMilliseconds(10));
+
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 1,
+                MacroTimestamp.Zero,
+                ClientPanel.Stats,
+                equipment: new EquipmentSnapshot("weapon"),
+                vitals: new VitalsSnapshot(100, 100, 100, 100),
+                skillbook: new SkillbookSnapshot([skill])));
+        await session.Views.ReadUntilAsync(view => view.Revision == 1);
+        await session.SendCommandAsync(new AddSkillQueueEntryCommand(entry));
+        await session.Views.ReadUntilAsync(view => view.Revision == 2);
+        await session.SendCommandAsync(new StartMacroCommand());
+        await session.Views.ReadUntilAsync(view => view.Revision == 3);
+        await session.SendCommandAsync(new UseNextSkillCommand(policy));
+
+        var disarmIntent =
+            (DisarmIntent)await session.Intents.ReadUntilAsync(
+                intent => intent is DisarmIntent);
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var disarmedAt = new MacroTimestamp(TimeSpan.FromTicks(1));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 2,
+                disarmedAt,
+                ClientPanel.Stats,
+                equipment: new EquipmentSnapshot(weaponName: null),
+                vitals: new VitalsSnapshot(100, 100, 100, 100),
+                skillbook: new SkillbookSnapshot([skill])));
+        var panelIntent =
+            (SwitchPanelIntent)await session.Intents.ReadUntilAsync(
+                intent => intent is SwitchPanelIntent);
+
+        timeProvider.Advance(TimeSpan.FromTicks(1));
+        var panelAt = new MacroTimestamp(TimeSpan.FromTicks(2));
+        session.PublishSnapshot(
+            CreateSnapshot(
+                sequence: 3,
+                panelAt,
+                ClientPanel.TemuairSkills,
+                equipment: new EquipmentSnapshot(weaponName: null),
+                vitals: new VitalsSnapshot(100, 100, 100, 100),
+                skillbook: new SkillbookSnapshot([skill])));
+        var skillIntent =
+            (UseSkillIntent)await session.Intents.ReadUntilAsync(
+                intent => intent is UseSkillIntent);
+        timeProvider.Advance(policy.ActionDuration);
+        var completed = await session.Views.ReadUntilAsync(
+            view => view.SkillUse?.Status == SkillUseStatus.Succeeded);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(disarmIntent.ActionId.Value, Is.EqualTo(1));
+            Assert.That(panelIntent.ActionId.Value, Is.EqualTo(2));
+            Assert.That(skillIntent.ActionId.Value, Is.EqualTo(3));
+            Assert.That(skillIntent.SkillName, Is.EqualTo(skill.Name));
+            Assert.That(completed.PendingActionId, Is.Null);
+        });
+    }
+
+    [Test]
     public async Task ShouldAwaitShutdownAndRejectNewInputAfterDisposal()
     {
         var timeProvider = new ManualTimeProvider();
@@ -380,7 +469,8 @@ public sealed class MacroSessionTests
         InventorySnapshot? inventory = null,
         EquipmentSnapshot? equipment = null,
         VitalsSnapshot? vitals = null,
-        SpellbookSnapshot? spellbook = null) =>
+        SpellbookSnapshot? spellbook = null,
+        SkillbookSnapshot? skillbook = null) =>
         new(
             new SnapshotSequence(sequence),
             capturedAt,
@@ -393,5 +483,6 @@ public sealed class MacroSessionTests
             inventory,
             equipment,
             vitals,
-            spellbook);
+            spellbook,
+            skillbook);
 }
