@@ -675,6 +675,15 @@ detaches hosts when clients disappear, and awaits disposal before the
 application completes shutdown. This establishes the live composition seam
 without changing which engine controls automation.
 
+The client list is the first vertical WPF slice. `ClientListViewModel` owns a
+stable, ordered collection of `ClientListItemViewModel` instances. Each item
+projects the coherent runtime character, presence, location, and vitals
+sections into the existing client card. Missing sections, unsupported clients,
+and the newest failed capture fall back to the corresponding legacy
+observation, while a small runtime badge exposes capture status. Selection,
+inventory, abilities, queues, hotkeys, and all macro controls continue to
+unwrap the legacy `Player` until their own slices are cut over.
+
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:
 
@@ -1146,6 +1155,10 @@ As of July 24, 2026:
   reject runtime commands at the shadow host boundary, skip unsupported
   clients, and await host disposal during client removal and application
   shutdown.
+- Make the client card the first vertical MVVM slice. Prefer coherent runtime
+  character, presence, location, and vitals observations, fall back per section
+  when the runtime observation is unavailable, and leave automation authority
+  on the legacy player model until later slices are ready.
 - Design a scripting-compatible intent boundary without adding scripting now.
 - Treat MoonSharp as a future optional adapter, not a runtime dependency.
 - Keep patching isolated from automation decisions.

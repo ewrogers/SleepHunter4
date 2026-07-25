@@ -53,6 +53,7 @@ namespace SleepHunter.Views
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
         private readonly IMacroStateSerializer macroStateSerializer;
+        private readonly ClientListViewModel clientList;
         private readonly ClientRuntimeRegistry runtimeClients;
 
         private bool isDisposed;
@@ -84,6 +85,8 @@ namespace SleepHunter.Views
                     AppContext.BaseDirectory,
                     ClientVersionManager.VersionsFile),
                 TimeProvider.System);
+            clientList = new ClientListViewModel();
+            DataContext = clientList;
 
             InitializeLogger();
             InitializeComponent();
@@ -131,6 +134,7 @@ namespace SleepHunter.Views
                 processScannerWorker?.Dispose();
                 clientUpdateWorker?.Dispose();
                 flowerUpdateWorker?.Dispose();
+                clientList.Dispose();
             }
 
             windowSource?.Dispose();
@@ -445,7 +449,6 @@ namespace SleepHunter.Views
             logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
 
             UpdateToolbarState();
-            UpdateClientList();
 
             if (e.Player.Version is { } version)
             {
@@ -458,6 +461,8 @@ namespace SleepHunter.Views
                         e.Player.Process.WindowHandle),
                     UserSettingsManager.Instance.Settings.ClientUpdateInterval);
             }
+
+            UpdateClientList();
         }
 
         private async void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
@@ -490,9 +495,11 @@ namespace SleepHunter.Views
                     OnPlayerLoggedIn(player);
             }
 
-            clientListBox.Items.Refresh();
+            UpdateClientList();
 
-            var selectedPlayer = clientListBox.SelectedItem as Player;
+            var selectedPlayer =
+                (clientListBox.SelectedItem as ClientListItemViewModel)
+                ?.Player;
 
             if (player == selectedPlayer)
             {
@@ -1412,6 +1419,7 @@ namespace SleepHunter.Views
         private void Window_Closed(object sender, EventArgs e)
         {
             logger.LogInfo("Main window has been closed");
+            Dispose();
         }
 
         private void PromptUserToOpenUserManual()
@@ -1800,9 +1808,10 @@ namespace SleepHunter.Views
             if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (listBoxItem.Content is not Player player)
+            if (listBoxItem.Content is not ClientListItemViewModel item)
                 return;
 
+            var player = item.Player;
             NativeMethods.SetForegroundWindow(player.Process.WindowHandle);
             logger.LogInfo($"Setting foreground window for client: {player.Name} (double-click)");
         }
@@ -2011,7 +2020,10 @@ namespace SleepHunter.Views
 
         private void clientListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is not ListBox { SelectedItem: Player player })
+            if (sender is not ListBox
+                {
+                    SelectedItem: ClientListItemViewModel item
+                })
             {
                 if (selectedMacro != null)
                     selectedMacro.PropertyChanged -= SelectedMacro_PropertyChanged;
@@ -2026,6 +2038,7 @@ namespace SleepHunter.Views
                 return;
             }
 
+            var player = item.Player;
             var macroState = MacroManager.Instance.GetMacroState(player);
 
             UnsubscribeMacroHandlers(selectedMacro);
@@ -2116,9 +2129,13 @@ namespace SleepHunter.Views
             if (e.Key == Key.None)
                 return;
 
-            if (sender is not ListBoxItem { Content: Player player })
+            if (sender is not ListBoxItem
+                {
+                    Content: ClientListItemViewModel item
+                })
                 return;
 
+            var player = item.Player;
             var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
             var hasControl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || (e.SystemKey == Key.LeftCtrl || e.SystemKey == Key.RightCtrl);
             var hasAlt = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
@@ -2279,9 +2296,11 @@ namespace SleepHunter.Views
             if (item.Content is not Skill skill)
                 return;
 
-            if (clientListBox.SelectedItem is not Player player)
+            if (clientListBox.SelectedItem is not
+                ClientListItemViewModel selectedClient)
                 return;
 
+            var player = selectedClient.Player;
             if (skill.IsEmpty || string.IsNullOrWhiteSpace(skill.Name))
                 return;
 
@@ -2301,9 +2320,11 @@ namespace SleepHunter.Views
             if (item.Content is not Spell spell)
                 return;
 
-            if (clientListBox.SelectedItem is not Player player)
+            if (clientListBox.SelectedItem is not
+                ClientListItemViewModel selectedClient)
                 return;
 
+            var player = selectedClient.Player;
             if (spell.IsEmpty || string.IsNullOrWhiteSpace(spell.Name))
                 return;
 
@@ -2584,13 +2605,22 @@ namespace SleepHunter.Views
         {
             await Dispatcher.SwitchToUIThread();
 
+            if (isDisposed || isShutdownInProgress)
+                return;
+
             var showAll = PlayerManager.Instance.ShowAllClients;
             var sortOrder = PlayerManager.Instance.SortOrder;
 
             logger.LogInfo($"Updating the client list (showAll = {showAll}, sortOrder = {sortOrder})");
 
-            clientListBox.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-            clientListBox.Items.Refresh();
+            clientList.Refresh(
+                PlayerManager.Instance.VisiblePlayers,
+                processId =>
+                    runtimeClients.TryFind(
+                        processId,
+                        out var runtime)
+                        ? runtime
+                        : null);
         }
 
         private async void CheckForNewVersion()
