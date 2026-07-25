@@ -20,4 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SleepHunter.Interop\SleepHunter.Interop.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\data\Versions.xml"
+          Link="Data\Versions.xml"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
