@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
@@ -212,6 +213,71 @@ public sealed class MacroDecisionInvariantTests
         Assert.That(
             () => MacroDecisionInvariants.EnsureValid(
                 state,
+                decision,
+                MacroTimestamp.Zero),
+            Throws.TypeOf<InvalidOperationException>());
+    }
+
+    [Test]
+    public void ShouldRejectDialogIntentWithoutMatchingDialogState()
+    {
+        var intent = new CancelDialogIntent(new ClientActionId(1));
+        var pendingAction = new PendingAction(
+            intent,
+            MacroTimestamp.Zero,
+            new MacroTimestamp(TimeSpan.FromSeconds(1)),
+            attempt: 1);
+        var state = new MacroState(
+            revision: 1,
+            MacroLifecycle.Running,
+            MacroStopReason.None,
+            latestSnapshot: null,
+            MacroTimestamp.Zero,
+            pendingAction);
+        var decision = new MacroDecision(
+            state,
+            ImmutableArray<MacroEvent>.Empty,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
+            publishedView: null);
+
+        Assert.That(
+            () => MacroDecisionInvariants.EnsureValid(
+                state,
+                decision,
+                MacroTimestamp.Zero),
+            Throws.TypeOf<InvalidOperationException>());
+    }
+
+    [Test]
+    public void ShouldRejectNewScheduledDialogWithoutMatchingEvent()
+    {
+        var previousState = new MacroState(
+            revision: 1,
+            MacroLifecycle.Running,
+            MacroStopReason.None,
+            latestSnapshot: null,
+            MacroTimestamp.Zero,
+            pendingAction: null);
+        var dueAt = new MacroTimestamp(TimeSpan.FromSeconds(1));
+        var state = new MacroState(
+            revision: 2,
+            MacroLifecycle.Running,
+            MacroStopReason.None,
+            latestSnapshot: null,
+            MacroTimestamp.Zero,
+            pendingAction: null,
+            dialog: DialogState.Scheduled(DialogPolicy.Default, dueAt));
+        var decision = new MacroDecision(
+            state,
+            ImmutableArray<MacroEvent>.Empty,
+            ImmutableArray<ScheduledMacroEvent>.Empty,
+            intent: null,
+            MacroViewSnapshot.FromState(state));
+
+        Assert.That(
+            () => MacroDecisionInvariants.EnsureValid(
+                previousState,
                 decision,
                 MacroTimestamp.Zero),
             Throws.TypeOf<InvalidOperationException>());

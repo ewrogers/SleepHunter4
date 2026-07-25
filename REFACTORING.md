@@ -901,6 +901,12 @@ As of July 24, 2026:
   a snapshot captured after that boundary before planning another skill.
 - Do not automatically retry a skill or assail intent because replaying an
   uncertain activation can trigger the action twice.
+- Represent delayed dialog cleanup as scheduled `DialogCloseDue` events and
+  `CancelDialogIntent`, not callbacks. A newer dialog-opening skill supersedes
+  an older close event through its recorded due time.
+- Defer a due dialog close until the active bounded client action ends. Dialog
+  cancellation itself is a single-attempt bounded action and is cancelled by
+  pause, stop, or logout.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
@@ -926,7 +932,6 @@ them:
 - Radius-target progression and client-coordinate projection.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.
-- Exact dialog cancellation sequencing when other client actions become ready.
 - Legacy macro-state compatibility and migration details.
 - Lua script trust model and capabilities.
 - MoonSharp package and version.
