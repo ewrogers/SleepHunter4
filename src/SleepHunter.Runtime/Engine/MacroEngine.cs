@@ -246,8 +246,51 @@ public sealed partial class MacroEngine : IMacroEngine
                 } &&
                 switchIntent.TargetPanel == ClientPanel.Inventory)
             {
+                if (spellCast is
+                    {
+                        Status: SpellCastStatus.WaitingForStaff
+                    })
+                {
+                    var refreshedPlan = ReplanSelectedSpell(
+                        currentState,
+                        spellCast,
+                        snapshot,
+                        currentTime);
+                    if (!DoesPlanMatchSelection(spellCast, refreshedPlan))
+                    {
+                        var nextSpellCast = refreshedPlan.HasSelection
+                            ? spellCast.SelectionInvalidated(refreshedPlan)
+                            : spellCast.Replanned(refreshedPlan);
+                        var spellQueue = refreshedPlan.HasSelection
+                            ? currentState.SpellQueue
+                            : refreshedPlan.Queue;
+
+                        return Changed(
+                            currentState,
+                            lifecycle,
+                            stopReason,
+                            snapshot,
+                            lastTransitionAt,
+                            pendingAction: null,
+                            spellQueue: spellQueue,
+                            panelTransition: panelTransition,
+                            staffSwitch: staffSwitch.SelectionInvalidated(),
+                            spellCooldowns: refreshedPlan.Cooldowns,
+                            spellCast: nextSpellCast);
+                    }
+
+                    spellCast = spellCast.WithPlan(refreshedPlan);
+                }
+
                 if (!IsStaffSelectionStillValid(selection, snapshot))
                 {
+                    var nextSpellCast = spellCast is
+                    {
+                        Status: SpellCastStatus.WaitingForStaff
+                    } waitingForStaff
+                        ? waitingForStaff.StaffUnavailable()
+                        : spellCast;
+
                     return Changed(
                         currentState,
                         lifecycle,
@@ -256,7 +299,8 @@ public sealed partial class MacroEngine : IMacroEngine
                         lastTransitionAt,
                         pendingAction: null,
                         panelTransition: panelTransition,
-                        staffSwitch: staffSwitch.SelectionInvalidated());
+                        staffSwitch: staffSwitch.SelectionInvalidated(),
+                        spellCast: nextSpellCast);
                 }
 
                 return IssueStaffEquipmentAttempt(
@@ -267,7 +311,8 @@ public sealed partial class MacroEngine : IMacroEngine
                     staffSwitch.MaximumAttempts,
                     currentTime,
                     snapshot,
-                    panelTransition);
+                    panelTransition,
+                    spellCast);
             }
 
             if (spellCast is
@@ -292,6 +337,21 @@ public sealed partial class MacroEngine : IMacroEngine
         {
             pendingAction = null;
             staffSwitch = currentState.StaffSwitch?.Succeeded();
+
+            if (spellCast is
+                {
+                    Status: SpellCastStatus.WaitingForStaff
+                } &&
+                staffSwitch is not null)
+            {
+                return ContinueSpellCastAfterStaff(
+                    currentState,
+                    spellCast,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    staffSwitch);
+            }
         }
 
         return Changed(
@@ -433,12 +493,16 @@ public sealed partial class MacroEngine : IMacroEngine
             } waiting
                 ? waiting.PanelUnavailable()
                 : currentState.StaffSwitch;
-            var spellCast = currentState.SpellCast is
+            var spellCast = currentState.SpellCast switch
             {
-                Status: SpellCastStatus.WaitingForPanel
-            } waitingForPanel
-                ? waitingForPanel.PanelUnavailable()
-                : currentState.SpellCast;
+                {
+                    Status: SpellCastStatus.WaitingForStaff
+                } waitingForStaff => waitingForStaff.StaffUnavailable(),
+                {
+                    Status: SpellCastStatus.WaitingForPanel
+                } waitingForPanel => waitingForPanel.PanelUnavailable(),
+                _ => currentState.SpellCast
+            };
 
             return Changed(
                 currentState,
