@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Snapshots;
@@ -56,6 +57,26 @@ public sealed class MacroEngine : IMacroEngine
                 MacroStopReason.None,
                 currentTime),
             StopMacroCommand => Stop(currentState, currentTime),
+            AddSpellQueueEntryCommand addEntry => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.Add(addEntry.Entry, addEntry.Index)),
+            UpdateSpellQueueEntryCommand updateEntry => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.Update(updateEntry.Entry)),
+            RemoveSpellQueueEntryCommand removeEntry => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.Remove(removeEntry.EntryId)),
+            MoveSpellQueueEntryCommand moveEntry => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.Move(
+                    moveEntry.EntryId,
+                    moveEntry.TargetIndex)),
+            ClearSpellQueueCommand => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.Clear()),
+            SetSpellQueueRotationCommand setRotation => ChangeSpellQueue(
+                currentState,
+                currentState.SpellQueue.SetRotation(setRotation.Rotation)),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(command),
                 command,
@@ -172,13 +193,33 @@ public sealed class MacroEngine : IMacroEngine
             pendingAction);
     }
 
+    private static MacroDecision ChangeSpellQueue(
+        MacroState currentState,
+        SpellQueueState spellQueue)
+    {
+        if (currentState.SpellQueue.Equals(spellQueue))
+        {
+            return Unchanged(currentState);
+        }
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            currentState.PendingAction,
+            spellQueue);
+    }
+
     private static MacroDecision Changed(
         MacroState currentState,
         MacroLifecycle lifecycle,
         MacroStopReason stopReason,
         ClientSnapshot? latestSnapshot,
         MacroTimestamp? lastTransitionAt,
-        PendingAction? pendingAction)
+        PendingAction? pendingAction,
+        SpellQueueState? spellQueue = null)
     {
         var nextState = new MacroState(
             checked(currentState.Revision + 1),
@@ -186,7 +227,8 @@ public sealed class MacroEngine : IMacroEngine
             stopReason,
             latestSnapshot,
             lastTransitionAt,
-            pendingAction);
+            pendingAction,
+            spellQueue ?? currentState.SpellQueue);
 
         return new MacroDecision(
             nextState,

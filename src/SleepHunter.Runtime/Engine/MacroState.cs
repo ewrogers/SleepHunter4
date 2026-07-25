@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -20,7 +21,8 @@ public sealed record MacroState
         MacroStopReason stopReason,
         ClientSnapshot? latestSnapshot,
         MacroTimestamp? lastTransitionAt,
-        PendingAction? pendingAction)
+        PendingAction? pendingAction,
+        SpellQueueState? spellQueue = null)
     {
         if (revision < 0)
         {
@@ -51,6 +53,7 @@ public sealed record MacroState
         LatestSnapshot = latestSnapshot;
         LastTransitionAt = lastTransitionAt;
         PendingAction = pendingAction;
+        SpellQueue = spellQueue ?? SpellQueueState.Empty;
     }
 
     public long Revision { get; }
@@ -64,4 +67,6 @@ public sealed record MacroState
     public MacroTimestamp? LastTransitionAt { get; }
 
     public PendingAction? PendingAction { get; }
+
+    public SpellQueueState SpellQueue { get; }
 }
