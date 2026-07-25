@@ -660,6 +660,17 @@ ViewModels may forward additional typed runtime commands through the same
 boundary. The legacy engine remains authoritative until client attachment and
 the corresponding UI slices are explicitly cut over.
 
+`ClientRuntimeRegistry` now attaches a read-only shadow host for each supported
+USDA 7.41 process discovered by the legacy client scanner. The Windows factory
+opens only query and virtual-memory-read process rights. Shadow hosts capture
+all snapshot sections at the configured client update interval, but the
+registry wraps them in a read-only boundary that rejects lifecycle and feature
+commands before they can reach the runtime, so they cannot issue window input.
+Unsupported clients remain on the legacy path. MainWindow owns the registry,
+detaches hosts when clients disappear, and awaits disposal before the
+application completes shutdown. This establishes the live composition seam
+without changing which engine controls automation.
+
 MainWindow will be decomposed by responsibility rather than replaced with one
 large ViewModel:
 
@@ -1122,6 +1133,11 @@ As of July 24, 2026:
 - Host each client through one Interop-owned runtime host that serializes
   snapshot publication, intent execution, issuance feedback, and awaited
   disposal without depending on WPF.
+- Attach one read-only shadow runtime to each discovered USDA 7.41 client
+  before UI cutover. Use only query and virtual-memory-read process rights,
+  reject runtime commands at the shadow host boundary, skip unsupported
+  clients, and await host disposal during client removal and application
+  shutdown.
 - Design a scripting-compatible intent boundary without adding scripting now.
 - Treat MoonSharp as a future optional adapter, not a runtime dependency.
 - Keep patching isolated from automation decisions.
