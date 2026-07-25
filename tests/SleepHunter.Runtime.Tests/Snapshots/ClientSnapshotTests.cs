@@ -121,7 +121,8 @@ public sealed class ClientSnapshotTests
             vitals,
             spellbook,
             skillbook,
-            location);
+            location,
+            isInventoryExpanded: true);
 
         Assert.Multiple(() =>
         {
@@ -132,6 +133,7 @@ public sealed class ClientSnapshotTests
             Assert.That(snapshot.Spellbook, Is.EqualTo(spellbook));
             Assert.That(snapshot.Skillbook, Is.EqualTo(skillbook));
             Assert.That(snapshot.Location, Is.EqualTo(location));
+            Assert.That(snapshot.IsInventoryExpanded, Is.True);
         });
     }
 }
