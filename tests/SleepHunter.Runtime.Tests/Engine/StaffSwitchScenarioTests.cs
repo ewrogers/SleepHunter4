@@ -105,6 +105,198 @@ public sealed class StaffSwitchScenarioTests
     }
 
     [Test]
+    public void ShouldExpandInventoryBeforeEquippingAnExtendedSlot()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(35, staff.Name)
+        ]);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            inventory.Items);
+
+        var expand = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var equip = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null),
+            isInventoryExpanded: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInventoryIntent>());
+            Assert.That(expand.State.PendingAction?.Attempt, Is.EqualTo(1));
+            Assert.That(
+                expand.State.PendingAction?.MaximumAttempts,
+                Is.EqualTo(1));
+            Assert.That(
+                expand.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.ChangingInventoryMode));
+            Assert.That(
+                expand.State.StaffSwitch?.TargetInventoryExpanded,
+                Is.True);
+            Assert.That(
+                expand.State.StaffSwitch?.MaximumAttempts,
+                Is.EqualTo(TestPolicy.MaximumAttempts));
+            Assert.That(equip.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(
+                ((EquipWeaponIntent)equip.Intent!).InventorySlot,
+                Is.EqualTo(35));
+            Assert.That(equip.State.PendingAction?.Attempt, Is.EqualTo(1));
+            Assert.That(
+                equip.State.PendingAction?.MaximumAttempts,
+                Is.EqualTo(TestPolicy.MaximumAttempts));
+        });
+    }
+
+    [Test]
+    public void ShouldCollapseInventoryBeforeEquippingACompactSlot()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(7, staff.Name)
+        ]);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            inventory.Items,
+            isInventoryExpanded: true);
+
+        var collapse = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var equip = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                collapse.Intent,
+                Is.TypeOf<CollapseInventoryIntent>());
+            Assert.That(
+                collapse.State.StaffSwitch?.TargetInventoryExpanded,
+                Is.False);
+            Assert.That(equip.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(
+                ((EquipWeaponIntent)equip.Intent!).InventorySlot,
+                Is.EqualTo(7));
+        });
+    }
+
+    [Test]
+    public void ShouldNotReplayAnUnconfirmedInventoryToggle()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            [new InventoryItemSnapshot(35, staff.Name)]);
+        var expand = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+
+        scenario.AdvanceBy(TestPolicy.AttemptTimeout);
+        var timedOut = scenario.Dispatch(
+            expand.ScheduledEvents.Single().Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInventoryIntent>());
+            Assert.That(timedOut.Intent, Is.Null);
+            Assert.That(timedOut.State.PendingAction, Is.Null);
+            Assert.That(
+                timedOut.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.TimedOut));
+        });
+    }
+
+    [Test]
+    public void ShouldRestoreInventoryModeBeforeAnEquipmentRetry()
+    {
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(7, staff.Name)
+        ]);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Inventory,
+            CharacterClass.Wizard,
+            inventory.Items);
+        var firstEquip = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null),
+            isInventoryExpanded: true);
+        scenario.AdvanceBy(
+            TestPolicy.AttemptTimeout - TimeSpan.FromTicks(1));
+
+        var collapse = scenario.Dispatch(
+            firstEquip.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var retryEquip = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstEquip.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(
+                collapse.Intent,
+                Is.TypeOf<CollapseInventoryIntent>());
+            Assert.That(
+                collapse.State.StaffSwitch?.CompletedEquipmentAttempts,
+                Is.EqualTo(1));
+            Assert.That(retryEquip.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(retryEquip.State.PendingAction?.Attempt, Is.EqualTo(2));
+            Assert.That(
+                retryEquip.State.PendingAction?.MaximumAttempts,
+                Is.EqualTo(TestPolicy.MaximumAttempts));
+        });
+    }
+
+    [Test]
     public void ShouldSequenceInventoryPanelBeforeEquipmentIntent()
     {
         var staff = Candidate(
@@ -513,6 +705,11 @@ public sealed class StaffSwitchScenarioTests
                     staff.Name,
                     inventorySlot: null));
             Assert.Throws<ArgumentOutOfRangeException>(
+                () => _ = new EquipWeaponIntent(
+                    new ClientActionId(1),
+                    staff.Name,
+                    InventoryItemSnapshot.MaximumSlot));
+            Assert.Throws<ArgumentOutOfRangeException>(
                 () => _ = new RequestStaffSwitchCommand(
                     baseCastLines: -1,
                     [staff]));
@@ -558,7 +755,8 @@ public sealed class StaffSwitchScenarioTests
         ClientPanel activePanel,
         CharacterClass characterClass,
         IEnumerable<InventoryItemSnapshot> inventory,
-        string? equippedWeapon = null)
+        string? equippedWeapon = null,
+        bool isInventoryExpanded = false)
     {
         var scenario = new MacroScenario();
         scenario.Observe(
@@ -566,7 +764,8 @@ public sealed class StaffSwitchScenarioTests
             activePanel: activePanel,
             character: Character(characterClass),
             inventory: new InventorySnapshot(inventory),
-            equipment: new EquipmentSnapshot(equippedWeapon));
+            equipment: new EquipmentSnapshot(equippedWeapon),
+            isInventoryExpanded: isInventoryExpanded);
         scenario.Start();
         return scenario;
     }

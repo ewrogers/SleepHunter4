@@ -11,8 +11,11 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
     private const int BaseClientWidth = 640;
     private const int BaseClientHeight = 480;
     private const int PanelX = 545;
+    private const int InventoryToggleX = 570;
+    private const int InventoryToggleY = 320;
     private const int SlotOriginX = 110;
     private const int SlotOriginY = 350;
+    private const int ExpandedSlotOriginY = 285;
     private const int SlotSize = 35;
 
     private readonly IVirtualKeyMapper keyMapper;
@@ -46,10 +49,24 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 Keystroke(intent, VirtualKey.Oem3),
             AssailIntent =>
                 Keystroke(intent, VirtualKey.Space),
+            ExpandInventoryIntent expandInventory =>
+                PlanInventoryMode(
+                    expandInventory,
+                    target,
+                    snapshot,
+                    targetInventoryExpanded: true),
+            CollapseInventoryIntent collapseInventory =>
+                PlanInventoryMode(
+                    collapseInventory,
+                    target,
+                    snapshot,
+                    targetInventoryExpanded: false),
             SwitchPanelIntent switchPanel =>
                 PlanPanelSwitch(switchPanel, target, snapshot),
             UseSkillIntent useSkill =>
                 PlanSkill(useSkill, target, snapshot),
+            EquipWeaponIntent equipWeapon =>
+                PlanWeapon(equipWeapon, target, snapshot),
             _ => ClientIntentPlanResult.Unsupported(
                 intent.ActionId,
                 ClientIntentPlanFailure.UnsupportedIntent,
@@ -69,6 +86,41 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
                 intent.ActionId,
                 ClientIntentPlanFailure.InputUnavailable,
                 $"Virtual key '{key}' could not be mapped to a scan code.");
+
+    private static ClientIntentPlanResult PlanInventoryMode(
+        ClientActionIntent intent,
+        ClientWindowTarget target,
+        ClientSnapshot snapshot,
+        bool targetInventoryExpanded)
+    {
+        if (snapshot.ActivePanel != ClientPanel.Inventory)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.PanelMismatch,
+                "The inventory display mode can change only from the inventory panel.");
+        }
+
+        if (snapshot.IsInventoryExpanded == targetInventoryExpanded)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.AlreadySatisfied,
+                "The requested inventory display mode is already active.");
+        }
+
+        var basePoint = new Usda741InputMessages.ClientPoint(
+            InventoryToggleX,
+            InventoryToggleY);
+        if (!TryScalePoint(target, basePoint, out var point))
+        {
+            return CoordinateFailure(intent);
+        }
+
+        return ClientIntentPlanResult.Planned(
+            intent.ActionId,
+            Usda741InputMessages.Click(point));
+    }
 
     private ClientIntentPlanResult PlanPanelSwitch(
         SwitchPanelIntent intent,
@@ -138,6 +190,67 @@ public sealed class Usda741ClientIntentPlanner : IClientIntentPlanner
         var basePoint = new Usda741InputMessages.ClientPoint(
             SlotOriginX + (column * SlotSize),
             SlotOriginY + (row * SlotSize));
+        if (!TryScalePoint(target, basePoint, out var point))
+        {
+            return CoordinateFailure(intent);
+        }
+
+        return ClientIntentPlanResult.Planned(
+            intent.ActionId,
+            Usda741InputMessages.DoubleClick(point));
+    }
+
+    private ClientIntentPlanResult PlanWeapon(
+        EquipWeaponIntent intent,
+        ClientWindowTarget target,
+        ClientSnapshot snapshot)
+    {
+        if (intent.IsUnequip)
+        {
+            return Keystroke(intent, VirtualKey.Oem3);
+        }
+
+        if (snapshot.ActivePanel != ClientPanel.Inventory)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.PanelMismatch,
+                "Equipping a weapon requires the inventory panel.");
+        }
+
+        var inventorySlot = intent.InventorySlot!.Value;
+        var requiresExpandedInventory =
+            inventorySlot > InventoryItemSnapshot.MaximumCollapsedSlot;
+        if (snapshot.IsInventoryExpanded != requiresExpandedInventory)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.InventoryModeMismatch,
+                "The observed inventory display mode does not expose the requested slot.");
+        }
+
+        var selectedItem = snapshot.Inventory?.Items.FirstOrDefault(
+            item => item.Slot == inventorySlot);
+        if (selectedItem is null ||
+            !string.Equals(
+                selectedItem.Name,
+                intent.StaffName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.InventoryItemMismatch,
+                "The requested staff is not present in the observed inventory slot.");
+        }
+
+        var row = (inventorySlot - 1) / 12;
+        var column = (inventorySlot - 1) % 12;
+        var originY = snapshot.IsInventoryExpanded
+            ? ExpandedSlotOriginY
+            : SlotOriginY;
+        var basePoint = new Usda741InputMessages.ClientPoint(
+            SlotOriginX + (column * SlotSize),
+            originY + (row * SlotSize));
         if (!TryScalePoint(target, basePoint, out var point))
         {
             return CoordinateFailure(intent);

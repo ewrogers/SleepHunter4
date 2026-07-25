@@ -67,7 +67,33 @@ public sealed partial class MacroEngine
         SpellCastState? spellCast = null,
         FlowerState? flower = null)
     {
-        var snapshot = currentState.LatestSnapshot!;
+        return ContinueStaffSwitch(
+            currentState,
+            selection,
+            policy.AttemptTimeout,
+            policy.MaximumAttempts,
+            completedEquipmentAttempts: 0,
+            currentTime,
+            spellCast: spellCast,
+            flower: flower);
+    }
+
+    private static MacroDecision ContinueStaffSwitch(
+        MacroState currentState,
+        StaffSelection selection,
+        TimeSpan attemptTimeout,
+        int maximumAttempts,
+        int completedEquipmentAttempts,
+        MacroTimestamp currentTime,
+        ClientSnapshot? latestSnapshot = null,
+        PanelTransitionState? panelTransition = null,
+        SpellCastState? spellCast = null,
+        FlowerState? flower = null)
+    {
+        var snapshot = latestSnapshot ?? currentState.LatestSnapshot!;
+        var policy = new StaffEquipmentPolicy(
+            attemptTimeout,
+            maximumAttempts);
 
         if (selection.Action == StaffSelectionAction.Equip &&
             !snapshot.ActivePanel.IsEquivalentTo(ClientPanel.Inventory))
@@ -75,14 +101,14 @@ public sealed partial class MacroEngine
             var staffSwitch = StaffSwitchState.WaitingForInventory(
                 selection,
                 policy,
-                completedAttempts: 0);
+                completedEquipmentAttempts);
 
             return IssuePanelTransitionAttempt(
                 currentState,
                 ClientPanel.Inventory,
-                policy.AttemptTimeout,
+                attemptTimeout,
                 attempt: 1,
-                policy.MaximumAttempts,
+                maximumAttempts,
                 currentTime,
                 staffSwitch,
                 spellCast,
@@ -90,15 +116,121 @@ public sealed partial class MacroEngine
                 flower: flower);
         }
 
+        if (selection is
+            {
+                Action: StaffSelectionAction.Equip,
+                InventorySlot: { } inventorySlot
+            })
+        {
+            var targetInventoryExpanded =
+                inventorySlot > InventoryItemSnapshot.MaximumCollapsedSlot;
+            if (snapshot.IsInventoryExpanded != targetInventoryExpanded)
+            {
+                return IssueInventoryModeAttempt(
+                    currentState,
+                    selection,
+                    targetInventoryExpanded,
+                    attemptTimeout,
+                    completedEquipmentAttempts,
+                    maximumAttempts,
+                    currentTime,
+                    snapshot,
+                    panelTransition,
+                    spellCast,
+                    flower);
+            }
+        }
+
         return IssueStaffEquipmentAttempt(
             currentState,
             selection,
-            policy.AttemptTimeout,
-            attempt: 1,
-            policy.MaximumAttempts,
+            attemptTimeout,
+            checked(completedEquipmentAttempts + 1),
+            maximumAttempts,
             currentTime,
-            spellCast: spellCast,
-            flower: flower);
+            snapshot,
+            panelTransition,
+            spellCast,
+            flower);
+    }
+
+    private static MacroDecision ContinueStaffSwitchAfterObservation(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime,
+        PanelTransitionState? panelTransition,
+        StaffSwitchState staffSwitch,
+        SpellCastState? spellCast)
+    {
+        var selection = staffSwitch.Selection!;
+
+        if (spellCast is
+            {
+                Status: SpellCastStatus.WaitingForStaff
+            })
+        {
+            var refreshedPlan = ReplanSelectedSpell(
+                currentState,
+                spellCast,
+                snapshot,
+                currentTime);
+            if (!DoesPlanMatchSelection(spellCast, refreshedPlan))
+            {
+                var nextSpellCast = refreshedPlan.HasSelection
+                    ? spellCast.SelectionInvalidated(refreshedPlan)
+                    : spellCast.Replanned(refreshedPlan);
+                var spellQueue = refreshedPlan.HasSelection
+                    ? currentState.SpellQueue
+                    : refreshedPlan.Queue;
+
+                return Changed(
+                    currentState,
+                    currentState.Lifecycle,
+                    currentState.StopReason,
+                    snapshot,
+                    currentState.LastTransitionAt,
+                    pendingAction: null,
+                    spellQueue: spellQueue,
+                    panelTransition: panelTransition,
+                    staffSwitch: staffSwitch.SelectionInvalidated(),
+                    spellCooldowns: refreshedPlan.Cooldowns,
+                    spellCast: nextSpellCast);
+            }
+
+            spellCast = spellCast.WithPlan(refreshedPlan);
+        }
+
+        if (!IsStaffSelectionStillValid(selection, snapshot))
+        {
+            var nextSpellCast = spellCast is
+            {
+                Status: SpellCastStatus.WaitingForStaff
+            } waitingForStaff
+                ? waitingForStaff.StaffUnavailable()
+                : spellCast;
+
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                snapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                panelTransition: panelTransition,
+                staffSwitch: staffSwitch.SelectionInvalidated(),
+                spellCast: nextSpellCast);
+        }
+
+        return ContinueStaffSwitch(
+            currentState,
+            selection,
+            staffSwitch.AttemptTimeout,
+            staffSwitch.MaximumAttempts,
+            staffSwitch.CompletedEquipmentAttempts,
+            currentTime,
+            snapshot,
+            panelTransition,
+            spellCast);
     }
 
     private static MacroDecision HandleStaffEquipmentDeadline(
@@ -166,37 +298,104 @@ public sealed partial class MacroEngine
                 flower: flower);
         }
 
-        if (selection.Action == StaffSelectionAction.Equip &&
-            !snapshot.ActivePanel.IsEquivalentTo(ClientPanel.Inventory))
-        {
-            var policy = new StaffEquipmentPolicy(
-                staffSwitch.AttemptTimeout,
-                staffSwitch.MaximumAttempts);
-            var waiting = StaffSwitchState.WaitingForInventory(
-                selection,
-                policy,
-                completedAttempts: pendingAction.Attempt);
-
-            return IssuePanelTransitionAttempt(
-                currentState,
-                ClientPanel.Inventory,
-                staffSwitch.AttemptTimeout,
-                attempt: 1,
-                staffSwitch.MaximumAttempts,
-                currentTime,
-                waiting,
-                currentState.SpellCast,
-                currentState.SpellCooldowns);
-        }
-
-        return IssueStaffEquipmentAttempt(
+        return ContinueStaffSwitch(
             currentState,
             selection,
             staffSwitch.AttemptTimeout,
-            checked(pendingAction.Attempt + 1),
             staffSwitch.MaximumAttempts,
+            pendingAction.Attempt,
             currentTime,
             spellCast: currentState.SpellCast);
+    }
+
+    private static MacroDecision HandleInventoryModeDeadline(
+        MacroState currentState,
+        PendingAction pendingAction)
+    {
+        if (currentState.StaffSwitch is not
+            {
+                Status: StaffSwitchStatus.ChangingInventoryMode
+            } staffSwitch ||
+            staffSwitch.ActionId != pendingAction.Intent.ActionId)
+        {
+            return Unchanged(currentState);
+        }
+
+        var spellCast = currentState.SpellCast is
+        {
+            Status: SpellCastStatus.WaitingForStaff
+        } waitingForStaff
+            ? waitingForStaff.StaffUnavailable()
+            : currentState.SpellCast;
+        var flower = spellCast?.Origin == SpellCastOrigin.Flower
+            ? currentState.Flower?.StaffUnavailable()
+            : currentState.Flower;
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            pendingAction: null,
+            staffSwitch: staffSwitch.TimedOut(),
+            spellCast: spellCast,
+            flower: flower);
+    }
+
+    private static MacroDecision IssueInventoryModeAttempt(
+        MacroState currentState,
+        StaffSelection selection,
+        bool targetInventoryExpanded,
+        TimeSpan attemptTimeout,
+        int completedEquipmentAttempts,
+        int maximumEquipmentAttempts,
+        MacroTimestamp currentTime,
+        ClientSnapshot latestSnapshot,
+        PanelTransitionState? panelTransition = null,
+        SpellCastState? spellCast = null,
+        FlowerState? flower = null)
+    {
+        var actionId = new ClientActionId(currentState.NextClientActionId);
+        ClientActionIntent intent = targetInventoryExpanded
+            ? new ExpandInventoryIntent(actionId)
+            : new CollapseInventoryIntent(actionId);
+        var deadline = currentTime.Add(attemptTimeout);
+        var pendingAction = new PendingAction(
+            intent,
+            currentTime,
+            deadline,
+            attempt: 1,
+            maximumAttempts: 1,
+            latestSnapshot.Sequence);
+        var staffSwitch = StaffSwitchState.ChangingInventoryMode(
+            selection,
+            attemptTimeout,
+            completedEquipmentAttempts,
+            maximumEquipmentAttempts,
+            actionId,
+            targetInventoryExpanded);
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            latestSnapshot,
+            currentState.LastTransitionAt,
+            pendingAction,
+            panelTransition: panelTransition,
+            staffSwitch: staffSwitch,
+            spellCast: spellCast,
+            flowerSchedules: flower?.Plan.Schedules,
+            flower: flower,
+            nextClientActionId: checked(currentState.NextClientActionId + 1),
+            intent: intent,
+            scheduledEvents:
+            [
+                new ScheduledMacroEvent(
+                    new ClientActionDeadlineElapsed(actionId),
+                    deadline)
+            ]);
     }
 
     private static MacroDecision IssueStaffEquipmentAttempt(
@@ -284,6 +483,23 @@ public sealed partial class MacroEngine
                CanSnapshotConfirmAction(pendingAction, snapshot);
     }
 
+    private static bool CanConfirmInventoryMode(
+        PendingAction? pendingAction,
+        ClientSnapshot snapshot)
+    {
+        var targetInventoryExpanded = pendingAction?.Intent switch
+        {
+            ExpandInventoryIntent => true,
+            CollapseInventoryIntent => false,
+            _ => (bool?)null
+        };
+
+        return targetInventoryExpanded.HasValue &&
+               snapshot.IsInventoryExpanded ==
+               targetInventoryExpanded.Value &&
+               CanSnapshotConfirmAction(pendingAction!, snapshot);
+    }
+
     private static bool IsStaffSelectionStillValid(
         StaffSelection selection,
         ClientSnapshot snapshot)
@@ -325,6 +541,7 @@ public sealed partial class MacroEngine
         currentState.StaffSwitch is
         {
             Status: StaffSwitchStatus.WaitingForInventory or
+                StaffSwitchStatus.ChangingInventoryMode or
                 StaffSwitchStatus.ChangingWeapon
         } staffSwitch
             ? staffSwitch.Cancelled()

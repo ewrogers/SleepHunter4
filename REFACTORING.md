@@ -464,9 +464,10 @@ Intent planning reports planned, rejected, or unsupported before native input
 is attempted. Issuance then reports issued, rejected, failed, or partially
 issued and retains the planning result. A rejection may therefore identify
 either invalid snapshot context with no dispatch, or a valid input plan rejected
-by the HWND guard with dispatch diagnostics. Cast-spell and equipment input
-translation remain explicitly unsupported until their targeting and expanded
-inventory workflows are implemented.
+by the HWND guard with dispatch diagnostics. Equipment input additionally
+requires the inventory panel, the correct observed inventory display mode, and
+the expected staff name in the requested slot. Cast-spell input remains
+explicitly unsupported until its targeting workflow is implemented.
 
 Pending actions contain enough information to diagnose and test behavior:
 
@@ -926,9 +927,16 @@ As of July 24, 2026:
 - Evaluate staff switch commands from the latest coherent character, inventory,
   and equipment snapshot rather than from command-captured mutable models.
 - Sequence staff equipping through the confirmed inventory panel before
-  emitting a semantic weapon intent.
-- Revalidate the selected class requirement and inventory slot after panel
-  changes and before retries.
+  selecting the required inventory display mode and emitting a semantic weapon
+  intent. USDA 7.41 slots 1 through 34 use the collapsed mode, while slots 35
+  through 59 use the expanded mode and its documented slot origin. Slot 60 is
+  synthetic gold state and is never a usable equipment source.
+- Represent inventory expansion and collapse as semantic client intents.
+  Confirm the toggle from a later coherent snapshot before equipping. Never
+  retry an unconfirmed toggle because replaying it could reverse an action the
+  client already completed.
+- Revalidate the selected class requirement, inventory slot, and staff name
+  after panel or inventory-mode changes and before equipment retries.
 - Confirm weapon changes only from a later coherent equipment snapshot.
 - Publish stable snapshot-unavailable, selection-invalidated,
   panel-unavailable, timed-out, cancelled, and succeeded staff outcomes.
@@ -1085,7 +1093,6 @@ them:
 - Exact WPF hosting and dependency-injection packages.
 - Whether game metadata needs a separate assembly.
 - Timing of patcher extraction.
-- Exact expanded-inventory input sequencing for equipment intents.
 - Exact client-coordinate projection for semantic targets and pixel offsets.
 - Whether safe skill or assail actions may interleave with an active spell cast
   window while preserving the single-writer pending-action invariant.

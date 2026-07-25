@@ -121,6 +121,67 @@ public sealed class SpellStaffCoordinationScenarioTests
     }
 
     [Test]
+    public void ShouldExpandInventoryBeforeEquippingSpellStaff()
+    {
+        var entry = Entry();
+        var spell = Spell();
+        var staff = Candidate(
+            "wizard staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var catalog = Catalog(entry, staff);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(35, staff.Name)
+        ]);
+        var scenario = CreateRunningScenario(
+            ClientPanel.Stats,
+            entry,
+            spell,
+            CharacterClass.Wizard,
+            inventory.Items,
+            equippedWeapon: null);
+
+        var panel = scenario.Send(
+            new CastNextSpellCommand(TestPolicy, catalog));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var expand = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null),
+            vitals: Vitals(),
+            spellbook: Spellbook(spell));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var equip = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.Inventory,
+            character: Character(CharacterClass.Wizard),
+            inventory: inventory,
+            equipment: new EquipmentSnapshot(weaponName: null),
+            vitals: Vitals(),
+            spellbook: Spellbook(spell),
+            isInventoryExpanded: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(panel.Intent, Is.TypeOf<SwitchPanelIntent>());
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInventoryIntent>());
+            Assert.That(equip.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(
+                expand.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.ChangingInventoryMode));
+            Assert.That(
+                expand.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.WaitingForStaff));
+            Assert.That(
+                ((EquipWeaponIntent)equip.Intent!).InventorySlot,
+                Is.EqualTo(35));
+        });
+    }
+
+    [Test]
     public void ShouldIgnoreForeignClassStaffAndCastWithBaseLines()
     {
         var entry = Entry();

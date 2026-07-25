@@ -121,6 +121,42 @@ internal static class MacroDecisionInvariants
                 "Pending staff equipment metadata must match its client action.");
         }
 
+        ClientActionIntent? pendingInventoryModeIntent =
+            decision.State.PendingAction?.Intent switch
+            {
+                ExpandInventoryIntent expand => expand,
+                CollapseInventoryIntent collapse => collapse,
+                _ => null
+            };
+        var changingInventoryMode = decision.State.StaffSwitch is
+        {
+            Status: StaffSwitchStatus.ChangingInventoryMode
+        };
+
+        if ((pendingInventoryModeIntent is not null) !=
+            changingInventoryMode)
+        {
+            throw new InvalidOperationException(
+                "Pending inventory mode state must match its client action.");
+        }
+
+        if (pendingInventoryModeIntent is not null &&
+            (decision.State.StaffSwitch!.ActionId !=
+             pendingInventoryModeIntent.ActionId ||
+             decision.State.StaffSwitch.Attempt != 1 ||
+             decision.State.PendingAction!.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1 ||
+             decision.State.StaffSwitch.CompletedEquipmentAttempts >=
+             decision.State.StaffSwitch.MaximumAttempts ||
+             decision.State.StaffSwitch.TargetInventoryExpanded !=
+             (pendingInventoryModeIntent is ExpandInventoryIntent) ||
+             decision.State.StaffSwitch.Selection?.Action !=
+             StaffSelectionAction.Equip))
+        {
+            throw new InvalidOperationException(
+                "Pending inventory mode metadata must match its client action.");
+        }
+
         if (decision.State.StaffSwitch is
             {
                 Status: StaffSwitchStatus.WaitingForInventory
@@ -167,6 +203,7 @@ internal static class MacroDecisionInvariants
              decision.State.StaffSwitch is not
              {
                  Status: StaffSwitchStatus.WaitingForInventory or
+                      StaffSwitchStatus.ChangingInventoryMode or
                       StaffSwitchStatus.ChangingWeapon,
                  Selection: { } staffSelection
              } ||
