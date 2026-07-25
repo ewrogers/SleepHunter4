@@ -1152,6 +1152,12 @@ As of July 24, 2026:
   one accepted snapshot. Continue, pause, and stop are explicit configuration
   choices. An interruption accepts the new snapshot, cancels in-flight work,
   and never terminates the client process.
+- Capture a known active panel only when an automatic category starts bounded
+  work. After that work finishes, use a later fresh snapshot to restore the
+  original panel before selecting another automatic action.
+- Reuse bounded panel transition attempts for preservation. Publish explicit
+  succeeded, timed-out, issue-failed, and cancelled outcomes, and cancel
+  preservation on pause, stop, logout, or another lifecycle interruption.
 - Represent flower queues as immutable entries with stable identifiers,
   monotonic interval schedules, deterministic rotation, and interval or
   character-mana conditions. When both conditions are configured, either can

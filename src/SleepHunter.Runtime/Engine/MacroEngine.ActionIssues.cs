@@ -51,6 +51,7 @@ public sealed partial class MacroEngine
         var skillUse = currentState.SkillUse;
         var disarm = currentState.Disarm;
         var dialog = currentState.Dialog;
+        var panelPreservation = currentState.PanelPreservation;
 
         switch (pendingAction.Intent)
         {
@@ -164,6 +165,15 @@ public sealed partial class MacroEngine
         var flower = spellCast?.Origin == SpellCastOrigin.Flower
             ? currentState.Flower?.WithSpellCast(spellCast)
             : currentState.Flower;
+        if (panelPreservation is { IsActive: true } preservation)
+        {
+            panelPreservation =
+                preservation.Status == PanelPreservationStatus.Restoring &&
+                pendingAction.Intent is SwitchPanelIntent
+                    ? preservation.IssueFailed()
+                    : preservation.Cancelled();
+        }
+
         return Changed(
             currentState,
             MacroLifecycle.Paused,
@@ -178,6 +188,7 @@ public sealed partial class MacroEngine
             disarm: disarm,
             dialog: dialog,
             flower: flower,
+            panelPreservation: panelPreservation,
             lastActionIssue: issue);
     }
 }

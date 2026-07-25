@@ -247,7 +247,9 @@ public sealed partial class MacroEngine : IMacroEngine
             skillUse: CancelPendingSkillUse(currentState),
             disarm: CancelPendingDisarm(currentState),
             dialog: CancelPendingDialog(currentState),
-            flower: CancelPendingFlower(currentState));
+            flower: CancelPendingFlower(currentState),
+            panelPreservation:
+                CancelPendingPanelPreservation(currentState));
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -291,7 +293,10 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingDialog(currentState),
             flower: nextLifecycle == MacroLifecycle.Running
                 ? currentState.Flower
-                : CancelPendingFlower(currentState));
+                : CancelPendingFlower(currentState),
+            panelPreservation: nextLifecycle == MacroLifecycle.Running
+                ? currentState.PanelPreservation
+                : CancelPendingPanelPreservation(currentState));
     }
 
     private static MacroDecision HandleSnapshot(
@@ -350,6 +355,9 @@ public sealed partial class MacroEngine : IMacroEngine
         var flower = clientLoggedOut
             ? CancelPendingFlower(currentState)
             : currentState.Flower;
+        var panelPreservation = clientLoggedOut
+            ? CancelPendingPanelPreservation(currentState)
+            : currentState.PanelPreservation;
 
         if (!clientLoggedOut &&
             TryGetObservationChange(
@@ -378,7 +386,9 @@ public sealed partial class MacroEngine : IMacroEngine
                 skillUse: CancelPendingSkillUse(currentState),
                 disarm: CancelPendingDisarm(currentState),
                 dialog: CancelPendingDialog(currentState),
-                flower: CancelPendingFlower(currentState));
+                flower: CancelPendingFlower(currentState),
+                panelPreservation:
+                    CancelPendingPanelPreservation(currentState));
         }
 
         if (!clientLoggedOut &&
@@ -391,6 +401,24 @@ public sealed partial class MacroEngine : IMacroEngine
                 currentState.PendingAction.MaximumAttempts,
                 switchIntent.ActionId);
             pendingAction = null;
+
+            if (panelPreservation is
+                {
+                    Status: PanelPreservationStatus.Restoring
+                } restoring &&
+                switchIntent.TargetPanel.IsEquivalentTo(
+                    restoring.OriginalPanel))
+            {
+                return Changed(
+                    currentState,
+                    currentState.Lifecycle,
+                    currentState.StopReason,
+                    snapshot,
+                    currentState.LastTransitionAt,
+                    pendingAction: null,
+                    panelTransition: panelTransition,
+                    panelPreservation: restoring.Succeeded());
+            }
 
             if (staffSwitch is
                 {
@@ -516,7 +544,8 @@ public sealed partial class MacroEngine : IMacroEngine
             skillUse: skillUse,
             disarm: disarm,
             dialog: dialog,
-            flower: flower);
+            flower: flower,
+            panelPreservation: panelPreservation);
     }
 
     private static bool TryGetObservationChange(
@@ -743,6 +772,12 @@ public sealed partial class MacroEngine : IMacroEngine
             var flower = spellCast?.Origin == SpellCastOrigin.Flower
                 ? currentState.Flower?.WithSpellCast(spellCast)
                 : currentState.Flower;
+            var panelPreservation = currentState.PanelPreservation is
+            {
+                Status: PanelPreservationStatus.Restoring
+            } restoring
+                    ? restoring.TimedOut()
+                    : currentState.PanelPreservation;
 
             return Changed(
                 currentState,
@@ -755,7 +790,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 staffSwitch: staffSwitch,
                 spellCast: spellCast,
                 skillUse: skillUse,
-                flower: flower);
+                flower: flower,
+                panelPreservation: panelPreservation);
         }
 
         return IssuePanelTransitionAttempt(
@@ -770,7 +806,8 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.SpellCooldowns,
             currentState.SkillUse,
             currentState.SkillCooldowns,
-            currentState.Disarm);
+            currentState.Disarm,
+            panelPreservation: currentState.PanelPreservation);
     }
 
     private static MacroDecision IssuePanelTransitionAttempt(
@@ -786,7 +823,8 @@ public sealed partial class MacroEngine : IMacroEngine
         SkillUseState? skillUse = null,
         SkillCooldownState? skillCooldowns = null,
         DisarmState? disarm = null,
-        FlowerState? flower = null)
+        FlowerState? flower = null,
+        PanelPreservationState? panelPreservation = null)
     {
         var actionId = new ClientActionId(currentState.NextClientActionId);
         var intent = new SwitchPanelIntent(actionId, targetPanel);
@@ -820,6 +858,7 @@ public sealed partial class MacroEngine : IMacroEngine
             disarm: disarm,
             flowerSchedules: flower?.Plan.Schedules,
             flower: flower,
+            panelPreservation: panelPreservation,
             nextClientActionId: checked(currentState.NextClientActionId + 1),
             intent: intent,
             scheduledEvents:
@@ -866,6 +905,15 @@ public sealed partial class MacroEngine : IMacroEngine
         } transition
             ? transition.Cancelled()
             : currentState.PanelTransition;
+
+    private static PanelPreservationState? CancelPendingPanelPreservation(
+        MacroState currentState) =>
+        currentState.PanelPreservation is
+        {
+            IsActive: true
+        } preservation
+            ? preservation.Cancelled()
+            : currentState.PanelPreservation;
 
     private static MacroDecision ChangeQueues(
         MacroState currentState,
@@ -978,7 +1026,8 @@ public sealed partial class MacroEngine : IMacroEngine
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null,
         ClientActionIssue? lastActionIssue = null,
-        AutomationConfiguration? automation = null)
+        AutomationConfiguration? automation = null,
+        PanelPreservationState? panelPreservation = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -1010,7 +1059,8 @@ public sealed partial class MacroEngine : IMacroEngine
             spellTargetRotations ?? currentState.SpellTargetRotations,
             flowerTargetRotations ?? currentState.FlowerTargetRotations,
             lastActionIssue ?? currentState.LastActionIssue,
-            automation ?? currentState.Automation);
+            automation ?? currentState.Automation,
+            panelPreservation ?? currentState.PanelPreservation);
 
         return new MacroDecision(
             nextState,

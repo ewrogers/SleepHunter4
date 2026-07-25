@@ -133,6 +133,25 @@ internal static class MacroDecisionInvariants
                 "Pending panel transition metadata must match its client action.");
         }
 
+        if (decision.State.PanelPreservation is
+            {
+                Status: PanelPreservationStatus.Restoring
+            } restoring &&
+            (pendingSwitchIntent is null ||
+             !pendingSwitchIntent.TargetPanel.IsEquivalentTo(
+                 restoring.OriginalPanel)))
+        {
+            throw new InvalidOperationException(
+                "Restoring preserved panel state requires its matching panel action.");
+        }
+
+        if (decision.State.Lifecycle != MacroLifecycle.Running &&
+            decision.State.PanelPreservation is { IsActive: true })
+        {
+            throw new InvalidOperationException(
+                "Only running macro state can preserve an active panel.");
+        }
+
         var pendingWeaponIntent =
             decision.State.PendingAction?.Intent as EquipWeaponIntent;
         var changingWeapon = decision.State.StaffSwitch is

@@ -47,7 +47,8 @@ public sealed record MacroState
         TargetRotationState? spellTargetRotations = null,
         TargetRotationState? flowerTargetRotations = null,
         ClientActionIssue? lastActionIssue = null,
-        AutomationConfiguration? automation = null)
+        AutomationConfiguration? automation = null,
+        PanelPreservationState? panelPreservation = null)
     {
         if (revision < 0)
         {
@@ -70,6 +71,14 @@ public sealed record MacroState
             throw new ArgumentException(
                 "Only running macro state can contain a pending action.",
                 nameof(pendingAction));
+        }
+
+        if (lifecycle != MacroLifecycle.Running &&
+            panelPreservation is { IsActive: true })
+        {
+            throw new ArgumentException(
+                "Only running macro state can preserve an active panel.",
+                nameof(panelPreservation));
         }
 
         if (nextClientActionId <= 0)
@@ -107,6 +116,7 @@ public sealed record MacroState
             flowerTargetRotations ?? TargetRotationState.Empty;
         LastActionIssue = lastActionIssue;
         Automation = automation ?? AutomationConfiguration.Disabled;
+        PanelPreservation = panelPreservation;
     }
 
     public long Revision { get; }
@@ -157,6 +167,8 @@ public sealed record MacroState
 
     public AutomationConfiguration Automation { get; }
 
+    public PanelPreservationState? PanelPreservation { get; }
+
     internal long NextClientActionId { get; }
 
     internal bool HasSameContent(MacroState other)
@@ -192,5 +204,40 @@ public sealed record MacroState
             SpellTargetRotations,
             FlowerTargetRotations,
             LastActionIssue,
-            Automation);
+            Automation,
+            PanelPreservation);
+
+    internal MacroState WithPanelPreservation(
+        PanelPreservationState panelPreservation)
+    {
+        ArgumentNullException.ThrowIfNull(panelPreservation);
+
+        return new MacroState(
+            Revision,
+            Lifecycle,
+            StopReason,
+            LatestSnapshot,
+            LastTransitionAt,
+            PendingAction,
+            SpellQueue,
+            PanelTransition,
+            NextClientActionId,
+            StaffSwitch,
+            SpellCooldowns,
+            SpellCast,
+            SkillQueue,
+            SkillCooldowns,
+            SkillUse,
+            Disarm,
+            Dialog,
+            FlowerQueue,
+            FlowerSchedules,
+            ClientRoster,
+            Flower,
+            SpellTargetRotations,
+            FlowerTargetRotations,
+            LastActionIssue,
+            Automation,
+            panelPreservation);
+    }
 }

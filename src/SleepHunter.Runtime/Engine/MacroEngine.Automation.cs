@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
@@ -42,7 +43,11 @@ public sealed partial class MacroEngine
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
             currentState.PendingAction,
-            automation: command.Configuration);
+            automation: command.Configuration,
+            panelPreservation:
+                command.Configuration.PanelPreservation.Enabled
+                    ? currentState.PanelPreservation
+                    : CancelPendingPanelPreservation(currentState));
     }
 
     private static MacroDecision RunAutomationCycle(
@@ -63,15 +68,37 @@ public sealed partial class MacroEngine
             return Unchanged(currentState);
         }
 
-        var categories = configuration.FlowerBeforeSpells
-            ? FlowerFirstCategories
-            : SpellFirstCategories;
         var state = currentState;
         var raisedEvents = ImmutableArray.CreateBuilder<MacroEvent>();
         var scheduledEvents =
             ImmutableArray.CreateBuilder<ScheduledMacroEvent>();
         MacroIntent? intent = null;
 
+        if (state.PanelPreservation is
+            {
+                Status: PanelPreservationStatus.Tracking
+            })
+        {
+            var restoration = RestorePreservedPanel(
+                state,
+                snapshot,
+                currentTime);
+            MacroDecisionInvariants.EnsureValid(
+                state,
+                restoration,
+                currentTime);
+            if (restoration.Intent is not null ||
+                restoration.State.PendingAction is not null)
+            {
+                return restoration;
+            }
+
+            state = restoration.State;
+        }
+
+        var categories = configuration.FlowerBeforeSpells
+            ? FlowerFirstCategories
+            : SpellFirstCategories;
         foreach (var category in categories)
         {
             if (!IsEnabled(configuration, category))
@@ -95,6 +122,15 @@ public sealed partial class MacroEngine
 
             if (intent is not null || state.PendingAction is not null)
             {
+                if (configuration.PanelPreservation.Enabled &&
+                    snapshot.ActivePanel != ClientPanel.Unknown)
+                {
+                    state = state.WithPanelPreservation(
+                        PanelPreservationState.Tracking(
+                            snapshot.ActivePanel,
+                            configuration.PanelPreservation.Transition));
+                }
+
                 break;
             }
         }
@@ -112,6 +148,35 @@ public sealed partial class MacroEngine
             scheduledEvents.ToImmutable(),
             intent,
             MacroViewSnapshot.FromState(state));
+    }
+
+    private static MacroDecision RestorePreservedPanel(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime)
+    {
+        var preservation = currentState.PanelPreservation!;
+        if (snapshot.ActivePanel.IsEquivalentTo(
+                preservation.OriginalPanel))
+        {
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                snapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                panelPreservation: preservation.Succeeded());
+        }
+
+        return IssuePanelTransitionAttempt(
+            currentState,
+            preservation.OriginalPanel,
+            preservation.Transition.AttemptTimeout,
+            attempt: 1,
+            preservation.Transition.MaximumAttempts,
+            currentTime,
+            panelPreservation: preservation.Restoring());
     }
 
     private static MacroDecision RunCategory(
@@ -186,6 +251,7 @@ public sealed partial class MacroEngine
             decision.State.PendingAction is not null ||
             decision.Intent is not null ||
             !decision.State.Automation.IsEnabled ||
+            WasPreservedPanelRestored(previousState, decision.State) ||
             !ShouldRequestAutomationCycle(input))
         {
             return decision;
@@ -199,6 +265,18 @@ public sealed partial class MacroEngine
             decision.Intent,
             decision.PublishedView);
     }
+
+    private static bool WasPreservedPanelRestored(
+        MacroState previousState,
+        MacroState nextState) =>
+        previousState.PanelPreservation is
+        {
+            Status: PanelPreservationStatus.Restoring
+        } &&
+        nextState.PanelPreservation is
+        {
+            Status: PanelPreservationStatus.Succeeded
+        };
 
     private static bool ShouldRequestAutomationCycle(MacroEvent input) =>
         input switch
