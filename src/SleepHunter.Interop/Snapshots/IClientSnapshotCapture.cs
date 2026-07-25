@@ -6,5 +6,7 @@ public interface IClientSnapshotCapture
 {
     ClientIdentity Client { get; }
 
-    SnapshotCaptureResult Capture(SnapshotSequence sequence);
+    SnapshotCaptureResult Capture(
+        SnapshotSequence sequence,
+        SnapshotCaptureSections sections = SnapshotCaptureSections.Core);
 }

@@ -827,6 +827,13 @@ As of July 24, 2026:
   capture. A null session is a complete logged-out observation. Transport
   failures, invalid field values, and changed state or ownership produce
   diagnostics and metrics, but never a partial snapshot.
+- Read the bounded USDA 7.41 compact inventory table for deterministic
+  slot/name observations, excluding the synthetic gold slot. Prefer the
+  coherent equipment snapshot for weapon and shield observations, but preserve
+  the bounded compact equipment-name table as a fallback. Revalidate every
+  collection root before publishing its parsed section. Keep these sections
+  opt-in so macros that do not need staff or disarm state are not blocked by an
+  unrelated collection.
 - Start with capture limits of 64 KiB per block, 4 KiB per string, 4 MiB total,
   4,096 transport reads, and 16 pointer dereferences. Section-specific parsing
   may use tighter limits, and measurement may justify revising the overall
