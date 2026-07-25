@@ -42,16 +42,14 @@ public sealed class ShadowClientRuntimeHost : IClientRuntimeHost
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command is ReplaceSpellQueueCommand or
-            ReplaceSkillQueueCommand or
-            ReplaceFlowerQueueCommand)
+        if (command is ReplaceQueuesCommand)
         {
             return host.SendCommandAsync(command, cancellationToken);
         }
 
         return ValueTask.FromException(
             new InvalidOperationException(
-                "A shadow client runtime host accepts only atomic queue replacement commands."));
+                "A shadow client runtime host accepts only an atomic queue set replacement command."));
     }
 
     public bool PublishClientRoster(ClientRosterSnapshot snapshot)
