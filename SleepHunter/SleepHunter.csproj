@@ -41,6 +41,13 @@
     <Resource Include="SleepHunter.ico" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\SleepHunter.Interop\SleepHunter.Interop.csproj" />
+    <ProjectReference Include="..\src\SleepHunter.Runtime\SleepHunter.Runtime.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="..\data\*.xml">
       <Link>%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
