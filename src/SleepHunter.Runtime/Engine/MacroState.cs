@@ -1,5 +1,7 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Equipment;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Snapshots;
@@ -29,7 +31,11 @@ public sealed record MacroState
         long nextClientActionId = 1,
         StaffSwitchState? staffSwitch = null,
         SpellCooldownState? spellCooldowns = null,
-        SpellCastState? spellCast = null)
+        SpellCastState? spellCast = null,
+        SkillQueueState? skillQueue = null,
+        SkillCooldownState? skillCooldowns = null,
+        SkillUseState? skillUse = null,
+        DisarmState? disarm = null)
     {
         if (revision < 0)
         {
@@ -74,6 +80,10 @@ public sealed record MacroState
         StaffSwitch = staffSwitch;
         SpellCooldowns = spellCooldowns ?? SpellCooldownState.Empty;
         SpellCast = spellCast;
+        SkillQueue = skillQueue ?? SkillQueueState.Empty;
+        SkillCooldowns = skillCooldowns ?? SkillCooldownState.Empty;
+        SkillUse = skillUse;
+        Disarm = disarm;
     }
 
     public long Revision { get; }
@@ -97,6 +107,14 @@ public sealed record MacroState
     public SpellCooldownState SpellCooldowns { get; }
 
     public SpellCastState? SpellCast { get; }
+
+    public SkillQueueState SkillQueue { get; }
+
+    public SkillCooldownState SkillCooldowns { get; }
+
+    public SkillUseState? SkillUse { get; }
+
+    public DisarmState? Disarm { get; }
 
     internal long NextClientActionId { get; }
 }

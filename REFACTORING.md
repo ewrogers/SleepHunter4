@@ -883,6 +883,24 @@ As of July 24, 2026:
   action adapter.
 - Derive disarm requirements from explicit skill metadata and the
   disarm-for-assails policy before any client action is requested.
+- Capture weapon and shield observations separately. A disarm prerequisite is
+  complete only when a later coherent equipment snapshot shows both hands
+  empty.
+- Represent disarming as `DisarmIntent`, independent of the active client
+  panel. Give it a finite retry budget and propagate timeout or missing
+  equipment state to the waiting skill workflow.
+- Represent individual skill activation as `UseSkillIntent` and space-bar
+  assailing as `AssailIntent`. Client adapters own the corresponding input
+  translation.
+- Revalidate the selected queue entry, observed skill, health, mana, cooldown,
+  action kind, and disarm requirement after every prerequisite confirmation.
+- Advance the skill queue only when the final skill or assail intent is issued.
+  Panel and disarm attempts do not consume its selection.
+- Treat skill and assail activation as a configurable, scheduled action window.
+  Record local cooldowns from its deterministic completion boundary and require
+  a snapshot captured after that boundary before planning another skill.
+- Do not automatically retry a skill or assail intent because replaying an
+  uncertain activation can trigger the action twice.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
