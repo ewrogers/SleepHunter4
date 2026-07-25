@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Flowering;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 
@@ -18,7 +19,8 @@ public sealed record AutomationConfiguration
         SkillExecutionPolicy? skillPolicy = null,
         FlowerExecutionPolicy? flowerPolicy = null,
         FlowerStaffCatalog? flowerStaffCatalog = null,
-        ObservationChangePolicy? observationChanges = null)
+        ObservationChangePolicy? observationChanges = null,
+        PanelPreservationPolicy? panelPreservation = null)
     {
         SpellsEnabled = spellsEnabled;
         SkillsEnabled = skillsEnabled;
@@ -32,6 +34,8 @@ public sealed record AutomationConfiguration
             flowerStaffCatalog ?? FlowerStaffCatalog.Empty;
         ObservationChanges =
             observationChanges ?? ObservationChangePolicy.Default;
+        PanelPreservation =
+            panelPreservation ?? PanelPreservationPolicy.Disabled;
     }
 
     public bool SpellsEnabled { get; }
@@ -53,6 +57,8 @@ public sealed record AutomationConfiguration
     public FlowerStaffCatalog FlowerStaffCatalog { get; }
 
     public ObservationChangePolicy ObservationChanges { get; }
+
+    public PanelPreservationPolicy PanelPreservation { get; }
 
     public bool IsEnabled =>
         SpellsEnabled ||

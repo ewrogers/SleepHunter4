@@ -361,6 +361,9 @@ public sealed class AutomationCycleScenarioTests
                 AutomationConfiguration.Disabled.IsEnabled,
                 Is.False);
             Assert.That(
+                AutomationConfiguration.Disabled.PanelPreservation.Enabled,
+                Is.False);
+            Assert.That(
                 () => _ = new ConfigureAutomationCommand(null!),
                 Throws.TypeOf<ArgumentNullException>());
         });

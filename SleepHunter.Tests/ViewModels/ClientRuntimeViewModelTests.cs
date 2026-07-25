@@ -55,6 +55,7 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.StopCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.IsAutomationEnabled, Is.False);
+            Assert.That(viewModel.PanelPreservation, Is.Null);
         });
 
         await viewModel.StartCommand.ExecuteAsync(null);
@@ -228,6 +229,7 @@ public sealed class ClientRuntimeViewModelTests
             automation ?? AutomationConfiguration.Disabled,
             SpellQueueState.Empty,
             PanelTransition: null,
+            PanelPreservation: null,
             StaffSwitch: null,
             SpellCooldownState.Empty,
             SpellCast: null,
