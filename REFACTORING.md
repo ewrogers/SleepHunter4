@@ -767,6 +767,14 @@ reconciliation to the UI dispatcher. Cancellation replaces
 `BackgroundWorker` recursion and `Thread.Sleep`, and shutdown awaits both loops
 before saving macro state or disposing runtime hosts.
 
+The pre-runtime `PlayerInterfaceExtender` and `WindowAutomator` have no remaining
+callers and are removed instead of being converted to async polling. Semantic
+input planning and execution now belong exclusively to `SleepHunter.Interop`,
+where later snapshots confirm equipment and panel transitions. Removing that
+stack also removes its blocking 16 ms waits, direct `PostMessage` input, UI
+coordinate helpers, deferred-action residue, and adjacent unreferenced
+utilities.
+
 New WPF ViewModels will use
 [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 where its focused building blocks apply. Planned uses include:
