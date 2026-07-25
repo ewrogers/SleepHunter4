@@ -842,6 +842,18 @@ As of July 24, 2026:
   retrying it indefinitely.
 - Calculate cast duration from configurable zero-line, single-line, and
   multi-line timing plus a positive completion margin.
+- Represent spell targets as immutable semantic values. Keep screen-coordinate
+  translation and character lookup in the future client action adapter.
+- Revalidate the selected queue entry, spell observation, mana, and cooldown
+  after a spell-panel transition before emitting `CastSpellIntent`.
+- Advance round-robin selection only when the cast intent is issued, not while
+  a prerequisite panel transition is pending.
+- Treat the calculated cast window as a scheduled, exclusive client action and
+  record the spell cooldown from its deterministic completion boundary.
+- Require a coherent snapshot captured after the previous cast window before
+  another spell can be selected.
+- Do not automatically retry a cast intent because replaying an uncertain cast
+  can spend mana or affect a target twice.
 - Build and test the runtime before beginning broad MVVM conversion.
 - Use CommunityToolkit.Mvvm for new WPF ViewModels and commands where its
   focused components reduce boilerplate.
@@ -862,6 +874,9 @@ them:
 - Whether game metadata and persistence need separate assemblies.
 - Timing of patcher extraction.
 - Exact expanded-inventory input sequencing for equipment intents.
+- Exact intent issuance-result protocol between the session and interop
+  executors.
+- Radius-target progression and client-coordinate projection.
 - Legacy macro-state compatibility and migration details.
 - Lua script trust model and capabilities.
 - MoonSharp package and version.

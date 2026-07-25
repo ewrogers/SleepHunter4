@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
@@ -126,6 +127,46 @@ internal static class MacroDecisionInvariants
                 "Staff equipment can wait only on a pending inventory panel action.");
         }
 
+        var pendingCastIntent =
+            decision.State.PendingAction?.Intent as CastSpellIntent;
+        var castingSpell = decision.State.SpellCast is
+        {
+            Status: SpellCastStatus.Casting
+        };
+
+        if ((pendingCastIntent is not null) != castingSpell)
+        {
+            throw new InvalidOperationException(
+                "Pending spell cast state must match its client action.");
+        }
+
+        if (pendingCastIntent is not null &&
+            (decision.State.SpellCast!.ActionId != pendingCastIntent.ActionId ||
+             decision.State.SpellCast.CompletesAt !=
+             decision.State.PendingAction!.Deadline ||
+             decision.State.PendingAction.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1 ||
+             !DoesCastIntentMatchPlan(
+                 pendingCastIntent,
+                 decision.State.SpellCast.Plan)))
+        {
+            throw new InvalidOperationException(
+                "Pending spell cast metadata must match its client action.");
+        }
+
+        if (decision.State.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForPanel,
+                Plan.SelectedSpell: { } selectedSpell
+            } &&
+            (pendingSwitchIntent is null ||
+             !pendingSwitchIntent.TargetPanel.IsEquivalentTo(
+                 selectedSpell.Panel)))
+        {
+            throw new InvalidOperationException(
+                "Spell casting can wait only on its pending spell panel action.");
+        }
+
         if (decision.ScheduledEvents.Any(
                 scheduledEvent => scheduledEvent.DueAt < currentTime))
         {
@@ -155,4 +196,20 @@ internal static class MacroDecisionInvariants
             _ => false
         };
     }
+
+    private static bool DoesCastIntentMatchPlan(
+        CastSpellIntent intent,
+        SpellCastPlan plan) =>
+        plan is
+        {
+            SelectedEntry: { } entry,
+            SelectedSpell: { } spell
+        } &&
+        string.Equals(
+            spell.Name,
+            intent.SpellName,
+            StringComparison.OrdinalIgnoreCase) &&
+        spell.Slot == intent.Slot &&
+        spell.Panel == intent.Panel &&
+        entry.Target == intent.Target;
 }

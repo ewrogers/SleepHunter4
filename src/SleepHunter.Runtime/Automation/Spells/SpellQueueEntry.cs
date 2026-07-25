@@ -5,7 +5,8 @@ public sealed record SpellQueueEntry
     public SpellQueueEntry(
         SpellQueueEntryId id,
         string name,
-        int? targetLevel = null)
+        int? targetLevel = null,
+        SpellTarget? target = null)
     {
         if (id.Value <= 0)
         {
@@ -28,6 +29,7 @@ public sealed record SpellQueueEntry
         Id = id;
         Name = name.Trim();
         TargetLevel = targetLevel;
+        Target = target ?? SpellTarget.None;
     }
 
     public SpellQueueEntryId Id { get; }
@@ -35,4 +37,6 @@ public sealed record SpellQueueEntry
     public string Name { get; }
 
     public int? TargetLevel { get; }
+
+    public SpellTarget Target { get; }
 }

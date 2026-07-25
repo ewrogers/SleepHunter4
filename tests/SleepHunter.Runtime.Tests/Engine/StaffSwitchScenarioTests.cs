@@ -519,6 +519,41 @@ public sealed class StaffSwitchScenarioTests
         });
     }
 
+    [Test]
+    public void ShouldNotSupersedeInventoryPanelOwnedByStaffSwitch()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.Stats,
+            CharacterClass.Wizard,
+            inventory:
+            [
+                new InventoryItemSnapshot(7, "staff")
+            ]);
+        var staff = Candidate(
+            "staff",
+            CharacterClass.Wizard,
+            castLines: 1);
+        var switching = scenario.Send(
+            new RequestStaffSwitchCommand(
+                baseCastLines: 4,
+                [staff],
+                TestPolicy));
+
+        var manual = scenario.Send(
+            new RequestPanelTransitionCommand(
+                ClientPanel.TemuairSpells));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(manual.State, Is.SameAs(switching.State));
+            Assert.That(manual.Intent, Is.Null);
+            Assert.That(manual.PublishedView, Is.Null);
+            Assert.That(
+                ((SwitchPanelIntent)switching.Intent!).TargetPanel,
+                Is.EqualTo(ClientPanel.Inventory));
+        });
+    }
+
     private static MacroScenario CreateRunningScenario(
         ClientPanel activePanel,
         CharacterClass characterClass,

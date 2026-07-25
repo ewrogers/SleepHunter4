@@ -54,7 +54,9 @@ internal sealed class MacroScenario
         MacroTimestamp? captureCompletedAt = null,
         CharacterSnapshot? character = null,
         InventorySnapshot? inventory = null,
-        EquipmentSnapshot? equipment = null)
+        EquipmentSnapshot? equipment = null,
+        VitalsSnapshot? vitals = null,
+        SpellbookSnapshot? spellbook = null)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -68,7 +70,9 @@ internal sealed class MacroScenario
             activePanel,
             character,
             inventory,
-            equipment);
+            equipment,
+            vitals,
+            spellbook);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }
