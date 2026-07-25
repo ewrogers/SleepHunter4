@@ -117,7 +117,7 @@ jobs:
           $packageDirectory = Join-Path $env:RUNNER_TEMP "package"
           $requiredClientFiles = @(
               "SleepHunter.exe",
-              "Versions.xml",
+              "ClientLayout.xml",
               "Themes.xml",
               "Skills.xml",
               "Spells.xml",

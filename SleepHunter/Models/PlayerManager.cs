@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using SleepHunter.Settings;
@@ -39,10 +39,10 @@ namespace SleepHunter.Models
             set => showAllClients = value;
         }
 
-        public IEnumerable<Player> AllClients => 
+        public IEnumerable<Player> AllClients =>
             from p in players.Values orderby p.IsLoggedIn descending, p.Name, p.Process.ProcessId select p;
 
-        public IEnumerable<Player> LoggedInPlayers => 
+        public IEnumerable<Player> LoggedInPlayers =>
             from p in players.Values orderby p.Name where p.IsLoggedIn select p;
 
         public IEnumerable<Player> VisiblePlayers
@@ -73,15 +73,16 @@ namespace SleepHunter.Models
             }
         }
 
-        public void AddNewClient(ClientProcess process, ClientVersion version = null)
+        public void AddNewClient(
+            ClientProcess process,
+            ClientLayout layout = null)
         {
-            var player = new Player(process) { Version = version };
+            var player = new Player(process)
+            {
+                Layout = layout ??
+                    ClientLayoutManager.Instance.Layout
+            };
             player.PropertyChanged += Player_PropertyChanged;
-
-            if (ClientVersionManager.TryDetectClientVersion(process.ProcessId, out var clientVersion))
-                player.Version = clientVersion;
-            else
-                player.Version = ClientVersionManager.Instance.DefaultVersion;
 
             AddPlayer(player);
             player.Update();

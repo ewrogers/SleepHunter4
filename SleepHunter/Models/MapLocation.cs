@@ -84,18 +84,18 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            var mapNumberVariable = version.GetVariable(MapNumberKey);
-            var mapXVariable = version.GetVariable(MapXKey);
-            var mapYVariable = version.GetVariable(MapYKey);
-            var mapNameVariable = version.GetVariable(MapNameKey);
+            var mapNumberVariable = layout.GetVariable(MapNumberKey);
+            var mapXVariable = layout.GetVariable(MapXKey);
+            var mapYVariable = layout.GetVariable(MapYKey);
+            var mapNameVariable = layout.GetVariable(MapNameKey);
 
             if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out var mapNumber))
                 MapNumber = mapNumber;

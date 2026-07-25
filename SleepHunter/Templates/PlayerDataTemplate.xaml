@@ -257,7 +257,7 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding IsLoggedIn}" Value="False">
                 <Setter TargetName="NameText" Property="Text" Value="{Binding Process.WindowTitle}"/>
-                <Setter TargetName="MapText" Property="Text" Value="{Binding GameClient.VersionKey, StringFormat=Version {0}}"/>
+                <Setter TargetName="MapText" Property="Text" Value="Client detected"/>
                 <Setter TargetName="HealthBar" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="ManaBar" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="StatusText" Property="Text" Value="Not Logged In"/>

@@ -121,18 +121,18 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            if (TryUpdateFromPanes(version))
+            if (TryUpdateFromPanes(layout))
                 return;
 
-            if (!version.TryGetVariable(SkillbookKey, out var skillbookVariable))
+            if (!layout.TryGetVariable(SkillbookKey, out var skillbookVariable))
             {
                 ResetDefaults();
                 return;
@@ -203,7 +203,11 @@ namespace SleepHunter.Models
                         skills[i].MaxHealthPercent = null;
                     }
 
-                    skills[i].IsOnCooldown = IsSkillOnCooldown(i, version, reader, Owner.Accessor.ProcessHandle);
+                    skills[i].IsOnCooldown = IsSkillOnCooldown(
+                        i,
+                        layout,
+                        reader,
+                        Owner.Accessor.ProcessHandle);
                 }
                 catch { }
             }
@@ -212,10 +216,10 @@ namespace SleepHunter.Models
                 ResetSkill(skills[i]);
         }
 
-        private bool TryUpdateFromPanes(ClientVersion version)
+        private bool TryUpdateFromPanes(ClientLayout layout)
         {
-            if (!version.TryGetVariable(SkillbookPanesKey, out var panesVariable) ||
-                !version.TryGetVariable(SkillbookPaneCapacityKey, out var capacityVariable) ||
+            if (!layout.TryGetVariable(SkillbookPanesKey, out var panesVariable) ||
+                !layout.TryGetVariable(SkillbookPaneCapacityKey, out var capacityVariable) ||
                 !capacityVariable.TryReadInt32(reader, out var capacity) ||
                 capacity <= 0 ||
                 capacity > skills.Length ||
@@ -469,9 +473,17 @@ namespace SleepHunter.Models
                 ResetSkill(skills[i]);
         }
 
-        private bool IsSkillOnCooldown(int slot, ClientVersion version, BinaryReader reader, nint processHandle)
+        private bool IsSkillOnCooldown(
+            int slot,
+            ClientLayout layout,
+            BinaryReader reader,
+            nint processHandle)
         {
-            if (version == null || !UpdateSkillbookCooldownPointer(version, reader, processHandle))
+            if (layout == null ||
+                !UpdateSkillbookCooldownPointer(
+                    layout,
+                    reader,
+                    processHandle))
                 return false;
 
             if (!IsReadableMemory(processHandle, baseCooldownPointer))
@@ -481,7 +493,7 @@ namespace SleepHunter.Models
 
             try
             {
-                if (version.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
+                if (layout.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
                     return false;
 
                 var offset = cooldownVariable.Offsets.FirstOrDefault();
@@ -518,16 +530,19 @@ namespace SleepHunter.Models
             finally { reader.BaseStream.Position = position; }
         }
 
-        private bool UpdateSkillbookCooldownPointer(ClientVersion version, BinaryReader reader, nint processHandle)
+        private bool UpdateSkillbookCooldownPointer(
+            ClientLayout layout,
+            BinaryReader reader,
+            nint processHandle)
         {
-            if (version == null)
+            if (layout == null)
                 return false;
 
             var position = reader.BaseStream.Position;
 
             try
             {
-                if (version.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
+                if (layout.GetVariable(SkillCooldownsKey) is not SearchMemoryVariable cooldownVariable)
                     return false;
 
                 if (baseCooldownPointer != nint.Zero)

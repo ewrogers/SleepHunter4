@@ -744,7 +744,7 @@ public sealed class ClientSnapshotCaptureTests
         var path = Path.Combine(
             TestContext.CurrentContext.TestDirectory,
             "Data",
-            "Versions.xml");
+            "ClientLayout.xml");
         using var stream = File.OpenRead(path);
         var map = ClientMemoryMapLoader.Load(stream);
         var client = new ClientIdentity("process:1234");

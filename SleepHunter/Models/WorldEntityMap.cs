@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -83,9 +83,9 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
-            if (version == null ||
-                !version.TryGetVariable(WorldObjectListKey, out var listVariable) ||
+            var layout = Owner.Layout;
+            if (layout == null ||
+                !layout.TryGetVariable(WorldObjectListKey, out var listVariable) ||
                 !listVariable.TryDereferenceValue(reader, out var listAddress))
             {
                 ResetDefaults();

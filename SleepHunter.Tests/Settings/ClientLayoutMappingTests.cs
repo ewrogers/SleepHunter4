@@ -1,31 +1,27 @@
-﻿using System.Xml.Serialization;
-
-using SleepHunter.IO.Process;
+﻿using SleepHunter.IO.Process;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Tests.Settings
 {
     [TestFixture]
-    public sealed class ClientVersionMappingTests
+    public sealed class ClientLayoutMappingTests
     {
-        private ClientVersion version = null!;
+        private ClientLayout layout = null!;
 
         [OneTimeSetUp]
-        public void LoadVersion()
+        public void LoadLayout()
         {
-            var versionsPath = FindVersionsFile();
-            var serializer = new XmlSerializer(typeof(ClientVersionCollection));
-
-            using var stream = File.OpenRead(versionsPath);
-            var collection = (ClientVersionCollection)serializer.Deserialize(stream)!;
-            version = collection.Versions.Single(
-                candidate => candidate.Key == "Dark Ages Client");
+            ClientLayoutManager.Instance.LoadFromFile(
+                FindLayoutFile());
+            layout = ClientLayoutManager.Instance.Layout;
         }
 
         [Test]
         public void ShouldReadVitalsFromTheDocumentedWorldUserRoot()
         {
-            var currentHealth = (DynamicMemoryVariable)version.GetVariable("CurrentHealth");
+            var currentHealth =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "CurrentHealth");
 
             Assert.Multiple(() =>
             {
@@ -41,8 +37,12 @@ namespace SleepHunter.Tests.Settings
         [Test]
         public void ShouldExposeBaseAndDisplayClassSources()
         {
-            var characterClass = (DynamicMemoryVariable)version.GetVariable("CharacterClass");
-            var displayClass = (DynamicMemoryVariable)version.GetVariable("DisplayClass");
+            var characterClass =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "CharacterClass");
+            var displayClass =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "DisplayClass");
 
             Assert.Multiple(() =>
             {
@@ -57,7 +57,9 @@ namespace SleepHunter.Tests.Settings
         [Test]
         public void ShouldUseTheExecutableVerifiedEquipmentPaneRoot()
         {
-            var equipment = (DynamicMemoryVariable)version.GetVariable("EquipmentSnapshot");
+            var equipment =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "EquipmentSnapshot");
             var equipPaneVariables = new[]
             {
                 "Nation",
@@ -76,7 +78,8 @@ namespace SleepHunter.Tests.Settings
                 Assert.That(equipment.Offsets.Single().Offset, Is.EqualTo(0x111C));
                 Assert.That(equipment.Count, Is.EqualTo(18));
                 Assert.That(
-                    equipPaneVariables.Select(key => version.GetVariable(key).Address),
+                    equipPaneVariables.Select(
+                        key => layout.GetVariable(key).Address),
                     Is.All.EqualTo(0x6FC914));
             });
         }
@@ -84,8 +87,12 @@ namespace SleepHunter.Tests.Settings
         [Test]
         public void ShouldExposePaneOwnedProgressionAndCombatStats()
         {
-            var totalAbility = (DynamicMemoryVariable)version.GetVariable("TotalAbility");
-            var armorClass = (DynamicMemoryVariable)version.GetVariable("ArmorClass");
+            var totalAbility =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "TotalAbility");
+            var armorClass =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "ArmorClass");
 
             Assert.Multiple(() =>
             {
@@ -101,18 +108,30 @@ namespace SleepHunter.Tests.Settings
         {
             Assert.Multiple(() =>
             {
-                Assert.That(version.GetVariable("Skillbook").Count, Is.EqualTo(89));
-                Assert.That(version.GetVariable("Spellbook").Count, Is.EqualTo(89));
+                Assert.That(
+                    layout.GetVariable("Skillbook").Count,
+                    Is.EqualTo(89));
+                Assert.That(
+                    layout.GetVariable("Spellbook").Count,
+                    Is.EqualTo(89));
             });
         }
 
         [Test]
         public void ShouldExposePaneBackedBooksWithoutRemovingCompactFallbacks()
         {
-            var skillPanes = (DynamicMemoryVariable)version.GetVariable("SkillbookPanes");
-            var spellPanes = (DynamicMemoryVariable)version.GetVariable("SpellbookPanes");
-            var skillCapacity = (DynamicMemoryVariable)version.GetVariable("SkillbookPaneCapacity");
-            var spellCapacity = (DynamicMemoryVariable)version.GetVariable("SpellbookPaneCapacity");
+            var skillPanes =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "SkillbookPanes");
+            var spellPanes =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "SpellbookPanes");
+            var skillCapacity =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "SkillbookPaneCapacity");
+            var spellCapacity =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "SpellbookPaneCapacity");
 
             Assert.Multiple(() =>
             {
@@ -126,18 +145,30 @@ namespace SleepHunter.Tests.Settings
                     Is.EqualTo(new long[] { 0x4DFC, 0x224, 0x190 }));
                 Assert.That(spellCapacity.Offsets.Select(offset => offset.Offset),
                     Is.EqualTo(new long[] { 0x4DFC, 0x228, 0x190 }));
-                Assert.That(version.ContainsVariable("Skillbook"), Is.True);
-                Assert.That(version.ContainsVariable("Spellbook"), Is.True);
+                Assert.That(
+                    layout.ContainsVariable("Skillbook"),
+                    Is.True);
+                Assert.That(
+                    layout.ContainsVariable("Spellbook"),
+                    Is.True);
             });
         }
 
         [Test]
         public void ShouldExposeWorldGroupAndEventDispatcherRoots()
         {
-            var worldUser = (DynamicMemoryVariable)version.GetVariable("WorldUserFunc");
-            var worldObjects = (DynamicMemoryVariable)version.GetVariable("WorldObjectList");
-            var groupCache = (DynamicMemoryVariable)version.GetVariable("GroupMemberCache");
-            var eventEntries = (DynamicMemoryVariable)version.GetVariable("EventPaneEntries");
+            var worldUser =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "WorldUserFunc");
+            var worldObjects =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "WorldObjectList");
+            var groupCache =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "GroupMemberCache");
+            var eventEntries =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "EventPaneEntries");
 
             Assert.Multiple(() =>
             {
@@ -153,19 +184,23 @@ namespace SleepHunter.Tests.Settings
             });
         }
 
-        private static string FindVersionsFile()
+        private static string FindLayoutFile()
         {
             var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             while (directory != null)
             {
-                var candidate = Path.Combine(directory.FullName, "data", "Versions.xml");
+                var candidate = Path.Combine(
+                    directory.FullName,
+                    "data",
+                    "ClientLayout.xml");
                 if (File.Exists(candidate))
                     return candidate;
 
                 directory = directory.Parent;
             }
 
-            throw new FileNotFoundException("Could not locate data/Versions.xml from the test directory.");
+            throw new FileNotFoundException(
+                "Could not locate data/ClientLayout.xml from the test directory.");
         }
     }
 }

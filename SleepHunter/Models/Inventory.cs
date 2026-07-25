@@ -40,7 +40,7 @@ namespace SleepHunter.Models
             });
         }
 
-        public IEnumerable<string> ItemNames => 
+        public IEnumerable<string> ItemNames =>
             from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name;
 
         public Inventory(Player owner)
@@ -84,15 +84,15 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            if (!version.TryGetVariable(InventoryKey, out var inventoryVariable))
+            if (!layout.TryGetVariable(InventoryKey, out var inventoryVariable))
             {
                 ResetDefaults();
                 return;
@@ -119,7 +119,7 @@ namespace SleepHunter.Models
             }
 
             var records = ParseInventorySnapshot(snapshot, entryCount);
-            var paneRecords = ReadInventoryPaneRecords(version, records);
+            var paneRecords = ReadInventoryPaneRecords(layout, records);
 
             // Gold is the last item, skip it
             for (var i = 0; i < entryCount - 1; i++)
@@ -153,11 +153,11 @@ namespace SleepHunter.Models
         }
 
         private InventoryPaneRecord[] ReadInventoryPaneRecords(
-            Settings.ClientVersion version,
+            Settings.ClientLayout layout,
             IReadOnlyList<InventoryRecord> inventoryRecords)
         {
             var paneRecords = new InventoryPaneRecord[inventoryRecords.Count];
-            if (!version.TryGetVariable(InventoryPanesKey, out var panesVariable) ||
+            if (!layout.TryGetVariable(InventoryPanesKey, out var panesVariable) ||
                 !panesVariable.TryDereferenceValue(reader, out var panePointersAddress))
             {
                 return paneRecords;
@@ -301,15 +301,15 @@ namespace SleepHunter.Models
 
         private void UpdateGold()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            if (!version.TryGetVariable(GoldKey, out var goldVariable))
+            if (!layout.TryGetVariable(GoldKey, out var goldVariable))
             {
                 Gold = 0;
                 return;

@@ -98,7 +98,7 @@ namespace SleepHunter.Views
                 uiDispatcher,
                 Path.Combine(
                     AppContext.BaseDirectory,
-                    ClientVersionManager.VersionsFile),
+                    ClientLayoutManager.LayoutFile),
                 TimeProvider.System,
                 () => AbilitySnapshotCatalogFactory.Create(
                     SkillMetadataManager.Instance.Skills,
@@ -151,7 +151,7 @@ namespace SleepHunter.Views
             ApplyTheme();
             UpdateListBoxGridWidths();
 
-            LoadVersions();
+            LoadClientLayout();
 
             UpdateWindowTitle();
             UpdateToolbarState();
@@ -209,20 +209,13 @@ namespace SleepHunter.Views
 
                 var processInformation = StartClientProcess(clientPath);
 
-                if (!ClientVersionManager.TryDetectClientVersion(processInformation.ProcessId, out var detectedVersion))
-                {
-                    logger.LogWarn("Unable to determine client version, using default version");
-                    detectedVersion = ClientVersionManager.Instance.DefaultVersion;
-                }
-                else
-                {
-                    logger.LogInfo($"Detected client pid {processInformation.ProcessId} version as {detectedVersion.Key}");
-                }
-
-                if (detectedVersion != null)
-                    PatchClient(processInformation, detectedVersion, clientPath);
-                else
-                    logger.LogWarn($"No client version, unable to apply patches to pid {processInformation.ProcessId}");
+                var layout = ClientLayoutManager.Instance.Layout ??
+                    throw new InvalidOperationException(
+                        "The client layout is unavailable.");
+                PatchClient(
+                    processInformation,
+                    layout,
+                    clientPath);
             }
             catch (Exception ex)
             {
@@ -230,7 +223,7 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
 
                 this.ShowMessageBox("Launch Client Failed",
-                   ex.Message, "Check that the executable exists and the version is correct.",
+                   ex.Message, "Check that the executable and configured client layout are correct.",
                    MessageBoxButton.OK,
                    440,
                    280);
@@ -280,7 +273,10 @@ namespace SleepHunter.Views
             return processInformation;
         }
 
-        private void PatchClient(ProcessInformation process, ClientVersion version, string clientPath)
+        private void PatchClient(
+            ProcessInformation process,
+            ClientLayout layout,
+            string clientPath)
         {
             var patchMultipleInstances = UserSettingsManager.Instance.Settings.AllowMultipleInstances;
             var patchIntroVideo = UserSettingsManager.Instance.Settings.SkipIntroVideo;
@@ -298,24 +294,30 @@ namespace SleepHunter.Views
 
             var pid = process.ProcessId;
             var patchCompleted = false;
-            logger.LogInfo($"Attempting to patch client process {pid}, version = {version.Key}");
+            logger.LogInfo(
+                $"Attempting to patch client process {pid} with the configured layout");
 
             try
             {
-                var applyAltGroundItemPatch = allowAltToShowGroundItems && version.SupportsAltToShowGroundItems;
-                var applyImprovedAutoFollow = improvedAutoFollow && version.SupportsImprovedAutoFollow;
+                var applyAltGroundItemPatch =
+                    allowAltToShowGroundItems &&
+                    layout.SupportsAltToShowGroundItems;
+                var applyImprovedAutoFollow =
+                    improvedAutoFollow &&
+                    layout.SupportsImprovedAutoFollow;
                 var shouldApplyModifiersKeyFix =
-                    (applyModifiersKeyFix || applyAltGroundItemPatch) && version.SupportsModifiersKeyFix;
+                    (applyModifiersKeyFix || applyAltGroundItemPatch) &&
+                    layout.SupportsModifiersKeyFix;
                 var hasRuntimePatches = shouldApplyModifiersKeyFix || applyAltGroundItemPatch ||
                                         applyImprovedAutoFollow ||
-                                        (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs) ||
-                                        (makeExchangeDialogDraggable && version.SupportsDraggableExchangeDialog) ||
+                                        (showItemQuantitiesInDialogs && layout.SupportsItemQuantitiesInDialogs) ||
+                                        (makeExchangeDialogDraggable && layout.SupportsDraggableExchangeDialog) ||
                                         (showExchangeResultsInMessageBar &&
-                                         version.SupportsExchangeResultsInMessageBar);
-                var hasClientPatches = (patchMultipleInstances && version.MultipleInstanceAddress > 0) ||
-                                       (patchIntroVideo && version.IntroVideoAddress > 0) ||
-                                       (suppressLoginNotification && version.SupportsLoginNotificationSuppression) ||
-                                       (patchNoWalls && version.NoWallAddress > 0) ||
+                                         layout.SupportsExchangeResultsInMessageBar);
+                var hasClientPatches = (patchMultipleInstances && layout.MultipleInstanceAddress > 0) ||
+                                       (patchIntroVideo && layout.IntroVideoAddress > 0) ||
+                                       (suppressLoginNotification && layout.SupportsLoginNotificationSuppression) ||
+                                       (patchNoWalls && layout.NoWallAddress > 0) ||
                                        hasRuntimePatches;
                 if (hasRuntimePatches)
                     ClientPatcher.VerifyRuntimePatchClient(clientPath);
@@ -325,10 +327,10 @@ namespace SleepHunter.Views
                 using var patchStream = accessor.GetWriteableStream();
                 using var writer = new BinaryWriter(patchStream, Encoding.ASCII, leaveOpen: true);
 
-                if (patchMultipleInstances && version.MultipleInstanceAddress > 0)
+                if (patchMultipleInstances && layout.MultipleInstanceAddress > 0)
                 {
-                    logger.LogInfo($"Applying multiple instance patch to process {pid} (0x{version.MultipleInstanceAddress:x8})");
-                    patchStream.Position = version.MultipleInstanceAddress;
+                    logger.LogInfo($"Applying multiple instance patch to process {pid} (0x{layout.MultipleInstanceAddress:x8})");
+                    patchStream.Position = layout.MultipleInstanceAddress;
                     writer.Write((byte)0x31);        // XOR
                     writer.Write((byte)0xC0);        // EAX, EAX
                     writer.Write((byte)0x90);        // NOP
@@ -337,10 +339,10 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x90);        // NOP
                 }
 
-                if (patchIntroVideo && version.IntroVideoAddress > 0)
+                if (patchIntroVideo && layout.IntroVideoAddress > 0)
                 {
-                    logger.LogInfo($"Applying skip intro video patch to process {pid} (0x{version.IntroVideoAddress:x8})");
-                    patchStream.Position = version.IntroVideoAddress;
+                    logger.LogInfo($"Applying skip intro video patch to process {pid} (0x{layout.IntroVideoAddress:x8})");
+                    patchStream.Position = layout.IntroVideoAddress;
                     writer.Write((byte)0x83);        // CMP
                     writer.Write((byte)0xFA);        // EDX
                     writer.Write((byte)0x00);        // 0
@@ -349,16 +351,17 @@ namespace SleepHunter.Views
                     writer.Write((byte)0x90);        // NOP
                 }
 
-                if (suppressLoginNotification && version.SupportsLoginNotificationSuppression)
+                if (suppressLoginNotification &&
+                    layout.SupportsLoginNotificationSuppression)
                 {
                     logger.LogInfo($"Applying suppress login notification patch to process {pid}");
                     ApplySuppressLoginNotificationPatch(patchStream, writer);
                 }
 
-                if (patchNoWalls && version.NoWallAddress > 0)
+                if (patchNoWalls && layout.NoWallAddress > 0)
                 {
-                    logger.LogInfo($"Applying no walls patch to process {pid} (0x{version.NoWallAddress:x8})");
-                    patchStream.Position = version.NoWallAddress;
+                    logger.LogInfo($"Applying no walls patch to process {pid} (0x{layout.NoWallAddress:x8})");
+                    patchStream.Position = layout.NoWallAddress;
                     writer.Write((byte)0xEB);        // JMP SHORT
                     writer.Write((byte)0x17);        // +0x17
                     writer.Write((byte)0x90);        // NOP
@@ -383,19 +386,22 @@ namespace SleepHunter.Views
                         improvedAutoFollowMinimumDistance);
                 }
 
-                if (showItemQuantitiesInDialogs && version.SupportsItemQuantitiesInDialogs)
+                if (showItemQuantitiesInDialogs &&
+                    layout.SupportsItemQuantitiesInDialogs)
                 {
                     logger.LogInfo($"Applying item quantities in dialogs patch to process {pid}");
                     ClientPatcher.ApplyShowItemQuantitiesInDialogs(patchStream, process.ProcessHandle);
                 }
 
-                if (makeExchangeDialogDraggable && version.SupportsDraggableExchangeDialog)
+                if (makeExchangeDialogDraggable &&
+                    layout.SupportsDraggableExchangeDialog)
                 {
                     logger.LogInfo($"Applying draggable exchange dialog patch to process {pid}");
                     ClientPatcher.ApplyMakeExchangeDialogDraggable(patchStream, process.ProcessHandle);
                 }
 
-                if (showExchangeResultsInMessageBar && version.SupportsExchangeResultsInMessageBar)
+                if (showExchangeResultsInMessageBar &&
+                    layout.SupportsExchangeResultsInMessageBar)
                 {
                     logger.LogInfo($"Applying exchange results message bar patch to process {pid}");
                     ClientPatcher.ApplyShowExchangeResultsInMessageBar(patchStream, process.ProcessHandle);
@@ -550,7 +556,9 @@ namespace SleepHunter.Views
 
             if (player == selectedPlayer)
             {
-                var supportsFlowering = selectedPlayer?.Version?.SupportsFlowering ?? false;
+                var supportsFlowering =
+                    selectedPlayer?.Layout?.SupportsFlowering ??
+                    false;
                 var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
                 var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
 
@@ -575,7 +583,9 @@ namespace SleepHunter.Views
             logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
 
             if (!string.IsNullOrEmpty(player.Name))
-                NativeMethods.SetWindowText(player.Process.WindowHandle, $"{player.Version.WindowTitle} - {player.Name}");
+                NativeMethods.SetWindowText(
+                    player.Process.WindowHandle,
+                    $"{player.Layout?.WindowTitle ?? player.Process.WindowTitle} - {player.Name}");
 
             var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var configuration =
@@ -616,7 +626,10 @@ namespace SleepHunter.Views
 
             logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
 
-            NativeMethods.SetWindowText(player.Process.WindowHandle, player.Version.WindowTitle);
+            NativeMethods.SetWindowText(
+                player.Process.WindowHandle,
+                player.Layout?.WindowTitle ??
+                player.Process.WindowTitle);
 
             var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
             var configuration =
@@ -675,44 +688,59 @@ namespace SleepHunter.Views
             // Do some stuff with inventory on UI thread
         }
 
-        private void LoadVersions()
+        private void LoadClientLayout()
         {
-            var versionsFile = Path.Combine(Environment.CurrentDirectory, ClientVersionManager.VersionsFile);
-            logger.LogInfo($"Attempting to load client versions from file: {versionsFile}");
+            var layoutFile = Path.Combine(
+                Environment.CurrentDirectory,
+                ClientLayoutManager.LayoutFile);
+            logger.LogInfo(
+                $"Attempting to load the client layout from file: {layoutFile}");
 
             try
             {
-                if (File.Exists(versionsFile))
+                if (File.Exists(layoutFile))
                 {
-                    ClientVersionManager.Instance.LoadFromFile(versionsFile);
-                    logger.LogInfo("Client versions successfully loaded");
+                    ClientLayoutManager.Instance.LoadFromFile(
+                        layoutFile);
+                    logger.LogInfo(
+                        "Client layout successfully loaded");
 
-                    // Register all window class names so they can be detected
-                    foreach (var version in ClientVersionManager.Instance.Versions)
+                    var layout =
+                        ClientLayoutManager.Instance.Layout;
+                    if (!string.IsNullOrWhiteSpace(
+                            layout.WindowClassName))
                     {
-                        if (string.IsNullOrWhiteSpace(version.WindowClassName))
-                            continue;
-
-                        ProcessManager.Instance.RegisterWindowClassName(version.WindowClassName);
-                        logger.LogInfo($"Registered window class name: {version.WindowClassName} (version = {version.Key})");
+                        ProcessManager.Instance
+                            .RegisterWindowClassName(
+                                layout.WindowClassName);
+                        logger.LogInfo(
+                            $"Registered window class name: {layout.WindowClassName}");
                     }
                 }
                 else
                 {
                     UpdateToolbarState();
-                    logger.LogInfo("No client version file was found");
+                    logger.LogInfo(
+                        "No client layout file was found");
 
-                    this.ShowMessageBox("Missing Client Versions File", "The client versions file was not found.\nUnable to start new clients.", "You should re-install the application.");
+                    this.ShowMessageBox(
+                        "Missing Client Layout File",
+                        "The client layout file was not found.\nUnable to start new clients.",
+                        "You should re-install the application.");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load client versions");
+                logger.LogError(
+                    "Failed to load the client layout");
                 logger.LogException(ex);
 
                 UpdateToolbarState();
 
-                this.ShowMessageBox("Unable to Load Client Versions", "The client versions file could not be loaded.\nUnable to start new clients.", "You should re-install the application.");
+                this.ShowMessageBox(
+                    "Unable to Load Client Layout",
+                    "The client layout file could not be loaded.\nUnable to start new clients.",
+                    "You should re-install the application.");
             }
         }
 
@@ -1534,7 +1562,8 @@ namespace SleepHunter.Views
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     true;
 
-            var supportsFlowering = player.Version?.SupportsFlowering ?? false;
+            var supportsFlowering =
+                player.Layout?.SupportsFlowering ?? false;
 
             ToggleInventory(player.IsLoggedIn);
             ToggleSkills(player.IsLoggedIn);
@@ -1669,7 +1698,9 @@ namespace SleepHunter.Views
 
             selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
 
-            var supportsFlowering = selectedMacro.Client.Version?.SupportsFlowering ?? false;
+            var supportsFlowering =
+                selectedMacro.Client.Layout?.SupportsFlowering ??
+                false;
             ToggleFlower(supportsFlowering, selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
         }
 
@@ -1862,7 +1893,8 @@ namespace SleepHunter.Views
         {
             await Dispatcher.SwitchToUIThread();
 
-            launchClientButton.IsEnabled = ClientVersionManager.Instance.Versions.Any(v => v.Key != "Auto-Detect");
+            launchClientButton.IsEnabled =
+                ClientLayoutManager.Instance.Layout is not null;
         }
 
         private void ToggleInventory(bool show = true)

@@ -34,7 +34,6 @@ namespace SleepHunter.Models
         private readonly Stream stream;
         private readonly BinaryReader reader;
 
-        private string versionKey;
         private InterfacePanel activePanel;
         private bool isInventoryExpanded;
         private bool isMinimizedMode;
@@ -43,12 +42,6 @@ namespace SleepHunter.Models
         private bool isUserChatting;
 
         public Player Owner { get; init; }
-
-        public string VersionKey
-        {
-            get => versionKey;
-            set => SetProperty(ref versionKey, value);
-        }
 
         public InterfacePanel ActivePanel
         {
@@ -96,20 +89,20 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
+            var layout = Owner.Layout;
 
-            if (version == null)
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            var activePanelVariable = version.GetVariable(ActivePanelKey);
-            var inventoryExpandedVariable = version.GetVariable(InventoryExpandedKey);
-            var minimizedModeVariable = version.GetVariable(MinimizedModeKey);
-            var dialogOpenVariable = version.GetVariable(DialogOpenKey);
-            var senseOpenVariable = version.GetVariable(SenseOpenKey);
-            var userChattingVariable = version.GetVariable(UserChattingKey);
+            var activePanelVariable = layout.GetVariable(ActivePanelKey);
+            var inventoryExpandedVariable = layout.GetVariable(InventoryExpandedKey);
+            var minimizedModeVariable = layout.GetVariable(MinimizedModeKey);
+            var dialogOpenVariable = layout.GetVariable(DialogOpenKey);
+            var senseOpenVariable = layout.GetVariable(SenseOpenKey);
+            var userChattingVariable = layout.GetVariable(UserChattingKey);
 
             if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out var activePanelByte))
                 ActivePanel = (InterfacePanel)activePanelByte;
@@ -136,7 +129,7 @@ namespace SleepHunter.Models
             else
                 IsSenseOpen = false;
 
-            if (TryReadChatInputState(version, out var isUserChatting) ||
+            if (TryReadChatInputState(layout, out var isUserChatting) ||
                 userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
             {
                 IsUserChatting = isUserChatting;
@@ -171,13 +164,15 @@ namespace SleepHunter.Models
             IsUserChatting = false;
         }
 
-        private bool TryReadChatInputState(Settings.ClientVersion version, out bool isUserChatting)
+        private bool TryReadChatInputState(
+            Settings.ClientLayout layout,
+            out bool isUserChatting)
         {
             isUserChatting = false;
 
-            if (!version.TryGetVariable(EventPaneEntriesKey, out var entriesVariable) ||
-                !version.TryGetVariable(EventPaneCountKey, out var countVariable) ||
-                !version.TryGetVariable(EventPaneCapacityKey, out var capacityVariable) ||
+            if (!layout.TryGetVariable(EventPaneEntriesKey, out var entriesVariable) ||
+                !layout.TryGetVariable(EventPaneCountKey, out var countVariable) ||
+                !layout.TryGetVariable(EventPaneCapacityKey, out var capacityVariable) ||
                 !countVariable.TryReadInt32(reader, out var count) ||
                 !capacityVariable.TryReadInt32(reader, out var capacity) ||
                 count < 0 ||

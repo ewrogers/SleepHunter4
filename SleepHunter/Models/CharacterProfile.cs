@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -151,28 +151,28 @@ namespace SleepHunter.Models
 
         protected override void OnUpdate()
         {
-            var version = Owner.Version;
-            if (version == null)
+            var layout = Owner.Layout;
+            if (layout == null)
             {
                 ResetDefaults();
                 return;
             }
 
-            CharacterClass = ReadCharacterClass(version);
-            CharacterId = (uint)ReadInteger(version, CharacterIdKey);
-            UserState = ReadUserState(version);
-            PrivilegeLevel = (int)ReadInteger(version, PrivilegeLevelKey);
-            ActionState = (byte)ReadInteger(version, ActionStateKey);
-            Nation = (byte)ReadInteger(version, NationKey);
-            Title = ReadString(version, TitleKey);
-            DisplayClass = ReadString(version, DisplayClassKey);
-            Guild = ReadString(version, GuildKey);
-            GuildRank = ReadString(version, GuildRankKey);
-            GroupMembers = ReadString(version, GroupMembersKey);
-            GroupMemberEntries = ReadGroupMemberEntries(version);
+            CharacterClass = ReadCharacterClass(layout);
+            CharacterId = (uint)ReadInteger(layout, CharacterIdKey);
+            UserState = ReadUserState(layout);
+            PrivilegeLevel = (int)ReadInteger(layout, PrivilegeLevelKey);
+            ActionState = (byte)ReadInteger(layout, ActionStateKey);
+            Nation = (byte)ReadInteger(layout, NationKey);
+            Title = ReadString(layout, TitleKey);
+            DisplayClass = ReadString(layout, DisplayClassKey);
+            Guild = ReadString(layout, GuildKey);
+            GuildRank = ReadString(layout, GuildRankKey);
+            GroupMembers = ReadString(layout, GroupMembersKey);
+            GroupMemberEntries = ReadGroupMemberEntries(layout);
             GroupMemberNames = GroupMemberEntries.Select(member => member.Name).ToArray();
-            ShowAbilityMetadata = ReadInteger(version, ShowAbilityMetadataKey) != 0;
-            ShowMasterMetadata = ReadInteger(version, ShowMasterMetadataKey) != 0;
+            ShowAbilityMetadata = ReadInteger(layout, ShowAbilityMetadataKey) != 0;
+            ShowMasterMetadata = ReadInteger(layout, ShowMasterMetadataKey) != 0;
         }
 
         protected override void Dispose(bool isDisposing)
@@ -189,9 +189,13 @@ namespace SleepHunter.Models
             base.Dispose(isDisposing);
         }
 
-        private PlayerClass? ReadCharacterClass(Settings.ClientVersion version)
+        private PlayerClass? ReadCharacterClass(
+            Settings.ClientLayout layout)
         {
-            var rawValue = ReadInteger(version, CharacterClassKey, out var wasRead);
+            var rawValue = ReadInteger(
+                layout,
+                CharacterClassKey,
+                out var wasRead);
             if (!wasRead || rawValue < byte.MinValue || rawValue > byte.MaxValue)
                 return null;
 
@@ -200,9 +204,13 @@ namespace SleepHunter.Models
                 : null;
         }
 
-        private PlayerUserState? ReadUserState(Settings.ClientVersion version)
+        private PlayerUserState? ReadUserState(
+            Settings.ClientLayout layout)
         {
-            var rawValue = ReadInteger(version, UserStateKey, out var wasRead);
+            var rawValue = ReadInteger(
+                layout,
+                UserStateKey,
+                out var wasRead);
             if (!wasRead)
                 return null;
 
@@ -212,14 +220,19 @@ namespace SleepHunter.Models
                 : null;
         }
 
-        private long ReadInteger(Settings.ClientVersion version, string key) =>
-            ReadInteger(version, key, out _);
+        private long ReadInteger(
+            Settings.ClientLayout layout,
+            string key) =>
+            ReadInteger(layout, key, out _);
 
-        private long ReadInteger(Settings.ClientVersion version, string key, out bool wasRead)
+        private long ReadInteger(
+            Settings.ClientLayout layout,
+            string key,
+            out bool wasRead)
         {
             wasRead = false;
 
-            var variable = version.GetVariable(key);
+            var variable = layout.GetVariable(key);
             if (variable == null || !variable.TryReadInteger(reader, out var value))
                 return 0;
 
@@ -227,22 +240,28 @@ namespace SleepHunter.Models
             return value;
         }
 
-        private string ReadString(Settings.ClientVersion version, string key)
+        private string ReadString(
+            Settings.ClientLayout layout,
+            string key)
         {
-            var variable = version.GetVariable(key);
+            var variable = layout.GetVariable(key);
             return variable != null && variable.TryReadString(reader, out var value)
                 ? value
                 : null;
         }
 
-        private IReadOnlyList<GroupMember> ReadGroupMemberEntries(Settings.ClientVersion version)
+        private IReadOnlyList<GroupMember> ReadGroupMemberEntries(
+            Settings.ClientLayout layout)
         {
-            var countValue = ReadInteger(version, GroupMemberCountKey, out var countWasRead);
+            var countValue = ReadInteger(
+                layout,
+                GroupMemberCountKey,
+                out var countWasRead);
             if (!countWasRead || countValue <= 0)
                 return Array.Empty<GroupMember>();
 
             var count = (int)Math.Min(countValue, 64);
-            if (!version.TryGetVariable(GroupMemberCacheKey, out var cacheVariable) ||
+            if (!layout.TryGetVariable(GroupMemberCacheKey, out var cacheVariable) ||
                 !cacheVariable.TryDereferenceValue(reader, out var cacheAddress) ||
                 cacheVariable.Size < 65 ||
                 !RuntimeMemoryReader.TryReadBytes(reader, cacheAddress, checked(count * cacheVariable.Size), out var snapshot))

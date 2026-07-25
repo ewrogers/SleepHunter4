@@ -13,7 +13,7 @@ public sealed class WindowsClientRuntimeFactoryTests
     private static readonly string MappingPath = Path.Combine(
         TestContext.CurrentContext.TestDirectory,
         "Data",
-        "Versions.xml");
+        "ClientLayout.xml");
 
     [Test]
     public async Task ShouldAttachAnyClientIdentityForBoundedReadOnlyCapture()
@@ -64,7 +64,7 @@ public sealed class WindowsClientRuntimeFactoryTests
     }
 
     [Test]
-    public void ShouldRejectMultipleClientMappingsBeforeOpeningAProcess()
+    public void ShouldRejectLegacyClientCollectionsBeforeOpeningAProcess()
     {
         const string xml = """
             <ClientVersions>
