@@ -122,9 +122,28 @@ public sealed partial class MacroEngine
                 InventorySlot: { } inventorySlot
             })
         {
+            if (snapshot.IsMinimizedMode &&
+                !snapshot.IsPanelExpanded &&
+                !ClientPanel.Inventory.IsSlotVisibleInMinimizedMode(
+                    inventorySlot))
+            {
+                return IssueInterfaceExpansionForStaff(
+                    currentState,
+                    selection,
+                    attemptTimeout,
+                    completedEquipmentAttempts,
+                    maximumAttempts,
+                    currentTime,
+                    snapshot,
+                    panelTransition,
+                    spellCast,
+                    flower);
+            }
+
             var targetInventoryExpanded =
                 inventorySlot > InventoryItemSnapshot.MaximumCollapsedSlot;
-            if (snapshot.IsInventoryExpanded != targetInventoryExpanded)
+            if (!snapshot.IsMinimizedMode &&
+                snapshot.IsInventoryExpanded != targetInventoryExpanded)
             {
                 return IssueInventoryModeAttempt(
                     currentState,
@@ -541,6 +560,7 @@ public sealed partial class MacroEngine
         currentState.StaffSwitch is
         {
             Status: StaffSwitchStatus.WaitingForInventory or
+                StaffSwitchStatus.ExpandingInterface or
                 StaffSwitchStatus.ChangingInventoryMode or
                 StaffSwitchStatus.ChangingWeapon
         } staffSwitch

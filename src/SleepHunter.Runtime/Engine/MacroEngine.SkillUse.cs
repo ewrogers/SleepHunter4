@@ -108,7 +108,7 @@ public sealed partial class MacroEngine
         SkillUseState skillUse,
         ClientSnapshot snapshot,
         MacroTimestamp currentTime,
-        PanelTransitionState panelTransition,
+        PanelTransitionState? panelTransition,
         DisarmState? disarm)
     {
         var plan = ReplanSelectedSkill(
@@ -196,6 +196,25 @@ public sealed partial class MacroEngine
                 skillUse: skillUse.WaitingForPanel(plan),
                 skillCooldowns: plan.Cooldowns,
                 disarm: disarm);
+        }
+
+        if (plan.ActionKind == SkillActionKind.UseSkill &&
+            snapshot.IsMinimizedMode &&
+            !snapshot.IsPanelExpanded &&
+            !selectedSkill.Panel.IsSlotVisibleInMinimizedMode(
+                selectedSkill.Slot))
+        {
+            return IssueInterfaceExpansion(
+                currentState,
+                skillUse.Policy.PanelTransition.AttemptTimeout,
+                currentTime,
+                snapshot,
+                panelTransition,
+                currentState.StaffSwitch,
+                currentState.SpellCast,
+                skillUse.WaitingForPanel(plan),
+                disarm,
+                currentState.Flower);
         }
 
         return IssueSkillAction(

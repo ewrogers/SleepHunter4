@@ -790,13 +790,85 @@ public sealed class SpellCastingScenarioTests
         });
     }
 
+    [Test]
+    public void ShouldExpandMinimizedInterfaceBeforeCastingTargetedSecondRowSpell()
+    {
+        var entry = Entry("spell", SpellTarget.Self);
+        var spell = Spell("spell", slot: 13);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            entry,
+            spell,
+            isMinimizedMode: true);
+
+        var expand = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var cast = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(spell),
+            isInventoryExpanded: true,
+            isMinimizedMode: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInterfaceIntent>());
+            Assert.That(
+                expand.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.WaitingForPanel));
+            Assert.That(cast.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)cast.Intent!).Slot,
+                Is.EqualTo(spell.Slot));
+            Assert.That(
+                cast.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+        });
+    }
+
+    [Test]
+    public void ShouldExpandMinimizedInterfaceBeforeCastingUntargetedThirdRowSpell()
+    {
+        var entry = Entry("spell", SpellTarget.None);
+        var spell = Spell("spell", slot: 25);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSpells,
+            entry,
+            spell,
+            isMinimizedMode: true);
+
+        var expand = scenario.Send(new CastNextSpellCommand(TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var cast = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(spell),
+            isInventoryExpanded: true,
+            isMinimizedMode: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInterfaceIntent>());
+            Assert.That(cast.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)cast.Intent!).Target,
+                Is.EqualTo(SpellTarget.None));
+            Assert.That(
+                cast.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+        });
+    }
+
     private static MacroScenario CreateRunningScenario(
         ClientPanel activePanel,
         SpellQueueEntry entry,
         SpellSnapshot spell,
         int mana = 100,
         MapLocationSnapshot? location = null,
-        bool issueActions = true)
+        bool issueActions = true,
+        bool isMinimizedMode = false)
     {
         var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Send(new AddSpellQueueEntryCommand(entry));
@@ -805,7 +877,8 @@ public sealed class SpellCastingScenarioTests
             activePanel: activePanel,
             vitals: Vitals(mana),
             spellbook: Spellbook(spell),
-            location: location);
+            location: location,
+            isMinimizedMode: isMinimizedMode);
         scenario.Start();
         return scenario;
     }

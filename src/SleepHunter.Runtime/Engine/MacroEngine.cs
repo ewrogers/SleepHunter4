@@ -517,6 +517,56 @@ public sealed partial class MacroEngine : IMacroEngine
         }
 
         if (!clientLoggedOut &&
+            CanConfirmInterfaceExpansion(
+                currentState.PendingAction,
+                snapshot))
+        {
+            pendingAction = null;
+            if (staffSwitch is
+                {
+                    Status: StaffSwitchStatus.ExpandingInterface,
+                    Selection: not null
+                })
+            {
+                return ContinueStaffSwitchAfterObservation(
+                    currentState,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    staffSwitch,
+                    spellCast);
+            }
+
+            if (spellCast is
+                {
+                    Status: SpellCastStatus.WaitingForPanel
+                })
+            {
+                return ContinueSpellCastAfterPanel(
+                    currentState,
+                    spellCast,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    staffSwitch);
+            }
+
+            if (skillUse is
+                {
+                    Status: SkillUseStatus.WaitingForPanel
+                })
+            {
+                return ContinueSkillUseAfterPanel(
+                    currentState,
+                    skillUse,
+                    snapshot,
+                    currentTime,
+                    panelTransition,
+                    disarm);
+            }
+        }
+
+        if (!clientLoggedOut &&
             CanConfirmDisarm(currentState.PendingAction, snapshot))
         {
             pendingAction = null;
@@ -749,6 +799,9 @@ public sealed partial class MacroEngine : IMacroEngine
                 currentState,
                 pendingAction),
             CollapseInventoryIntent => HandleInventoryModeDeadline(
+                currentState,
+                pendingAction),
+            ExpandInterfaceIntent => HandleInterfaceExpansionDeadline(
                 currentState,
                 pendingAction),
             CastSpellIntent => HandleSpellCastDeadline(

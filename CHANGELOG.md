@@ -31,6 +31,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Changed current macro saves and autosaves to the versioned `.sh4x` format. Older `.sh4` files remain available for import.
 - Added slot numbers to inventory, skill, and spell grids, plus abbreviated slot labels to equipment.
 - Compacted inventory-slot gold amounts with `k` and `m` suffixes while preserving exact tooltip values.
+- Added macro support for the client's minimized one-row interface, including automatic expansion when an inventory item, skill, or spell is on a hidden row.
+- Increased the metadata editor's default width so its columns and scrollbar fit without horizontal scrolling.
 - Improved performance when opening large metadata lists.
 - Replaced the small runtime indicator with a full-width status bar that shows `Healthy`, a concise error, or `No clients`, with selectable details when available.
 - Renamed the default character sort from Login Time to Launch Order and continued sorting clients from oldest to newest.
@@ -49,6 +51,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- Fixed second- and third-row spell clicking and targeting while using the minimized client interface.
 - Fixed a runtime error that could occur after a flower cast completed and its next waiting interval began.
 - Fixed normal spell casting and flowering failing to interleave when a prioritized flower target was temporarily unavailable.
 - Prevented Fas Spiorad from being cast again before its successful mana update can be observed, while preserving retries when mana stays low.

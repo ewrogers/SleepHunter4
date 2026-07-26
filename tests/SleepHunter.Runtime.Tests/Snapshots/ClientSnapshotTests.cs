@@ -152,6 +152,7 @@ public sealed class ClientSnapshotTests
             skillbook,
             location,
             isInventoryExpanded: true,
+            isMinimizedMode: true,
             isChatOpen: false,
             group,
             activeSpellEffects,
@@ -168,6 +169,8 @@ public sealed class ClientSnapshotTests
             Assert.That(snapshot.Skillbook, Is.EqualTo(skillbook));
             Assert.That(snapshot.Location, Is.EqualTo(location));
             Assert.That(snapshot.IsInventoryExpanded, Is.True);
+            Assert.That(snapshot.IsPanelExpanded, Is.True);
+            Assert.That(snapshot.IsMinimizedMode, Is.True);
             Assert.That(snapshot.Group, Is.EqualTo(group));
             Assert.That(
                 snapshot.ActiveSpellEffects,

@@ -4,7 +4,7 @@
         xmlns:metadata="clr-namespace:SleepHunter.Metadata"
         xmlns:views="clr-namespace:SleepHunter.Views"
         Title="Metadata Editor"
-        Width="900" Height="680"
+        Width="940" Height="680"
         MinWidth="720" MinHeight="560"
         Style="{StaticResource ObsidianWindow}"
         ResizeMode="CanResize"

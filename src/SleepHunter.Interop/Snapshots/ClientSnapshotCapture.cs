@@ -49,6 +49,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string MaximumManaKey = "MaximumMana";
     private const string ActivePanelKey = "ActivePanel";
     private const string InventoryExpandedKey = "InventoryExpanded";
+    private const string MinimizedModeKey = "MinimizedMode";
     private const string InputManagerKey = "InputManager";
     private const string ChatInputPaneVtableKey = "ChatInputPaneVtable";
     private const string TellReceiverInputPaneVtableKey =
@@ -125,6 +126,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(MaximumManaKey, MemoryValueKind.Unsigned32),
         new(ActivePanelKey, MemoryValueKind.Byte),
         new(InventoryExpandedKey, MemoryValueKind.Byte),
+        new(MinimizedModeKey, MemoryValueKind.Byte),
         new(InputManagerKey, MemoryValueKind.Unsigned32),
         new(ChatInputPaneVtableKey, MemoryValueKind.Unsigned32),
         new(TellReceiverInputPaneVtableKey, MemoryValueKind.Unsigned32),
@@ -476,6 +478,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             reader,
             out var activePanel,
             out var isInventoryExpanded,
+            out var isMinimizedMode,
             out var isChatOpen,
             out error);
         sectionCompletedAt = clock.GetCurrentTimestamp();
@@ -782,6 +785,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             character!.CharacterId,
             activePanel,
             isInventoryExpanded,
+            isMinimizedMode,
             isChatOpen,
             location!,
             out error,
@@ -821,6 +825,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook,
             spellbook,
             isInventoryExpanded,
+            isMinimizedMode,
             isChatOpen,
             group,
             activeSpellEffects,
@@ -843,6 +848,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         SkillbookSnapshot? skillbook = null,
         SpellbookSnapshot? spellbook = null,
         bool isInventoryExpanded = false,
+        bool isMinimizedMode = false,
         bool isChatOpen = false,
         GroupSnapshot? group = null,
         ActiveSpellEffectsSnapshot? activeSpellEffects = null,
@@ -866,6 +872,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook: skillbook,
             location: location,
             isInventoryExpanded: isInventoryExpanded,
+            isMinimizedMode: isMinimizedMode,
             isChatOpen: isChatOpen,
             group: group,
             activeSpellEffects: activeSpellEffects,
@@ -1301,6 +1308,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         MappedMemoryReader reader,
         out ClientPanel activePanel,
         out bool isInventoryExpanded,
+        out bool isMinimizedMode,
         out bool isChatOpen,
         out SnapshotCaptureError? error)
     {
@@ -1311,6 +1319,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         {
             activePanel = ClientPanel.Unknown;
             isInventoryExpanded = false;
+            isMinimizedMode = false;
             isChatOpen = false;
             error = MappingFailure(
                 SnapshotSection.ClientState,
@@ -1341,6 +1350,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 out var inventoryExpandedError))
         {
             isInventoryExpanded = false;
+            isMinimizedMode = false;
             isChatOpen = false;
             error = MappingFailure(
                 SnapshotSection.ClientState,
@@ -1350,6 +1360,21 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         }
 
         isInventoryExpanded = rawInventoryExpanded != 0;
+        if (!reader.TryReadByte(
+                MinimizedModeKey,
+                out var rawMinimizedMode,
+                out var minimizedModeError))
+        {
+            isMinimizedMode = false;
+            isChatOpen = false;
+            error = MappingFailure(
+                SnapshotSection.ClientState,
+                MinimizedModeKey,
+                minimizedModeError);
+            return false;
+        }
+
+        isMinimizedMode = rawMinimizedMode != 0;
         return TryReadIsChatOpen(reader, out isChatOpen, out error);
     }
 
@@ -1697,6 +1722,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         uint expectedCharacterId,
         ClientPanel expectedActivePanel,
         bool expectedInventoryExpanded,
+        bool expectedMinimizedMode,
         bool expectedIsChatOpen,
         MapLocationSnapshot expectedLocation,
         out SnapshotCaptureError? error,
@@ -1706,6 +1732,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 reader,
                 out var activePanel,
                 out var isInventoryExpanded,
+                out var isMinimizedMode,
                 out var isChatOpen,
                 out var clientStateError))
         {
@@ -1725,6 +1752,15 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             error = StateChanged(
                 InventoryExpandedKey,
                 "The inventory display mode changed during snapshot capture.");
+            failureQuality = SnapshotQuality.Incoherent;
+            return false;
+        }
+
+        if (isMinimizedMode != expectedMinimizedMode)
+        {
+            error = StateChanged(
+                MinimizedModeKey,
+                "The minimized interface mode changed during snapshot capture.");
             failureQuality = SnapshotQuality.Incoherent;
             return false;
         }

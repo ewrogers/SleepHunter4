@@ -119,6 +119,33 @@ public sealed partial class MacroEngine
 
                 break;
 
+            case ExpandInterfaceIntent:
+                if (staffSwitch is
+                    {
+                        Status: StaffSwitchStatus.ExpandingInterface
+                    })
+                {
+                    staffSwitch = staffSwitch.IssueFailed();
+                }
+
+                if (spellCast is
+                    {
+                        Status: SpellCastStatus.WaitingForPanel
+                    })
+                {
+                    spellCast = spellCast.IssueFailed();
+                }
+
+                if (skillUse is
+                    {
+                        Status: SkillUseStatus.WaitingForPanel
+                    })
+                {
+                    skillUse = skillUse.IssueFailed();
+                }
+
+                break;
+
             case CastSpellIntent:
                 if (spellCast is
                     {

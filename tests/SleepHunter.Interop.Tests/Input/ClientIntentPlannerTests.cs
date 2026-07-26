@@ -156,6 +156,82 @@ public sealed class ClientIntentPlannerTests
     }
 
     [Test]
+    public void ShouldSwitchPanelsWithinTheMinimizedInterface()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(15),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 145, y: 420);
+    }
+
+    [Test]
+    public void ShouldSwitchPanelsWithinAnExpandedMinimizedAbilityPane()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(16),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 145, y: 360);
+    }
+
+    [Test]
+    public void ShouldSwitchPanelsWithinAnExpandedMinimizedInventoryPane()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(17),
+            ClientPanel.TemuairSpells);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 180, y: 290);
+    }
+
+    [Test]
+    public void ShouldScaleMinimizedCoordinatesOnceForTwoTimesMode()
+    {
+        var target = new ClientWindowTarget(
+            Client,
+            Target.ProcessId,
+            Target.WindowHandle,
+            clientWidth: 1280,
+            clientHeight: 960);
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(16),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 290, y: 840);
+    }
+
+    [Test]
     public void ShouldPlanInventoryExpansionAtTheDocumentedToggle()
     {
         var intent = new ExpandInventoryIntent(new ClientActionId(15));
@@ -166,6 +242,50 @@ public sealed class ClientIntentPlannerTests
             Snapshot(ClientPanel.Inventory));
 
         AssertPlainClick(result, x: 570, y: 320);
+    }
+
+    [Test]
+    public void ShouldPlanMinimizedInterfaceExpansionAtTheDocumentedToggle()
+    {
+        var intent = new ExpandInterfaceIntent(new ClientActionId(16));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 545, y: 420);
+    }
+
+    [Test]
+    public void ShouldRejectAnAlreadyExpandedInterface()
+    {
+        var result = planner.Plan(
+            new ExpandInterfaceIntent(new ClientActionId(17)),
+            Target,
+            Snapshot(ClientPanel.TemuairSkills));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+    }
+
+    [Test]
+    public void ShouldRejectAnAlreadyExpandedMinimizedPane()
+    {
+        var result = planner.Plan(
+            new ExpandInterfaceIntent(new ClientActionId(18)),
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
     }
 
     [Test]
@@ -219,6 +339,82 @@ public sealed class ClientIntentPlannerTests
                 plan.Messages.Select(message => message.LParam),
                 Is.All.EqualTo(point));
         });
+    }
+
+    [Test]
+    public void ShouldDoubleClickAVisibleMinimizedInventorySlot()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(21),
+            "Test Staff",
+            inventorySlot: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(1, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+    }
+
+    [Test]
+    public void ShouldRejectAHiddenMinimizedInventoryRow()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(22),
+            "Test Staff",
+            inventorySlot: 13);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(13, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.InterfaceModeMismatch));
+    }
+
+    [Test]
+    public void ShouldUseAHiddenInventoryRowAfterMinimizedPaneExpansion()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(23),
+            "Test Staff",
+            inventorySlot: 13);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(13, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 110, y: 355)));
     }
 
     [Test]
@@ -343,6 +539,70 @@ public sealed class ClientIntentPlannerTests
                     .Select(message => message.WParam),
                 Is.All.EqualTo((nuint)0));
         });
+    }
+
+    [Test]
+    public void ShouldUseAVisibleSkillWithinTheMinimizedInterface()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(36),
+            "Test Skill",
+            slot: 1,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+    }
+
+    [Test]
+    public void ShouldRejectAHiddenMinimizedSkillRow()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(37),
+            "Test Skill",
+            slot: 13,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.InterfaceModeMismatch));
+    }
+
+    [Test]
+    public void ShouldUseAHiddenSkillAfterMinimizedPaneExpansion()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(38),
+            "Test Skill",
+            slot: 13,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 110, y: 420)));
     }
 
     [Test]
@@ -553,6 +813,93 @@ public sealed class ClientIntentPlannerTests
                     ClientWindowMessage.LeftButtonUp
                 ]));
             Assert.That(plan.CleanupMessages, Has.Length.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public void ShouldUseMinimizedSpellAndTileCoordinates()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(207),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.RelativeTile(1, 0));
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                result.Plan!.Messages.Take(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+            Assert.That(
+                result.Plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 343, y: 208)));
+        });
+    }
+
+    [Test]
+    public void ShouldUseSecondRowSpellWithoutTargetAfterPaneExpansion()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(208),
+            "Test Spell",
+            slot: 13,
+            ClientPanel.TemuairSpells,
+            SpellTarget.None);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                spellbook: Spellbook(slot: 13),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Plan!.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                result.Plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 110, y: 420)));
+        });
+    }
+
+    [Test]
+    public void ShouldUseThirdRowSpellAndTargetAfterPaneExpansion()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(209),
+            "Test Spell",
+            slot: 25,
+            ClientPanel.TemuairSpells,
+            SpellTarget.Self);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                spellbook: Spellbook(slot: 25),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                result.Plan!.Messages.Take(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 110, y: 455)));
+            Assert.That(
+                result.Plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 315, y: 195)));
         });
     }
 
@@ -792,7 +1139,8 @@ public sealed class ClientIntentPlannerTests
         InventorySnapshot? inventory = null,
         bool isInventoryExpanded = false,
         SpellbookSnapshot? spellbook = null,
-        MapLocationSnapshot? location = null) =>
+        MapLocationSnapshot? location = null,
+        bool isMinimizedMode = false) =>
         new(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -804,7 +1152,8 @@ public sealed class ClientIntentPlannerTests
             inventory: inventory,
             spellbook: spellbook,
             location: location,
-            isInventoryExpanded: isInventoryExpanded);
+            isInventoryExpanded: isInventoryExpanded,
+            isMinimizedMode: isMinimizedMode);
 
     private static SpellbookSnapshot Spellbook(
         int slot,

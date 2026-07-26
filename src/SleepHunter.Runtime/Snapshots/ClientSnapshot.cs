@@ -21,6 +21,7 @@ public sealed record ClientSnapshot
         SkillbookSnapshot? skillbook = null,
         MapLocationSnapshot? location = null,
         bool isInventoryExpanded = false,
+        bool isMinimizedMode = false,
         bool isChatOpen = false,
         GroupSnapshot? group = null,
         ActiveSpellEffectsSnapshot? activeSpellEffects = null,
@@ -67,6 +68,8 @@ public sealed record ClientSnapshot
         Skillbook = skillbook;
         Location = location;
         IsInventoryExpanded = isInventoryExpanded;
+        IsPanelExpanded = isInventoryExpanded;
+        IsMinimizedMode = isMinimizedMode;
         IsChatOpen = isChatOpen;
         Group = group;
         ActiveSpellEffects = activeSpellEffects;
@@ -103,6 +106,10 @@ public sealed record ClientSnapshot
     public MapLocationSnapshot? Location { get; }
 
     public bool IsInventoryExpanded { get; }
+
+    public bool IsPanelExpanded { get; }
+
+    public bool IsMinimizedMode { get; }
 
     public bool IsChatOpen { get; }
 

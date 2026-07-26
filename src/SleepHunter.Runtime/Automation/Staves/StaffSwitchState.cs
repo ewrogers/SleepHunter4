@@ -96,6 +96,22 @@ public sealed record StaffSwitchState
             completedEquipmentAttempts,
             targetInventoryExpanded);
 
+    internal static StaffSwitchState ExpandingInterface(
+        StaffSelection selection,
+        TimeSpan attemptTimeout,
+        int completedEquipmentAttempts,
+        int maximumEquipmentAttempts,
+        ClientActionId actionId) =>
+        new(
+            selection,
+            StaffSwitchStatus.ExpandingInterface,
+            attemptTimeout,
+            attempt: 1,
+            maximumEquipmentAttempts,
+            actionId,
+            completedEquipmentAttempts,
+            targetInventoryExpanded: null);
+
     internal static StaffSwitchState ChangingWeapon(
         StaffSelection selection,
         TimeSpan attemptTimeout,

@@ -133,6 +133,64 @@ internal static class MacroDecisionInvariants
                 "Pending panel transition metadata must match its client action.");
         }
 
+        var pendingInterfaceIntent =
+            decision.State.PendingAction?.Intent as ExpandInterfaceIntent;
+        var expandingInterfaceForStaff = decision.State.StaffSwitch is
+        {
+            Status: StaffSwitchStatus.ExpandingInterface
+        };
+        var expandingInterfaceForSpell =
+            pendingInterfaceIntent is not null &&
+            decision.State.SpellCast is
+            {
+                Status: SpellCastStatus.WaitingForPanel
+            };
+        var expandingInterfaceForSkill =
+            pendingInterfaceIntent is not null &&
+            decision.State.SkillUse is
+            {
+                Status: SkillUseStatus.WaitingForPanel
+            };
+        var interfaceExpansionOwners =
+            (expandingInterfaceForStaff ? 1 : 0) +
+            (expandingInterfaceForSpell ? 1 : 0) +
+            (expandingInterfaceForSkill ? 1 : 0);
+
+        if ((pendingInterfaceIntent is not null) !=
+            (interfaceExpansionOwners == 1))
+        {
+            throw new InvalidOperationException(
+                "Pending interface expansion state must match exactly one client action.");
+        }
+
+        if (pendingInterfaceIntent is not null &&
+            (decision.State.PendingAction!.Attempt != 1 ||
+             decision.State.PendingAction.MaximumAttempts != 1 ||
+             decision.State.LatestSnapshot is not
+             {
+                 IsMinimizedMode: true,
+                 IsPanelExpanded: false
+             }))
+        {
+            throw new InvalidOperationException(
+                "Pending interface expansion requires one bounded attempt from minimized mode.");
+        }
+
+        if (expandingInterfaceForStaff &&
+            (decision.State.StaffSwitch!.ActionId !=
+             pendingInterfaceIntent?.ActionId ||
+             decision.State.StaffSwitch.Selection is not
+             {
+                 Action: StaffSelectionAction.Equip,
+                 InventorySlot: { } interfaceInventorySlot
+             } ||
+             ClientPanel.Inventory.IsSlotVisibleInMinimizedMode(
+                 interfaceInventorySlot)))
+        {
+            throw new InvalidOperationException(
+                "Staff interface expansion must expose its selected inventory row.");
+        }
+
         if (decision.State.PanelPreservation is
             {
                 Status: PanelPreservationStatus.Restoring
@@ -295,6 +353,7 @@ internal static class MacroDecisionInvariants
              decision.State.StaffSwitch is not
              {
                  Status: StaffSwitchStatus.WaitingForInventory or
+                      StaffSwitchStatus.ExpandingInterface or
                       StaffSwitchStatus.ChangingInventoryMode or
                       StaffSwitchStatus.ChangingWeapon,
                  Selection: { } staffSelection
@@ -310,9 +369,12 @@ internal static class MacroDecisionInvariants
                 Status: SpellCastStatus.WaitingForPanel,
                 Plan.SelectedSpell: { } selectedSpell
             } &&
-            (pendingSwitchIntent is null ||
-             !pendingSwitchIntent.TargetPanel.IsEquivalentTo(
-                 selectedSpell.Panel)))
+            !((pendingSwitchIntent is not null &&
+               pendingSwitchIntent.TargetPanel.IsEquivalentTo(
+                   selectedSpell.Panel)) ||
+              (pendingInterfaceIntent is not null &&
+               !selectedSpell.Panel.IsSlotVisibleInMinimizedMode(
+                   selectedSpell.Slot))))
         {
             throw new InvalidOperationException(
                 "Spell casting can wait only on its pending spell panel action.");
@@ -454,9 +516,12 @@ internal static class MacroDecisionInvariants
                 Status: SkillUseStatus.WaitingForPanel,
                 Plan.SelectedSkill: { } waitingSkill
             } &&
-            (pendingSwitchIntent is null ||
-             !pendingSwitchIntent.TargetPanel.IsEquivalentTo(
-                 waitingSkill.Panel)))
+            !((pendingSwitchIntent is not null &&
+               pendingSwitchIntent.TargetPanel.IsEquivalentTo(
+                   waitingSkill.Panel)) ||
+              (pendingInterfaceIntent is not null &&
+               !waitingSkill.Panel.IsSlotVisibleInMinimizedMode(
+                   waitingSkill.Slot))))
         {
             throw new InvalidOperationException(
                 "Skill use can wait only on its pending skill panel action.");

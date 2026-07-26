@@ -17,6 +17,7 @@ public enum ClientIntentPlanFailure
     ClientNotInWorld,
     PanelMismatch,
     InventoryModeMismatch,
+    InterfaceModeMismatch,
     InventoryItemMismatch,
     SpellMismatch,
     TargetUnavailable,

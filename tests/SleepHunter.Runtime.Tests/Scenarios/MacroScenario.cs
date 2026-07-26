@@ -66,6 +66,7 @@ internal sealed class MacroScenario
         SkillbookSnapshot? skillbook = null,
         MapLocationSnapshot? location = null,
         bool isInventoryExpanded = false,
+        bool isMinimizedMode = false,
         bool isChatOpen = false,
         MessageDialogsSnapshot? messageDialogs = null)
     {
@@ -86,8 +87,9 @@ internal sealed class MacroScenario
             spellbook,
             skillbook,
             location,
-            isInventoryExpanded,
-            isChatOpen,
+            isInventoryExpanded: isInventoryExpanded,
+            isMinimizedMode: isMinimizedMode,
+            isChatOpen: isChatOpen,
             messageDialogs: messageDialogs);
 
         return Apply(new ClientSnapshotObserved(snapshot));

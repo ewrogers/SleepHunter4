@@ -223,6 +223,25 @@ public sealed partial class MacroEngine
                 flower: flower?.WithSpellCast(spellCast));
         }
 
+        if (snapshot.IsMinimizedMode &&
+            !snapshot.IsPanelExpanded &&
+            !plan.SelectedSpell.Panel.IsSlotVisibleInMinimizedMode(
+                plan.SelectedSpell.Slot))
+        {
+            spellCast = spellCast.WaitingForPanel(plan);
+            return IssueInterfaceExpansion(
+                currentState,
+                spellCast.Policy.PanelTransition.AttemptTimeout,
+                currentTime,
+                snapshot,
+                panelTransition,
+                staffSwitch,
+                spellCast,
+                currentState.SkillUse,
+                currentState.Disarm,
+                flower?.WithSpellCast(spellCast));
+        }
+
         return IssueCastSpell(
             currentState,
             spellCast,
@@ -239,7 +258,7 @@ public sealed partial class MacroEngine
         SpellCastState spellCast,
         ClientSnapshot snapshot,
         MacroTimestamp currentTime,
-        PanelTransitionState panelTransition,
+        PanelTransitionState? panelTransition,
         StaffSwitchState? staffSwitch)
     {
         var flower = currentState.Flower;

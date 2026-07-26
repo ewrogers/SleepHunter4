@@ -565,13 +565,51 @@ public sealed class SkillUseScenarioTests
         Assert.That(cleared.State.SkillQueue.Entries, Is.Empty);
     }
 
+    [Test]
+    public void ShouldExpandMinimizedInterfaceBeforeUsingHiddenSkill()
+    {
+        var entry = Entry(1, "skill");
+        var skill = Skill("skill", slot: 13);
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSkills,
+            entry,
+            skill,
+            isMinimizedMode: true);
+
+        var expand = scenario.Send(new UseNextSkillCommand(TestPolicy));
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var use = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(skill),
+            isInventoryExpanded: true,
+            isMinimizedMode: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(expand.Intent, Is.TypeOf<ExpandInterfaceIntent>());
+            Assert.That(
+                expand.State.SkillUse?.Status,
+                Is.EqualTo(SkillUseStatus.WaitingForPanel));
+            Assert.That(use.Intent, Is.TypeOf<UseSkillIntent>());
+            Assert.That(
+                ((UseSkillIntent)use.Intent!).Slot,
+                Is.EqualTo(skill.Slot));
+            Assert.That(
+                use.State.SkillUse?.Status,
+                Is.EqualTo(SkillUseStatus.Using));
+        });
+    }
+
     private static MacroScenario CreateRunningScenario(
         ClientPanel panel,
         SkillQueueEntry entry,
         SkillSnapshot skill,
         EquipmentSnapshot? equipment = null,
         int health = 100,
-        bool issueActions = true)
+        bool issueActions = true,
+        bool isMinimizedMode = false)
     {
         var scenario = new MacroScenario(issueActions: issueActions);
         scenario.Send(new AddSkillQueueEntryCommand(entry));
@@ -580,7 +618,8 @@ public sealed class SkillUseScenarioTests
             activePanel: panel,
             equipment: equipment,
             vitals: Vitals(health),
-            skillbook: Skillbook(skill));
+            skillbook: Skillbook(skill),
+            isMinimizedMode: isMinimizedMode);
         scenario.Start();
         return scenario;
     }

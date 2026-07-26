@@ -22,6 +22,7 @@ public sealed class ClientMemoryMapLoaderTests
         var inventory = map.Find("Inventory");
         var cooldowns = map.Find("SkillCooldowns");
         var activePanel = map.Find("ActivePanel");
+        var minimizedMode = map.Find("MinimizedMode");
         var mapName = map.Find("MapName");
         var eventDispatcher = map.Find("ActiveEventDispatcher");
         var dialogVtable = map.Find("WindowMessageDialogPaneVtable");
@@ -41,6 +42,9 @@ public sealed class ClientMemoryMapLoaderTests
             Assert.That(cooldowns?.RequiresSearch, Is.True);
             Assert.That(cooldowns?.Search?.MatchOffset.Value, Is.EqualTo(0x194));
             Assert.That(activePanel?.ValueKind, Is.EqualTo(MemoryValueKind.Byte));
+            Assert.That(
+                minimizedMode?.Address.Offsets.Select(offset => offset.Value),
+                Is.EqualTo(new long[] { 0x4C60 }));
             Assert.That(mapName?.ValueKind, Is.EqualTo(MemoryValueKind.Text));
             Assert.That(
                 mapName?.Address.Offsets.Select(offset => offset.Value),

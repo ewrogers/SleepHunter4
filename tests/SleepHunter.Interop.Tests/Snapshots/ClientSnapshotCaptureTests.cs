@@ -70,6 +70,7 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong MaximumManaAddress = PlayerAddress + 0x2C;
     private const ulong ActivePanelAddress = PlayerAddress + 0x30;
     private const ulong InventoryExpandedAddress = PlayerAddress + 0x31;
+    private const ulong MinimizedModeAddress = PlayerAddress + 0x32;
     private const ulong MapNumberAddress = PlayerAddress + 0x40;
     private const ulong MapXAddress = PlayerAddress + 0x44;
     private const ulong MapYAddress = PlayerAddress + 0x48;
@@ -132,6 +133,8 @@ public sealed class ClientSnapshotCaptureTests
                 result.Snapshot?.ActivePanel,
                 Is.EqualTo(ClientPanel.Inventory));
             Assert.That(result.Snapshot?.IsInventoryExpanded, Is.True);
+            Assert.That(result.Snapshot?.IsPanelExpanded, Is.True);
+            Assert.That(result.Snapshot?.IsMinimizedMode, Is.True);
             Assert.That(result.Snapshot?.IsChatOpen, Is.False);
             Assert.That(
                 result.Snapshot?.Character,
@@ -902,6 +905,69 @@ public sealed class ClientSnapshotCaptureTests
     }
 
     [Test]
+    public void ShouldRejectChangedMinimizedInterfaceMode()
+    {
+        var source = CreateMemoryImage();
+        var minimizedModeReads = 0;
+        source.ReadStarting = (address, _) =>
+        {
+            if (address.Value != MinimizedModeAddress)
+            {
+                return;
+            }
+
+            minimizedModeReads++;
+            if (minimizedModeReads == 2)
+            {
+                source.Write(address, 0);
+            }
+        };
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(result.Quality, Is.EqualTo(SnapshotQuality.Incoherent));
+            Assert.That(
+                result.Error?.Failure,
+                Is.EqualTo(SnapshotCaptureFailure.StateChanged));
+            Assert.That(
+                result.Error?.Section,
+                Is.EqualTo(SnapshotSection.Coherence));
+            Assert.That(
+                result.Error?.VariableKey,
+                Is.EqualTo("MinimizedMode"));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectMissingMinimizedInterfaceMode()
+    {
+        var source = CreateMemoryImage();
+        source.Clear(new MemoryAddress(MinimizedModeAddress), 1);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(result.Quality, Is.EqualTo(SnapshotQuality.Partial));
+            Assert.That(
+                result.Error?.Failure,
+                Is.EqualTo(SnapshotCaptureFailure.MappingReadFailed));
+            Assert.That(
+                result.Error?.Section,
+                Is.EqualTo(SnapshotSection.ClientState));
+            Assert.That(
+                result.Error?.VariableKey,
+                Is.EqualTo("MinimizedMode"));
+        });
+    }
+
+    [Test]
     public void ShouldOmitUnrequestedCollections()
     {
         var source = CreateMemoryImage();
@@ -1364,6 +1430,7 @@ public sealed class ClientSnapshotCaptureTests
         source.WriteUInt32(new MemoryAddress(MaximumManaAddress), 600);
         source.Write(new MemoryAddress(ActivePanelAddress), 0);
         source.Write(new MemoryAddress(InventoryExpandedAddress), 1);
+        source.Write(new MemoryAddress(MinimizedModeAddress), 1);
         source.WriteUInt32(new MemoryAddress(MapNumberAddress), 1);
         source.WriteInt32(new MemoryAddress(MapXAddress), 50);
         source.WriteInt32(new MemoryAddress(MapYAddress), 60);
@@ -1622,6 +1689,7 @@ public sealed class ClientSnapshotCaptureTests
         Dynamic("MaximumMana", 0x2C, MemoryValueKind.Unsigned32),
         Dynamic("ActivePanel", 0x30, MemoryValueKind.Byte),
         Dynamic("InventoryExpanded", 0x31, MemoryValueKind.Byte),
+        Dynamic("MinimizedMode", 0x32, MemoryValueKind.Byte),
         new(
             "InputManager",
             new PointerChain(

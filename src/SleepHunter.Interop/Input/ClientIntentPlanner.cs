@@ -12,9 +12,19 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
     private const int PanelX = 545;
     private const int InventoryToggleX = 570;
     private const int InventoryToggleY = 320;
+    private const int InterfaceToggleX = 545;
+    private const int InterfaceToggleY = 420;
     private const int SlotOriginX = 110;
     private const int SlotOriginY = 350;
     private const int ExpandedSlotOriginY = 285;
+    private const int MinimizedSlotOriginY = 450;
+    private const int MinimizedExpandedSlotOffsetY = SlotSize;
+    private const int CompactMinimizedSlotCenteringOffset = 5;
+    private const int CompactMinimizedPanelY = 420;
+    private const int SelfX = 315;
+    private const int SelfY = 160;
+    private const int MinimizedSelfOffsetY =
+        MinimizedExpandedSlotOffsetY;
     private const int SlotSize = 35;
 
     private readonly IVirtualKeyMapper keyMapper;
@@ -50,6 +60,11 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                 Keystroke(intent, VirtualKey.Oem3),
             AssailIntent =>
                 Keystroke(intent, VirtualKey.Space),
+            ExpandInterfaceIntent expandInterface =>
+                PlanInterfaceExpansion(
+                    expandInterface,
+                    target,
+                    snapshot),
             ExpandInventoryIntent expandInventory =>
                 PlanInventoryMode(
                     expandInventory,
@@ -147,9 +162,13 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                 "The target client panel is already active.");
         }
 
-        var basePoint = new ClientInputMessages.ClientPoint(
-            PanelX,
-            PanelY(intent.TargetPanel));
+        var basePoint = snapshot.IsMinimizedMode
+            ? new ClientInputMessages.ClientPoint(
+                MinimizedPanelX(intent.TargetPanel),
+                MinimizedPanelY(snapshot))
+            : new ClientInputMessages.ClientPoint(
+                PanelX,
+                PanelY(intent.TargetPanel));
         if (!TryScalePoint(target, basePoint, out var point))
         {
             return CoordinateFailure(intent);
@@ -184,10 +203,20 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                 "The observed client panel does not contain the requested skill.");
         }
 
+        if (IsCompactMinimizedInterface(snapshot) &&
+            !intent.Panel.IsSlotVisibleInMinimizedMode(intent.Slot))
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.InterfaceModeMismatch,
+                "The minimized interface does not expose the requested skill row.");
+        }
+
         if (!TrySlotPoint(
                 target,
                 intent.Slot,
                 intent.Panel,
+                snapshot,
                 out var point))
         {
             return CoordinateFailure(intent);
@@ -225,10 +254,20 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                 "The requested spell is not present in the observed spell slot.");
         }
 
+        if (IsCompactMinimizedInterface(snapshot) &&
+            !intent.Panel.IsSlotVisibleInMinimizedMode(intent.Slot))
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.InterfaceModeMismatch,
+                "The minimized interface does not expose the requested spell row.");
+        }
+
         if (!TrySlotPoint(
                 target,
                 intent.Slot,
                 intent.Panel,
+                snapshot,
                 out var spellPoint))
         {
             return CoordinateFailure(intent);
@@ -280,7 +319,17 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
         var inventorySlot = intent.InventorySlot!.Value;
         var requiresExpandedInventory =
             inventorySlot > InventoryItemSnapshot.MaximumCollapsedSlot;
-        if (snapshot.IsInventoryExpanded != requiresExpandedInventory)
+        if (IsCompactMinimizedInterface(snapshot) &&
+            inventorySlot > 12)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.InterfaceModeMismatch,
+                "The minimized interface does not expose the requested inventory row.");
+        }
+
+        if (!snapshot.IsMinimizedMode &&
+            snapshot.IsInventoryExpanded != requiresExpandedInventory)
         {
             return ClientIntentPlanResult.Rejected(
                 intent.ActionId,
@@ -304,11 +353,16 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
 
         var row = (inventorySlot - 1) / 12;
         var column = (inventorySlot - 1) % 12;
-        var originY = snapshot.IsInventoryExpanded
-            ? ExpandedSlotOriginY
-            : SlotOriginY;
+        var originY = snapshot.IsMinimizedMode
+            ? snapshot.IsPanelExpanded
+                ? ExpandedSlotOriginY + MinimizedExpandedSlotOffsetY
+                : MinimizedSlotOriginY +
+                    CompactMinimizedSlotCenteringOffset
+            : snapshot.IsInventoryExpanded
+                ? ExpandedSlotOriginY
+                : SlotOriginY;
         var basePoint = new ClientInputMessages.ClientPoint(
-            SlotOriginX + (column * SlotSize),
+            SlotOriginXFor(snapshot) + (column * SlotSize),
             originY + (row * SlotSize));
         if (!TryScalePoint(target, basePoint, out var point))
         {
@@ -370,6 +424,49 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                 "The target panel does not have a supported input coordinate.")
         };
 
+    private static int MinimizedPanelX(ClientPanel panel) =>
+        panel switch
+        {
+            ClientPanel.Inventory => 110,
+            ClientPanel.TemuairSkills or
+                ClientPanel.MedeniaSkills => 145,
+            ClientPanel.TemuairSpells or
+                ClientPanel.MedeniaSpells => 180,
+            ClientPanel.Chat or
+                ClientPanel.ChatHistory => 215,
+            ClientPanel.Stats or
+                ClientPanel.Modifiers => 250,
+            ClientPanel.WorldSkills or
+                ClientPanel.WorldSpells => 285,
+            _ => throw new InvalidOperationException(
+                "The target panel does not have a supported minimized input coordinate.")
+        };
+
+    private static int MinimizedPanelY(ClientSnapshot snapshot)
+    {
+        if (!snapshot.IsPanelExpanded)
+        {
+            return CompactMinimizedPanelY;
+        }
+
+        return snapshot.ActivePanel switch
+        {
+            ClientPanel.Inventory => 290,
+            ClientPanel.TemuairSkills or
+                ClientPanel.MedeniaSkills or
+                ClientPanel.TemuairSpells or
+                ClientPanel.MedeniaSpells or
+                ClientPanel.WorldSkills or
+                ClientPanel.WorldSpells => 360,
+            _ => CompactMinimizedPanelY
+        };
+    }
+
+    private static bool IsCompactMinimizedInterface(
+        ClientSnapshot snapshot) =>
+        snapshot.IsMinimizedMode &&
+        !snapshot.IsPanelExpanded;
+
     private static bool IsMedeniaPanel(ClientPanel panel) =>
         panel is ClientPanel.MedeniaSkills or ClientPanel.MedeniaSpells;
 
@@ -391,6 +488,7 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
         ClientWindowTarget target,
         int slot,
         ClientPanel panel,
+        ClientSnapshot snapshot,
         out ClientInputMessages.ClientPoint point)
     {
         var isWorldPanel = panel is
@@ -407,14 +505,60 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
             ? 6
             : 0;
         var row = (relativeSlot - 1) / rowSize;
+        if (IsCompactMinimizedInterface(snapshot) && row > 0)
+        {
+            point = default;
+            return false;
+        }
+
         var column = ((relativeSlot - 1) % rowSize) + columnOffset;
         return TryScalePoint(
             target,
             new LogicalPoint(
-                SlotOriginX + (column * SlotSize),
-                SlotOriginY + (row * SlotSize)),
+                SlotOriginXFor(snapshot) + (column * SlotSize),
+                SlotOriginYFor(snapshot) + (row * SlotSize)),
             TargetOffset.Zero,
             out point);
+    }
+
+    private static int SlotOriginXFor(ClientSnapshot snapshot) =>
+        IsCompactMinimizedInterface(snapshot)
+            ? SlotOriginX + CompactMinimizedSlotCenteringOffset
+            : SlotOriginX;
+
+    private static int SlotOriginYFor(ClientSnapshot snapshot) =>
+        snapshot.IsMinimizedMode
+            ? snapshot.IsPanelExpanded
+                ? SlotOriginY + MinimizedExpandedSlotOffsetY
+                : MinimizedSlotOriginY +
+                    CompactMinimizedSlotCenteringOffset
+            : SlotOriginY;
+
+    private static ClientIntentPlanResult PlanInterfaceExpansion(
+        ExpandInterfaceIntent intent,
+        ClientWindowTarget target,
+        ClientSnapshot snapshot)
+    {
+        if (!snapshot.IsMinimizedMode ||
+            snapshot.IsPanelExpanded)
+        {
+            return ClientIntentPlanResult.Rejected(
+                intent.ActionId,
+                ClientIntentPlanFailure.AlreadySatisfied,
+                "The client interface is already expanded.");
+        }
+
+        var basePoint = new ClientInputMessages.ClientPoint(
+            InterfaceToggleX,
+            InterfaceToggleY);
+        if (!TryScalePoint(target, basePoint, out var point))
+        {
+            return CoordinateFailure(intent);
+        }
+
+        return ClientIntentPlanResult.Planned(
+            intent.ActionId,
+            ClientInputMessages.Click(point));
     }
 
     private static bool TryScalePoint(
@@ -476,7 +620,7 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
         switch (intent.Target.Kind)
         {
             case SpellTargetKind.Self:
-                logicalPoint = new LogicalPoint(315, 160);
+                logicalPoint = SelfPoint(snapshot);
                 break;
 
             case SpellTargetKind.ScreenPoint:
@@ -487,6 +631,7 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
 
             case SpellTargetKind.RelativeTile:
                 logicalPoint = RelativeTilePoint(
+                    snapshot,
                     intent.Target.X!.Value,
                     intent.Target.Y!.Value);
                 break;
@@ -514,7 +659,7 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
                     return false;
                 }
 
-                logicalPoint = RelativeTilePoint(deltaX, deltaY);
+                logicalPoint = RelativeTilePoint(snapshot, deltaX, deltaY);
                 break;
 
             case SpellTargetKind.Character:
@@ -561,11 +706,17 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
     }
 
     private static LogicalPoint RelativeTilePoint(
+        ClientSnapshot snapshot,
         long deltaX,
         long deltaY) =>
         new(
-            315 + (((deltaX - deltaY) / 2.0) * 56),
-            160 + (((deltaY + deltaX) / 2.0) * 27));
+            SelfPoint(snapshot).X + (((deltaX - deltaY) / 2.0) * 56),
+            SelfPoint(snapshot).Y + (((deltaY + deltaX) / 2.0) * 27));
+
+    private static LogicalPoint SelfPoint(ClientSnapshot snapshot) =>
+        snapshot.IsMinimizedMode
+            ? new LogicalPoint(SelfX, SelfY + MinimizedSelfOffsetY)
+            : new LogicalPoint(SelfX, SelfY);
 
     private static ClientIntentPlanResult CoordinateFailure(
         ClientActionIntent intent) =>
