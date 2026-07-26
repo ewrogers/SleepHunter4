@@ -103,8 +103,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                     <!-- Start Macro Button -->
-                    <Button Name="startMacroButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
                             Command="{Binding SelectedClient.StartOrResumeMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
@@ -123,8 +122,7 @@
                         </DockPanel>
                     </Button>
                     <!-- Pause Macro Button -->
-                    <Button Name="pauseMacroButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
                             Command="{Binding SelectedClient.PauseMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
@@ -143,8 +141,7 @@
                         </DockPanel>
                     </Button>
                     <!-- Stop Macro Button -->
-                    <Button Name="stopMacroButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
                             Command="{Binding SelectedClient.StopMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
@@ -163,8 +160,7 @@
                         </DockPanel>
                     </Button>
                     <!-- Stop All Macros Button -->
-                    <Button Name="stopAllMacrosButton"
-                            Style="{StaticResource ObsidianToolBarButton}"
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
                             Command="{Binding StopAllMacrosCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
@@ -275,13 +271,7 @@
                          Style="{StaticResource ObsidianInventoryListBox}"
                          ItemTemplate="{StaticResource InventoryItemDataTemplate}"
                          ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
-                         VerticalContentAlignment="Top">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianInventoryListBoxItem}">
-                            <EventSetter Event="MouseDoubleClick" Handler="inventoryListBox_ItemDoubleClick"/>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+                         VerticalContentAlignment="Top"/>
             </TabItem>
 
             <!-- Equipment Tab -->
