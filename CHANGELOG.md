@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Renamed the WPF project to `SleepHunter.App` and moved the application, updater, and application tests under `src/` and `tests/` while preserving their product names, namespaces, and executable names
 - Reconciled the supported client memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
 - Collapsed Runtime and Interop onto one configurable client layout, removed version routing from client identities, and renamed client parsers, capture, and input planning types to generic names
 - Kept compact inventory, skillbook, spellbook, and legacy cooldown paths as compatibility fallbacks when richer pane snapshots are unavailable or change during a read

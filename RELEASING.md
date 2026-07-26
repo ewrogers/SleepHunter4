@@ -4,8 +4,8 @@ SleepHunter releases are built and published by GitHub Actions from version tags
 
 ## Prepare a release
 
-1. Update `Version`, `AssemblyVersion`, `FileVersion`, and `InformationalVersion` in `SleepHunter/SleepHunter.csproj`.
-2. If the updater changed, update the same version properties in `SleepHunter.Updater/SleepHunter.Updater.csproj`.
+1. Update `Version`, `AssemblyVersion`, `FileVersion`, and `InformationalVersion` in `src/SleepHunter.App/SleepHunter.App.csproj`.
+2. If the updater changed, update the same version properties in `src/SleepHunter.Updater/SleepHunter.Updater.csproj`.
 3. Add a dated section for the SleepHunter version to `CHANGELOG.md`.
 4. Merge the release changes into `main` and confirm the CI workflow passes.
 
@@ -24,7 +24,7 @@ The release archive intentionally has a flat layout containing:
 
 - `SleepHunter.exe`
 - `Updater.exe`
-- `Versions.xml`
+- `ClientLayout.xml`
 - `Themes.xml`
 - `Skills.xml`
 - `Spells.xml`

@@ -1,6 +1,6 @@
 ﻿
 # SleepHunter
-<img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
+<img src="src/SleepHunter.App/SleepHunter.png" width=32 height=32/> <img src="src/SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
 Dark Ages Automation Tool + Updater
 
 ---
@@ -24,6 +24,19 @@ Dark Ages Automation Tool + Updater
 3. Open `SleepHunter.exe`
 4. Configure your DA installation path in `Settings->Game Client` (if different)
 5. Profit!
+
+## Development
+
+Open `SleepHunter.sln` in Rider or run the WPF application from the repository
+root:
+
+```powershell
+dotnet run --project src/SleepHunter.App/SleepHunter.App.csproj `
+    --configuration Release
+```
+
+The project is named `SleepHunter.App`, while its product, namespaces, and
+shipped executable remain `SleepHunter` and `SleepHunter.exe`.
 
 ### Game Client Launcher Patches
 
@@ -70,9 +83,9 @@ These are read at runtime which allow the application to be aware of character l
 Custom executables can relocate these addresses even when the UI layout and
 ASCII data representation remain compatible.
 
-The single supported mapping is defined in `Versions.xml`, so address changes
-do not require code changes. Its entries are mostly `StaticVariable` or
-`DynamicVariable` types.
+The unified supported mapping is defined in `ClientLayout.xml`, so address
+changes do not require code changes. Its entries use static, dynamic, or search
+memory mappings.
 
 Numeric variables can declare their in-memory representation with the `Type` attribute (`Byte`, `SByte`,
 `Int16`, `UInt16`, `Int32`, or `UInt32`). Omitting it preserves the legacy behavior of reading a formatted decimal

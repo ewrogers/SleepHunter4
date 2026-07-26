@@ -1,6 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <AssemblyName>SleepHunter</AssemblyName>
+    <RootNamespace>SleepHunter</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <OutputType>WinExe</OutputType>
     <PublishSingleFile>true</PublishSingleFile>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -35,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
-    <InternalsVisibleTo Include="SleepHunter.Tests" />
+    <InternalsVisibleTo Include="SleepHunter.App.Tests" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="SleepHunter.ico" />
@@ -44,12 +51,12 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\SleepHunter.Interop\SleepHunter.Interop.csproj" />
-    <ProjectReference Include="..\src\SleepHunter.Persistence\SleepHunter.Persistence.csproj" />
-    <ProjectReference Include="..\src\SleepHunter.Runtime\SleepHunter.Runtime.csproj" />
+    <ProjectReference Include="..\SleepHunter.Interop\SleepHunter.Interop.csproj" />
+    <ProjectReference Include="..\SleepHunter.Persistence\SleepHunter.Persistence.csproj" />
+    <ProjectReference Include="..\SleepHunter.Runtime\SleepHunter.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\data\*.xml">
+    <Content Include="..\..\data\*.xml">
       <Link>%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

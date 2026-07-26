@@ -105,8 +105,10 @@ versioned macro configuration and legacy migration become active work. Keeping
 that adapter separate prevents XML, file-system, and format-version concerns
 from entering the deterministic runtime.
 
-The existing `SleepHunter` WPF application and `SleepHunter.Updater` remain in
-place during development.
+The WPF application is named `SleepHunter.App` and lives beside the other
+production projects under `src/`. Its product name, namespaces, and shipped
+executable remain `SleepHunter`. `SleepHunter.Updater` is also under `src/` as
+a separate executable project.
 
 Additional assemblies will be created only when their active implementation
 justifies a dependency boundary. Likely later candidates are:
@@ -186,7 +188,7 @@ snapshot observations, or target rotation cursors.
 ### Dependency Direction
 
 ```text
-SleepHunter
+SleepHunter.App
   -> SleepHunter.Runtime
   -> SleepHunter.Interop
   -> SleepHunter.Persistence
@@ -208,9 +210,8 @@ SleepHunter.Patching
   -> SleepHunter.Interop
 ```
 
-New projects must never reference the legacy WPF project. During integration,
-the legacy application may reference the new projects, keeping dependency flow
-inward.
+Library projects must never reference the WPF application. `SleepHunter.App`
+may reference the library projects, keeping dependency flow inward.
 
 ## Dependency Policy and Baseline Audit
 
@@ -237,7 +238,7 @@ projects where possible.
 The July 24, 2026 baseline audit found six distinct direct NuGet packages and
 eight project-level package references across the real projects.
 
-`SleepHunter` and `SleepHunter.Updater` previously each referenced:
+`SleepHunter.App` and `SleepHunter.Updater` previously each referenced:
 
 - `Microsoft.CSharp` 4.7.0.
 - `System.Data.DataSetExtensions` 4.5.0.
@@ -247,7 +248,7 @@ No source usage of `dynamic`, the C# runtime binder, `System.Data`, `DataSet`,
 removed because the relevant framework surface is supplied by the platform.
 The complete solution and both published executables verified their removal.
 
-`SleepHunter.Tests` directly references:
+`SleepHunter.App.Tests` directly references:
 
 - `Microsoft.NET.Test.Sdk` 18.8.1.
 - `NUnit` 4.6.1.
