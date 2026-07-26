@@ -30,6 +30,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Improved automatic staff selection so it respects class and level requirements and only switches when casting would benefit.
 - Changed current macro saves and autosaves to the versioned `.sh4x` format. Older `.sh4` files remain available for import.
 - Added slot numbers to inventory, skill, and spell grids, plus abbreviated slot labels to equipment.
+- Compacted inventory-slot gold amounts with `k` and `m` suffixes while preserving exact tooltip values.
 - Improved performance when opening large metadata lists.
 - Replaced the small runtime indicator with a full-width status bar that shows `Healthy`, a concise error, or `No clients`, with selectable details when available.
 - Renamed the default character sort from Login Time to Launch Order and continued sorting clients from oldest to newest.

@@ -73,7 +73,9 @@ namespace SleepHunter.Models
 
         public string FormattedQuantity => Quantity.ToString("N0", CultureInfo.InvariantCulture);
 
-        public string QuantityBadgeText => IsGold ? FormattedQuantity : $"x{FormattedQuantity}";
+        public string QuantityBadgeText => IsGold
+            ? FormatCompactGoldQuantity(Quantity)
+            : $"x{FormattedQuantity}";
 
         public bool ShowsQuantity => IsGold || Quantity > 1;
 
@@ -126,6 +128,33 @@ namespace SleepHunter.Models
         {
             RaisePropertyChanged(nameof(HasDurability));
             RaisePropertyChanged(nameof(FormattedDurability));
+        }
+
+        private static string FormatCompactGoldQuantity(int quantity)
+        {
+            const int thousands = 1_000;
+            const int millions = 1_000_000;
+
+            if (quantity < thousands)
+                return quantity.ToString(CultureInfo.InvariantCulture);
+
+            var divisor = quantity >= millions ? millions : thousands;
+            var suffix = quantity >= millions ? "m" : "k";
+            var scaledQuantity = System.Math.Round(
+                quantity / (double)divisor,
+                1,
+                System.MidpointRounding.AwayFromZero);
+
+            if (divisor == thousands && scaledQuantity >= thousands)
+            {
+                scaledQuantity = System.Math.Round(
+                    quantity / (double)millions,
+                    1,
+                    System.MidpointRounding.AwayFromZero);
+                suffix = "m";
+            }
+
+            return scaledQuantity.ToString("0.#", CultureInfo.InvariantCulture) + suffix;
         }
     }
 }

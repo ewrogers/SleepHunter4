@@ -26,9 +26,38 @@ namespace SleepHunter.Tests.Models
                     Is.EqualTo("1,234,567"));
                 Assert.That(
                     item.QuantityBadgeText,
-                    Is.EqualTo("1,234,567"));
+                    Is.EqualTo("1.2m"));
                 Assert.That(item.IsGold, Is.True);
                 Assert.That(item.ShowsQuantity, Is.True);
+            });
+        }
+
+        [TestCase(646, "646")]
+        [TestCase(1_000, "1k")]
+        [TestCase(100_600, "100.6k")]
+        [TestCase(999_949, "999.9k")]
+        [TestCase(999_950, "1m")]
+        [TestCase(2_400_000, "2.4m")]
+        public void ShouldCompactGoldQuantityInSlotBadge(
+            int quantity,
+            string expectedBadgeText)
+        {
+            var item = new InventoryItem(
+                60,
+                "Gold",
+                quantity: quantity)
+            {
+                IsGold = true
+            };
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(
+                    item.QuantityBadgeText,
+                    Is.EqualTo(expectedBadgeText));
+                Assert.That(
+                    item.FormattedQuantity,
+                    Is.EqualTo(quantity.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)));
             });
         }
 
