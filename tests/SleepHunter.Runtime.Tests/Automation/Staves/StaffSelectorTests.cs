@@ -404,7 +404,7 @@ public sealed class StaffSelectorTests
     }
 
     [Test]
-    public void ShouldUnequipEligibleStaffThatMakesCastingWorse()
+    public void ShouldRetainEquippedStaffWithoutAnObservedImprovement()
     {
         var equipped = Candidate(
             "equipped",
@@ -423,7 +423,7 @@ public sealed class StaffSelectorTests
         {
             Assert.That(
                 selection.Action,
-                Is.EqualTo(StaffSelectionAction.Unequip));
+                Is.EqualTo(StaffSelectionAction.None));
             Assert.That(
                 selection.Reason,
                 Is.EqualTo(StaffSelectionReason.BaseCastIsOptimal));

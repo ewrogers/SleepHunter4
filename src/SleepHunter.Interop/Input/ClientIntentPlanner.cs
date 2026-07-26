@@ -44,6 +44,8 @@ public sealed class ClientIntentPlanner : IClientIntentPlanner
         {
             CancelDialogIntent =>
                 Keystroke(intent, VirtualKey.Escape),
+            CancelSpellIntent =>
+                Keystroke(intent, VirtualKey.Escape),
             DisarmIntent =>
                 Keystroke(intent, VirtualKey.Oem3),
             AssailIntent =>

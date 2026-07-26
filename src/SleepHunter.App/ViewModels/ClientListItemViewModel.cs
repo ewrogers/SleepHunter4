@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
@@ -241,6 +242,17 @@ namespace SleepHunter.ViewModels
                 if (LastObservationError is not null)
                     return true;
 
+                if (Runtime is
+                {
+                    RuntimeFailure: not null
+                } or
+                {
+                    IsHostAvailable: false
+                })
+                {
+                    return true;
+                }
+
                 var result = Runtime?.LatestCaptureResult;
                 return result is { Succeeded: false } &&
                        result.Error?.Failure !=
@@ -260,6 +272,12 @@ namespace SleepHunter.ViewModels
 
                 if (Runtime is null)
                     return "Unavailable";
+
+                if (Runtime.RuntimeFailure is { } runtimeFailure)
+                    return $"Runtime stopped: {runtimeFailure.Message}";
+
+                if (!Runtime.IsHostAvailable)
+                    return "Runtime stopped unexpectedly";
 
                 if (!Runtime.HasCapture)
                     return "Waiting";
@@ -402,11 +420,20 @@ namespace SleepHunter.ViewModels
                 string.Equals(
                     e.PropertyName,
                     nameof(ClientRuntimeViewModel.Current),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientRuntimeViewModel.RuntimeFailure),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientRuntimeViewModel.IsHostAvailable),
                     StringComparison.Ordinal))
             {
                 RecordRuntimeError();
                 try
                 {
+                    UpdateMacroFlowerObservations();
                     UpdateMacroSpellObservations();
                     LastObservationError = null;
                 }
@@ -454,6 +481,9 @@ namespace SleepHunter.ViewModels
             }
 
             details.AppendLine("Runtime attached: Yes");
+            details.AppendLine(
+                $"Runtime available: " +
+                $"{(Runtime.IsHostAvailable ? "Yes" : "No")}");
             details.AppendLine($"Client: {Runtime.Client}");
             if (Runtime.Current is { } current)
             {
@@ -548,6 +578,21 @@ namespace SleepHunter.ViewModels
                     $"Message: {LastObservationError.Message}");
             }
 
+            if (Runtime.RuntimeFailure is { } runtimeFailure)
+            {
+                details.AppendLine();
+                details.AppendLine("Runtime failure");
+                details.AppendLine(
+                    $"Exception: {runtimeFailure.GetType().FullName}");
+                details.AppendLine(
+                    $"Message: {runtimeFailure.Message}");
+                if (!string.IsNullOrWhiteSpace(runtimeFailure.StackTrace))
+                {
+                    details.AppendLine("Stack trace:");
+                    details.AppendLine(runtimeFailure.StackTrace);
+                }
+            }
+
             return details.ToString().TrimEnd();
         }
 
@@ -596,14 +641,30 @@ namespace SleepHunter.ViewModels
         private void UpdateMacroSpellObservations()
         {
             var spellbook = Runtime?.LatestSnapshot?.Spellbook;
-            if (spellbook is null || MacroConfiguration is null)
+            if (MacroConfiguration is null)
                 return;
 
-            var readiness =
-                Runtime.Current?.SpellCast?.Plan.Readiness;
+            var spellCast = Runtime?.Current?.SpellCast;
+            var readiness = spellCast?.Plan.Readiness;
+            var activeEntryId = spellCast is
+            {
+                Origin: SpellCastOrigin.SpellQueue,
+                Status:
+                    SpellCastStatus.WaitingForStaff or
+                    SpellCastStatus.WaitingForPanel or
+                    SpellCastStatus.Casting,
+                Plan.SelectedEntry: { } activeEntry
+            }
+                ? activeEntry.Id
+                : (SpellQueueEntryId?)null;
             foreach (var queuedSpell in
                      MacroConfiguration.QueuedSpells.ToArray())
             {
+                queuedSpell.IsActive =
+                    activeEntryId?.Value == queuedSpell.Id;
+                if (spellbook is null)
+                    continue;
+
                 var observed = spellbook.Find(queuedSpell.Name);
                 if (observed is null)
                     continue;
@@ -622,6 +683,49 @@ namespace SleepHunter.ViewModels
                 queuedSpell.IsWaitingOnHealth =
                     spellReadiness?.Status ==
                         SpellReadinessStatus.WaitingForHealth;
+            }
+        }
+
+        private void UpdateMacroFlowerObservations()
+        {
+            var runtime = Runtime;
+            if (MacroConfiguration is null)
+                return;
+
+            if (runtime?.Current?.Lifecycle ==
+                MacroLifecycle.Stopped)
+            {
+                foreach (var flower in
+                         MacroConfiguration.FlowerTargets.ToArray())
+                {
+                    flower.ResetTimer();
+                }
+
+                return;
+            }
+
+            var schedules = runtime?.Current?.FlowerSchedules;
+            var currentTime =
+                runtime?.LatestCapture?.Result.Metrics.CaptureCompletedAt;
+            if (schedules is null ||
+                currentTime is null)
+            {
+                return;
+            }
+
+            foreach (var flower in
+                     MacroConfiguration.FlowerTargets.ToArray())
+            {
+                if (flower.Id <= 0 ||
+                    schedules.GetReadyAt(
+                        new FlowerQueueEntryId(flower.Id)) is not
+                        { } readyAt)
+                {
+                    continue;
+                }
+
+                flower.UpdateRemainingTime(
+                    readyAt.Elapsed - currentTime.Value.Elapsed);
             }
         }
 

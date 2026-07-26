@@ -409,6 +409,18 @@ public sealed partial class MacroEngine : IMacroEngine
         }
 
         if (!clientLoggedOut &&
+            ShouldCancelManaRestoration(
+                currentState,
+                snapshot,
+                currentTime))
+        {
+            return CancelManaRestoration(
+                currentState,
+                snapshot,
+                currentTime);
+        }
+
+        if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
         {
             var switchIntent = (SwitchPanelIntent)currentState.PendingAction!.Intent;

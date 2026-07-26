@@ -18,7 +18,20 @@ public sealed partial class MacroEngine
     private static MacroDecision CastNextSpell(
         MacroState currentState,
         CastNextSpellCommand command,
-        MacroTimestamp currentTime)
+        MacroTimestamp currentTime) =>
+        CastNextSpell(
+            currentState,
+            command,
+            currentTime,
+            manaRestorationPolicy: null,
+            manaRestorationStaffCatalog: null);
+
+    private static MacroDecision CastNextSpell(
+        MacroState currentState,
+        CastNextSpellCommand command,
+        MacroTimestamp currentTime,
+        FlowerExecutionPolicy? manaRestorationPolicy,
+        FlowerStaffCatalog? manaRestorationStaffCatalog)
     {
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
@@ -38,6 +51,42 @@ public sealed partial class MacroEngine
             currentState.SpellCast?.SnapshotRequiredAfter is not
             { } requiredAfter ||
             snapshot.CaptureStartedAt > requiredAfter;
+        if (manaRestorationPolicy is not null &&
+            ShouldRestoreManaForSpellQueue(
+                currentState,
+                snapshot,
+                currentTime,
+                command.Policy.Cast,
+                manaRestorationPolicy))
+        {
+            var restorationEntry = CreateFlowerSpellEntry(
+                FlowerActionKind.RestoreMana,
+                SpellTarget.None);
+            var restorationPlan = PlanFlowerSpell(
+                restorationEntry,
+                snapshot,
+                currentState.SpellCooldowns,
+                currentTime,
+                command.Policy.Cast,
+                snapshotIsFresh);
+            if (restorationPlan.HasSelection)
+            {
+                var restorationCast = SpellCastState.FromPlan(
+                    restorationPlan,
+                    command.Policy,
+                    currentState.SpellCast?.SnapshotRequiredAfter,
+                    SpellCastOrigin.ManaRestoration);
+                return BeginSpellCast(
+                    currentState,
+                    restorationCast,
+                    restorationPlan,
+                    (manaRestorationStaffCatalog ??
+                     FlowerStaffCatalog.Empty).GetCandidates(
+                        FlowerActionKind.RestoreMana),
+                    currentTime);
+            }
+        }
+
         var plan = PlanSpell(
             currentState.SpellQueue,
             snapshot,
@@ -613,9 +662,9 @@ public sealed partial class MacroEngine
         ClientSnapshot snapshot,
         MacroTimestamp currentTime) =>
         PlanSpell(
-            spellCast.Origin == SpellCastOrigin.Flower
-                ? spellCast.Plan.Queue
-                : currentState.SpellQueue,
+            spellCast.Origin == SpellCastOrigin.SpellQueue
+                ? currentState.SpellQueue
+                : spellCast.Plan.Queue,
             snapshot,
             currentState.SpellCooldowns,
             currentTime,

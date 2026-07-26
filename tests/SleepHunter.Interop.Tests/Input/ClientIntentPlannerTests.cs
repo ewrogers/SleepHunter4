@@ -732,6 +732,11 @@ public sealed class ClientIntentPlannerTests
                 (byte)0x01)
             .SetName("ShouldPlanEscapeForCancelDialog");
         yield return new TestCaseData(
+                new CancelSpellIntent(new ClientActionId(14)),
+                VirtualKey.Escape,
+                (byte)0x01)
+            .SetName("ShouldPlanEscapeForCancelSpell");
+        yield return new TestCaseData(
                 new DisarmIntent(new ClientActionId(2)),
                 VirtualKey.Oem3,
                 (byte)0x29)

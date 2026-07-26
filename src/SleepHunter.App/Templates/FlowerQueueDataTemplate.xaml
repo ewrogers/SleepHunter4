@@ -16,21 +16,77 @@
                                FontSize="18"
                                Text="{Binding Target, StringFormat=Flowering {0}}"
                                Margin="8,2"/>
-                    <WrapPanel Orientation="Horizontal" Margin="4,0">
-                        <TextBlock Name="IntervalText"
+                    <StackPanel Margin="8,0,4,2">
+                        <TextBlock Name="ConditionLeadText"
                                    Style="{StaticResource ObsidianText}"
-                                   FontSize="14"
-                                   Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=Every {0}}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Text="WHEN"
                                    Foreground="{StaticResource ObsidianInactive}"
-                                   Margin="4,2"/>
+                                   Margin="0,2"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <StackPanel Name="IntervalCondition"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="0,2">
+                                <Border Background="{DynamicResource ObsidianBackground}"
+                                        BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="1"
+                                        Padding="6,2">
+                                    <TextBlock Name="TimerKeywordText"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ObsidianAccentForeground}"
+                                               Text="TIMER"/>
+                                </Border>
+                                <TextBlock Name="IntervalText"
+                                           Style="{StaticResource ObsidianText}"
+                                           VerticalAlignment="Center"
+                                           FontSize="13"
+                                           FontWeight="Normal"
+                                           Text="{Binding Interval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=Fractional, StringFormat=> {0}}"
+                                           Foreground="{DynamicResource ObsidianForeground}"
+                                           Margin="6,0,0,0"/>
+                            </StackPanel>
 
-                        <TextBlock Name="ThresholdText"
-                                   Style="{StaticResource ObsidianText}"
-                                   FontSize="14"
-                                   Text="{Binding ManaThreshold, StringFormat=If Mana &lt; {0}}"
-                                   Foreground="{StaticResource ObsidianInactive}"
-                                   Margin="4,2"/>
-                    </WrapPanel>
+                            <TextBlock Name="OrText"
+                                       Style="{StaticResource ObsidianText}"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       FontWeight="Normal"
+                                       Foreground="{StaticResource ObsidianInactive}"
+                                       Text="OR"
+                                       Margin="8,2"/>
+
+                            <StackPanel Name="ThresholdCondition"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="0,2">
+                                <Border Background="{DynamicResource ObsidianBackground}"
+                                        BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="1"
+                                        Padding="6,2">
+                                    <TextBlock Name="ManaKeywordText"
+                                               Style="{StaticResource ObsidianText}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ObsidianAccentForeground}"
+                                               Text="MP"/>
+                                </Border>
+                                <TextBlock Name="ThresholdText"
+                                           Style="{StaticResource ObsidianText}"
+                                           VerticalAlignment="Center"
+                                           FontSize="13"
+                                           FontWeight="Normal"
+                                           Text="{Binding ManaThreshold, StringFormat=&lt; {0}}"
+                                           Foreground="{DynamicResource ObsidianForeground}"
+                                           Margin="6,0,0,0"/>
+                            </StackPanel>
+                        </WrapPanel>
+                    </StackPanel>
                     <DockPanel>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="4,2">
                             <TextBlock Name="RemainingSymbol"
@@ -55,10 +111,12 @@
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ManaThreshold}" Value="{x:Null}">
-                <Setter TargetName="ThresholdText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="OrText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="ThresholdCondition" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Interval}" Value="{x:Null}">
-                <Setter TargetName="IntervalText" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="IntervalCondition" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="OrText" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="RemainingSymbol" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="RemainingText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>

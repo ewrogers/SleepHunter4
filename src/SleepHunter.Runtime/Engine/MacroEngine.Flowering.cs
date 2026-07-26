@@ -1,8 +1,11 @@
-﻿using SleepHunter.Runtime.Automation.Flowering;
+﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Commands;
+using SleepHunter.Runtime.Events;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
@@ -10,6 +13,9 @@ namespace SleepHunter.Runtime.Engine;
 
 public sealed partial class MacroEngine
 {
+    private static readonly TimeSpan SpellCancellationTimeout =
+        TimeSpan.FromSeconds(1);
+
     private static MacroDecision Flower(
         MacroState currentState,
         FlowerCommand command,
@@ -249,7 +255,8 @@ public sealed partial class MacroEngine
     private static bool ShouldRestoreMana(
         FlowerExecutionPolicy policy,
         VitalsSnapshot? vitals,
-        int plantManaCost)
+        int requiredMana,
+        bool includeFlowerMinimum = true)
     {
         if (vitals is null)
         {
@@ -261,13 +268,176 @@ public sealed partial class MacroEngine
             policy.RestoreMana &&
             vitals.CurrentMana < vitals.MaximumMana &&
             vitals.CurrentMana < policy.ManaRestorationThreshold;
-        var requiredMana = Math.Max(
-            plantManaCost,
-            policy.MinimumManaBeforePlant ?? 0);
+        requiredMana = includeFlowerMinimum
+            ? Math.Max(
+                requiredMana,
+                policy.MinimumManaBeforePlant ?? 0)
+            : requiredMana;
         var restoreOnDemand =
             policy.RestoreManaOnDemand &&
             vitals.CurrentMana < requiredMana;
         return restoreForThreshold || restoreOnDemand;
+    }
+
+    private static bool ShouldCancelManaRestoration(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime)
+    {
+        if (currentState.PendingAction is not null ||
+            snapshot.IsChatOpen ||
+            currentState.SpellCast is not
+            {
+                Status: SpellCastStatus.Casting,
+                Plan.SelectedSpell: { } selectedSpell
+            } spellCast ||
+            !string.Equals(
+                selectedSpell.Name,
+                FlowerSpellNames.ManaRestoration,
+                StringComparison.OrdinalIgnoreCase) ||
+            snapshot.Vitals is not { } vitals ||
+            snapshot.Spellbook is null)
+        {
+            return false;
+        }
+
+        var policy = spellCast.Origin == SpellCastOrigin.Flower &&
+            currentState.Flower is
+            {
+                Action: FlowerActionKind.RestoreMana
+            } flower
+                ? flower.Policy
+                : currentState.Automation.FlowerPolicy;
+        if (!policy.RestoreMana && !policy.RestoreManaOnDemand)
+        {
+            return false;
+        }
+
+        var isFlowerRestoration =
+            spellCast.Origin == SpellCastOrigin.Flower;
+        var requiredMana =
+            isFlowerRestoration
+                ? GetFlowerManaRequirement(policy, snapshot)
+                : GetSpellQueueManaRequirement(
+                    currentState,
+                    snapshot,
+                    currentTime,
+                    spellCast.Policy.Cast);
+        return !ShouldRestoreMana(
+            policy,
+            vitals,
+            requiredMana,
+            includeFlowerMinimum: isFlowerRestoration);
+    }
+
+    private static MacroDecision CancelManaRestoration(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime)
+    {
+        var actionId = new ClientActionId(
+            currentState.NextClientActionId);
+        var intent = new CancelSpellIntent(actionId);
+        var deadline = currentTime.Add(SpellCancellationTimeout);
+        var pendingAction = new PendingAction(
+            intent,
+            currentTime,
+            deadline,
+            attempt: 1,
+            maximumAttempts: 1,
+            snapshot.Sequence);
+
+        var flower = currentState.SpellCast!.Origin ==
+            SpellCastOrigin.Flower &&
+            currentState.Flower is
+            {
+                Action: FlowerActionKind.RestoreMana
+            } activeFlower
+                ? activeFlower.Cancelled()
+                : currentState.Flower;
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            snapshot,
+            currentState.LastTransitionAt,
+            pendingAction,
+            spellCast: currentState.SpellCast!.Cancelled(),
+            flower: flower,
+            nextClientActionId:
+                checked(currentState.NextClientActionId + 1),
+            intent: intent,
+            scheduledEvents:
+            [
+                new ScheduledMacroEvent(
+                    new ClientActionDeadlineElapsed(actionId),
+                    deadline)
+            ]);
+    }
+
+    private static bool ShouldRestoreManaForSpellQueue(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime,
+        SpellCastPolicy spellPolicy,
+        FlowerExecutionPolicy manaPolicy)
+    {
+        if (!manaPolicy.RestoreMana &&
+            !manaPolicy.RestoreManaOnDemand ||
+            snapshot.Vitals is null)
+        {
+            return false;
+        }
+
+        var requiredMana = GetSpellQueueManaRequirement(
+            currentState,
+            snapshot,
+            currentTime,
+            spellPolicy);
+        return ShouldRestoreMana(
+            manaPolicy,
+            snapshot.Vitals,
+            requiredMana,
+            includeFlowerMinimum: false);
+    }
+
+    private static int GetFlowerManaRequirement(
+        FlowerExecutionPolicy policy,
+        ClientSnapshot snapshot)
+    {
+        var plantMana = snapshot.Spellbook?
+            .Find(FlowerSpellNames.Plant)?
+            .ManaCost ?? 0;
+        return plantMana;
+    }
+
+    private static int GetSpellQueueManaRequirement(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime,
+        SpellCastPolicy policy)
+    {
+        var queue = currentState.SpellQueue;
+        foreach (var entry in queue.Entries.Where(
+                     entry => string.Equals(
+                         entry.Name,
+                         FlowerSpellNames.ManaRestoration,
+                         StringComparison.OrdinalIgnoreCase)))
+        {
+            queue = queue.Remove(entry.Id);
+        }
+
+        var withoutManaRequirement = new SpellCastPolicy(
+            requireMana: false,
+            policy.Timing,
+            policy.SkipCoolingDownSpells);
+        var plan = PlanSpell(
+            queue,
+            snapshot,
+            currentState.SpellCooldowns,
+            currentTime,
+            withoutManaRequirement);
+        return plan.SelectedSpell?.ManaCost ?? 0;
     }
 
     private static FlowerPlan ReplanFlower(

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
@@ -100,17 +101,72 @@ namespace SleepHunter.Settings
             if (!colorThemes.ContainsKey(themeKey))
                 return;
 
-            var theme = colorThemes[themeKey];
-
-            Application.Current.Resources["ObsidianBackground"] = theme.Background;
-            Application.Current.Resources["ObsidianForeground"] = theme.Foreground;
+            ApplyThemeResources(colorThemes[themeKey]);
         }
 
         public void ApplyDefaultTheme()
         {
-            Application.Current.Resources["ObsidianBackground"] = DefaultTheme.Background;
-            Application.Current.Resources["ObsidianForeground"] = DefaultTheme.Foreground;
+            ApplyThemeResources(DefaultTheme);
         }
 
+        internal static Color CreateAccentInsetColor(
+            Color accentColor)
+        {
+            const byte insetAlpha = 0x20;
+            var channel = GetContrastingChannel(accentColor);
+
+            return Color.FromArgb(
+                insetAlpha,
+                channel,
+                channel,
+                channel);
+        }
+
+        internal static Color CreateAccentForegroundColor(
+            Color accentColor)
+        {
+            var channel = GetContrastingChannel(accentColor);
+            return Color.FromArgb(
+                byte.MaxValue,
+                channel,
+                channel,
+                channel);
+        }
+
+        private static byte GetContrastingChannel(
+            Color accentColor)
+        {
+            var luminance =
+                0.2126 * ToLinearColorValue(accentColor.R) +
+                0.7152 * ToLinearColorValue(accentColor.G) +
+                0.0722 * ToLinearColorValue(accentColor.B);
+            var blackContrast = (luminance + 0.05) / 0.05;
+            var whiteContrast = 1.05 / (luminance + 0.05);
+            return blackContrast >= whiteContrast
+                ? (byte)0
+                : (byte)255;
+        }
+
+        private static void ApplyThemeResources(ColorTheme theme)
+        {
+            var resources = Application.Current.Resources;
+            resources["ObsidianBackground"] = theme.Background;
+            resources["ObsidianForeground"] = theme.Foreground;
+            resources["ObsidianAccentInsetBorderBrush"] =
+                new SolidColorBrush(
+                    CreateAccentInsetColor(theme.Background.Color));
+            resources["ObsidianAccentForeground"] =
+                new SolidColorBrush(
+                    CreateAccentForegroundColor(
+                        theme.Background.Color));
+        }
+
+        private static double ToLinearColorValue(byte channel)
+        {
+            var value = channel / 255.0;
+            return value <= 0.04045
+                ? value / 12.92
+                : Math.Pow((value + 0.055) / 1.055, 2.4);
+        }
     }
 }

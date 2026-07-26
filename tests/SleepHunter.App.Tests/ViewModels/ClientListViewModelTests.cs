@@ -1,5 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Threading.Channels;
 using System.Windows.Input;
 using SleepHunter.Interop.Hosting;
@@ -12,12 +12,14 @@ using SleepHunter.Models;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
+using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
+using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 using SleepHunter.Services.Configuration;
@@ -445,6 +447,83 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
+    public async Task ShouldTickAndResetFlowerDueTimeFromRuntimeSchedule()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+        var flower = new FlowerQueueItem
+        {
+            Interval = TimeSpan.FromSeconds(10)
+        };
+        configuration.AddToFlowerQueue(flower);
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            configuration,
+            runtime,
+            configurationMapper: null,
+            setupFactory: null,
+            getSettings: null,
+            uiDispatcher: new InlineUiDispatcher());
+        var entry = new FlowerQueueEntry(
+            new FlowerQueueEntryId(flower.Id),
+            SleepHunter.Runtime.Automation.Spells.SpellTarget.Self,
+            flower.Interval);
+        var queue = FlowerQueueState.Empty.Add(entry);
+        var schedules = FlowerScheduleState.Empty.RecordUse(
+            entry,
+            MacroTimestamp.Zero);
+
+        host.PublishView(CreateView(
+            revision: 1,
+            MacroLifecycle.Running,
+            queue,
+            schedules));
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true,
+            capturedAt: TimeSpan.FromSeconds(3)));
+        await WaitUntilAsync(
+            () => flower.RemainingTime == TimeSpan.FromSeconds(7));
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 2,
+            succeeded: true,
+            capturedAt: TimeSpan.FromSeconds(7)));
+        await WaitUntilAsync(
+            () => flower.RemainingTime == TimeSpan.FromSeconds(3));
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 3,
+            succeeded: true,
+            capturedAt: TimeSpan.FromSeconds(12)));
+        await WaitUntilAsync(() => flower.IsReady);
+
+        host.PublishView(CreateView(
+            revision: 2,
+            MacroLifecycle.Stopped,
+            queue,
+            schedules));
+        await WaitUntilAsync(
+            () => flower.RemainingTime == TimeSpan.FromSeconds(10));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                flower.RemainingTime,
+                Is.EqualTo(TimeSpan.FromSeconds(10)));
+            Assert.That(flower.IsReady, Is.False);
+            Assert.That(item.LastObservationError, Is.Null);
+        });
+    }
+
+    [Test]
     public async Task ShouldKeepLastCoherentLocationDuringMapTransition()
     {
         using var player = CreatePlayer();
@@ -681,6 +760,22 @@ public sealed class ClientListViewModelTests
             moved.Queues.SpellQueue.Entries.Select(entry => entry.Name),
             Is.EqualTo(new[] { "second spell", "test spell" }));
 
+        macroConfiguration.SpellQueueRotation =
+            SpellRotationMode.None;
+        var rotationChanged = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                rotationChanged.Queues.SpellQueue.Rotation,
+                Is.EqualTo(SpellQueueRotation.Priority));
+            Assert.That(
+                rotationChanged.Queues.SpellQueue.Entries.Select(
+                    entry => entry.Name),
+                Is.EqualTo(
+                    new[] { "second spell", "test spell" }));
+        });
+
         macroConfiguration.RemoveFromSpellQueue(
             macroConfiguration.QueuedSpells[1]);
         var removed = (ApplyAutomationSetupCommand)
@@ -737,6 +832,84 @@ public sealed class ClientListViewModelTests
             Assert.That(
                 resume,
                 Is.TypeOf<ResumeMacroCommand>());
+        });
+    }
+
+    [Test]
+    public async Task ShouldProjectTheActiveRuntimeCastByQueueIdentifier()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+        var first = new SpellQueueItem
+        {
+            Id = 41,
+            Name = "duplicate spell"
+        };
+        var second = new SpellQueueItem
+        {
+            Id = 42,
+            Name = first.Name
+        };
+        configuration.AddToSpellQueue(first);
+        configuration.AddToSpellQueue(second);
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            configuration,
+            runtime,
+            configurationMapper: null,
+            setupFactory: null,
+            getSettings: null,
+            uiDispatcher: new InlineUiDispatcher());
+        var spellbook = new SpellbookSnapshot(
+        [
+            new SpellSnapshot(
+                first.Name,
+                slot: 1,
+                currentLevel: 1,
+                maximumLevel: 100,
+                castLines: 4,
+                manaCost: 0,
+                cooldown: TimeSpan.Zero)
+        ]);
+        var capture = CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true,
+            activePanel: ClientPanel.TemuairSpells,
+            spellbook: spellbook);
+        host.PublishCapture(capture);
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 1);
+
+        var snapshot = capture.Result.Snapshot ??
+            throw new InvalidOperationException(
+                "The scripted successful capture has no snapshot.");
+        var castingView = CreateCastingView(
+            snapshot,
+            first,
+            second);
+        host.PublishView(castingView);
+        await WaitUntilAsync(() => first.IsActive);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.IsActive, Is.True);
+            Assert.That(second.IsActive, Is.False);
+        });
+
+        host.PublishView(CreateView(
+            castingView.Revision + 1,
+            MacroLifecycle.Running));
+        await WaitUntilAsync(() => !first.IsActive);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.IsActive, Is.False);
+            Assert.That(second.IsActive, Is.False);
         });
     }
 
@@ -798,6 +971,62 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
+    public async Task ShouldReportRuntimeHostFailuresInStatusDetails()
+    {
+        using var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(
+            player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            runtime);
+        host.PublishView(CreateView(
+            revision: 0,
+            MacroLifecycle.Running));
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true));
+        await WaitUntilAsync(() => item.RuntimeStatus == "Healthy");
+        var failure = new InvalidOperationException(
+            "Flower spell casting requires flower action state.");
+
+        host.Fail(failure);
+        await WaitUntilAsync(
+            () => item.RuntimeStatus.StartsWith(
+                "Runtime stopped:",
+                StringComparison.Ordinal));
+        item.IsRuntimeDetailsOpen = true;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.IsRuntimeStatusError, Is.True);
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Runtime stopped: " +
+                    "Flower spell casting requires flower action state."));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain("Runtime available: No"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain("Runtime failure"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain(
+                    "Exception: System.InvalidOperationException"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain(
+                    "Message: Flower spell casting requires " +
+                    "flower action state."));
+        });
+    }
+
+    [Test]
     public async Task ShouldStopAllActiveRuntimesThroughToolkitCommand()
     {
         using var player = CreatePlayer();
@@ -847,7 +1076,9 @@ public sealed class ClientListViewModelTests
 
     private static MacroViewSnapshot CreateView(
         long revision,
-        MacroLifecycle lifecycle) =>
+        MacroLifecycle lifecycle,
+        FlowerQueueState? flowerQueue = null,
+        FlowerScheduleState? flowerSchedules = null) =>
         new(
             revision,
             lifecycle,
@@ -868,19 +1099,58 @@ public sealed class ClientListViewModelTests
             SkillUse: null,
             Disarm: null,
             Dialog: null,
-            FlowerQueueState.Empty,
-            FlowerScheduleState.Empty,
+            flowerQueue ?? FlowerQueueState.Empty,
+            flowerSchedules ?? FlowerScheduleState.Empty,
             ClientRosterSequence: null,
             Flower: null,
             TargetRotationState.Empty,
             TargetRotationState.Empty,
             LastActionIssue: null);
 
+    private static MacroViewSnapshot CreateCastingView(
+        ClientSnapshot snapshot,
+        params SpellQueueItem[] queuedSpells)
+    {
+        var engine = new MacroEngine();
+        var currentTime = snapshot.CaptureCompletedAt;
+        var state = engine.Decide(
+            MacroState.Initial,
+            new ClientSnapshotObserved(snapshot),
+            currentTime).State;
+        foreach (var queuedSpell in queuedSpells)
+        {
+            state = engine.Decide(
+                state,
+                new MacroCommandReceived(
+                    new AddSpellQueueEntryCommand(
+                        new SpellQueueEntry(
+                            new SpellQueueEntryId(queuedSpell.Id),
+                            queuedSpell.Name))),
+                currentTime).State;
+        }
+
+        state = engine.Decide(
+            state,
+            new MacroCommandReceived(new StartMacroCommand()),
+            currentTime).State;
+        var cast = engine.Decide(
+            state,
+            new MacroCommandReceived(
+                new CastNextSpellCommand(
+                    new SpellExecutionPolicy(
+                        allowStaffSwitching: false))),
+            currentTime);
+        return cast.PublishedView ??
+            throw new InvalidOperationException(
+                "The scripted spell cast did not publish a runtime view.");
+    }
+
     private static SnapshotCaptureObservation CreateCapture(
         ClientIdentity client,
         long sequenceValue,
         bool succeeded,
         ClientPresence presence = ClientPresence.InWorld,
+        ClientPanel activePanel = ClientPanel.Unknown,
         SpellbookSnapshot? spellbook = null,
         int currentHealth = 300,
         int currentMana = 500,
@@ -888,11 +1158,12 @@ public sealed class ClientListViewModelTests
             SnapshotCaptureFailure.MappingReadFailed,
         SnapshotSection failureSection = SnapshotSection.Presence,
         string? variableKey = null,
-        MappedMemoryReadError? readError = null)
+        MappedMemoryReadError? readError = null,
+        TimeSpan? capturedAt = null)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
-            TimeSpan.FromTicks(sequenceValue));
+            capturedAt ?? TimeSpan.FromTicks(sequenceValue));
         var reads = new MemoryReadMetrics(
             RequestCount: 1,
             TransportReadCount: 1,
@@ -918,6 +1189,7 @@ public sealed class ClientListViewModelTests
                     client,
                     SnapshotQuality.Complete,
                     presence,
+                    activePanel,
                     character: presence == ClientPresence.InWorld
                         ? new CharacterSnapshot(
                             CharacterClass.Wizard,
@@ -1065,6 +1337,14 @@ public sealed class ClientListViewModelTests
                 throw new InvalidOperationException(
                     "The test view channel is unavailable.");
             }
+        }
+
+        public void Fail(Exception exception)
+        {
+            captures.Writer.TryComplete(exception);
+            commands.Writer.TryComplete(exception);
+            views.Writer.TryComplete(exception);
+            completion.TrySetException(exception);
         }
 
         public async Task<MacroCommand> ReadCommandAsync()

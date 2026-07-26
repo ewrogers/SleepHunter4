@@ -234,6 +234,39 @@ public sealed class ClientRuntimeViewModelTests
         Assert.That(viewModel.StartCommand.CanExecute(null), Is.False);
     }
 
+    [Test]
+    public async Task ShouldExposeHostFailureAndRejectStaleCaptureHealth()
+    {
+        var host = new RecordingRuntimeHost();
+        await using var viewModel = new ClientRuntimeViewModel(
+            host,
+            new RecordingUiDispatcher());
+        host.PublishView(CreateView(0, MacroLifecycle.Running));
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 1,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => viewModel.StopCommand.CanExecute(null) &&
+                  viewModel.IsCaptureHealthy);
+        var failure = new InvalidOperationException(
+            "The scripted runtime failed.");
+
+        host.Fail(failure);
+        await WaitUntilAsync(
+            () => viewModel.RuntimeFailure is not null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.RuntimeFailure, Is.SameAs(failure));
+            Assert.That(viewModel.IsHostAvailable, Is.False);
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.StartCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.PauseCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.StopCommand.CanExecute(null), Is.False);
+        });
+    }
+
     private static MacroViewSnapshot CreateView(
         long revision,
         MacroLifecycle lifecycle,
@@ -435,6 +468,14 @@ public sealed class ClientRuntimeViewModelTests
         }
 
         public void CompleteViews() => views.Writer.TryComplete();
+
+        public void Fail(Exception exception)
+        {
+            captures.Writer.TryComplete(exception);
+            views.Writer.TryComplete(exception);
+            commands.Writer.TryComplete(exception);
+            completion.TrySetException(exception);
+        }
 
         public async Task<MacroCommand> ReadCommandAsync()
         {

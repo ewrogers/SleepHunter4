@@ -318,21 +318,32 @@ internal static class MacroDecisionInvariants
                 "Spell casting can wait only on its pending spell panel action.");
         }
 
-        var flowerSpellCast = decision.State.SpellCast is
+        var activeFlowerSpellCast = decision.State.SpellCast is
         {
-            Origin: SpellCastOrigin.Flower
-        } flowerCast
-            ? flowerCast
+            Origin: SpellCastOrigin.Flower,
+            Status: SpellCastStatus.WaitingForStaff or
+                SpellCastStatus.WaitingForPanel or
+                SpellCastStatus.Casting
+        } activeFlowerCast
+            ? activeFlowerCast
             : null;
         var flowerSpellEntry = decision.State.Flower?.SpellEntry;
-        if (flowerSpellCast is not null &&
-            (decision.State.Flower?.Action is null ||
-             flowerSpellEntry is null))
+        var hasFlowerAction =
+            decision.State.Flower?.Action is not null &&
+            flowerSpellEntry is not null;
+        if (activeFlowerSpellCast is not null && !hasFlowerAction)
         {
             throw new InvalidOperationException(
                 "Flower spell casting requires flower action state.");
         }
 
+        var flowerSpellCast = hasFlowerAction &&
+            decision.State.SpellCast is
+            {
+                Origin: SpellCastOrigin.Flower
+            } flowerCast
+                ? flowerCast
+                : null;
         if (flowerSpellCast is not null &&
             flowerSpellEntry is not null &&
             !flowerSpellCast.Plan.Queue.Entries.Contains(flowerSpellEntry))

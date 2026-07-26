@@ -5,27 +5,62 @@
     <Style x:Key="VitalProgressBar" TargetType="ProgressBar">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource ObsidianDisabled}"/>
         <Setter Property="Foreground" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="MinHeight" Value="8"/>
-        <Setter Property="Margin" Value="2,1"/>
+        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="Padding" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
-                    <Border Name="PART_Track" 
+                    <Border Name="PART_Track"
                             SnapsToDevicePixels="True"
-                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <Border Name="PART_Indicator"
-                                SnapsToDevicePixels="True"
-                                HorizontalAlignment="Left"
-                                Background="{TemplateBinding Foreground}"
-                                BorderBrush="Transparent"
-                                Margin="{TemplateBinding Padding}"/>
+                        <Grid Margin="{TemplateBinding Padding}"
+                              ClipToBounds="True">
+                            <Border Background="{TemplateBinding Background}"/>
+                            <Border Name="PART_Indicator"
+                                    SnapsToDevicePixels="True"
+                                    HorizontalAlignment="Left"
+                                    Background="{TemplateBinding Foreground}"/>
+                            <UniformGrid Name="SegmentGrid"
+                                         Columns="10"
+                                         IsHitTestVisible="False">
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                                <Border BorderBrush="{StaticResource ObsidianControlBackground}" BorderThickness="1,0">
+                                    <Border BorderBrush="{DynamicResource ObsidianAccentInsetBorderBrush}" BorderThickness="1" Margin="0,1"/>
+                                </Border>
+                            </UniformGrid>
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -46,8 +81,6 @@
             <Border Name="Border" Padding="10,4,10,4">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -151,70 +184,115 @@
                         </TextBlock.Text>
                     </TextBlock>
 
-                    <!-- HP Text -->
-                    <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,6,0,0">
-                        <TextBlock Text="HP"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="14"
-                               FontWeight="Normal"
-                               Margin="4,1"
-                               Visibility="{Binding ElementName=HealthBar, Path=Visibility}"/>
-
-                        <TextBlock Name="HealthText"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="14"
-                               TextAlignment="Right"
-                               FontWeight="Normal"
-                               Margin="4,1"
-                               Visibility="{Binding ElementName=HealthBar, Path=Visibility}">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="CurrentHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                    <Binding Path="MaximumHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </DockPanel>
-
                     <!-- HP Bar -->
-                    <ProgressBar Name="HealthBar" 
-                             Grid.Row="4"
-                             Grid.ColumnSpan="2"
-                             Style="{StaticResource VitalProgressBar}"
-                             Value="{Binding HealthPercent, Mode=OneWay}"/>
+                    <Border Name="HealthBarContainer"
+                            Grid.Row="3"
+                            Grid.ColumnSpan="2"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="1"
+                            Margin="2,6,2,1">
+                        <Grid Name="HealthBarLayout">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="92"/>
+                            </Grid.ColumnDefinitions>
 
-                    <!-- MP Text -->
-                    <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,4,0,0">
-                        <TextBlock Text="MP"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="14"
-                               FontWeight="Normal"
-                               Margin="4,1"
-                               Visibility="{Binding ElementName=ManaBar, Path=Visibility}"/>
+                            <Border Name="HealthLabelBackground"
+                                    Background="{StaticResource ObsidianControlBackground}"
+                                    BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                    BorderThickness="0,0,1,0">
+                                <TextBlock Name="HealthLabelText"
+                                           Style="{StaticResource ObsidianText}"
+                                           Text="HP"
+                                           FontSize="12"
+                                           FontWeight="Normal"
+                                           TextAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
 
-                        <TextBlock Name="ManaText"
-                               Style="{StaticResource ObsidianText}"
-                               FontSize="14"
-                               TextAlignment="Right"
-                               FontWeight="Normal"
-                               Margin="4,1"
-                               Visibility="{Binding ElementName=ManaBar, Path=Visibility}">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="CurrentMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                    <Binding Path="MaximumMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </DockPanel>
+                            <ProgressBar Name="HealthBar"
+                                         Grid.Column="1"
+                                         Style="{StaticResource VitalProgressBar}"
+                                         BorderThickness="0"
+                                         Value="{Binding HealthPercent, Mode=OneWay}"/>
+
+                            <Border Name="HealthValueBackground"
+                                    Grid.Column="2"
+                                    Background="{StaticResource ObsidianControlBackground}"
+                                    BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                    BorderThickness="1,0,0,0">
+                                <TextBlock Name="HealthText"
+                                           Style="{StaticResource ObsidianText}"
+                                           FontSize="12"
+                                           TextAlignment="Center"
+                                           FontWeight="Normal"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} / {1}">
+                                            <Binding Path="CurrentHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                            <Binding Path="MaximumHealth" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </Border>
 
                     <!-- MP Bar -->
-                    <ProgressBar Name="ManaBar" 
-                             Grid.Row="6"
-                             Grid.ColumnSpan="2"
-                             Style="{StaticResource VitalProgressBar}"
-                             Value="{Binding ManaPercent, Mode=OneWay}"
-                             Margin="2,1,2,6"/>
+                    <Border Name="ManaBarContainer"
+                            Grid.Row="4"
+                            Grid.ColumnSpan="2"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="1"
+                            Margin="2,3,2,6">
+                        <Grid Name="ManaBarLayout">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="92"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Name="ManaLabelBackground"
+                                    Background="{StaticResource ObsidianControlBackground}"
+                                    BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                    BorderThickness="0,0,1,0">
+                                <TextBlock Name="ManaLabelText"
+                                           Style="{StaticResource ObsidianText}"
+                                           Text="MP"
+                                           FontSize="12"
+                                           FontWeight="Normal"
+                                           TextAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+
+                            <ProgressBar Name="ManaBar"
+                                         Grid.Column="1"
+                                         Style="{StaticResource VitalProgressBar}"
+                                         BorderThickness="0"
+                                         Value="{Binding ManaPercent, Mode=OneWay}"/>
+
+                            <Border Name="ManaValueBackground"
+                                    Grid.Column="2"
+                                    Background="{StaticResource ObsidianControlBackground}"
+                                    BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                                    BorderThickness="1,0,0,0">
+                                <TextBlock Name="ManaText"
+                                           Style="{StaticResource ObsidianText}"
+                                           FontSize="12"
+                                           TextAlignment="Center"
+                                           FontWeight="Normal"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} / {1}">
+                                            <Binding Path="CurrentMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                            <Binding Path="MaximumMana" Converter="{StaticResource NumericConverter}" ConverterParameter="Thousands"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </Border>
 
                     <!-- Process Id -->
                     <TextBlock Name="ProcessText"
@@ -248,8 +326,8 @@
             <DataTrigger Binding="{Binding IsLoggedIn}" Value="False">
                 <Setter TargetName="NameText" Property="Text" Value="{Binding Process.WindowTitle}"/>
                 <Setter TargetName="MapText" Property="Text" Value="Client detected"/>
-                <Setter TargetName="HealthBar" Property="Visibility" Value="Collapsed"/>
-                <Setter TargetName="ManaBar" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="HealthBarContainer" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="ManaBarContainer" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="StatusText" Property="Text" Value="Not Logged In"/>
                 <Setter TargetName="StatusText" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="ProcessText" Property="Visibility" Value="Visible"/>

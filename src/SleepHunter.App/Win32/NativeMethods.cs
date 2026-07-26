@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using System.Windows.Input;
 using System.Text;
-
+using System.Windows.Input;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace SleepHunter.Win32
@@ -40,6 +39,10 @@ namespace SleepHunter.Win32
 
         [DllImport("user32", EntryPoint = "SendMessage", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern nint SendMessage(nint windowHandle, uint message, nuint wParam, nuint lParam);
+
+        [DllImport("user32", EntryPoint = "ReleaseCapture", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ReleaseCapture();
 
         [DllImport("user32", EntryPoint = "VkKeyScan", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern ushort VkKeyScan(char character);

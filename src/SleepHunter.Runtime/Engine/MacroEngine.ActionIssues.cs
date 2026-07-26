@@ -36,7 +36,9 @@ public sealed partial class MacroEngine
         if (issue.WasIssued)
         {
             var nextPendingAction =
-                pendingAction.Intent is CastSpellIntent
+                pendingAction.Intent is
+                    CastSpellIntent or
+                    CancelSpellIntent
                     ? null
                     : pendingAction.MarkIssued(observedAt);
             return Changed(

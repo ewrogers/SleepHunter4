@@ -208,7 +208,9 @@ public sealed partial class MacroEngine
                 new CastNextSpellCommand(
                     configuration.SpellPolicy,
                     configuration.SpellStaffCatalog),
-                currentTime),
+                currentTime,
+                configuration.FlowerPolicy,
+                configuration.FlowerStaffCatalog),
             AutomationCategory.Skills => UseNextSkill(
                 currentState,
                 new UseNextSkillCommand(configuration.SkillPolicy),

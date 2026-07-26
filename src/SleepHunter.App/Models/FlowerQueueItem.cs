@@ -106,6 +106,26 @@ namespace SleepHunter.Models
         {
             intervalRemaining -= deltaTime;
 
+            RaiseTimerPropertiesChanged();
+        }
+
+        public void UpdateRemainingTime(TimeSpan remainingTime)
+        {
+            var normalizedTime = remainingTime > TimeSpan.Zero
+                ? remainingTime
+                : TimeSpan.Zero;
+            if (intervalRemaining == normalizedTime)
+                return;
+
+            intervalRemaining = normalizedTime;
+            RaiseTimerPropertiesChanged();
+        }
+
+        public void ResetTimer() =>
+            UpdateRemainingTime(interval ?? TimeSpan.Zero);
+
+        private void RaiseTimerPropertiesChanged()
+        {
             RaisePropertyChanged(nameof(ElapsedTime));
             RaisePropertyChanged(nameof(ElapsedTimeSeconds));
             RaisePropertyChanged(nameof(RemainingTime));

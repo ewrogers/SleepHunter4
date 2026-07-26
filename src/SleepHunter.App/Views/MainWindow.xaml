@@ -604,6 +604,9 @@
                             Padding="2,1"
                             ToolTip="Hides the spell queue."
                             Command="{Binding MacroPersistence.HideSpellQueueCommand}"/>
+
+                    <Border Name="SpellQueueHeaderAccentInset"
+                            Style="{StaticResource ObsidianAccentInsetBorder}"/>
                 </Grid>
             </Border>
 
@@ -664,6 +667,40 @@
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
+
+            <TextBlock Name="EmptySpellQueuePlaceholder"
+                       Grid.Row="3"
+                       Panel.ZIndex="1"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       MaxWidth="260"
+                       Margin="24"
+                       Text="Double click a spell to add to queue"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       Opacity="0.65"
+                       IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock"
+                           BasedOn="{StaticResource ObsidianText}">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=Visibility}"
+                                               Value="Visible"/>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=HasItems}"
+                                               Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <Separator Grid.Row="4"
                        Style="{StaticResource ObsidianSeparator}"
@@ -732,15 +769,20 @@
                               ToolTip="Runtime details">
                     <ToggleButton.Template>
                         <ControlTemplate TargetType="ToggleButton">
-                            <Border Name="Border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="2">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  Margin="{TemplateBinding Padding}"/>
-                            </Border>
+                            <Grid>
+                                <Border Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="2">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      Margin="{TemplateBinding Padding}"/>
+                                </Border>
+                                <Border Name="AccentInsetBorder"
+                                        Style="{StaticResource ObsidianAccentInsetBorder}"
+                                        Visibility="Collapsed"/>
+                            </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="Border"
@@ -751,9 +793,15 @@
                                     <Setter TargetName="Border"
                                             Property="Background"
                                             Value="{DynamicResource ObsidianBackground}"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Visible"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Opacity" Value="0.45"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Collapsed"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -819,10 +867,10 @@
                     </Border>
                 </Popup>
 
-                <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue=Unavailable, TargetNullValue=Unavailable}"
+                <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding SelectedClient.RuntimeStatus}">
+                           ToolTip="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock"
                                BasedOn="{StaticResource ObsidianText}">
@@ -840,14 +888,5 @@
                 </TextBlock>
             </DockPanel>
         </Border>
-
-        <Path Name="WindowResizeGrip" 
-              Grid.RowSpan="3"
-              Grid.ColumnSpan="4"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Bottom"
-              Width="16" Height="16"
-              Fill="{DynamicResource ObsidianBackground}"
-              Data="M 0,16 l 16,-16 v 16 h -16 z"/>
     </Grid>
 </Window>

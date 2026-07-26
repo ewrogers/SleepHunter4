@@ -268,6 +268,155 @@ public sealed class AutomationCycleScenarioTests
     }
 
     [Test]
+    public void ShouldCancelSpellQueueManaRestorationAfterManaRecovers()
+    {
+        var scenario = new MacroScenario();
+        var queuedEntry = SpellEntry();
+        var queuedSpell = Spell(
+            queuedEntry.Name,
+            slot: 1,
+            manaCost: 500);
+        var restoration = Spell(
+            FlowerSpellNames.ManaRestoration,
+            slot: 2);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(
+                currentMana: 100,
+                maximumMana: 1000),
+            spellbook: new SpellbookSnapshot(
+                [queuedSpell, restoration]));
+        scenario.Send(new AddSpellQueueEntryCommand(queuedEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    spellPolicy: TestSpellPolicy,
+                    flowerPolicy: new FlowerExecutionPolicy(
+                        spell: TestSpellPolicy,
+                        restoreManaOnDemand: true))));
+        var started = scenario.Start();
+        var restoring = scenario.Dispatch(
+            started.RaisedEvents.Single());
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var cancelled = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(
+                currentMana: 500,
+                maximumMana: 1000),
+            spellbook: new SpellbookSnapshot(
+                [queuedSpell, restoration]));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)restoring.Intent!).SpellName,
+                Is.EqualTo(FlowerSpellNames.ManaRestoration));
+            Assert.That(
+                restoring.State.SpellCast?.Origin,
+                Is.EqualTo(SpellCastOrigin.ManaRestoration));
+            Assert.That(
+                restoring.State.SpellQueue.Entries,
+                Is.EqualTo(new[] { queuedEntry }));
+            Assert.That(
+                cancelled.Intent,
+                Is.TypeOf<CancelSpellIntent>());
+            Assert.That(
+                cancelled.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Cancelled));
+            Assert.That(cancelled.State.PendingAction, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldWaitForNextFlowerIntervalAfterRosterUpdate()
+    {
+        var interval = TimeSpan.FromSeconds(5);
+        var scenario = new MacroScenario();
+        var flowerEntry = new FlowerQueueEntry(
+            new FlowerQueueEntryId(1),
+            SpellTarget.Self,
+            interval);
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var flowerPolicy = new FlowerExecutionPolicy(
+            spell: TestSpellPolicy);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([plant]),
+            location: Location());
+        scenario.Send(new AddFlowerQueueEntryCommand(flowerEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    floweringEnabled: true,
+                    flowerBeforeSpells: true,
+                    flowerPolicy: flowerPolicy)));
+        var started = scenario.Start();
+        var waiting = scenario.Dispatch(
+            started.RaisedEvents.Single());
+
+        scenario.AdvanceBy(interval);
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([plant]),
+            location: Location());
+        var cast = scenario.Dispatch(
+            observed.RaisedEvents.Single());
+        scenario.AdvanceBy(
+            cast.ScheduledEvents.Single().DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        var completed = scenario.Dispatch(
+            cast.ScheduledEvents.Single().Input);
+
+        scenario.AdvanceBy(TimeSpan.FromSeconds(1));
+        scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([plant]),
+            location: Location());
+        var rosterUpdated = scenario.ObserveClientRoster(
+            sequence: 1,
+            clients: []);
+        var nextCycle = scenario.Dispatch(
+            rosterUpdated.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                waiting.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForTarget));
+            Assert.That(
+                completed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Succeeded));
+            Assert.That(
+                completed.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Succeeded));
+            Assert.That(
+                nextCycle.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Succeeded));
+            Assert.That(
+                nextCycle.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForTarget));
+            Assert.That(nextCycle.State.Flower?.Action, Is.Null);
+            Assert.That(nextCycle.Intent, Is.Null);
+        });
+    }
+
+    [Test]
     public void ShouldWaitForAFreshSnapshotAfterAnActionCompletes()
     {
         var scenario = new MacroScenario();
@@ -397,6 +546,102 @@ public sealed class AutomationCycleScenarioTests
         });
     }
 
+    [TestCase(
+        SpellQueueRotation.RoundRobin,
+        SpellQueueRotation.Priority,
+        false,
+        "first spell")]
+    [TestCase(
+        SpellQueueRotation.Priority,
+        SpellQueueRotation.Priority,
+        true,
+        "second spell")]
+    public void ShouldUseLiveQueueEditsForTheNextAutomationCast(
+        SpellQueueRotation initialRotation,
+        SpellQueueRotation replacementRotation,
+        bool reverseOrder,
+        string expectedNextSpell)
+    {
+        var scenario = new MacroScenario();
+        var first = new SpellQueueEntry(
+            new SpellQueueEntryId(1),
+            "first spell",
+            target: SpellTarget.Self);
+        var second = new SpellQueueEntry(
+            new SpellQueueEntryId(2),
+            "second spell",
+            target: SpellTarget.Self);
+        var spellbook = new SpellbookSnapshot(
+        [
+            Spell(first.Name, slot: 1),
+            Spell(second.Name, slot: 2)
+        ]);
+        var configuration = new AutomationConfiguration(
+            spellsEnabled: true,
+            spellPolicy: TestSpellPolicy);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: spellbook);
+        scenario.Send(
+            new ApplyAutomationSetupCommand(
+                new ReplaceQueuesCommand(
+                    [first, second],
+                    initialRotation,
+                    skills: [],
+                    flowers: []),
+                configuration));
+        var started = scenario.Start();
+        var firstCast = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        SpellQueueEntry[] replacement = reverseOrder
+            ? [second, first]
+            : [first, second];
+
+        var applied = scenario.Send(
+            new ApplyAutomationSetupCommand(
+                new ReplaceQueuesCommand(
+                    replacement,
+                    replacementRotation,
+                    skills: [],
+                    flowers: []),
+                configuration));
+        scenario.AdvanceBy(
+            firstCast.ScheduledEvents.Single().DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(firstCast.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: spellbook);
+        var nextCast = scenario.Dispatch(
+            observed.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)firstCast.Intent!).SpellName,
+                Is.EqualTo(first.Name));
+            Assert.That(
+                applied.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                applied.State.SpellQueue.Rotation,
+                Is.EqualTo(replacementRotation));
+            Assert.That(
+                applied.State.SpellQueue.Entries,
+                Is.EqualTo(replacement));
+            Assert.That(
+                ((CastSpellIntent)nextCast.Intent!).SpellName,
+                Is.EqualTo(expectedNextSpell));
+        });
+    }
+
     [Test]
     public void ShouldNotPublishRepeatedNoOpAutomationState()
     {
@@ -457,22 +702,27 @@ public sealed class AutomationCycleScenarioTests
             targetLevel: null,
             SpellTarget.Self);
 
-    private static SpellSnapshot Spell(string name, int slot) =>
+    private static SpellSnapshot Spell(
+        string name,
+        int slot,
+        int manaCost = 0) =>
         new(
             name,
             slot,
             currentLevel: 0,
             maximumLevel: 100,
             castLines: 1,
-            manaCost: 0,
+            manaCost,
             cooldown: TimeSpan.Zero);
 
-    private static VitalsSnapshot Vitals() =>
+    private static VitalsSnapshot Vitals(
+        int currentMana = 100,
+        int maximumMana = 100) =>
         new(
             currentHealth: 100,
             maximumHealth: 100,
-            currentMana: 100,
-            maximumMana: 100);
+            currentMana,
+            maximumMana);
 
     private static MapLocationSnapshot Location() =>
         new(

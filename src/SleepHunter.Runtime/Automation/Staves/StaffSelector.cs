@@ -59,9 +59,7 @@ public static class StaffSelector
         if (best.Staff.CastLines >= request.BaseCastLines)
         {
             return new StaffSelection(
-                equipped is null
-                    ? StaffSelectionAction.None
-                    : StaffSelectionAction.Unequip,
+                StaffSelectionAction.None,
                 StaffSelectionReason.BaseCastIsOptimal,
                 request.BaseCastLines,
                 staff: null,
