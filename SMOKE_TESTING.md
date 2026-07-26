@@ -56,6 +56,15 @@ application.
 Do not test a deliberately corrupted patch against an important client
 installation. Use a disposable copy.
 
+## 2a. Metadata Editor
+
+- [ ] Open the metadata editor and confirm the initial skills tab appears
+  promptly without a long UI-thread pause.
+- [ ] Scroll quickly through skills and spells, switch to staves, and confirm
+  rows render correctly without blank, duplicated, or stale recycled content.
+- [ ] Close and reopen the editor, then confirm add, edit, remove, save, and
+  revert behavior still updates the visible collections.
+
 ## 3. Discovery, Attach, and Snapshots
 
 - [ ] Confirm each launched process appears once in the client list.

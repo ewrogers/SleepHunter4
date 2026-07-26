@@ -220,7 +220,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ScrollContentPresenter/>
+                            <ScrollContentPresenter Name="PART_ScrollContentPresenter"
+                                                    CanContentScroll="{TemplateBinding CanContentScroll}"/>
 
                             <ScrollBar Name="PART_VerticalScrollBar"
                                        Grid.Column="1"
@@ -285,6 +286,7 @@
                                 </ScrollViewer>
 
                                 <ScrollContentPresenter Name="PART_ScrollContentPresenter"
+                                                        CanContentScroll="{TemplateBinding CanContentScroll}"
                                                         KeyboardNavigation.DirectionalNavigation="Local"/>
                             </DockPanel>
 
@@ -1499,7 +1501,16 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
+        <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBox">
@@ -1512,7 +1523,7 @@
                                       Style="{StaticResource ObsidianScrollViewer}"
                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                            <StackPanel IsItemsHost="True"/>
+                            <ItemsPresenter/>
                         </ScrollViewer>
                     </Border>
                 </ControlTemplate>
@@ -1644,6 +1655,13 @@
         <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianListViewItem}"/>
         <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListView">
