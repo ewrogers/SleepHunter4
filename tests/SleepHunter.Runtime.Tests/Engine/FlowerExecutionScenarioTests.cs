@@ -262,7 +262,7 @@ public sealed class FlowerExecutionScenarioTests
     }
 
     [Test]
-    public void ShouldRestoreManaThenPlantFromFreshSnapshot()
+    public void ShouldRestoreZeroManaThenPlantFromFreshSnapshot()
     {
         var entry = Entry(1, SpellTarget.Self);
         var restoration = Spell(
@@ -274,7 +274,7 @@ public sealed class FlowerExecutionScenarioTests
             manaCost: 100);
         var scenario = CreateRunningScenario(
             [plant, restoration],
-            currentMana: 50);
+            currentMana: 0);
         scenario.Send(new AddFlowerQueueEntryCommand(entry));
         var policy = new FlowerExecutionPolicy(
             spell: TestSpellPolicy,

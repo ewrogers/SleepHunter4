@@ -28,6 +28,7 @@ or reduced offsets account for those adjustments:
 | `0x0082B768` | `GUIBackPane + 0x190` | GUI child offsets are reduced by `0x190` before dereferencing |
 | `0x006FC914` | complete `EquipPane *` | Equipment fields use their direct offsets |
 | `0x0073D944` | active `EventDispatcher *` | Message dialogs use the owned `EventHandlerList` at dispatcher offset `+0x60` |
+| `0x006D9260` | global `InputMan *` | The focused input pane is retained at manager offset `+0x444` |
 
 The supported executable's preferred image addresses remain in
 `data/ClientLayout.xml`. Client patching independently verifies the executable
@@ -47,6 +48,7 @@ hash before applying byte patches.
 | World entities | ID, tile coordinates, broad type, draw layer, broad category, collision, direction, creature type, and available appearance | Bounded `WorldObjectList` tree walk with exact RTTI names |
 | Active spell effects | Slot, icon, server duration stage | `SpelledViewPane` parallel icon and stage arrays |
 | Message dialogs | Registration depth and identity plus copied display text | Stable, bounded active event-tree walk filtered to visible and registered `WindowMessageDialogPane` entries |
+| Chat input | Whether typed text can currently go to say, shout, or tell input | Stable focused-pane read filtered by exact chat vtable, visibility, and the live `TimerHandler` cookie |
 
 The richer character snapshot includes class, level, ability level, user state,
 privilege level, character ID, gold, total experience, attributes, stat points,
@@ -91,6 +93,14 @@ cookie while its coherent control path contained the displayed text
 `WORLD East Woodland Crossroads`. The cookie is therefore not used as an open
 gate. Stable event-tree membership, exact vtable, registration, visibility,
 and a coherent text copy are the verified open criteria.
+
+Chat input uses the process-global `InputMan`, not event-tree pane existence or
+the old client byte flag. The reader confirms the focused pane at `+0x444`
+twice, requires visibility at `+0x130`, and validates the `TimerHandler`
+secondary-base cookie `0x79736F62` at `+0x120`. It reports `IsChatOpen` only for
+the exact relocated `ChatInputPane`, `TellReceiverInputPane`, and
+`TellInputPane` vtables. An existing but unfocused chat pane does not block
+automation because typed text cannot currently enter it.
 
 ## World Entities
 
@@ -190,6 +200,8 @@ Deterministic tests cover:
 - Active effect icon and stage parsing.
 - Message-dialog enumeration, ASCII text extraction, registration bounds,
   visibility filtering, and event-tree mutation rejection.
+- Focused chat-input classification, lifetime and visibility checks, and
+  focus-transition rejection.
 - World tree traversal, RTTI normalization, entity classification, sprites,
   coordinates, appearance, and generation-change rejection.
 - Mapping roots, adjusted offsets, record sizes, and capacities.

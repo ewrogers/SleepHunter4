@@ -72,7 +72,7 @@ public sealed partial class MacroEngine
             {
                 Presence: ClientPresence.InWorld
             } snapshot ||
-            snapshot.IsUserChatting ||
+            snapshot.IsChatOpen ||
             (!isSpellCasting &&
              IsAutomationSnapshotStale(currentState, snapshot)))
         {

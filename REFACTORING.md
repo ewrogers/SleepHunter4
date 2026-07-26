@@ -1227,9 +1227,11 @@ As of July 24, 2026:
 - After each single-attempt popup cancellation, require a newer snapshot. Close
   the workflow when the collection is empty, or request one more cancellation
   when another popup remains. Pause, stop, and logout cancel this workflow.
-- Treat the coherent user-chatting observation as an automation gate. Continue
-  accepting snapshots while the user types, but do not select a new automatic
-  action until a later snapshot shows that typing has ended.
+- Treat the coherent `IsChatOpen` observation as an automation gate. Resolve it
+  from the globally focused `InputMan` pane, require the live `TimerHandler`
+  cookie and visibility, and accept only exact chat and tell input vtables.
+  Continue accepting snapshots while the user types, but do not select a new
+  automatic action until a later snapshot shows that typing has ended.
 - Apply map-change policy before coordinate-change policy when both change in
   one accepted snapshot. Continue, pause, and stop are explicit configuration
   choices. An interruption accepts the new snapshot, cancels in-flight work,

@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made automatic staff selection aware of the character's base class
 - Updated the test SDK, NUnit framework, NUnit analyzers, and NUnit adapter to their latest .NET 10-compatible stable releases
 - Upgraded the application, updater, runtime, interop, persistence, and test projects to .NET 10 LTS
-- Changed chat typing detection to prefer visible, registered chat and tell input panes while retaining the previous flag as a compatibility fallback
+- Changed chat typing detection to use the globally focused, visible, live chat or tell input pane and renamed the snapshot projection to `IsChatOpen`
 - Added generation checks, count validation, bounded traversal, and coherent snapshots around mutable client-owned pointers and collections
 - Moved client cards to an MVVM projection that uses coherent runtime name, presence, map, health, and mana observations when available, with automatic legacy fallback after missing or failed captures
 - Projected immutable automation configuration and enabled state through the Community Toolkit runtime ViewModel
@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
 - Removed the unused blocking player-interface input stack, direct `PostMessage` automator, deferred-action residue, panel-coordinate helpers, and other unreferenced legacy utilities
 - Removed the Sense-specific and single-pointer dialog-open mappings in favor of the active event-dispatcher collection
+- Removed the old chat byte flag and broad event-tree chat scan in favor of the authoritative focused `InputMan` pane
 - Removed unused application helpers, events, converters, collection APIs, and the unconsumed world-entity model that duplicated live client memory traversal
 
 ### Fixed

@@ -144,7 +144,7 @@ public sealed class AutomationCycleScenarioTests
             activePanel: ClientPanel.TemuairSpells,
             vitals: Vitals(),
             spellbook: spellbook,
-            isUserChatting: true);
+            isChatOpen: true);
         scenario.Send(new AddSpellQueueEntryCommand(entry));
         scenario.Send(
             new ConfigureAutomationCommand(
@@ -161,7 +161,7 @@ public sealed class AutomationCycleScenarioTests
             activePanel: ClientPanel.TemuairSpells,
             vitals: Vitals(),
             spellbook: spellbook,
-            isUserChatting: false);
+            isChatOpen: false);
         var resumed = scenario.Dispatch(
             observed.RaisedEvents.Single());
 

@@ -422,26 +422,13 @@
       </Offsets>
     </Dynamic>
     <Static Key="WindowMessageDialogPaneVtable" Address="672A84" Type="UInt32" />
-    <Dynamic Key="UserChatting" Address="6EB118" Type="Byte">
+    <Dynamic Key="InputManager" Address="6D9260" Type="UInt32">
       <Offsets>
-        <Offset Value="438" />
-      </Offsets>
-    </Dynamic>
-    <Dynamic Key="EventPaneEntries" Address="6D9220" Size="12">
-      <Offsets>
-        <Offset Value="64" />
         <Offset Value="0" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="EventPaneCount" Address="6D9220" Type="Int32">
-      <Offsets>
-        <Offset Value="68" />
-      </Offsets>
-    </Dynamic>
-    <Dynamic Key="EventPaneCapacity" Address="6D9220" Type="Int32">
-      <Offsets>
-        <Offset Value="6C" />
-      </Offsets>
-    </Dynamic>
+    <Static Key="ChatInputPaneVtable" Address="682FEC" Type="UInt32" />
+    <Static Key="TellReceiverInputPaneVtable" Address="68306C" Type="UInt32" />
+    <Static Key="TellInputPaneVtable" Address="6830EC" Type="UInt32" />
   </Variables>
 </ClientLayout>

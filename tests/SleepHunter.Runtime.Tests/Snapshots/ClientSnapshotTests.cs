@@ -152,7 +152,7 @@ public sealed class ClientSnapshotTests
             skillbook,
             location,
             isInventoryExpanded: true,
-            isUserChatting: false,
+            isChatOpen: false,
             group,
             activeSpellEffects,
             worldEntities,

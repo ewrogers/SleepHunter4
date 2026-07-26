@@ -48,7 +48,11 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string MaximumManaKey = "MaximumMana";
     private const string ActivePanelKey = "ActivePanel";
     private const string InventoryExpandedKey = "InventoryExpanded";
-    private const string UserChattingKey = "UserChatting";
+    private const string InputManagerKey = "InputManager";
+    private const string ChatInputPaneVtableKey = "ChatInputPaneVtable";
+    private const string TellReceiverInputPaneVtableKey =
+        "TellReceiverInputPaneVtable";
+    private const string TellInputPaneVtableKey = "TellInputPaneVtable";
     private const string MapNumberKey = "MapNumber";
     private const string MapNameKey = "MapName";
     private const string MapXKey = "MapX";
@@ -120,7 +124,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(MaximumManaKey, MemoryValueKind.Unsigned32),
         new(ActivePanelKey, MemoryValueKind.Byte),
         new(InventoryExpandedKey, MemoryValueKind.Byte),
-        new(UserChattingKey, MemoryValueKind.Byte),
+        new(InputManagerKey, MemoryValueKind.Unsigned32),
+        new(ChatInputPaneVtableKey, MemoryValueKind.Unsigned32),
+        new(TellReceiverInputPaneVtableKey, MemoryValueKind.Unsigned32),
+        new(TellInputPaneVtableKey, MemoryValueKind.Unsigned32),
         new(MapNumberKey, MemoryValueKind.Unsigned32),
         new(MapNameKey, MemoryValueKind.Text),
         new(MapXKey, MemoryValueKind.Signed32),
@@ -468,7 +475,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             reader,
             out var activePanel,
             out var isInventoryExpanded,
-            out var isUserChatting,
+            out var isChatOpen,
             out error);
         sectionCompletedAt = clock.GetCurrentTimestamp();
         AddSection(
@@ -486,7 +493,9 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 startedAt,
                 session,
                 sections,
-                SnapshotQuality.Partial,
+                error!.Failure == SnapshotCaptureFailure.StateChanged
+                    ? SnapshotQuality.Incoherent
+                    : SnapshotQuality.Partial,
                 error!);
         }
 
@@ -772,7 +781,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             character!.CharacterId,
             activePanel,
             isInventoryExpanded,
-            isUserChatting,
+            isChatOpen,
             location!,
             out error,
             out failureQuality);
@@ -811,7 +820,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook,
             spellbook,
             isInventoryExpanded,
-            isUserChatting,
+            isChatOpen,
             group,
             activeSpellEffects,
             worldEntities,
@@ -833,7 +842,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         SkillbookSnapshot? skillbook = null,
         SpellbookSnapshot? spellbook = null,
         bool isInventoryExpanded = false,
-        bool isUserChatting = false,
+        bool isChatOpen = false,
         GroupSnapshot? group = null,
         ActiveSpellEffectsSnapshot? activeSpellEffects = null,
         WorldEntitiesSnapshot? worldEntities = null,
@@ -856,7 +865,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook: skillbook,
             location: location,
             isInventoryExpanded: isInventoryExpanded,
-            isUserChatting: isUserChatting,
+            isChatOpen: isChatOpen,
             group: group,
             activeSpellEffects: activeSpellEffects,
             worldEntities: worldEntities,
@@ -1291,7 +1300,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         MappedMemoryReader reader,
         out ClientPanel activePanel,
         out bool isInventoryExpanded,
-        out bool isUserChatting,
+        out bool isChatOpen,
         out SnapshotCaptureError? error)
     {
         if (!reader.TryReadByte(
@@ -1301,7 +1310,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         {
             activePanel = ClientPanel.Unknown;
             isInventoryExpanded = false;
-            isUserChatting = false;
+            isChatOpen = false;
             error = MappingFailure(
                 SnapshotSection.ClientState,
                 ActivePanelKey,
@@ -1331,7 +1340,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 out var inventoryExpandedError))
         {
             isInventoryExpanded = false;
-            isUserChatting = false;
+            isChatOpen = false;
             error = MappingFailure(
                 SnapshotSection.ClientState,
                 InventoryExpandedKey,
@@ -1340,22 +1349,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         }
 
         isInventoryExpanded = rawInventoryExpanded != 0;
-        if (!reader.TryReadByte(
-                UserChattingKey,
-                out var rawUserChatting,
-                out var userChattingError))
-        {
-            isUserChatting = false;
-            error = MappingFailure(
-                SnapshotSection.ClientState,
-                UserChattingKey,
-                userChattingError);
-            return false;
-        }
-
-        isUserChatting = rawUserChatting != 0;
-        error = null;
-        return true;
+        return TryReadIsChatOpen(reader, out isChatOpen, out error);
     }
 
     private static bool TryReadLocation(
@@ -1576,7 +1570,7 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         uint expectedCharacterId,
         ClientPanel expectedActivePanel,
         bool expectedInventoryExpanded,
-        bool expectedUserChatting,
+        bool expectedIsChatOpen,
         MapLocationSnapshot expectedLocation,
         out SnapshotCaptureError? error,
         out SnapshotQuality failureQuality)
@@ -1585,13 +1579,17 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 reader,
                 out var activePanel,
                 out var isInventoryExpanded,
-                out var isUserChatting,
+                out var isChatOpen,
                 out var clientStateError))
         {
             error = ReassignSection(
                 clientStateError!,
                 SnapshotSection.Coherence);
-            failureQuality = SnapshotQuality.Partial;
+            failureQuality =
+                clientStateError!.Failure ==
+                SnapshotCaptureFailure.StateChanged
+                    ? SnapshotQuality.Incoherent
+                    : SnapshotQuality.Partial;
             return false;
         }
 
@@ -1604,11 +1602,11 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             return false;
         }
 
-        if (isUserChatting != expectedUserChatting)
+        if (isChatOpen != expectedIsChatOpen)
         {
             error = StateChanged(
-                UserChattingKey,
-                "The user chatting state changed during snapshot capture.");
+                InputManagerKey,
+                "The chat input state changed during snapshot capture.");
             failureQuality = SnapshotQuality.Incoherent;
             return false;
         }

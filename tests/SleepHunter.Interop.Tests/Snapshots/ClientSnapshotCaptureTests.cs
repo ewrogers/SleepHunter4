@@ -34,6 +34,7 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong ActiveSpellEffectsRootAddress = 0x1D00;
     private const ulong WorldObjectListRootAddress = 0x1E00;
     private const ulong EventDispatcherRootAddress = 0x1F00;
+    private const ulong InputManagerRootAddress = 0x1F20;
     private const ulong CharacterNameAddress = 0x5000;
     private const ulong MapNameAddress = 0x5100;
     private const ulong InventoryAddress = 0x6000;
@@ -53,7 +54,12 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong WorldObjectListAddress = 0x2C000;
     private const ulong WorldObjectTreeHeadAddress = 0x2C100;
     private const ulong EventDispatcherAddress = 0x2D000;
+    private const ulong InputManagerAddress = 0x2E000;
+    private const ulong FocusedChatPaneAddress = 0x2F000;
     private const ulong WindowMessageDialogPaneVtableAddress = 0x672A84;
+    private const ulong ChatInputPaneVtableAddress = 0x682FEC;
+    private const ulong TellReceiverInputPaneVtableAddress = 0x68306C;
+    private const ulong TellInputPaneVtableAddress = 0x6830EC;
     private const ulong LevelAddress = PlayerAddress + 0x10;
     private const ulong AbilityLevelAddress = PlayerAddress + 0x11;
     private const ulong CharacterClassAddress = PlayerAddress + 0x12;
@@ -64,7 +70,6 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong MaximumManaAddress = PlayerAddress + 0x2C;
     private const ulong ActivePanelAddress = PlayerAddress + 0x30;
     private const ulong InventoryExpandedAddress = PlayerAddress + 0x31;
-    private const ulong UserChattingAddress = PlayerAddress + 0x32;
     private const ulong MapNumberAddress = PlayerAddress + 0x40;
     private const ulong MapXAddress = PlayerAddress + 0x44;
     private const ulong MapYAddress = PlayerAddress + 0x48;
@@ -127,7 +132,7 @@ public sealed class ClientSnapshotCaptureTests
                 result.Snapshot?.ActivePanel,
                 Is.EqualTo(ClientPanel.Inventory));
             Assert.That(result.Snapshot?.IsInventoryExpanded, Is.True);
-            Assert.That(result.Snapshot?.IsUserChatting, Is.False);
+            Assert.That(result.Snapshot?.IsChatOpen, Is.False);
             Assert.That(
                 result.Snapshot?.Character,
                 Is.EqualTo(
@@ -313,11 +318,14 @@ public sealed class ClientSnapshotCaptureTests
         });
     }
 
-    [Test]
-    public void ShouldCaptureUserChattingState()
+    [TestCase(ChatInputPaneVtableAddress)]
+    [TestCase(TellReceiverInputPaneVtableAddress)]
+    [TestCase(TellInputPaneVtableAddress)]
+    public void ShouldCaptureFocusedVisibleLiveChatInputState(
+        ulong vtableAddress)
     {
         var source = CreateMemoryImage();
-        source.Write(new MemoryAddress(UserChattingAddress), 1);
+        WriteFocusedChatPane(source, vtableAddress);
         var capture = CreateCapture(source);
 
         var result = capture.Capture(new SnapshotSequence(1));
@@ -325,28 +333,57 @@ public sealed class ClientSnapshotCaptureTests
         Assert.Multiple(() =>
         {
             Assert.That(result.Succeeded, Is.True);
-            Assert.That(result.Snapshot?.IsUserChatting, Is.True);
+            Assert.That(result.Snapshot?.IsChatOpen, Is.True);
         });
     }
 
     [Test]
-    public void ShouldRejectUserChattingStateChangedDuringCapture()
+    public void ShouldIgnoreFocusedChatPaneWithoutLiveCookie()
     {
         var source = CreateMemoryImage();
-        var userChattingReads = 0;
+        WriteFocusedChatPane(
+            source,
+            ChatInputPaneVtableAddress,
+            timerHandlerCookie: 0);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.Snapshot?.IsChatOpen, Is.False);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectFocusedInputPaneChangedDuringCapture()
+    {
+        var source = CreateMemoryImage();
+        var focusedPaneReads = 0;
         source.ReadStarting = (address, _) =>
         {
-            if (address.Value != UserChattingAddress)
+            if (address.Value !=
+                InputManagerAddress +
+                ClientChatInputReader.FocusedPaneOffset)
             {
                 return;
             }
 
-            userChattingReads++;
-            if (userChattingReads == 2)
+            focusedPaneReads++;
+            if (focusedPaneReads == 2)
             {
-                source.Write(address, 1);
+                source.WriteUInt32(
+                    address,
+                    (uint)FocusedChatPaneAddress);
             }
         };
+        WriteFocusedChatPane(source, ChatInputPaneVtableAddress);
+        source.WriteUInt32(
+            new MemoryAddress(
+                InputManagerAddress +
+                ClientChatInputReader.FocusedPaneOffset),
+            0);
         var capture = CreateCapture(source);
 
         var result = capture.Capture(new SnapshotSequence(1));
@@ -360,10 +397,10 @@ public sealed class ClientSnapshotCaptureTests
                 Is.EqualTo(SnapshotCaptureFailure.StateChanged));
             Assert.That(
                 result.Error?.Section,
-                Is.EqualTo(SnapshotSection.Coherence));
+                Is.EqualTo(SnapshotSection.ClientState));
             Assert.That(
                 result.Error?.VariableKey,
-                Is.EqualTo("UserChatting"));
+                Is.EqualTo("InputManager"));
         });
     }
 
@@ -1225,6 +1262,14 @@ public sealed class ClientSnapshotCaptureTests
         source.WriteUInt32(
             new MemoryAddress(EventDispatcherRootAddress),
             (uint)EventDispatcherAddress);
+        source.WriteUInt32(
+            new MemoryAddress(InputManagerRootAddress),
+            (uint)InputManagerAddress);
+        source.WriteUInt32(
+            new MemoryAddress(
+                InputManagerAddress +
+                ClientChatInputReader.FocusedPaneOffset),
+            0);
         source.Write(
             new MemoryAddress(EventDispatcherAddress + 0x64),
             new byte[12]);
@@ -1260,7 +1305,6 @@ public sealed class ClientSnapshotCaptureTests
         source.WriteUInt32(new MemoryAddress(MaximumManaAddress), 600);
         source.Write(new MemoryAddress(ActivePanelAddress), 0);
         source.Write(new MemoryAddress(InventoryExpandedAddress), 1);
-        source.Write(new MemoryAddress(UserChattingAddress), 0);
         source.WriteUInt32(new MemoryAddress(MapNumberAddress), 1);
         source.WriteInt32(new MemoryAddress(MapXAddress), 50);
         source.WriteInt32(new MemoryAddress(MapYAddress), 60);
@@ -1517,7 +1561,24 @@ public sealed class ClientSnapshotCaptureTests
         Dynamic("MaximumMana", 0x2C, MemoryValueKind.Unsigned32),
         Dynamic("ActivePanel", 0x30, MemoryValueKind.Byte),
         Dynamic("InventoryExpanded", 0x31, MemoryValueKind.Byte),
-        Dynamic("UserChatting", 0x32, MemoryValueKind.Byte),
+        new(
+            "InputManager",
+            new PointerChain(
+                new MemoryAddress(InputManagerRootAddress),
+                ImmutableArray.Create(new PointerOffset(0))),
+            MemoryValueKind.Unsigned32),
+        Static(
+            "ChatInputPaneVtable",
+            ChatInputPaneVtableAddress,
+            MemoryValueKind.Unsigned32),
+        Static(
+            "TellReceiverInputPaneVtable",
+            TellReceiverInputPaneVtableAddress,
+            MemoryValueKind.Unsigned32),
+        Static(
+            "TellInputPaneVtable",
+            TellInputPaneVtableAddress,
+            MemoryValueKind.Unsigned32),
         Dynamic("MapNumber", 0x40, MemoryValueKind.Unsigned32),
         Dynamic("MapX", 0x44, MemoryValueKind.Signed32),
         Dynamic("MapY", 0x48, MemoryValueKind.Signed32),
@@ -1692,6 +1753,15 @@ public sealed class ClientSnapshotCaptureTests
                 ImmutableArray.Create(new PointerOffset(offset))),
             kind);
 
+    private static MemoryVariableDefinition Static(
+        string key,
+        ulong address,
+        MemoryValueKind kind) =>
+        new(
+            key,
+            new PointerChain(new MemoryAddress(address)),
+            kind);
+
     private static MemoryVariableDefinition Block(
         string key,
         ulong rootAddress,
@@ -1725,6 +1795,33 @@ public sealed class ClientSnapshotCaptureTests
         var buffer = new byte[length];
         valueBytes.CopyTo(buffer, 0);
         source.Write(address, buffer);
+    }
+
+    private static void WriteFocusedChatPane(
+        MemoryImageSource source,
+        ulong vtableAddress,
+        uint timerHandlerCookie =
+            ClientChatInputReader.LiveTimerHandlerCookie,
+        byte visible = 1)
+    {
+        source.WriteUInt32(
+            new MemoryAddress(
+                InputManagerAddress +
+                ClientChatInputReader.FocusedPaneOffset),
+            (uint)FocusedChatPaneAddress);
+        source.WriteUInt32(
+            new MemoryAddress(FocusedChatPaneAddress),
+            (uint)vtableAddress);
+        source.WriteUInt32(
+            new MemoryAddress(
+                FocusedChatPaneAddress +
+                ClientChatInputReader.TimerHandlerCookieOffset),
+            timerHandlerCookie);
+        source.Write(
+            new MemoryAddress(
+                FocusedChatPaneAddress +
+                ClientChatInputReader.VisibleOffset),
+            visible);
     }
 
     private static void WriteInventoryItem(
