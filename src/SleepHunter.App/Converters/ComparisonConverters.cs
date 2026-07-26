@@ -22,24 +22,6 @@ namespace SleepHunter.Converters
         }
     }
 
-    public sealed class LessThanOrEqualConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var integer = value is double doubleValue ? doubleValue : (int)value;
-
-            if (!double.TryParse(parameter as string, out var threshold))
-                return false;
-
-            return integer <= threshold;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-    }
-
     public sealed class GreaterThanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -50,24 +32,6 @@ namespace SleepHunter.Converters
                 return false;
 
             return integer > threshold;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-    }
-
-    public sealed class GreaterThanOrEqualConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var integer = value is double doubleValue ? doubleValue : (int)value;
-
-            if (!double.TryParse(parameter as string, out var threshold))
-                return false;
-
-            return integer >= threshold;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

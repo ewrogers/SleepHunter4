@@ -25,8 +25,6 @@ namespace SleepHunter.Models
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int Count => players.Count;
-
         public PlayerSortOrder SortOrder
         {
             get => sortOrder;
@@ -101,23 +99,6 @@ namespace SleepHunter.Models
                 OnPlayerAdded(player);
         }
 
-        public bool ContainsPlayer(int processId) => players.ContainsKey(processId);
-
-        public Player GetPlayer(int processId)
-        {
-            players.TryGetValue(processId, out var player);
-            return player;
-        }
-
-        public Player GetPlayerByName(string playerName)
-        {
-            foreach (var player in players.Values)
-                if (string.Equals(player.Name, playerName, StringComparison.OrdinalIgnoreCase))
-                    return player;
-
-            return null;
-        }
-
         public bool RemovePlayer(int processId)
         {
             var wasRemoved = players.TryRemove(processId, out var removedPlayer);
@@ -130,16 +111,6 @@ namespace SleepHunter.Models
             }
 
             return wasRemoved;
-        }
-
-        public void ClearPlayers()
-        {
-            var keys = players.Keys.ToList();
-
-            foreach (var key in keys)
-                RemovePlayer(key);
-
-            players.Clear();
         }
 
         public void UpdateClients(Predicate<Player> predicate = null)

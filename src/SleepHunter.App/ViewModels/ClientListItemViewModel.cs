@@ -10,6 +10,7 @@ using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
 using SleepHunter.Runtime.Snapshots;
@@ -82,8 +83,10 @@ namespace SleepHunter.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasRuntime))]
+        [NotifyPropertyChangedFor(nameof(IsRuntimeStatusError))]
         [NotifyPropertyChangedFor(nameof(RuntimeStatus))]
         [NotifyPropertyChangedFor(nameof(UsesRuntimeSnapshot))]
+        [NotifyPropertyChangedFor(nameof(CanReplaceMacroConfiguration))]
         public partial ClientRuntimeViewModel Runtime
         {
             get;
@@ -91,6 +94,8 @@ namespace SleepHunter.ViewModels
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsRuntimeStatusError))]
+        [NotifyPropertyChangedFor(nameof(RuntimeStatus))]
         [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
         public partial Exception LastAutomationError { get; private set; }
 
@@ -115,6 +120,7 @@ namespace SleepHunter.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsMacroEditingEnabled))]
+        [NotifyPropertyChangedFor(nameof(CanReplaceMacroConfiguration))]
         [NotifyCanExecuteChangedFor(nameof(StopMacroCommand))]
         [NotifyCanExecuteChangedFor(nameof(ToggleMacroCommand))]
         public partial bool IsAutomationCommandRunning
@@ -161,8 +167,11 @@ namespace SleepHunter.ViewModels
 
         public bool IsMacroEditingEnabled =>
             IsLoggedIn &&
-            !IsMacroRunning &&
             !IsAutomationCommandRunning;
+
+        public bool CanReplaceMacroConfiguration =>
+            IsMacroEditingEnabled &&
+            !IsMacroRunning;
 
         public bool HasHotkey => Player.HasHotkey;
 
@@ -212,41 +221,47 @@ namespace SleepHunter.ViewModels
         public bool UsesRuntimeSnapshot =>
             Runtime?.PresentationSnapshot is not null;
 
+        public bool IsRuntimeStatusError
+        {
+            get
+            {
+                if (LastAutomationError is not null)
+                    return true;
+
+                var result = Runtime?.LatestCaptureResult;
+                return result is { Succeeded: false } &&
+                       result.Error?.Failure !=
+                           SnapshotCaptureFailure.LocationTransition;
+            }
+        }
+
         public string RuntimeStatus
         {
             get
             {
+                if (LastAutomationError is { } automationError)
+                    return $"Automation error: {automationError.Message}";
+
                 if (Runtime is null)
-                    return "Legacy client observation";
+                    return "Unavailable";
 
                 if (!Runtime.HasCapture)
-                    return "Runtime is waiting for its first snapshot";
+                    return "Waiting";
 
                 var result = Runtime.LatestCaptureResult;
                 if (result?.Succeeded == true)
-                {
-                    var duration =
-                        Runtime.CaptureStatistics.Duration;
-                    if (duration.SampleCount == 0)
-                        return "Runtime snapshot is healthy";
-
-                    return
-                        $"Runtime healthy, snapshot read avg {duration.Average.TotalMilliseconds:0.00} ms, " +
-                        $"min {duration.Minimum.TotalMilliseconds:0.00} ms, " +
-                        $"max {duration.Maximum.TotalMilliseconds:0.00} ms";
-                }
+                    return "Healthy";
 
                 var error = result?.Error;
                 if (error?.Failure ==
                     SnapshotCaptureFailure.LocationTransition)
                 {
-                    return
-                        "Runtime is waiting for a coherent map location";
+                    return "Waiting for coherent map location";
                 }
 
                 return error is null
-                    ? "Runtime capture is unavailable"
-                    : $"Runtime capture failed: {error.Failure} ({error.Message})";
+                    ? "Unavailable"
+                    : $"{error.Failure}: {error.Message}";
             }
         }
 
@@ -311,10 +326,28 @@ namespace SleepHunter.ViewModels
                 LastErrorStatus = $"Automation: {value.Message}";
         }
 
-        private void OnObservedPropertyChanged(
+        private async void OnObservedPropertyChanged(
             object sender,
-            PropertyChangedEventArgs e) =>
+            PropertyChangedEventArgs e)
+        {
             NotifyObservedState();
+            if (!ReferenceEquals(sender, MacroConfiguration) ||
+                !IsMacroRunning ||
+                !IsRuntimeConfigurationProperty(e.PropertyName))
+            {
+                return;
+            }
+
+            LastAutomationError = null;
+            try
+            {
+                await ApplyLiveAutomationSetupAsync();
+            }
+            catch (Exception exception)
+            {
+                LastAutomationError = exception;
+            }
+        }
 
         private void OnRuntimePropertyChanged(
             object sender,
@@ -582,31 +615,12 @@ namespace SleepHunter.ViewModels
                     "A healthy in-world client snapshot is required to start automation.");
             }
 
-            var macroConfiguration = MacroConfiguration ??
-                throw new InvalidOperationException(
-                    "The editable macro configuration is unavailable.");
-            var settings = getSettings?.Invoke() ??
-                throw new InvalidOperationException(
-                    "The current user settings are unavailable.");
-            var configuration = configurationMapper?.CreateSnapshot(
-                macroConfiguration) ??
-                throw new InvalidOperationException(
-                    "The macro configuration mapper is unavailable.");
-            var setup = setupFactory?.Create(
-                configuration,
-                settings,
-                snapshot.Character.Class) ??
-                throw new InvalidOperationException(
-                    "The runtime automation setup is unavailable.");
+            var setup = CreateRuntimeAutomationSetup(
+                snapshot.Character.Class);
 
             await runtime
                 .SendCommandAsync(
-                    setup.ReplaceQueues,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            await runtime
-                .SendCommandAsync(
-                    setup.ConfigureAutomation,
+                    setup.ApplyAutomation,
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -626,6 +640,58 @@ namespace SleepHunter.ViewModels
                     cancellationToken)
                 .ConfigureAwait(false);
         }
+
+        private async Task ApplyLiveAutomationSetupAsync()
+        {
+            var runtime = Runtime;
+            if (runtime?.Current?.Lifecycle !=
+                MacroLifecycle.Running)
+            {
+                return;
+            }
+
+            var character = runtime.LastSuccessfulSnapshot?.Character ??
+                throw new InvalidOperationException(
+                    "A successful character snapshot is required to update running automation.");
+            var setup = CreateRuntimeAutomationSetup(character.Class);
+            await runtime
+                .SendCommandAsync(setup.ApplyAutomation)
+                .ConfigureAwait(true);
+        }
+
+        private RuntimeAutomationSetup CreateRuntimeAutomationSetup(
+            CharacterClass characterClass)
+        {
+            var macroConfiguration = MacroConfiguration ??
+                throw new InvalidOperationException(
+                    "The editable macro configuration is unavailable.");
+            var settings = getSettings?.Invoke() ??
+                throw new InvalidOperationException(
+                    "The current user settings are unavailable.");
+            var configuration = configurationMapper?.CreateSnapshot(
+                macroConfiguration) ??
+                throw new InvalidOperationException(
+                    "The macro configuration mapper is unavailable.");
+            return setupFactory?.Create(
+                    configuration,
+                    settings,
+                    characterClass) ??
+                throw new InvalidOperationException(
+                    "The runtime automation setup is unavailable.");
+        }
+
+        private static bool IsRuntimeConfigurationProperty(
+            string propertyName) =>
+            propertyName is
+                nameof(PlayerMacroConfiguration.QueuedSpells) or
+                nameof(PlayerMacroConfiguration.FlowerTargets) or
+                nameof(PlayerMacroConfiguration.Skills) or
+                nameof(PlayerMacroConfiguration.SpellQueueRotation) or
+                nameof(PlayerMacroConfiguration.UseLyliacVineyard) or
+                nameof(PlayerMacroConfiguration.FlowerAlternateCharacters) or
+                nameof(PlayerMacroConfiguration.PrioritizeAlternateCharacters) or
+                nameof(PlayerMacroConfiguration.MaximumFlowerXDistance) or
+                nameof(PlayerMacroConfiguration.MaximumFlowerYDistance);
 
         private Task PauseMacroCoreAsync(
             CancellationToken cancellationToken) =>
@@ -688,6 +754,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(CurrentHealth));
             OnPropertyChanged(nameof(CurrentMana));
             OnPropertyChanged(nameof(GameClient));
+            OnPropertyChanged(nameof(CanReplaceMacroConfiguration));
             OnPropertyChanged(nameof(HasHotkey));
             OnPropertyChanged(nameof(HasRuntime));
             OnPropertyChanged(nameof(HealthPercent));
@@ -696,6 +763,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(IsMacroEditingEnabled));
             OnPropertyChanged(nameof(IsMacroPaused));
             OnPropertyChanged(nameof(IsMacroRunning));
+            OnPropertyChanged(nameof(IsRuntimeStatusError));
             OnPropertyChanged(nameof(ManaPercent));
             OnPropertyChanged(nameof(MapName));
             OnPropertyChanged(nameof(MapX));

@@ -17,6 +17,8 @@ Skills are organized into 3 tabs:
 
 Double-clicking a skill will toggle it on or off for macroing.
 When a skill is "enabled" for macroing, the icon will be highlighted white and a thick border will be displayed around the skill.
+Skills can be toggled while the macro is running. The complete updated
+configuration is applied to the runtime without stopping or pausing it.
 
 ## Cooldown Display
 

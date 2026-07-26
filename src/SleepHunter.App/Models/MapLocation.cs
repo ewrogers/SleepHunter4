@@ -63,25 +63,6 @@ namespace SleepHunter.Models
             reader = new BinaryReader(stream, Encoding.ASCII);
         }
 
-        public bool IsSameMap(MapLocation other)
-        {
-            CheckIfDisposed();
-            return MapNumber == other.MapNumber && string.Equals(MapName, other.MapName, StringComparison.Ordinal);
-        }
-
-        public bool IsWithinRange(MapLocation other, int maxX = 10, int maxY = 10)
-        {
-            CheckIfDisposed();
-
-            if (!IsSameMap(other))
-                return false;
-
-            var deltaX = Math.Abs(X - other.X);
-            var deltaY = Math.Abs(Y - other.Y);
-
-            return deltaX <= maxX && deltaY <= maxY;
-        }
-
         protected override void OnUpdate()
         {
             var layout = Owner.Layout;

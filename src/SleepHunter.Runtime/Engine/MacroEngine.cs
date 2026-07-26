@@ -91,6 +91,11 @@ public sealed partial class MacroEngine : IMacroEngine
                 MacroStopReason.None,
                 currentTime),
             StopMacroCommand => Stop(currentState, currentTime),
+            ApplyAutomationSetupCommand applyAutomation =>
+                ApplyAutomationSetup(
+                    currentState,
+                    applyAutomation,
+                    currentTime),
             ConfigureAutomationCommand configureAutomation =>
                 ConfigureAutomation(
                     currentState,
@@ -954,6 +959,64 @@ public sealed partial class MacroEngine : IMacroEngine
             flowerSchedules: flowerSchedules,
             spellTargetRotations: spellTargetRotations,
             flowerTargetRotations: flowerTargetRotations);
+    }
+
+    private static MacroDecision ApplyAutomationSetup(
+        MacroState currentState,
+        ApplyAutomationSetupCommand command,
+        MacroTimestamp currentTime)
+    {
+        var queues = command.Queues;
+        var spellTargetRotations =
+            currentState.SpellTargetRotations.Synchronize(
+                queues.SpellQueue.Entries.Select(entry =>
+                    KeyValuePair.Create(
+                        entry.Id.Value,
+                        entry.Target)));
+        var flowerSchedules = currentState.FlowerSchedules.Synchronize(
+            queues.FlowerQueue,
+            currentTime);
+        var flowerTargetRotations =
+            currentState.FlowerTargetRotations.Synchronize(
+                queues.FlowerQueue.Entries.Select(entry =>
+                    KeyValuePair.Create(
+                        entry.Id.Value,
+                        entry.Target)));
+        var panelPreservation =
+            command.Configuration.PanelPreservation.Enabled
+                ? currentState.PanelPreservation
+                : CancelPendingPanelPreservation(currentState);
+        if (currentState.SpellQueue.Equals(queues.SpellQueue) &&
+            currentState.SkillQueue.Equals(queues.SkillQueue) &&
+            currentState.FlowerQueue.Equals(queues.FlowerQueue) &&
+            currentState.SpellTargetRotations.Equals(
+                spellTargetRotations) &&
+            currentState.FlowerSchedules.Equals(flowerSchedules) &&
+            currentState.FlowerTargetRotations.Equals(
+                flowerTargetRotations) &&
+            currentState.Automation.Equals(command.Configuration) &&
+            Equals(
+                currentState.PanelPreservation,
+                panelPreservation))
+        {
+            return Unchanged(currentState);
+        }
+
+        return Changed(
+            currentState,
+            currentState.Lifecycle,
+            currentState.StopReason,
+            currentState.LatestSnapshot,
+            currentState.LastTransitionAt,
+            currentState.PendingAction,
+            queues.SpellQueue,
+            skillQueue: queues.SkillQueue,
+            flowerQueue: queues.FlowerQueue,
+            flowerSchedules: flowerSchedules,
+            spellTargetRotations: spellTargetRotations,
+            flowerTargetRotations: flowerTargetRotations,
+            automation: command.Configuration,
+            panelPreservation: panelPreservation);
     }
 
     private static MacroDecision ChangeSpellQueue(

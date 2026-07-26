@@ -4,5 +4,11 @@ namespace SleepHunter.Services.Runtime
 {
     public sealed record RuntimeAutomationSetup(
         ReplaceQueuesCommand ReplaceQueues,
-        ConfigureAutomationCommand ConfigureAutomation);
+        ConfigureAutomationCommand ConfigureAutomation)
+    {
+        public ApplyAutomationSetupCommand ApplyAutomation { get; } =
+            new(
+                ReplaceQueues,
+                ConfigureAutomation.Configuration);
+    }
 }

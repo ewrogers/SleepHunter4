@@ -645,8 +645,6 @@ namespace SleepHunter.Views
 
         private void StartClientPolling()
         {
-            IconManager.Instance.Context = TaskScheduler.FromCurrentSynchronizationContext();
-
             clientPolling.Start();
         }
 
@@ -1160,7 +1158,9 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            dialog.SpellQueueItem.CopyTo(queueItem);
+            selectedMacro.UpdateSpell(
+                queueItem,
+                dialog.SpellQueueItem);
         }
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -1228,7 +1228,9 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            dialog.FlowerQueueItem.CopyTo(queueItem);
+            selectedMacro.UpdateFlower(
+                queueItem,
+                dialog.FlowerQueueItem);
         }
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)

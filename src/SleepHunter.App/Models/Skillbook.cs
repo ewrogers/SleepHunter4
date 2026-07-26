@@ -69,12 +69,6 @@ namespace SleepHunter.Models
 
         ~Skillbook() => Dispose(false);
 
-        public bool ContainSkill(string skillName)
-        {
-            CheckIfDisposed();
-            return skills.Any(skill => string.Equals(skill.Name, skillName.Trim(), StringComparison.OrdinalIgnoreCase));
-        }
-
         public Skill GetSkill(string skillName)
         {
             CheckIfDisposed();

@@ -12,11 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added typed numeric memory variables for byte, signed-byte, 16-bit, and 32-bit values while preserving legacy formatted-string mappings for older client profiles
 - Expanded supported-client character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
 - Added the parsed 64-entry group-member cache, including names and starred state
-- Added an ID-keyed known-living-entity snapshot for the supported client layout with player, monster, Mundane, passable, and solid classifications; name, X/Y, direction, local-player, and group-member state; and nearest-player, nearest-monster, and nearest-group-member queries
 - Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
 - Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
 - Added inventory pane display names and stackability alongside the existing stable compact inventory identity
-- Added focused tests for pointer walking, typed values, memory mappings, pane layouts, character classes and names, inventory and equipment snapshots, cooldown wraparound, and world-entity traversal
+- Added focused tests for pointer walking, typed values, memory mappings, pane layouts, character classes and names, inventory and equipment snapshots, and cooldown wraparound
 
 ### Changed
 
@@ -34,17 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Promoted per-client runtime hosts from read-only shadow capture to the active command boundary, with a shared clock, immutable ability metadata, and deduplicated cross-client rosters
 - Made deterministic automation wait while the user is typing, dismiss dialogs opened by spells as well as skills, and apply configurable pause or stop policies when the observed map or coordinates change
 - Preserved the user-selected client panel across automatic spell, skill, and flowering actions through deterministic, bounded restoration attempts
-- Added an application composition boundary that converts persisted queues and macro settings into atomic runtime commands with class-aware staff catalogs
+- Added an application composition boundary that converts persisted queues and macro settings into an atomic runtime setup command with class-aware staff catalogs
 - Honored the option to wait behind a cooling spell instead of skipping it, and safely mapped legacy close-client movement actions to runtime stop behavior
 - Routed toolbar, hotkey, and stop-all lifecycle controls through Community Toolkit commands backed by the deterministic runtime
-- Adapted the current macro editor configuration through the tested legacy migration path before each start or resume, and disabled macro editing only while a configured runtime is running
+- Adapted the current macro editor configuration through the tested legacy migration path before each start or resume
 - Replaced the legacy executable macro state with a DI-owned Community Toolkit observable editor configuration, and projected queued spell levels and readiness from immutable runtime snapshots
 - Changed current macro saves and autosaves to bounded, versioned `.sh4x` JSON while retaining XML `.sh4` files as import-only legacy configurations
 - Labeled `.sh4x` as SleepHunter 4 Macro Files and `.sh4` as SleepHunter 4 Legacy Files in macro file dialogs
 - Added dim slot numbers to inventory, skill, and spell grids, plus abbreviated top-left slot badges to the equipment grid
-- Replaced the client-card runtime letter tooltip with a selected-client status bar that shows live runtime health, retains the most recent capture or automation error, and provides selectable detailed diagnostics
-- Replaced the ticking snapshot sequence in the status bar with rolling average, minimum, and maximum snapshot-read times from the bounded 256-capture timing window
+- Replaced the client-card runtime letter tooltip with a compact bottom-right status indicator that shows `Healthy` or a concise red error and provides selectable detailed diagnostics
+- Moved rolling average, minimum, and maximum snapshot-read times from the status indicator into runtime details and removed the ticking snapshot sequence
+- Changed the combined macro toolbar button from the play icon to the pause icon while its selected macro is running
 - Combined Start Macro and Pause Macro into one state-aware toolbar control that also becomes Resume Macro while paused
+- Allowed skill toggles and spell or flower queue additions, edits, removals, clearing, and reordering while automation is running, applying each complete setup atomically through the runtime command channel
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 - Replaced the window-owned process and client `BackgroundWorker` loops with independently paced, cancellable async polling that is awaited during shutdown
@@ -61,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
 - Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
 - Removed the unused blocking player-interface input stack, direct `PostMessage` automator, deferred-action residue, panel-coordinate helpers, and other unreferenced legacy utilities
+- Removed unused application helpers, events, converters, collection APIs, and the unconsumed world-entity model that duplicated live client memory traversal
 
 ### Fixed
 
@@ -70,7 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevented stale or unallocated supported-client character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
 - Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown
-- Show pane-backed spell cooldowns in the UI by combining the client's live action-delay state with SleepHunter's local cooldown timestamps
+- Show pane-backed spell cooldowns in the UI from the client's live action-delay state
 - Corrected live inventory and equipment durability ordering to read current durability before maximum durability, and changed durability tooltip text to a cooler blue
 - Held map transitions until map number and name form a coherent identity, while retaining the last coherent UI projection and continuing to reject automation actions until capture recovers
 - Made occupied inventory tooltips respond across the full slot instead of only over the item sprite

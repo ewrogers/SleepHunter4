@@ -100,14 +100,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref manaThreshold, value);
         }
 
-        public void ResetTimer()
-        {
-            if (interval.HasValue)
-                intervalRemaining = interval.Value;
-            else
-                intervalRemaining = TimeSpan.Zero;
-        }
-
         public void Tick() => Tick(TimeSpan.Zero);
 
         public void Tick(TimeSpan deltaTime)

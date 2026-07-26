@@ -112,13 +112,24 @@
                                    Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
-                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            <TextBlock Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
-                                       Margin="0,2,0,0"
-                                       Text="&#xE102;"/>
+                                       Margin="0,2,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource ObsidianSymbolText}">
+                                        <Setter Property="Text" Value="&#xE102;"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedClient.IsMacroRunning}"
+                                                         Value="True">
+                                                <Setter Property="Text" Value="&#xE103;"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DockPanel>
                     </Button>
                     <!-- Stop Macro Button -->
@@ -692,14 +703,19 @@
             </Grid>
         </Grid>
         
-        <!-- Runtime Status Bar -->
-        <Border Grid.Row="2"
+        <!-- Runtime Status -->
+        <Border Grid.Row="1"
                 Grid.ColumnSpan="4"
+                Panel.ZIndex="8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
                 MinHeight="28"
-                Padding="8,3,22,5"
+                MaxWidth="620"
+                Margin="0,0,20,8"
+                Padding="10,3,5,3"
                 Background="{StaticResource ObsidianControlBackground}"
                 BorderBrush="{DynamicResource ObsidianBackground}"
-                BorderThickness="0,1,0,4">
+                BorderThickness="1">
             <DockPanel LastChildFill="True">
                 <ToggleButton Name="runtimeDetailsButton"
                               DockPanel.Dock="Right"
@@ -806,50 +822,24 @@
                     </Border>
                 </Popup>
 
-                <Grid DockPanel.Dock="Right"
-                      MaxWidth="520"
-                      Margin="16,0,0,0">
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Setter Property="Visibility" Value="Collapsed"/>
+                <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue=Unavailable, TargetNullValue=Unavailable}"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding SelectedClient.RuntimeStatus}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock"
+                               BasedOn="{StaticResource ObsidianText}">
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedClient.HasLastErrorStatus}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
+                                <DataTrigger Binding="{Binding SelectedClient.IsRuntimeStatusError}"
+                                             Value="True">
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource ObsidianError}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Grid.Style>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Style="{StaticResource ObsidianText}"
-                               Foreground="{DynamicResource ObsidianError}"
-                               FontWeight="SemiBold"
-                               Text="Last error: "/>
-                    <TextBlock Grid.Column="1"
-                               Style="{StaticResource ObsidianText}"
-                               Foreground="{DynamicResource ObsidianError}"
-                               Text="{Binding SelectedClient.LastErrorStatus}"
-                               TextTrimming="CharacterEllipsis"
-                               ToolTip="{Binding SelectedClient.LastErrorStatus}"/>
-                </Grid>
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Style="{StaticResource ObsidianText}"
-                               FontWeight="SemiBold"
-                               Opacity="0.7"
-                               Text="Runtime: "/>
-                    <TextBlock Grid.Column="1"
-                               Style="{StaticResource ObsidianText}"
-                               Text="{Binding SelectedClient.RuntimeStatus, FallbackValue=Select a client to view runtime status, TargetNullValue=Select a client to view runtime status}"
-                               TextTrimming="CharacterEllipsis"
-                               ToolTip="{Binding SelectedClient.RuntimeStatus}"/>
-                </Grid>
+                    </TextBlock.Style>
+                </TextBlock>
             </DockPanel>
         </Border>
 

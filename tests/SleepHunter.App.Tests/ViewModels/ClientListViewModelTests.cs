@@ -92,13 +92,17 @@ public sealed class ClientListViewModelTests
             Assert.That(item.MapName, Is.EqualTo("Runtime Map"));
             Assert.That(item.MapX, Is.EqualTo(70));
             Assert.That(item.MapY, Is.EqualTo(80));
+            Assert.That(item.RuntimeStatus, Is.EqualTo("Healthy"));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
             Assert.That(
-                item.RuntimeStatus,
-                Does.StartWith(
-                    "Runtime healthy, snapshot read avg 0.00 ms"));
-            Assert.That(item.RuntimeStatus, Does.Contain("min 0.00 ms"));
-            Assert.That(item.RuntimeStatus, Does.Contain("max 0.00 ms"));
-            Assert.That(item.RuntimeStatus, Does.Not.Contain("snapshot 1"));
+                item.RuntimeDetailsText,
+                Does.Contain("Timing average: 0 ms"));
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("Timing minimum: 0 ms"));
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("Timing maximum: 0 ms"));
         });
 
         host.PublishCapture(CreateCapture(
@@ -151,7 +155,8 @@ public sealed class ClientListViewModelTests
                     "The scripted capture failed."));
             Assert.That(
                 item.RuntimeStatus,
-                Does.StartWith("Runtime capture failed"));
+                Does.StartWith("MappingReadFailed:"));
+            Assert.That(item.IsRuntimeStatusError, Is.True);
             Assert.That(
                 frozenDetails,
                 Does.Contain("Variable: MapName"));
@@ -231,8 +236,8 @@ public sealed class ClientListViewModelTests
             Assert.That(item.MapY, Is.EqualTo(80));
             Assert.That(
                 item.RuntimeStatus,
-                Is.EqualTo(
-                    "Runtime is waiting for a coherent map location"));
+                Is.EqualTo("Waiting for coherent map location"));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
         });
     }
 
@@ -355,24 +360,20 @@ public sealed class ClientListViewModelTests
         });
         await item.ToggleMacroCommand.ExecuteAsync(null);
 
-        var replace = await host.ReadCommandAsync();
-        var configure = await host.ReadCommandAsync();
+        var apply = await host.ReadCommandAsync();
         var start = await host.ReadCommandAsync();
         Assert.Multiple(() =>
         {
             Assert.That(
-                replace,
-                Is.TypeOf<ReplaceQueuesCommand>());
+                apply,
+                Is.TypeOf<ApplyAutomationSetupCommand>());
+            var setup = (ApplyAutomationSetupCommand)apply;
             Assert.That(
-                ((ReplaceQueuesCommand)replace)
+                setup.Queues
                     .SpellQueue.Entries.Single().Name,
                 Is.EqualTo("test spell"));
             Assert.That(
-                configure,
-                Is.TypeOf<ConfigureAutomationCommand>());
-            Assert.That(
-                ((ConfigureAutomationCommand)configure)
-                    .Configuration.SpellsEnabled,
+                setup.Configuration.SpellsEnabled,
                 Is.True);
             Assert.That(start, Is.TypeOf<StartMacroCommand>());
             Assert.That(item.LastAutomationError, Is.Null);
@@ -385,14 +386,78 @@ public sealed class ClientListViewModelTests
         Assert.Multiple(() =>
         {
             Assert.That(item.MacroToggleLabel, Is.EqualTo("Pause Macro"));
-            Assert.That(item.IsMacroEditingEnabled, Is.False);
+            Assert.That(item.IsMacroEditingEnabled, Is.True);
+            Assert.That(item.CanReplaceMacroConfiguration, Is.False);
             Assert.That(
                 item.ToggleMacroCommand.CanExecute(null),
                 Is.True);
             Assert.That(
                 item.MacroEditor.ClearSpellsCommand.CanExecute(null),
-                Is.False);
+                Is.True);
         });
+
+        macroConfiguration.ToggleSkill("Assail");
+        var skillUpdate = await host.ReadCommandAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                skillUpdate,
+                Is.TypeOf<ApplyAutomationSetupCommand>());
+            var setup = (ApplyAutomationSetupCommand)skillUpdate;
+            Assert.That(
+                setup.Queues.SkillQueue.Entries.Single().Name,
+                Is.EqualTo("Assail"));
+            Assert.That(setup.Configuration.SkillsEnabled, Is.True);
+        });
+
+        var secondSpell = new SpellQueueItem
+        {
+            Name = "second spell",
+            Target = new SleepHunter.Models.SpellTarget
+            {
+                Mode = SpellTargetMode.Self
+            }
+        };
+        macroConfiguration.AddToSpellQueue(secondSpell);
+        var added = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.That(
+            added.Queues.SpellQueue.Entries.Select(entry => entry.Name),
+            Is.EqualTo(new[] { "test spell", "second spell" }));
+
+        macroConfiguration.MoveSpell(
+            macroConfiguration.QueuedSpells[0],
+            secondSpell);
+        var moved = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.That(
+            moved.Queues.SpellQueue.Entries.Select(entry => entry.Name),
+            Is.EqualTo(new[] { "second spell", "test spell" }));
+
+        macroConfiguration.RemoveFromSpellQueue(
+            macroConfiguration.QueuedSpells[1]);
+        var removed = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.That(
+            removed.Queues.SpellQueue.Entries.Single().Name,
+            Is.EqualTo("second spell"));
+
+        macroConfiguration.UpdateSpell(
+            secondSpell,
+            new SpellQueueItem
+            {
+                Id = secondSpell.Id,
+                Name = "updated spell",
+                Target = new SleepHunter.Models.SpellTarget
+                {
+                    Mode = SpellTargetMode.Self
+                }
+            });
+        var updated = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.That(
+            updated.Queues.SpellQueue.Entries.Single().Name,
+            Is.EqualTo("updated spell"));
 
         await item.ToggleMacroCommand.ExecuteAsync(null);
         Assert.That(
@@ -415,17 +480,13 @@ public sealed class ClientListViewModelTests
 
         await item.ToggleMacroCommand.ExecuteAsync(null);
 
-        var resumeReplace = await host.ReadCommandAsync();
-        var resumeConfigure = await host.ReadCommandAsync();
+        var resumeApply = await host.ReadCommandAsync();
         var resume = await host.ReadCommandAsync();
         Assert.Multiple(() =>
         {
             Assert.That(
-                resumeReplace,
-                Is.TypeOf<ReplaceQueuesCommand>());
-            Assert.That(
-                resumeConfigure,
-                Is.TypeOf<ConfigureAutomationCommand>());
+                resumeApply,
+                Is.TypeOf<ApplyAutomationSetupCommand>());
             Assert.That(
                 resume,
                 Is.TypeOf<ResumeMacroCommand>());
@@ -433,7 +494,7 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
-    public async Task ShouldRetainAutomationErrorsForTheStatusBar()
+    public async Task ShouldRetainAutomationErrorsForRuntimeDetails()
     {
         using var player = CreatePlayer();
         var macroConfiguration =
@@ -474,6 +535,11 @@ public sealed class ClientListViewModelTests
                 item.LastErrorStatus,
                 Is.EqualTo(
                     "Automation: The scripted setup failed."));
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Automation error: The scripted setup failed."));
+            Assert.That(item.IsRuntimeStatusError, Is.True);
             Assert.That(
                 item.RuntimeDetailsSnapshot,
                 Does.Contain(

@@ -98,14 +98,6 @@ namespace SleepHunter.Metadata
             return wasRemoved;
         }
 
-        public void ClearModifiers()
-        {
-            foreach (var modifier in lineModifiers)
-                OnModifiersRemoved(modifier);
-
-            lineModifiers.Clear();
-        }
-
         void OnModifiersAdded(SpellLineModifiers modifiers) => ModifiersAdded?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));
 
         void OnModifiersChanged(SpellLineModifiers modifiers) => ModifiersChanged?.Invoke(this, new SpellLineModifiersEventArgs(modifiers));

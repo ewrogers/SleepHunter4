@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,8 +29,6 @@ namespace SleepHunter.Models
 
         private readonly Stream stream;
         private readonly BinaryReader reader;
-
-        private readonly ConcurrentDictionary<string, DateTime> spellCooldownTimestamps = new();
 
         private string activeSpell;
 
@@ -66,12 +63,6 @@ namespace SleepHunter.Models
                 spells[i] = (Spell.MakeEmpty(i + 1));
         }
 
-        public bool ContainSpell(string spellName)
-        {
-            CheckIfDisposed();
-            return spells.Any(spell => string.Equals(spell.Name, spellName.Trim(), StringComparison.OrdinalIgnoreCase));
-        }
-
         public Spell GetSpell(string spellName)
         {
             CheckIfDisposed();
@@ -86,28 +77,6 @@ namespace SleepHunter.Models
                 return false;
 
             return string.Equals(activeSpell, spellName.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-
-        public void SetCooldownTimestamp(string spellName, DateTime timestamp)
-        {
-            CheckIfDisposed();
-
-            spellName = spellName.Trim();
-            spellCooldownTimestamps[spellName] = timestamp;
-        }
-
-        public bool ClearCooldown(string spellName)
-        {
-            CheckIfDisposed();
-
-            spellName = spellName.Trim();
-            return spellCooldownTimestamps.TryRemove(spellName, out _);
-        }
-
-        public void ClearAllCooldowns()
-        {
-            CheckIfDisposed();
-            spellCooldownTimestamps.Clear();
         }
 
         protected override void OnUpdate()
@@ -143,7 +112,6 @@ namespace SleepHunter.Models
 
             stream.Position = basePointer;
 
-            var foundFasSpiorad = false;
             var foundLyliacVineyard = false;
             var foundLyliacPlant = false;
 
@@ -185,7 +153,6 @@ namespace SleepHunter.Models
 
                     spells[i].IsActive = IsActive(spells[i].Name);
 
-                    foundFasSpiorad |= string.Equals(spells[i].Name, Spell.FasSpioradKey, StringComparison.OrdinalIgnoreCase);
                     foundLyliacPlant |= string.Equals(spells[i].Name, Spell.LyliacPlantKey, StringComparison.OrdinalIgnoreCase);
                     foundLyliacVineyard |= string.Equals(spells[i].Name, Spell.LyliacVineyardKey, StringComparison.OrdinalIgnoreCase);
 
@@ -216,7 +183,6 @@ namespace SleepHunter.Models
             for (var i = entryCount; i < spells.Length; i++)
                 ResetSpell(spells[i]);
 
-            Owner.HasFasSpiorad = foundFasSpiorad;
             Owner.HasLyliacPlant = foundLyliacPlant;
             Owner.HasLyliacVineyard = foundLyliacVineyard;
 
@@ -416,9 +382,6 @@ namespace SleepHunter.Models
 
         private void UpdateSpecialSpellFlags()
         {
-            Owner.HasFasSpiorad = spells.Any(spell =>
-                !spell.IsEmpty &&
-                string.Equals(spell.Name, Spell.FasSpioradKey, StringComparison.OrdinalIgnoreCase));
             Owner.HasLyliacPlant = spells.Any(spell =>
                 !spell.IsEmpty &&
                 string.Equals(spell.Name, Spell.LyliacPlantKey, StringComparison.OrdinalIgnoreCase));
@@ -463,7 +426,6 @@ namespace SleepHunter.Models
             for (int i = 0; i < spells.Length; i++)
                 ResetSpell(spells[i]);
 
-            Owner.HasFasSpiorad = false;
             Owner.HasLyliacPlant = false;
             Owner.HasLyliacVineyard = false;
         }
@@ -489,28 +451,9 @@ namespace SleepHunter.Models
                     continue;
                 }
 
-                var hasTimestamp = spellCooldownTimestamps.TryGetValue(spellName, out var lastUsedTimestamp);
-                spells[i].IsOnCooldown = IsSpellCooldownActive(
-                    spells[i].IsActionDelayed,
-                    hasTimestamp ? lastUsedTimestamp : null,
-                    spells[i].Cooldown,
-                    DateTime.Now);
+                spells[i].IsOnCooldown =
+                    spells[i].IsActionDelayed;
             }
-        }
-
-        internal static bool IsSpellCooldownActive(
-            bool isActionDelayed,
-            DateTime? lastUsedTimestamp,
-            TimeSpan cooldown,
-            DateTime now)
-        {
-            if (isActionDelayed)
-                return true;
-
-            if (!lastUsedTimestamp.HasValue)
-                return false;
-
-            return lastUsedTimestamp.Value.Ticks + cooldown.Ticks > now.Ticks;
         }
     }
 }

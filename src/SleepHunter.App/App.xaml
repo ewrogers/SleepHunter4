@@ -13,9 +13,7 @@
                     <converters:AbsoluteValueConverter x:Key="AbsoluteValueConverter"/>
                     <converters:BooleanInverter x:Key="BooleanInverter"/>
                     <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
-                    <converters:GreaterThanOrEqualConverter x:Key="GreaterThanOrEqualConverter"/>
                     <converters:LessThanConverter x:Key="LessThanConverter"/>
-                    <converters:LessThanOrEqualConverter x:Key="LessThanOrEqualConverter"/>
                     <converters:NumericConverter x:Key="NumericConverter"/>
                     <converters:NotNullConverter x:Key="NotNullConverter"/>
                     <converters:EquipmentSlotConverter x:Key="EquipmentSlotConverter"/>

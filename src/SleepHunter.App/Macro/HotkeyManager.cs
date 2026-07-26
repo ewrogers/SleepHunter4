@@ -17,8 +17,6 @@ namespace SleepHunter.Macro
 
         private readonly ConcurrentDictionary<int, Hotkey> hotkeys = new();
 
-        public int Count => hotkeys.Count;
-
         public IEnumerable<Hotkey> Hotkeys => from h in hotkeys.Values select h;
 
         public bool RegisterHotkey(nint windowHandle, Hotkey hotkey)
@@ -47,8 +45,6 @@ namespace SleepHunter.Macro
 
             return success;
         }
-
-        public bool ContainsHotkey(Key key, ModifierKeys modifiers) => GetHotkey(key, modifiers) != null;
 
         public Hotkey GetHotkey(Key key, ModifierKeys modifiers)
         {

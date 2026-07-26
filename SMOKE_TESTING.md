@@ -59,14 +59,15 @@ installation. Use a disposable copy.
 ## 3. Discovery, Attach, and Snapshots
 
 - [ ] Confirm each launched process appears once in the client list.
-- [ ] Select a client and confirm the bottom runtime status bar changes from
-  waiting to healthy rolling snapshot-read average, minimum, and maximum times
-  without displaying a ticking snapshot sequence.
-- [ ] Trigger a recoverable capture failure and confirm the status bar retains
-  it as the last error after healthy capture resumes.
+- [ ] Select a client and confirm the compact bottom-right runtime indicator
+  changes from waiting to `Healthy` without displaying timings or a ticking
+  snapshot sequence.
+- [ ] Trigger a recoverable capture failure and confirm the compact indicator
+  shows the concise failure in red.
 - [ ] Open the runtime details button, confirm nested mapping and memory failures
-  include the variable, address, byte counts, and native error code, then select
-  and copy the diagnostic text with `Ctrl+C`.
+  include the variable, address, byte counts, native error code, and rolling
+  average, minimum, and maximum capture times, then select and copy the
+  diagnostic text with `Ctrl+C`.
 - [ ] Dismiss runtime details by clicking outside it, reopen it immediately,
   close it with the details button, and confirm the text and scrollbars remain
   visible through the bottom of a multiline error.
@@ -97,7 +98,8 @@ Use a harmless queue in a safe map for the first pass.
   first healthy in-world snapshot.
 - [ ] Start automation and confirm the card shows a running state.
 - [ ] Confirm the same toolbar control changes from Start Macro to Pause Macro
-  while running, then to Resume Macro while paused.
+  and changes from the play icon to the pause icon while running, then returns
+  to Resume Macro and the play icon while paused.
 - [ ] Stop from the toolbar and confirm no further actions are issued.
 - [ ] Run two clients, then use Stop All.
 - [ ] Assign, transfer, invoke, and clear a global hotkey.
@@ -109,9 +111,12 @@ Use a harmless queue in a safe map for the first pass.
 ## 5. Skills, Spells, Staffs, and Panels
 
 - [ ] Double-click skills to enable and disable them while automation is
-  stopped.
+  running, and confirm automation remains running and uses the updated
+  selection.
 - [ ] Run a skill cycle and confirm cooldowns prevent premature reuse.
-- [ ] Add, edit, reorder, remove, and clear spell queue entries.
+- [ ] While automation is running, add, edit, reorder, remove, and clear spell
+  queue entries, and confirm each completed edit takes effect without pausing
+  or stopping the macro.
 - [ ] Test no-target, self, alternate-character, relative-tile, and
   screen-position targets that are safe for the test map.
 - [ ] Confirm configured user-typing behavior defers automation while chat is
@@ -128,7 +133,9 @@ Use a harmless queue in a safe map for the first pass.
 
 ## 6. Flowering and Cross-Client State
 
-- [ ] Add, edit, reorder, remove, and clear flower targets.
+- [ ] While automation is running, add, edit, reorder, remove, and clear flower
+  targets, and confirm each completed edit takes effect without pausing or
+  stopping the macro.
 - [ ] Run flowering with an alternate character and confirm roster targeting
   follows live snapshots.
 - [ ] Test Lyliac Plant and Lyliac Vineyard separately when the character

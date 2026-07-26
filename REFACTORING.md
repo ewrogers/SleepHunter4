@@ -19,6 +19,16 @@ Windows and client validation in [SMOKE_TESTING.md](SMOKE_TESTING.md).
 Remaining MainWindow code-behind is limited to view gestures, native window
 integration, secondary dialogs, and application-shell coordination.
 
+The July 25 application audit removed unreferenced helpers, events, converters,
+collection APIs, and the unused world-entity model. The latter had no runtime
+or UI consumer and performed a second client-memory traversal beside Interop.
+The remaining legacy `Player` process reads are still active inputs for the
+inventory, equipment, skill, and spell panes, so they remain in the application
+until those panes consume Interop projections. Client patch planning is also
+still used by `ClientLaunchService`; extracting it into
+`SleepHunter.Patching` remains a focused follow-up rather than being mixed into
+dead-code removal.
+
 ## Executive Decision
 
 SleepHunter will receive a new unit-tested runtime built beside the legacy
@@ -1222,8 +1232,7 @@ As of July 24, 2026:
   succeeded, timed-out, issue-failed, and cancelled outcomes, and cancel
   preservation on pause, stop, logout, or another lifecycle interruption.
 - Compose persisted queues and current application settings into one atomic
-  queue-replacement command and one immutable automation-configuration command
-  before runtime lifecycle changes.
+  runtime setup command before lifecycle changes.
 - Build staff catalogs per client from the observed character class. Treat
   `Class="All"` as neutral, include multi-class legacy metadata only when it
   includes the observed class, and keep the exact class on the runtime
@@ -1239,11 +1248,12 @@ As of July 24, 2026:
   input authority. Give each process one DI-owned configuration and mutate it on
   the UI thread.
 - Snapshot the editable configuration in memory and import it through the tested
-  legacy configuration reader before every start or resume. Send queue
-  replacement and immutable configuration before the lifecycle command.
-- Treat each running configuration as immutable. Disable macro editor mutation
-  while running, allow edits while paused, and recompose the complete setup on
-  resume so a live runtime never silently diverges from the editor.
+  legacy configuration reader before every start or resume. Send the complete
+  atomic runtime setup before the lifecycle command.
+- Allow skill toggles and complete spell or flower queue edits while running.
+  Recompose the full editor state after each completed mutation and submit it
+  as one reliable runtime command so queues and policy cannot be observed from
+  different editor revisions.
 - Represent flower queues as immutable entries with stable identifiers,
   monotonic interval schedules, deterministic rotation, and interval or
   character-mana conditions. When both conditions are configured, either can

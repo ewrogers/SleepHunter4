@@ -136,7 +136,7 @@ namespace SleepHunter.ViewModels
             return !isDisposed &&
                    !IsRunning &&
                    selectedClient?.MacroConfiguration is not null &&
-                   selectedClient.IsMacroEditingEnabled;
+                   selectedClient.CanReplaceMacroConfiguration;
         }
 
         [RelayCommand(CanExecute = nameof(CanSaveMacro))]

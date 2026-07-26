@@ -28,6 +28,10 @@ namespace SleepHunter.Macro
                 FlowerQueueItem>(flowers);
             readOnlySpells = new ReadOnlyObservableCollection<
                 SpellQueueItem>(spells);
+            flowers.CollectionChanged +=
+                (_, _) => OnPropertyChanged(nameof(FlowerTargets));
+            spells.CollectionChanged +=
+                (_, _) => OnPropertyChanged(nameof(QueuedSpells));
             PrioritizeAlternateCharacters = true;
             MaximumFlowerXDistance = 10;
             MaximumFlowerYDistance = 10;
@@ -136,6 +140,8 @@ namespace SleepHunter.Macro
                     entry.Name,
                     isActive: true);
             }
+
+            OnPropertyChanged(nameof(Skills));
         }
 
         public bool ToggleSkill(string skillName)
@@ -167,6 +173,7 @@ namespace SleepHunter.Macro
             Client.Skillbook.ToggleActive(
                 normalized,
                 isActive);
+            OnPropertyChanged(nameof(Skills));
 
             return isActive;
         }
@@ -175,6 +182,7 @@ namespace SleepHunter.Macro
         {
             skills.Clear();
             Client.Skillbook.ClearActiveSkills();
+            OnPropertyChanged(nameof(Skills));
         }
 
         public bool RemoveFromSpellQueue(SpellQueueItem spell)
@@ -189,6 +197,36 @@ namespace SleepHunter.Macro
             ArgumentNullException.ThrowIfNull(flower);
 
             return flowers.Remove(flower);
+        }
+
+        public bool UpdateSpell(
+            SpellQueueItem spell,
+            SpellQueueItem replacement)
+        {
+            ArgumentNullException.ThrowIfNull(spell);
+            ArgumentNullException.ThrowIfNull(replacement);
+
+            if (!spells.Contains(spell))
+                return false;
+
+            replacement.CopyTo(spell);
+            OnPropertyChanged(nameof(QueuedSpells));
+            return true;
+        }
+
+        public bool UpdateFlower(
+            FlowerQueueItem flower,
+            FlowerQueueItem replacement)
+        {
+            ArgumentNullException.ThrowIfNull(flower);
+            ArgumentNullException.ThrowIfNull(replacement);
+
+            if (!flowers.Contains(flower))
+                return false;
+
+            replacement.CopyTo(flower);
+            OnPropertyChanged(nameof(FlowerTargets));
+            return true;
         }
 
         public bool MoveSpell(

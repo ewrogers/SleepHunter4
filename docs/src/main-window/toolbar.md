@@ -35,7 +35,9 @@ Legacy `.sh4` XML is import-only and is never written by the new save path.
 
 This state-aware button starts macroing the selected character and changes to
 `Pause Macro` while automation is running. After pausing, the same control
-changes to `Resume Macro`. Pausing retains the current macro state.
+changes to `Resume Macro`. It shows the pause icon only while automation is
+running and uses the play icon for starting or resuming. Pausing retains the
+current macro state.
 
 ## Stop Macro
 

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -18,10 +18,6 @@ namespace SleepHunter.Settings
         private ColorThemeManager() { }
 
         private readonly ConcurrentDictionary<string, ColorTheme> colorThemes = new(StringComparer.OrdinalIgnoreCase);
-
-        public event ColorThemeEventHandler ThemeAdded;
-        public event ColorThemeEventHandler ThemeChanged;
-        public event ColorThemeEventHandler ThemeRemoved;
 
         public ColorTheme this[string key]
         {
@@ -43,13 +39,7 @@ namespace SleepHunter.Settings
             if (string.IsNullOrWhiteSpace(theme.Name))
                 throw new ArgumentException("Key cannot be null or whitespace.", nameof(theme.Name));
 
-            var alreadyExists = colorThemes.ContainsKey(theme.Name);
             colorThemes[theme.Name] = theme;
-
-            if (alreadyExists)
-                OnThemeChanged(theme);
-            else
-                OnThemeAdded(theme);
         }
 
         public ColorTheme GetTheme(string key)
@@ -66,30 +56,6 @@ namespace SleepHunter.Settings
                 throw new ArgumentNullException(nameof(key));
 
             return colorThemes.ContainsKey(key);
-        }
-
-        public bool RemoveTheme(string key)
-        {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
-            if (!colorThemes.ContainsKey(key))
-                return false;
-
-            bool wasRemoved = colorThemes.TryRemove(key, out var removedTheme);
-
-            if (wasRemoved)
-                OnThemeRemoved(removedTheme);
-
-            return wasRemoved;
-        }
-
-        public void ClearThemes()
-        {
-            foreach (var theme in colorThemes.Values)
-                OnThemeRemoved(theme);
-
-            colorThemes.Clear();
         }
 
         public void LoadFromFile(string filename)
@@ -146,28 +112,5 @@ namespace SleepHunter.Settings
             Application.Current.Resources["ObsidianForeground"] = DefaultTheme.Foreground;
         }
 
-        private void OnThemeAdded(ColorTheme theme)
-        {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
-
-            ThemeAdded?.Invoke(this, new ColorThemeEventArgs(theme));
-        }
-
-        private void OnThemeChanged(ColorTheme theme)
-        {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
-
-            ThemeChanged?.Invoke(this, new ColorThemeEventArgs(theme));
-        }
-
-        private void OnThemeRemoved(ColorTheme theme)
-        {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
-
-            ThemeRemoved?.Invoke(this, new ColorThemeEventArgs(theme));
-        }
     }
 }

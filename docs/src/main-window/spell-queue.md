@@ -21,6 +21,8 @@ Once the spell reaches the maximum level desired, it will be ignored while in th
 
 Double-clicking a spell will bring up the `Spell Target` dialog for modifying the cast target.
 You can re-arrange the order of the targets by dragging and dropping them.
+Spells can be added, edited, reordered, or removed while the macro is running.
+Each completed change is applied to the runtime without stopping or pausing it.
 
 ## Removing Spell Targets
 

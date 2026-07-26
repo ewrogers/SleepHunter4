@@ -146,6 +146,69 @@ public sealed class PlayerMacroConfigurationTests
     }
 
     [Test]
+    public void ShouldPublishEditedQueueEntriesAsConfigurationChanges()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+        var spell = new SpellQueueItem { Name = "first" };
+        var flower = Flower();
+        configuration.AddToSpellQueue(spell);
+        configuration.AddToFlowerQueue(flower);
+        var changedProperties = new List<string>();
+        configuration.PropertyChanged +=
+            (_, args) =>
+            {
+                if (args.PropertyName is { } propertyName)
+                    changedProperties.Add(propertyName);
+            };
+
+        var spellUpdated = configuration.UpdateSpell(
+            spell,
+            new SpellQueueItem
+            {
+                Id = spell.Id,
+                Name = "updated",
+                TargetLevel = 75
+            });
+        var flowerUpdated = configuration.UpdateFlower(
+            flower,
+            new FlowerQueueItem
+            {
+                Id = flower.Id,
+                Target = new SpellTarget
+                {
+                    Mode = SpellTargetMode.Character,
+                    CharacterName = "Target"
+                },
+                Interval = TimeSpan.FromSeconds(5)
+            });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(spellUpdated, Is.True);
+            Assert.That(spell.Name, Is.EqualTo("updated"));
+            Assert.That(spell.TargetLevel, Is.EqualTo(75));
+            Assert.That(flowerUpdated, Is.True);
+            Assert.That(
+                flower.Target.CharacterName,
+                Is.EqualTo("Target"));
+            Assert.That(
+                flower.Interval,
+                Is.EqualTo(TimeSpan.FromSeconds(5)));
+            Assert.That(
+                changedProperties,
+                Is.EqualTo(
+                    new[]
+                    {
+                        nameof(
+                            PlayerMacroConfiguration.QueuedSpells),
+                        nameof(
+                            PlayerMacroConfiguration.FlowerTargets)
+                    }));
+        });
+    }
+
+    [Test]
     public void ShouldOwnStableSkillConfigurationAndExplicitActiveState()
     {
         using var player = CreatePlayer();

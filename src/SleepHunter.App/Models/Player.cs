@@ -21,7 +21,6 @@ namespace SleepHunter.Models
         private readonly Spellbook spellbook;
         private readonly PlayerStats stats;
         private readonly CharacterProfile profile;
-        private readonly WorldEntityMap worldEntities;
         private readonly PlayerModifiers modifiers;
         private readonly MapLocation location;
 
@@ -39,8 +38,6 @@ namespace SleepHunter.Models
         private int selectedTabIndex;
         private bool hasLyliacPlant;
         private bool hasLyliacVineyard;
-        private bool hasFasSpiorad;
-        private DateTime lastFlowerTimestamp;
 
         public event EventHandler LoggedIn;
         public event EventHandler LoggedOut;
@@ -76,8 +73,6 @@ namespace SleepHunter.Models
         public PlayerStats Stats => stats;
 
         public CharacterProfile Profile => profile;
-
-        public WorldEntityMap WorldEntities => worldEntities;
 
         public PlayerModifiers Modifiers => modifiers;
 
@@ -129,20 +124,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref hasLyliacVineyard, value);
         }
 
-        public bool HasFasSpiorad
-        {
-            get => hasFasSpiorad;
-            set => SetProperty(ref hasFasSpiorad, value);
-        }
-
-        public DateTime LastFlowerTimestamp
-        {
-            get => lastFlowerTimestamp;
-            set => SetProperty(ref lastFlowerTimestamp, value, onChanged: (p) => { RaisePropertyChanged(nameof(TimeSinceFlower)); });
-        }
-
-        public TimeSpan TimeSinceFlower => DateTime.Now - lastFlowerTimestamp;
-
         public Player(ClientProcess process)
         {
             Process = process ?? throw new ArgumentNullException(nameof(process));
@@ -158,7 +139,6 @@ namespace SleepHunter.Models
             spellbook = new Spellbook(this);
             stats = new PlayerStats(this);
             profile = new CharacterProfile(this);
-            worldEntities = new WorldEntityMap(this);
             modifiers = new PlayerModifiers(this);
             location = new MapLocation(this);
         }
@@ -179,7 +159,6 @@ namespace SleepHunter.Models
                 spellbook.Dispose();
                 stats.Dispose();
                 profile.Dispose();
-                worldEntities.Dispose();
                 modifiers.Dispose();
                 location.Dispose();
 
@@ -206,7 +185,6 @@ namespace SleepHunter.Models
             profile.TryUpdate();
             modifiers.TryUpdate();
             location.TryUpdate();
-            worldEntities.TryUpdate();
             inventory.TryUpdate();
             equipment.TryUpdate();
             skillbook.TryUpdate();

@@ -6,8 +6,6 @@ using SleepHunter.Common;
 
 namespace SleepHunter.Models
 {
-    public delegate void AbilityCallback(Ability ability);
-
     public abstract class Ability : ObservableObject
     {
         private static readonly Regex AbilityWithoutLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);

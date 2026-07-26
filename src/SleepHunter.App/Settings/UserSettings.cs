@@ -575,13 +575,6 @@ namespace SleepHunter.Settings
 
         public UserSettings() { }
 
-        public static UserSettings CreateDefaults()
-        {
-            var settings = new UserSettings();
-            settings.ResetDefaults();
-            return settings;
-        }
-
         public void ResetDefaults()
         {
             Version = CurrentVersion;

@@ -56,32 +56,6 @@ namespace SleepHunter.Models
             UpdateGoldInventoryItem();
         }
 
-        public InventoryItem GetItem(string itemName)
-        {
-            CheckIfDisposed();
-
-            itemName = itemName.Trim();
-
-            foreach (var item in inventory)
-                if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-                    return item;
-
-            return null;
-        }
-
-        public int FindItemSlot(string itemName)
-        {
-            CheckIfDisposed();
-
-            itemName = itemName.Trim();
-
-            foreach (var item in inventory)
-                if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-                    return item.Slot;
-
-            return -1;
-        }
-
         protected override void OnUpdate()
         {
             var layout = Owner.Layout;
