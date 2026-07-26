@@ -29,7 +29,7 @@ public sealed class DialogScenarioTests
         TestDialogPolicy);
 
     [Test]
-    public void ShouldScheduleAndCloseDialogAfterOpeningSkill()
+    public void ShouldCancelObservedDialogAndWaitForClosedSnapshot()
     {
         var scenario = CreateRunningScenario();
 
@@ -43,12 +43,32 @@ public sealed class DialogScenarioTests
 
         scenario.AdvanceBy(TestPolicy.ActionDuration);
         scenario.Dispatch(skillDeadline.Input);
-        AdvanceTo(scenario, dialogDue.DueAt);
-        var closeRequested = scenario.Dispatch(dialogDue.Input);
+        var closeRequested = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("Sense result"));
 
         scenario.AdvanceBy(TestDialogPolicy.ActionDuration);
-        var closed = scenario.Dispatch(
+        var awaiting = scenario.Dispatch(
             closeRequested.ScheduledEvents.Single().Input);
+        var stale = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.TemuairSkills,
+            captureStartedAt:
+                closeRequested.State.PendingAction!.IssuedAt,
+            captureCompletedAt:
+                closeRequested.State.PendingAction.IssuedAt,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: MessageDialogsSnapshot.Empty);
+        var closed = scenario.Observe(
+            sequence: 4,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: MessageDialogsSnapshot.Empty);
 
         Assert.Multiple(() =>
         {
@@ -65,9 +85,20 @@ public sealed class DialogScenarioTests
                 closeRequested.State.Dialog?.Status,
                 Is.EqualTo(DialogStatus.Closing));
             Assert.That(
+                closeRequested.State.Dialog?.LastCancelSnapshotSequence,
+                Is.EqualTo(new SnapshotSequence(2)));
+            Assert.That(
+                awaiting.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.AwaitingObservation));
+            Assert.That(stale.Intent, Is.Null);
+            Assert.That(
+                stale.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.AwaitingObservation));
+            Assert.That(
                 closed.State.Dialog?.Status,
                 Is.EqualTo(DialogStatus.Closed));
             Assert.That(closed.State.PendingAction, Is.Null);
+            Assert.That(scenario.CurrentTime, Is.LessThan(dialogDue.DueAt));
         });
     }
 
@@ -88,10 +119,12 @@ public sealed class DialogScenarioTests
             skillRequested.ScheduledEvents.Single(
                 scheduledEvent =>
                     scheduledEvent.Input is ClientActionDeadlineElapsed).Input);
-        var dialogDue = skillRequested.ScheduledEvents.Single(
-            scheduledEvent => scheduledEvent.Input is DialogCloseDue);
-        AdvanceTo(scenario, dialogDue.DueAt);
-        var closeRequested = scenario.Dispatch(dialogDue.Input);
+        var closeRequested = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("Peek result"));
 
         var failed = scenario.Dispatch(
             new ClientActionIssueObserved(
@@ -166,6 +199,12 @@ public sealed class DialogScenarioTests
                 new PanelTransitionPolicy(
                     TimeSpan.FromMilliseconds(50),
                     maximumAttempts: 1)));
+        scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("Sense result"));
 
         AdvanceTo(scenario, dialogDue.DueAt);
         var deferred = scenario.Dispatch(dialogDue.Input);
@@ -211,12 +250,14 @@ public sealed class DialogScenarioTests
         var skillDeadline = opening.ScheduledEvents.Single(
             scheduledEvent =>
                 scheduledEvent.Input is ClientActionDeadlineElapsed);
-        var dialogDue = opening.ScheduledEvents.Single(
-            scheduledEvent => scheduledEvent.Input is DialogCloseDue);
         closingScenario.AdvanceBy(TestPolicy.ActionDuration);
         closingScenario.Dispatch(skillDeadline.Input);
-        AdvanceTo(closingScenario, dialogDue.DueAt);
-        closingScenario.Dispatch(dialogDue.Input);
+        closingScenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("Sense result"));
         var stopped = closingScenario.Stop();
 
         var logoutScenario = CreateRunningScenario();
@@ -242,6 +283,90 @@ public sealed class DialogScenarioTests
             Assert.That(
                 loggedOut.State.StopReason,
                 Is.EqualTo(MacroStopReason.ClientLoggedOut));
+        });
+    }
+
+    [Test]
+    public void ShouldNotSendEscapeWhenPopupNeverAppears()
+    {
+        var scenario = CreateRunningScenario();
+        var skillRequested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+        var skillDeadline = skillRequested.ScheduledEvents.Single(
+            scheduledEvent =>
+                scheduledEvent.Input is ClientActionDeadlineElapsed);
+        var dialogDue = skillRequested.ScheduledEvents.Single(
+            scheduledEvent => scheduledEvent.Input is DialogCloseDue);
+
+        scenario.AdvanceBy(TestPolicy.ActionDuration);
+        scenario.Dispatch(skillDeadline.Input);
+        AdvanceTo(scenario, dialogDue.DueAt);
+        var decision = scenario.Dispatch(dialogDue.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(decision.Intent, Is.Null);
+            Assert.That(decision.State.PendingAction, Is.Null);
+            Assert.That(
+                decision.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.Closed));
+        });
+    }
+
+    [Test]
+    public void ShouldCancelStackedDialogsOnePerFreshObservation()
+    {
+        var scenario = CreateRunningScenario();
+        var skillRequested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+        var skillDeadline = skillRequested.ScheduledEvents.Single(
+            scheduledEvent =>
+                scheduledEvent.Input is ClientActionDeadlineElapsed);
+        scenario.AdvanceBy(TestPolicy.ActionDuration);
+        scenario.Dispatch(skillDeadline.Input);
+
+        var firstClose = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("First", "Second"));
+        scenario.AdvanceBy(TestDialogPolicy.ActionDuration);
+        var firstAwaiting = scenario.Dispatch(
+            firstClose.ScheduledEvents.Single().Input);
+        var secondClose = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: Dialogs("First"));
+        scenario.AdvanceBy(TestDialogPolicy.ActionDuration);
+        var secondAwaiting = scenario.Dispatch(
+            secondClose.ScheduledEvents.Single().Input);
+        var closed = scenario.Observe(
+            sequence: 4,
+            activePanel: ClientPanel.TemuairSkills,
+            vitals: Vitals(),
+            skillbook: Skillbook(),
+            messageDialogs: MessageDialogsSnapshot.Empty);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CancelDialogIntent)firstClose.Intent!).ActionId.Value,
+                Is.EqualTo(2));
+            Assert.That(
+                firstAwaiting.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.AwaitingObservation));
+            Assert.That(
+                ((CancelDialogIntent)secondClose.Intent!).ActionId.Value,
+                Is.EqualTo(3));
+            Assert.That(
+                secondAwaiting.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.AwaitingObservation));
+            Assert.That(
+                closed.State.Dialog?.Status,
+                Is.EqualTo(DialogStatus.Closed));
         });
     }
 
@@ -274,8 +399,11 @@ public sealed class DialogScenarioTests
         timeProvider.Advance(TestPolicy.ActionDuration);
         await session.Views.ReadUntilAsync(
             view => view.SkillUse?.Status == SkillUseStatus.Succeeded);
-        timeProvider.Advance(
-            TestDialogPolicy.CloseDelay - TestPolicy.ActionDuration);
+        session.PublishSnapshot(
+            Snapshot(
+                sequence: 2,
+                new MacroTimestamp(TestPolicy.ActionDuration),
+                Dialogs("Sense result")));
         var closeIntent = await session.Intents.ReadUntilAsync(
             intent => intent is CancelDialogIntent);
         await session.ReportActionIssueAsync(
@@ -283,6 +411,15 @@ public sealed class DialogScenarioTests
                 ((CancelDialogIntent)closeIntent).ActionId,
                 ClientActionIssueStatus.Issued));
         timeProvider.Advance(TestDialogPolicy.ActionDuration);
+        await session.Views.ReadUntilAsync(
+            view => view.Dialog?.Status == DialogStatus.AwaitingObservation);
+        session.PublishSnapshot(
+            Snapshot(
+                sequence: 3,
+                new MacroTimestamp(
+                    TestPolicy.ActionDuration +
+                    TestDialogPolicy.ActionDuration),
+                MessageDialogsSnapshot.Empty));
         var closed = await session.Views.ReadUntilAsync(
             view => view.Dialog?.Status == DialogStatus.Closed);
 
@@ -336,7 +473,8 @@ public sealed class DialogScenarioTests
 
     private static ClientSnapshot Snapshot(
         long sequence,
-        MacroTimestamp capturedAt) =>
+        MacroTimestamp capturedAt,
+        MessageDialogsSnapshot? messageDialogs = null) =>
         new(
             new SnapshotSequence(sequence),
             capturedAt,
@@ -350,7 +488,17 @@ public sealed class DialogScenarioTests
             equipment: null,
             Vitals(),
             spellbook: null,
-            Skillbook());
+            Skillbook(),
+            messageDialogs: messageDialogs);
+
+    private static MessageDialogsSnapshot Dialogs(params string[] texts) =>
+        new(
+            texts.Select(
+                (text, index) =>
+                    new MessageDialogSnapshot(
+                        treeDepth: (uint)index,
+                        registrationIdentity: checked((uint)(index + 1)),
+                        text)));
 
     private static void AdvanceTo(
         MacroScenario scenario,

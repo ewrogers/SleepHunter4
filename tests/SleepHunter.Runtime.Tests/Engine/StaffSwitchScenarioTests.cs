@@ -629,7 +629,7 @@ public sealed class StaffSwitchScenarioTests
     }
 
     [Test]
-    public void ShouldUnequipWithoutInventoryPanelAndConfirmFromSnapshot()
+    public void ShouldRetainEquippedStaffWithoutAnObservedImprovement()
     {
         var staff = Candidate(
             "staff",
@@ -646,24 +646,17 @@ public sealed class StaffSwitchScenarioTests
                 baseCastLines: 4,
                 [staff],
                 TestPolicy));
-        scenario.AdvanceBy(TimeSpan.FromTicks(1));
-        var confirmed = scenario.Observe(
-            sequence: 2,
-            activePanel: ClientPanel.Stats,
-            character: Character(CharacterClass.Wizard),
-            inventory: InventorySnapshot.Empty,
-            equipment: new EquipmentSnapshot(weaponName: null));
-
         Assert.Multiple(() =>
         {
-            Assert.That(request.Intent, Is.TypeOf<EquipWeaponIntent>());
+            Assert.That(request.Intent, Is.Null);
+            Assert.That(request.ScheduledEvents, Is.Empty);
+            Assert.That(request.State.PendingAction, Is.Null);
             Assert.That(
-                ((EquipWeaponIntent)request.Intent!).IsUnequip,
-                Is.True);
-            Assert.That(confirmed.State.PendingAction, Is.Null);
+                request.State.StaffSwitch?.Status,
+                Is.EqualTo(StaffSwitchStatus.NoChange));
             Assert.That(
-                confirmed.State.StaffSwitch?.Status,
-                Is.EqualTo(StaffSwitchStatus.Succeeded));
+                request.State.StaffSwitch?.Selection?.Reason,
+                Is.EqualTo(StaffSelectionReason.BaseCastIsOptimal));
         });
     }
 

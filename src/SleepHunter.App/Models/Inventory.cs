@@ -56,32 +56,6 @@ namespace SleepHunter.Models
             UpdateGoldInventoryItem();
         }
 
-        public InventoryItem GetItem(string itemName)
-        {
-            CheckIfDisposed();
-
-            itemName = itemName.Trim();
-
-            foreach (var item in inventory)
-                if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-                    return item;
-
-            return null;
-        }
-
-        public int FindItemSlot(string itemName)
-        {
-            CheckIfDisposed();
-
-            itemName = itemName.Trim();
-
-            foreach (var item in inventory)
-                if (string.Equals(item.Name, itemName, StringComparison.OrdinalIgnoreCase))
-                    return item.Slot;
-
-            return -1;
-        }
-
         protected override void OnUpdate()
         {
             var layout = Owner.Layout;
@@ -273,8 +247,8 @@ namespace SleepHunter.Models
                 ReadNullTerminatedAscii(snapshot.Slice(0x02, 0x80)),
                 snapshot[0x82],
                 snapshot[0x84],
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xAC, 4)),
+                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xB0, 4)),
                 snapshot[0xB4] != 0);
         }
@@ -285,8 +259,8 @@ namespace SleepHunter.Models
             string DisplayName,
             byte DyeColor,
             byte Slot,
-            uint MaximumDurability,
             uint Durability,
+            uint MaximumDurability,
             uint Quantity,
             bool CanStack);
 

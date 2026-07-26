@@ -14,6 +14,12 @@
     <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#eff6ff"/>
     <SolidColorBrush x:Key="ObsidianActive" Color="#eff6ff"/>
 
+    <!-- Blue 400 -->
+    <SolidColorBrush x:Key="ObsidianDurability" Color="#60A5FA"/>
+
+    <!-- Red 400 -->
+    <SolidColorBrush x:Key="ObsidianError" Color="#F87171"/>
+
     <!-- Neutral 200 -->
     <SolidColorBrush x:Key="ObsidianMouseOver" Color="#E5E5E5"/>
 
@@ -28,6 +34,16 @@
 
     <!-- Neutral 900 -->
     <SolidColorBrush x:Key="ObsidianControlBackground" Color="#171717"/>
+
+    <SolidColorBrush x:Key="ObsidianAccentInsetBorderBrush" Color="#20FFFFFF"/>
+    <SolidColorBrush x:Key="ObsidianAccentForeground" Color="#FFFFFFFF"/>
+
+    <Style x:Key="ObsidianAccentInsetBorder" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource ObsidianAccentInsetBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Margin" Value="1"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+    </Style>
 
     <VisualBrush x:Key="ScanlineBrush"
                  TileMode="Tile"
@@ -54,9 +70,15 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource ObsidianDisabled}"/>
+            </Trigger>
             <DataTrigger Binding="{Binding IsKeyboardFocusWithin}" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
             </DataTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+            </Trigger>
         </Style.Triggers>
     </Style>
     
@@ -191,15 +213,6 @@
         <Setter Property="KeyboardNavigation.IsTabStop" Value="True"/>
     </Style>
 
-    <!-- Command Label Style -->
-    <Style x:Key="ObsidianCommandLabel" TargetType="Label">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource ObsidianInactive}"/>
-        <Setter Property="Margin" Value="4"/>
-        <Setter Property="Focusable" Value="False"/>
-        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-    </Style>
-
     <!-- Scroll Viewer Style -->
     <Style x:Key="ObsidianScrollViewer" TargetType="ScrollViewer">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -223,7 +236,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ScrollContentPresenter/>
+                            <ScrollContentPresenter Name="PART_ScrollContentPresenter"
+                                                    CanContentScroll="{TemplateBinding CanContentScroll}"/>
 
                             <ScrollBar Name="PART_VerticalScrollBar"
                                        Grid.Column="1"
@@ -288,6 +302,7 @@
                                 </ScrollViewer>
 
                                 <ScrollContentPresenter Name="PART_ScrollContentPresenter"
+                                                        CanContentScroll="{TemplateBinding CanContentScroll}"
                                                         KeyboardNavigation.DirectionalNavigation="Local"/>
                             </DockPanel>
 
@@ -329,16 +344,20 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
-                        <ContentPresenter Name="ContentSite" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="2"
-                                          Opacity="0.4"/>
-                    </Border>
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter Name="ContentSite"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="2"
+                                              Opacity="0.4"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ContentSite" Property="Opacity" Value="0.7"/>
@@ -350,6 +369,7 @@
                             <Setter Property="Background" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter Property="BorderBrush" Value="{StaticResource ObsidianInactive}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -388,7 +408,7 @@
 
                             <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                                           Name="PART_ContentHost"
-                                          VerticalAlignment="Center"/>
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
                             <Button Name="ClearButton" 
                                     Grid.Column="1"
@@ -481,19 +501,26 @@
                 <ControlTemplate TargetType="CheckBox">
                     <BulletDecorator Background="Transparent">
                         <BulletDecorator.Bullet>
-                            <Border Name="Border" 
-                                    Background="{DynamicResource ObsidianBackground}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Width="24" Height="24">
-                                <Path Name="CheckMark"
-                                      Stroke="{DynamicResource ObsidianForeground}"
-                                      StrokeThickness="3"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      Margin="-1,0,0,0"
-                                      Data="M 2,5 l 4,4 l 8,-10"/>
-                            </Border>
+                            <Grid Width="24" Height="24">
+                                <Border Name="Border"
+                                        Background="{DynamicResource ObsidianBackground}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Path Name="CheckMark"
+                                          Stroke="{DynamicResource ObsidianForeground}"
+                                          StrokeThickness="3"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="-1,0,0,0"
+                                          Data="M 2,5 l 4,4 l 8,-10">
+                                        <Path.RenderTransform>
+                                            <TranslateTransform Y="1"/>
+                                        </Path.RenderTransform>
+                                    </Path>
+                                </Border>
+                                <Border Name="AccentInsetBorder"
+                                        Style="{StaticResource ObsidianAccentInsetBorder}"/>
+                            </Grid>
                         </BulletDecorator.Bullet>
                         <ContentPresenter Name="ContentSite" 
                                           Margin="8,0,0,0" 
@@ -503,6 +530,17 @@
                                           Opacity="0.7"/>
                     </BulletDecorator>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="Border" Property="Background" Value="Transparent"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="ContentSite" Property="Opacity" Value="1.0"/>
+                        </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
                         </Trigger>
@@ -510,15 +548,8 @@
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter TargetName="CheckMark" Property="Stroke" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter TargetName="Border" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="False">
-                            <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="Border" Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
-                            <Setter Property="BorderThickness" Value="1"/>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ContentSite" Property="Opacity" Value="1.0"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -534,7 +565,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ObsidianBackground}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="MinHeight" Value="8"/>
+        <Setter Property="MinHeight" Value="10"/>
         <Setter Property="Margin" Value="4,6"/>
         <Setter Property="Padding" Value="1"/>
         <Setter Property="Template">
@@ -546,11 +577,15 @@
                             BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid>
                             <Border Name="PART_Indicator"
-                                Background="{TemplateBinding Foreground}"
-                                BorderBrush="Transparent"
-                                BorderThickness="{TemplateBinding Padding}"
-                                HorizontalAlignment="Left"
-                                Panel.ZIndex="1"/>
+                                    Background="{TemplateBinding Foreground}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Left"
+                                    Panel.ZIndex="1">
+                                <Border Name="IndicatorInsetBorder"
+                                        Style="{StaticResource ObsidianAccentInsetBorder}"
+                                        Margin="0"/>
+                            </Border>
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -578,17 +613,25 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ContentPresenter Name="ContentSite" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True"
-                                          Margin="{TemplateBinding Padding}"
-                                          Opacity="0.5"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter Name="ContentSite"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="{TemplateBinding Padding}"
+                                              Opacity="0.5">
+                                <ContentPresenter.RenderTransform>
+                                    <TranslateTransform Y="0"/>
+                                </ContentPresenter.RenderTransform>
+                            </ContentPresenter>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
@@ -596,6 +639,26 @@
                             <Setter TargetName="ContentSite" Property="Opacity" Value="0.75"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ContentSite"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="1"
+                                                         Duration="0:0:0.05"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ContentSite"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="0"
+                                                         Duration="0:0:0.05"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
@@ -606,6 +669,7 @@
                             <Setter Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -631,16 +695,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="1">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True"
-                                          Margin="{TemplateBinding Padding}"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="1">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
@@ -653,11 +722,13 @@
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.6"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -684,15 +755,20 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True"
-                                          Margin="{TemplateBinding Padding}"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
@@ -700,10 +776,12 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.6"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -736,61 +814,6 @@
                                           RecognizesAccessKey="True"
                                           Margin="{TemplateBinding Padding}"/>
                     </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Radio Button Style -->
-    <Style x:Key="ObsidianRadioButton" TargetType="RadioButton">
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Background" Value="{DynamicResource ObsidianControlBackground}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ObsidianInactive}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
-        <Setter Property="FontSize" Value="18"/>
-        <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="4,2"/>
-        <Setter Property="Padding" Value="8,4"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="RadioButton">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="0"
-                            Margin="{TemplateBinding Margin}">
-                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          RecognizesAccessKey="True"
-                                          Margin="{TemplateBinding Padding}"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianDisabled}"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ObsidianForeground}"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.6"/>
-                            <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -843,15 +866,45 @@
                                   HorizontalAlignment="Right"
                                   VerticalAlignment="Center"
                                   Data="M 0,0 l 6,10 l 6,-10 Z"
-                                  Opacity="0.6"/>
+                                  Opacity="0.6">
+                                <Path.RenderTransform>
+                                    <TranslateTransform Y="0"/>
+                                </Path.RenderTransform>
+                            </Path>
                         </Border>
+                        <Border Name="AccentInsetBorder"
+                                Grid.Column="1"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Arrow" Property="Opacity" Value="1.0"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="1"
+                                                         Duration="0:0:0.05"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="0"
+                                                         Duration="0:0:0.05"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                             <Setter TargetName="Arrow" Property="Opacity" Value="1.0"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -965,11 +1018,15 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianDisabled}"/>
+                        </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ObsidianSeparatorColor}"/>
                             <Setter TargetName="PART_EditableTextBox" Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
                             <Setter TargetName="ToggleButton" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
                         </Trigger>
@@ -993,18 +1050,25 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter Name="ContentSite"
-                                          ContentSource="Header"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True"
-                                          Margin="12,2"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter Name="ContentSite"
+                                              ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="12,2"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                BorderThickness="1,1,1,0"
+                                Margin="1,1,1,0"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
@@ -1012,6 +1076,7 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -1024,6 +1089,7 @@
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1047,18 +1113,25 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter Name="ContentSite"
-                                          ContentSource="Header"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True"
-                                          Margin="12,2"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter Name="ContentSite"
+                                              ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="12,2"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                BorderThickness="1,1,0,1"
+                                Margin="1,1,0,1"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
@@ -1066,6 +1139,7 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -1078,6 +1152,7 @@
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1269,16 +1344,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Stretch"
-                                          TextBlock.TextAlignment="Center"
-                                          RecognizesAccessKey="True"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              TextBlock.TextAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
@@ -1286,9 +1366,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1308,16 +1390,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Name="Border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          TextBlock.TextAlignment="Center"
-                                          RecognizesAccessKey="True"/>
-                    </Border>
+                    <Grid>
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.TextAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"
+                                Visibility="Collapsed"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianMouseOver}"/>
@@ -1325,9 +1412,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ObsidianActive}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource ObsidianDisabled}"/>
+                            <Setter TargetName="AccentInsetBorder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1557,7 +1646,16 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
+        <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBox">
@@ -1570,7 +1668,7 @@
                                       Style="{StaticResource ObsidianScrollViewer}"
                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                            <StackPanel IsItemsHost="True"/>
+                            <ItemsPresenter/>
                         </ScrollViewer>
                     </Border>
                 </ControlTemplate>
@@ -1640,14 +1738,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border Background="Transparent">
-                        <Rectangle HorizontalAlignment="Center"
-                                   Width="1"
-                                   Stroke="{TemplateBinding Background}"
-                                   StrokeDashArray="1,3"
-                                   StrokeDashOffset="3"
-                                   Opacity="0.25"/>
-                    </Border>
+                    <Border Name="ResizeHitTarget"
+                            Background="Transparent"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -1677,9 +1769,11 @@
                                               Margin="0,2,0,0"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              RecognizesAccessKey="True"
-                                              SnapsToDevicePixels="True"/>
+                                               RecognizesAccessKey="True"
+                                               SnapsToDevicePixels="True"/>
                         </Border>
+                        <Border Name="AccentInsetBorder"
+                                Style="{StaticResource ObsidianAccentInsetBorder}"/>
                         <Thumb Name="PART_HeaderGripper"
                                HorizontalAlignment="Right"
                                Margin="0,0,-9,0"
@@ -1702,6 +1796,13 @@
         <Setter Property="ItemContainerStyle" Value="{StaticResource ObsidianListViewItem}"/>
         <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListView">
@@ -1753,27 +1854,6 @@
         </Setter>
     </Style>
 
-    <!-- Window Resize Grip Style -->
-    <Style x:Key="ObsidianResizeGrip" TargetType="ResizeGrip">
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="OverridesDefaultStyle" Value="True"/>
-        <Setter Property="Foreground" Value="{DynamicResource ObsidianBackground}"/>
-        <Setter Property="HorizontalAlignment" Value="Right"/>
-        <Setter Property="VerticalAlignment" Value="Bottom"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ResizeGrip">
-                    <Border>
-                        <Path Width="16" 
-                              Height="16" 
-                              Fill="{TemplateBinding Foreground}"
-                              Data="M 0,16 l 16,-16 v 16 z"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <!-- Window Title Thumb Style -->
     <Style x:Key="ObsidianWindowThumb" TargetType="Thumb">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1810,94 +1890,151 @@
         <Setter Property="FontFamily" Value="{StaticResource ObsidianFontFamily}"/>
         <Setter Property="FontSize" Value="{StaticResource ObsidianFontSize}"/>
         <Setter Property="FontWeight" Value="{StaticResource ObsidianFontWeight}"/>
-        <Setter Property="ResizeMode" Value="CanResizeWithGrip"/>
+        <Setter Property="ResizeMode" Value="CanResize"/>
         <Setter Property="WindowStyle" Value="None"/>
         <Setter Property="AllowsTransparency" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Window">
-                    <Border Name="WindowBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Margin="8">
-                        <Border.Effect>
-                            <DropShadowEffect Color="Black" Opacity="0.9" BlurRadius="16" ShadowDepth="0"/>
-                        </Border.Effect>
-                        <Grid>
+                    <Grid>
+                        <Border Name="WindowBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Margin="8">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" Opacity="0.9" BlurRadius="16" ShadowDepth="0"/>
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <Border Name="WindowTitleBorder"
+                                        Style="{StaticResource ObsidianWindowTitleBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="32"/>
+                                            <ColumnDefinition Width="32"/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Name="WindowTitleText"
+                                                   Text="{TemplateBinding Title}"
+                                                   Style="{StaticResource ObsidianWindowTitle}"/>
+
+                                        <Thumb Name="WindowTitleThumb"
+                                               Grid.ColumnSpan="4"
+                                               Style="{StaticResource ObsidianWindowThumb}"
+                                               DragDelta="WindowThumb_DragDelta"
+                                               MouseDoubleClick="WindowThumb_MouseDoubleClick"/>
+
+                                        <Button Name="MinimizeButton"
+                                                Grid.Column="1"
+                                                Style="{StaticResource ObsidianControlBox}"
+                                                Click="WindowMinimize_Click">
+                                            <Path Stroke="{Binding ElementName=MinimizeButton, Path=Foreground}"
+                                                  StrokeThickness="2"
+                                                  Data="M 0,9 h 10"/>
+                                        </Button>
+
+                                        <Button Name="MaximizeButton"
+                                                Grid.Column="2"
+                                                Style="{StaticResource ObsidianControlBox}"
+                                                Click="WindowMaximize_Click">
+                                            <Path Stroke="{Binding ElementName=MaximizeButton, Path=Foreground}"
+                                                  StrokeThickness="2"
+                                                  Data="M 0,0 h 10 v 10 h -10 v -10 z m 0,2 h 10"/>
+                                        </Button>
+
+                                        <Button Name="CloseButton"
+                                                Grid.Column="3"
+                                                Style="{StaticResource ObsidianControlBox}"
+                                                Click="WindowClose_Click">
+                                            <Path Stroke="{Binding ElementName=CloseButton, Path=Foreground}"
+                                                  StrokeThickness="2"
+                                                  Data="M 0,10 l 10,-10 m -10,0 l 10,10"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <ContentPresenter Name="ContentSite"
+                                                  Grid.Row="1"
+                                                  Margin="{TemplateBinding Padding}"
+                                                  Panel.ZIndex="1"/>
+                            </Grid>
+                        </Border>
+
+                        <Grid Name="WindowResizeHandles"
+                              Visibility="Collapsed"
+                              Panel.ZIndex="2">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="8"/>
                             </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                            </Grid.ColumnDefinitions>
 
-                            <Border Name="WindowTitleBorder"
-                                    Style="{StaticResource ObsidianWindowTitleBorder}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="32"/>
-                                        <ColumnDefinition Width="32"/>
-                                        <ColumnDefinition Width="32"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Name="WindowTitleText"
-                                           Text="{TemplateBinding Title}"
-                                           Style="{StaticResource ObsidianWindowTitle}"/>
-
-                                    <Thumb Name="WindowTitleThumb"
-                                           Grid.ColumnSpan="4"
-                                           Style="{StaticResource ObsidianWindowThumb}"
-                                           DragDelta="WindowThumb_DragDelta"
-                                           MouseDoubleClick="WindowThumb_MouseDoubleClick"/>
-
-                                    <Button Name="MinimizeButton"
-                                            Grid.Column="1"
-                                            Style="{StaticResource ObsidianControlBox}"
-                                            Click="WindowMinimize_Click">
-                                        <Path Stroke="{Binding ElementName=MinimizeButton, Path=Foreground}"
-                                              StrokeThickness="2"
-                                              Data="M 0,9 h 10"/>
-                                    </Button>
-
-                                    <Button Name="MaximizeButton"
-                                            Grid.Column="2"
-                                            Style="{StaticResource ObsidianControlBox}"
-                                            Click="WindowMaximize_Click">
-                                        <Path Stroke="{Binding ElementName=MaximizeButton, Path=Foreground}"
-                                              StrokeThickness="2"
-                                              Data="M 0,0 h 10 v 10 h -10 v -10 z m 0,2 h 10"/>
-                                    </Button>
-
-                                    <Button Name="CloseButton"
-                                            Grid.Column="3"
-                                            Style="{StaticResource ObsidianControlBox}"
-                                            Click="WindowClose_Click">
-                                        <Path Stroke="{Binding ElementName=CloseButton, Path=Foreground}"
-                                              StrokeThickness="2"
-                                              Data="M 0,10 l 10,-10 m -10,0 l 10,10"/>
-                                    </Button>
-                                </Grid>
-                            </Border>
-
-                            <ContentPresenter Name="ContentSite"
-                                              Grid.Row="1"
-                                              Margin="{TemplateBinding Padding}"
-                                              Panel.ZIndex="1"/>
-
-                            <ResizeGrip Name="WindowResizeGrip"
-                                        Grid.Row="1"
-                                        Style="{StaticResource ObsidianResizeGrip}"
-                                        Visibility="Collapsed"
-                                        Panel.ZIndex="0"/>
+                            <Border Name="TopLeftResizeHandle"
+                                    Background="Transparent"
+                                    Cursor="SizeNWSE"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="TopResizeHandle"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    Cursor="SizeNS"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="TopRightResizeHandle"
+                                    Grid.Column="2"
+                                    Background="Transparent"
+                                    Cursor="SizeNESW"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="LeftResizeHandle"
+                                    Grid.Row="1"
+                                    Background="Transparent"
+                                    Cursor="SizeWE"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="RightResizeHandle"
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    Background="Transparent"
+                                    Cursor="SizeWE"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="BottomLeftResizeHandle"
+                                    Grid.Row="2"
+                                    Background="Transparent"
+                                    Cursor="SizeNESW"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="BottomResizeHandle"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    Cursor="SizeNS"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
+                            <Border Name="BottomRightResizeHandle"
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Background="Transparent"
+                                    Cursor="SizeNWSE"
+                                    MouseLeftButtonDown="WindowResizeHandle_MouseLeftButtonDown"/>
                         </Grid>
-                    </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="ResizeMode" Value="CanResize">
+                            <Setter TargetName="WindowResizeHandles" Property="Visibility" Value="Visible"/>
+                        </Trigger>
                         <Trigger Property="ResizeMode" Value="CanResizeWithGrip">
-                            <Setter TargetName="WindowResizeGrip" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="WindowResizeHandles" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="WindowState" Value="Maximized">
                             <Setter TargetName="WindowTitleBorder" Property="Padding" Value="12,12,12,2"/>
-                            <Setter TargetName="WindowResizeGrip" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="WindowResizeHandles" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="WindowBorder" Property="Margin" Value="0"/>
                             <Setter Property="Padding" Value="6,0,6,6"/>
                             <Setter TargetName="WindowBorder" Property="Effect">

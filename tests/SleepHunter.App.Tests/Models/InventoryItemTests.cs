@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 
 using SleepHunter.Media;
@@ -81,8 +81,8 @@ namespace SleepHunter.Tests.Models
                 Assert.That(record.DisplayName, Is.EqualTo("Viper's Gland [ 12 ]"));
                 Assert.That(record.DyeColor, Is.EqualTo(6));
                 Assert.That(record.Slot, Is.EqualTo(7));
-                Assert.That(record.MaximumDurability, Is.EqualTo(15000));
                 Assert.That(record.Durability, Is.EqualTo(12345));
+                Assert.That(record.MaximumDurability, Is.EqualTo(15000));
                 Assert.That(record.Quantity, Is.EqualTo(1234567));
                 Assert.That(record.CanStack, Is.True);
             });

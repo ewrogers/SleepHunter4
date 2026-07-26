@@ -25,18 +25,21 @@
             </Grid.ColumnDefinitions>
             
             <!-- Decorator Text -->
-            <Border Grid.RowSpan="2"
-                    Background="{Binding ElementName=incrementButton, Path=Background, Mode=OneWay}"
-                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Converter={StaticResource VisibilityConverter}}">
-                <TextBlock Style="{StaticResource ObsidianText}"
-                           Foreground="{Binding ElementName=incrementButton, Path=Foreground}"
-                           MinWidth="20"
-                           FontSize="16"
-                           FontWeight="Normal"
-                           Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText}"
-                           TextAlignment="Center"
-                           Margin="8,2"/>
-            </Border>
+            <Grid Grid.RowSpan="2"
+                  Visibility="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText, Converter={StaticResource VisibilityConverter}}">
+                <Border Background="{Binding ElementName=incrementButton, Path=Background, Mode=OneWay}">
+                    <TextBlock Style="{StaticResource ObsidianText}"
+                               Foreground="{Binding ElementName=incrementButton, Path=Foreground}"
+                               MinWidth="20"
+                               FontSize="16"
+                               FontWeight="Normal"
+                               Text="{Binding RelativeSource={RelativeSource AncestorType=ctl:NumericUpDown}, Path=DecoratorText}"
+                               TextAlignment="Center"
+                               Margin="8,2"/>
+                </Border>
+                <Border Name="DecoratorAccentInsetBorder"
+                        Style="{StaticResource ObsidianAccentInsetBorder}"/>
+            </Grid>
             
             <!-- Text Input -->
             <TextBox Name="PART_Value"

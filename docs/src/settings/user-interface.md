@@ -12,7 +12,8 @@ The default is a blue `Sapphire` color.
 ## Sort Characters By
 
 This setting determines how characters are sorted in the [Character List](../main-window/character-list.md).
-By default, characters are sorted by their `Login Time` (oldest to newest).
+By default, characters are sorted by `Launch Order`, using each game client
+process start time from oldest to newest.
 
 The `Max Health & Mana` option will sort characters by their maximum health and mana, similar to the in-game list.
 The total sort value is `Max HP + (Max MP * 2)`.

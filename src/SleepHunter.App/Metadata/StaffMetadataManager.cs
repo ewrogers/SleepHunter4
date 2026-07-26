@@ -58,16 +58,6 @@ namespace SleepHunter.Metadata
             return staves.ContainsKey(staffName);
         }
 
-        public StaffMetadata GetStaff(string staffName)
-        {
-            staffName = staffName.Trim();
-
-            if (staves.TryGetValue(staffName, out var staff))
-                return staff;
-
-            return null;
-        }
-
         public bool RemoveStaff(string staffName)
         {
             var wasRemoved = staves.TryRemove(staffName, out var staff);

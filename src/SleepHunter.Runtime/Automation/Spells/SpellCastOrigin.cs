@@ -3,5 +3,6 @@
 public enum SpellCastOrigin
 {
     SpellQueue,
-    Flower
+    Flower,
+    ManaRestoration
 }

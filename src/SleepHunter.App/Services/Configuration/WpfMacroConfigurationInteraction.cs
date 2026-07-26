@@ -17,10 +17,14 @@ namespace SleepHunter.Services.Configuration
             MacroConfigurationSerializer.LegacyFileExtension
                 .TrimStart('.');
         private static readonly string LoadFilter =
-            $"SleepHunter Macro Configurations (*.{CurrentExtension})|*.{CurrentExtension}|" +
-            $"SleepHunter v4 Macro Files (*.{LegacyExtension})|*.{LegacyExtension}";
+            $"SleepHunter 4 Macro Files (*.{CurrentExtension})|*.{CurrentExtension}|" +
+            $"SleepHunter 4 Legacy Files (*.{LegacyExtension})|*.{LegacyExtension}";
         private static readonly string SaveFilter =
-            $"SleepHunter Macro Configurations (*.{CurrentExtension})|*.{CurrentExtension}";
+            $"SleepHunter 4 Macro Files (*.{CurrentExtension})|*.{CurrentExtension}";
+
+        internal static string LoadFileFilter => LoadFilter;
+
+        internal static string SaveFileFilter => SaveFilter;
 
         private readonly Window owner;
 

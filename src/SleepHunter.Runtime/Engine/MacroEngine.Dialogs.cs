@@ -2,6 +2,7 @@
 using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Engine;
@@ -26,6 +27,18 @@ public sealed partial class MacroEngine
             currentTime < dueAt)
         {
             return Unchanged(currentState);
+        }
+
+        if (currentState.LatestSnapshot is not { IsPopupOpen: true })
+        {
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                currentState.LatestSnapshot,
+                currentState.LastTransitionAt,
+                currentState.PendingAction,
+                dialog: dialog.Closed());
         }
 
         if (currentState.PendingAction is { } pendingAction)
@@ -53,39 +66,18 @@ public sealed partial class MacroEngine
                 ]);
         }
 
-        var actionId = new ClientActionId(currentState.NextClientActionId);
-        var intent = new CancelDialogIntent(actionId);
-        var deadline = currentTime.Add(dialog.Policy.ActionDuration);
-        var closeAction = new PendingAction(
-            intent,
-            currentTime,
-            deadline,
-            attempt: 1,
-            maximumAttempts: 1,
-            currentState.LatestSnapshot?.Sequence);
-
-        return Changed(
+        return RequestDialogClose(
             currentState,
-            currentState.Lifecycle,
-            currentState.StopReason,
+            dialog,
             currentState.LatestSnapshot,
-            currentState.LastTransitionAt,
-            closeAction,
-            dialog: dialog.Closing(actionId, deadline),
-            nextClientActionId: checked(currentState.NextClientActionId + 1),
-            intent: intent,
-            scheduledEvents:
-            [
-                new ScheduledMacroEvent(
-                    new ClientActionDeadlineElapsed(actionId),
-                    deadline)
-            ]);
+            currentTime);
     }
 
     private static MacroDecision HandleDialogCloseDeadline(
         MacroState currentState,
         PendingAction pendingAction,
-        CancelDialogIntent intent)
+        CancelDialogIntent intent,
+        MacroTimestamp currentTime)
     {
         if (currentState.Dialog is not
             {
@@ -97,21 +89,130 @@ public sealed partial class MacroEngine
             return Unchanged(currentState);
         }
 
+        var awaitingObservation = dialog.AwaitingObservation(
+            pendingAction.IssuedAt ?? pendingAction.RequestedAt);
+        if (currentState.LatestSnapshot is not { } latestSnapshot ||
+            !CanSnapshotConfirmAction(pendingAction, latestSnapshot))
+        {
+            return Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                currentState.LatestSnapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                dialog: awaitingObservation);
+        }
+
+        return latestSnapshot.IsPopupOpen
+            ? RequestDialogClose(
+                currentState,
+                awaitingObservation,
+                latestSnapshot,
+                currentTime)
+            : Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                latestSnapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                dialog: awaitingObservation.Closed());
+    }
+
+    private static MacroDecision ObservePendingDialog(
+        MacroState currentState,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime)
+    {
+        if (currentState.PendingAction is not null ||
+            currentState.Dialog is not { } dialog)
+        {
+            return Unchanged(currentState);
+        }
+
+        if (dialog.Status == DialogStatus.Scheduled)
+        {
+            return snapshot.IsPopupOpen
+                ? RequestDialogClose(
+                    currentState,
+                    dialog,
+                    snapshot,
+                    currentTime)
+                : Unchanged(currentState);
+        }
+
+        if (dialog.Status != DialogStatus.AwaitingObservation ||
+            dialog.LastCancelSnapshotSequence is not { } baseline ||
+            dialog.SnapshotRequiredAfter is not { } requiredAfter ||
+            snapshot.Sequence <= baseline ||
+            snapshot.CaptureStartedAt <= requiredAfter)
+        {
+            return Unchanged(currentState);
+        }
+
+        return snapshot.IsPopupOpen
+            ? RequestDialogClose(
+                currentState,
+                dialog,
+                snapshot,
+                currentTime)
+            : Changed(
+                currentState,
+                currentState.Lifecycle,
+                currentState.StopReason,
+                snapshot,
+                currentState.LastTransitionAt,
+                pendingAction: null,
+                dialog: dialog.Closed());
+    }
+
+    private static MacroDecision RequestDialogClose(
+        MacroState currentState,
+        DialogState dialog,
+        ClientSnapshot snapshot,
+        MacroTimestamp currentTime)
+    {
+        var actionId = new ClientActionId(currentState.NextClientActionId);
+        var intent = new CancelDialogIntent(actionId);
+        var deadline = currentTime.Add(dialog.Policy.ActionDuration);
+        var closeAction = new PendingAction(
+            intent,
+            currentTime,
+            deadline,
+            attempt: 1,
+            maximumAttempts: 1,
+            snapshot.Sequence);
+
         return Changed(
             currentState,
             currentState.Lifecycle,
             currentState.StopReason,
-            currentState.LatestSnapshot,
+            snapshot,
             currentState.LastTransitionAt,
-            pendingAction: null,
-            dialog: dialog.Closed());
+            closeAction,
+            dialog: dialog.Closing(
+                actionId,
+                deadline,
+                snapshot.Sequence),
+            nextClientActionId: checked(currentState.NextClientActionId + 1),
+            intent: intent,
+            scheduledEvents:
+            [
+                new ScheduledMacroEvent(
+                    new ClientActionDeadlineElapsed(actionId),
+                    deadline)
+            ]);
     }
 
     private static DialogState? CancelPendingDialog(
         MacroState currentState) =>
         currentState.Dialog is
         {
-            Status: DialogStatus.Scheduled or DialogStatus.Closing
+            Status:
+                DialogStatus.Scheduled or
+                DialogStatus.Closing or
+                DialogStatus.AwaitingObservation
         } dialog
             ? dialog.Cancelled()
             : currentState.Dialog;

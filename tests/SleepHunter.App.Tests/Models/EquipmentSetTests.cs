@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 using SleepHunter.Converters;
 using SleepHunter.Models;

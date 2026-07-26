@@ -12,5 +12,9 @@ public enum SnapshotSection
     Equipment,
     Skillbook,
     Spellbook,
+    Group,
+    ActiveSpellEffects,
+    WorldEntities,
+    MessageDialogs,
     Coherence
 }

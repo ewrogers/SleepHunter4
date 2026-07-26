@@ -3,6 +3,7 @@
 ![image](../screenshots/spells-tab.png)
 
 Spells are arranged as a grid of icon buttons similar to the game client, displaying the current level of the spell and the cooldown status (if on cooldown).
+Each position keeps its dim one-based client slot number visible, including empty positions.
 
 ## Spell Organization
 

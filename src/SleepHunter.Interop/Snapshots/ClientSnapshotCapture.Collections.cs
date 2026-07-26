@@ -1,4 +1,5 @@
-﻿using SleepHunter.Interop.Mappings;
+﻿using System.Buffers.Binary;
+using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Runtime.Snapshots;
 
@@ -29,9 +30,15 @@ public sealed partial class ClientSnapshotCapture
 
         try
         {
-            inventory = ClientInventoryParser.Parse(
+            var compact = ClientInventoryParser.Parse(
                 bytes,
                 definition.Capacity);
+            inventory = TryReadInventoryPanes(
+                reader,
+                compact,
+                out var rich)
+                ? rich
+                : compact;
             error = null;
             failureQuality = SnapshotQuality.Unknown;
             return true;
@@ -44,6 +51,118 @@ public sealed partial class ClientSnapshotCapture
                 InventoryKey,
                 exception.Message);
             failureQuality = SnapshotQuality.Incoherent;
+            return false;
+        }
+    }
+
+    private static bool TryReadInventoryPanes(
+        MappedMemoryReader reader,
+        InventorySnapshot compact,
+        out InventorySnapshot inventory)
+    {
+        if (compact.Items.IsEmpty)
+        {
+            inventory = compact;
+            return true;
+        }
+
+        if (!reader.TryResolveAddress(
+                InventoryPanesKey,
+                out var pointerTableAddress,
+                out _))
+        {
+            inventory = compact;
+            return false;
+        }
+
+        var definition = reader.Map.Find(InventoryPanesKey)!;
+        var pointers = new byte[
+            checked(
+                definition.Capacity *
+                ClientInventoryParser.PanePointerSize)];
+        if (!reader.Session.TryRead(
+                pointerTableAddress,
+                pointers,
+                out _))
+        {
+            inventory = compact;
+            return false;
+        }
+
+        try
+        {
+            var items = new List<InventoryItemSnapshot>(
+                compact.Items.Length);
+            foreach (var compactItem in compact.Items)
+            {
+                var pointerOffset =
+                    (compactItem.Slot - 1) *
+                    ClientInventoryParser.PanePointerSize;
+                var paneAddress = new MemoryAddress(
+                    BinaryPrimitives.ReadUInt32LittleEndian(
+                        pointers.AsSpan(
+                            pointerOffset,
+                            ClientInventoryParser.PanePointerSize)));
+                if (paneAddress.IsNull ||
+                    !paneAddress.TryOffset(
+                        ClientInventoryParser.PaneSnapshotOffset,
+                        out var snapshotAddress))
+                {
+                    inventory = compact;
+                    return false;
+                }
+
+                var paneSnapshot = new byte[
+                    ClientInventoryParser.PaneSnapshotSize];
+                if (!reader.Session.TryRead(
+                        snapshotAddress,
+                        paneSnapshot,
+                        out _))
+                {
+                    inventory = compact;
+                    return false;
+                }
+
+                items.Add(
+                    ClientInventoryParser.ParsePane(
+                        paneSnapshot,
+                        compactItem.Slot,
+                        compactItem.Name,
+                        compactItem.Sprite));
+            }
+
+            if (!reader.TryResolveAddress(
+                    InventoryPanesKey,
+                    out var currentPointerTableAddress,
+                    out _) ||
+                currentPointerTableAddress != pointerTableAddress)
+            {
+                inventory = compact;
+                return false;
+            }
+
+            var currentPointers = new byte[pointers.Length];
+            if (!reader.Session.TryRead(
+                    currentPointerTableAddress,
+                    currentPointers,
+                    out _) ||
+                !currentPointers.AsSpan().SequenceEqual(pointers))
+            {
+                inventory = compact;
+                return false;
+            }
+
+            inventory = new InventorySnapshot(items);
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            inventory = compact;
+            return false;
+        }
+        catch (ArgumentException)
+        {
+            inventory = compact;
             return false;
         }
     }
@@ -129,6 +248,11 @@ public sealed partial class ClientSnapshotCapture
             equipment = null;
             return false;
         }
+        catch (ArgumentException)
+        {
+            equipment = null;
+            return false;
+        }
     }
 
     private static bool TryReadStableBlock(
@@ -185,6 +309,34 @@ public sealed partial class ClientSnapshotCapture
                 section,
                 key,
                 $"The mapped block '{key}' changed roots during snapshot capture.");
+            failureQuality = SnapshotQuality.Incoherent;
+            return false;
+        }
+
+        var confirmation = new byte[length];
+        if (!reader.Session.TryRead(
+                currentAddress,
+                confirmation,
+                out memoryError))
+        {
+            error = MappingFailure(
+                section,
+                key,
+                new MappedMemoryReadError(
+                    MappedMemoryReadFailure.ValueReadFailed,
+                    key,
+                    ActualKind: MemoryValueKind.Binary,
+                    MemoryError: memoryError));
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (!confirmation.AsSpan().SequenceEqual(bytes))
+        {
+            error = StateChanged(
+                section,
+                key,
+                $"The mapped block '{key}' changed during snapshot capture.");
             failureQuality = SnapshotQuality.Incoherent;
             return false;
         }

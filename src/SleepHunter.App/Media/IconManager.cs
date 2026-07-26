@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Windows.Media.Imaging;
-using System.Threading.Tasks;
-
 using SleepHunter.IO;
 using SleepHunter.Settings;
 
@@ -17,7 +13,6 @@ namespace SleepHunter.Media
 
         private IconManager() { }
 
-        private TaskScheduler context;
         private readonly object itemIconLock = new();
         private readonly ConcurrentDictionary<(int Index, byte Color), BitmapSource> itemIcons = new();
         private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new();
@@ -28,28 +23,6 @@ namespace SleepHunter.Media
         private ColorPalette spellIconPalette;
         private EpfImage skillIconImage;
         private EpfImage spellIconImage;
-
-        public TaskScheduler Context
-        {
-            get => context;
-            set => context = value;
-        }
-
-        public int ItemIconCount => itemIcons.Count;
-        public int SkillIconCount => skillIcons.Count;
-        public int SpellIconCount => spellIcons.Count;
-
-        public IEnumerable<BitmapSource> ItemIcons => from i in itemIcons.Values select i;
-        public IEnumerable<BitmapSource> SkillIcons => from s in skillIcons.Values select s;
-        public IEnumerable<BitmapSource> SpellIcons => from s in spellIcons.Values select s;
-
-        public void AddSkillIcon(int index, BitmapSource source) => skillIcons[index] = source;
-
-        public void AddSpellIcon(int index, BitmapSource source) => spellIcons[index] = source;
-
-        public bool ContainsSkillIcon(int index) => skillIcons.ContainsKey(index);
-
-        public bool ContainsSpellIcon(int index) => spellIcons.ContainsKey(index);
 
         public BitmapSource GetItemIcon(int index, byte color = 0)
         {
@@ -131,25 +104,6 @@ namespace SleepHunter.Media
                 return null;
         }
 
-        public bool RemoveSkillIcon(int index) => skillIcons.TryRemove(index, out _);
-
-        public bool RemoveSpellIcon(int index) => spellIcons.TryRemove(index, out _);
-
-        public void ClearItemIcons()
-        {
-            itemIcons.Clear();
-
-            lock (itemIconLock)
-            {
-                itemIconRenderer = null;
-                itemIconClientPath = null;
-            }
-        }
-
-        public void ClearSkillIcons() => skillIcons.Clear();
-
-        public void ClearSpellIcons() => spellIcons.Clear();
-
         RenderedBitmap RenderSkillIcon(int index)
         {
             var settings = UserSettingsManager.Instance.Settings;
@@ -186,19 +140,6 @@ namespace SleepHunter.Media
             var bitmap = RenderManager.Render(frame, spellIconPalette);
 
             return bitmap;
-        }
-
-        public void ReloadIcons()
-        {
-            var settings = UserSettingsManager.Instance.Settings;
-
-            ClearItemIcons();
-
-            skillIconPalette = GetColorPalette(settings.IconDataFile, settings.SkillPaletteFile);
-            spellIconPalette = GetColorPalette(settings.IconDataFile, settings.SpellPaletteFile);
-
-            skillIconImage = GetEpfImage(settings.IconDataFile, settings.SkillIconFile);
-            spellIconImage = GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
         }
 
         private ItemIconRenderer GetItemIconRenderer()

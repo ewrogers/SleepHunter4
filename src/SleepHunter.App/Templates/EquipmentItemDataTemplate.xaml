@@ -29,6 +29,26 @@
                        Stretch="None"
                        Source="{Binding Icon}"
                        Panel.ZIndex="1"/>
+
+                <Border Name="SlotNameBorder"
+                        MinWidth="30"
+                        Height="14"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Margin="-2"
+                        Padding="2,0"
+                        Background="{StaticResource ObsidianSeparatorColor}"
+                        CornerRadius="0,0,4,0"
+                        IsHitTestVisible="False"
+                        Opacity="0.45"
+                        Panel.ZIndex="2">
+                    <TextBlock Text="{Binding Slot, Converter={StaticResource EquipmentSlotConverter}, ConverterParameter=Abbreviation}"
+                               Style="{StaticResource ObsidianText}"
+                               TextAlignment="Center"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Margin="0,2,0,1"/>
+                </Border>
             </Grid>
             <Border.ToolTip>
                 <StackPanel Orientation="Vertical">
@@ -59,7 +79,7 @@
                                Text="{Binding FormattedDurability, StringFormat=Durability: {0}}"
                                FontSize="14"
                                FontWeight="Normal"
-                               Foreground="LightBlue"
+                               Foreground="{DynamicResource ObsidianDurability}"
                                TextAlignment="Center"
                                Visibility="Collapsed"
                                Margin="4,2"/>
@@ -80,9 +100,15 @@
                 <Setter TargetName="ToolTipDurabilityText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
 
-            <DataTrigger Binding="{Binding ElementName=SlotBorder, Path=IsMouseOver}" Value="True">
-                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianForeground}"/>
-            </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsEmpty}" Value="False"/>
+                    <Condition Binding="{Binding ElementName=SlotBorder, Path=IsMouseOver}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SlotNameBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="SlotNameBorder" Property="Opacity" Value="0.65"/>
+            </MultiDataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 </ResourceDictionary>

@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Automation.Flowering;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
@@ -8,6 +9,57 @@ namespace SleepHunter.Runtime.Tests.Engine;
 
 public sealed class QueueReplacementCommandScenarioTests
 {
+    [Test]
+    public void ShouldApplyQueuesAndAutomationInOneRevision()
+    {
+        var spell = Spell(1, "spell", SpellTarget.Self);
+        var skill = Skill(1, "skill");
+        var flower = Flower(
+            1,
+            SpellTarget.Self,
+            TimeSpan.FromSeconds(1));
+        var configuration = new AutomationConfiguration(
+            spellsEnabled: true,
+            skillsEnabled: true,
+            floweringEnabled: true);
+        var command = new ApplyAutomationSetupCommand(
+            new ReplaceQueuesCommand(
+                [spell],
+                SpellQueueRotation.RoundRobin,
+                [skill],
+                [flower]),
+            configuration);
+        var scenario = new MacroScenario();
+        var startingRevision = scenario.State.Revision;
+
+        var applied = scenario.Send(command);
+        var repeated = scenario.Send(command);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                applied.State.Revision,
+                Is.EqualTo(startingRevision + 1));
+            Assert.That(
+                applied.State.SpellQueue.Entries,
+                Is.EqualTo(new[] { spell }));
+            Assert.That(
+                applied.State.SpellQueue.Rotation,
+                Is.EqualTo(SpellQueueRotation.RoundRobin));
+            Assert.That(
+                applied.State.SkillQueue.Entries,
+                Is.EqualTo(new[] { skill }));
+            Assert.That(
+                applied.State.FlowerQueue.Entries,
+                Is.EqualTo(new[] { flower }));
+            Assert.That(
+                applied.State.Automation,
+                Is.EqualTo(configuration));
+            Assert.That(repeated.State, Is.SameAs(applied.State));
+            Assert.That(repeated.PublishedView, Is.Null);
+        });
+    }
+
     [Test]
     public void ShouldReplaceAllQueuesAtomically()
     {

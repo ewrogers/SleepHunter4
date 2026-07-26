@@ -126,7 +126,8 @@ namespace SleepHunter.Views
                         runtime,
                         macroConfigurationMapper,
                         runtimeSetupFactory,
-                        () => UserSettingsManager.Instance.Settings),
+                        () => UserSettingsManager.Instance.Settings,
+                        uiDispatcher),
                 macroPersistence,
                 new WpfMacroConfigurationInteraction(this),
                 logger,
@@ -224,6 +225,27 @@ namespace SleepHunter.Views
             SpellMetadataManager.Instance.SpellAdded += OnSpellManagerUpdated;
             SpellMetadataManager.Instance.SpellChanged += OnSpellManagerUpdated;
             SpellMetadataManager.Instance.SpellRemoved += OnSpellManagerUpdated;
+        }
+
+        private void RuntimeDetailsPopup_Closed(
+            object sender,
+            EventArgs e)
+        {
+            if (clientList.SelectedClient is { } selectedClient)
+                selectedClient.IsRuntimeDetailsOpen = false;
+        }
+
+        private void RuntimeDetailsButton_PreviewMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            if (!runtimeDetailsPopup.IsOpen)
+                return;
+
+            if (clientList.SelectedClient is { } selectedClient)
+                selectedClient.IsRuntimeDetailsOpen = false;
+
+            e.Handled = true;
         }
 
         private void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
@@ -624,8 +646,6 @@ namespace SleepHunter.Views
 
         private void StartClientPolling()
         {
-            IconManager.Instance.Context = TaskScheduler.FromCurrentSynchronizationContext();
-
             clientPolling.Start();
         }
 
@@ -686,24 +706,14 @@ namespace SleepHunter.Views
             if (hotkey == null)
                 return;
 
-            Player hotkeyPlayer = null;
-
-            foreach (var player in PlayerManager.Instance.LoggedInPlayers)
-                if (player.HasHotkey && player.Hotkey.Key == hotkey.Key && player.Hotkey.Modifiers == hotkey.Modifiers)
-                {
-                    hotkeyPlayer = player;
-                    break;
-                }
-
-            if (hotkeyPlayer == null)
+            var client = clientList.FindByHotkey(hotkey);
+            if (client is null)
                 return;
 
+            var hotkeyPlayer = client.Player;
             logger.LogInfo($"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated for character: {hotkeyPlayer.Name}");
 
-            var client = clientList.Clients.FirstOrDefault(
-                item => ReferenceEquals(item.Player, hotkeyPlayer));
-            if (client is null ||
-                !client.ToggleMacroCommand.CanExecute(null))
+            if (!client.ToggleMacroCommand.CanExecute(null))
             {
                 logger.LogWarn(
                     $"Runtime automation is unavailable for character: {hotkeyPlayer.Name} (hotkey)");
@@ -711,6 +721,7 @@ namespace SleepHunter.Views
             }
 
             var wasRunning = client.IsMacroRunning;
+            var wasPaused = client.IsMacroPaused;
             await client.ToggleMacroCommand.ExecuteAsync(null);
             if (client.LastAutomationError is { } error)
             {
@@ -722,7 +733,9 @@ namespace SleepHunter.Views
 
             var action = wasRunning
                 ? "Paused"
-                : "Started";
+                : wasPaused
+                    ? "Resumed"
+                    : "Started";
             logger.LogInfo(
                 $"{action} runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
         }
@@ -931,6 +944,7 @@ namespace SleepHunter.Views
                 var modifiers = (ModifierKeys)(lParam.ToInt32() & 0xFFFF);
 
                 ActivateHotkey(key, modifiers);
+                isHandled = true;
             }
 
             return nint.Zero;
@@ -1139,7 +1153,9 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            dialog.SpellQueueItem.CopyTo(queueItem);
+            selectedMacro.UpdateSpell(
+                queueItem,
+                dialog.SpellQueueItem);
         }
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -1207,7 +1223,9 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            dialog.FlowerQueueItem.CopyTo(queueItem);
+            selectedMacro.UpdateFlower(
+                queueItem,
+                dialog.FlowerQueueItem);
         }
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)

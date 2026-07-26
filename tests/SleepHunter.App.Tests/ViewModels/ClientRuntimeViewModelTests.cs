@@ -167,6 +167,26 @@ public sealed class ClientRuntimeViewModelTests
                 Is.EqualTo(1));
             Assert.That(dispatcher.InvocationCount, Is.EqualTo(2));
         });
+
+        var successfulSnapshot = viewModel.LatestSnapshot;
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 3,
+            succeeded: false,
+            failure: SnapshotCaptureFailure.LocationTransition));
+        await WaitUntilAsync(
+            () => viewModel.CaptureSequence?.Value == 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.LatestSnapshot, Is.Null);
+            Assert.That(
+                viewModel.LastSuccessfulSnapshot,
+                Is.SameAs(successfulSnapshot));
+            Assert.That(
+                viewModel.PresentationSnapshot,
+                Is.SameAs(successfulSnapshot));
+        });
     }
 
     [Test]
@@ -214,6 +234,39 @@ public sealed class ClientRuntimeViewModelTests
         Assert.That(viewModel.StartCommand.CanExecute(null), Is.False);
     }
 
+    [Test]
+    public async Task ShouldExposeHostFailureAndRejectStaleCaptureHealth()
+    {
+        var host = new RecordingRuntimeHost();
+        await using var viewModel = new ClientRuntimeViewModel(
+            host,
+            new RecordingUiDispatcher());
+        host.PublishView(CreateView(0, MacroLifecycle.Running));
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 1,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => viewModel.StopCommand.CanExecute(null) &&
+                  viewModel.IsCaptureHealthy);
+        var failure = new InvalidOperationException(
+            "The scripted runtime failed.");
+
+        host.Fail(failure);
+        await WaitUntilAsync(
+            () => viewModel.RuntimeFailure is not null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.RuntimeFailure, Is.SameAs(failure));
+            Assert.That(viewModel.IsHostAvailable, Is.False);
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.StartCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.PauseCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
+            Assert.That(viewModel.StopCommand.CanExecute(null), Is.False);
+        });
+    }
+
     private static MacroViewSnapshot CreateView(
         long revision,
         MacroLifecycle lifecycle,
@@ -248,7 +301,9 @@ public sealed class ClientRuntimeViewModelTests
 
     private static SnapshotCaptureObservation CreateCapture(
         long sequenceValue,
-        bool succeeded)
+        bool succeeded,
+        SnapshotCaptureFailure failure =
+            SnapshotCaptureFailure.MappingReadFailed)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -265,7 +320,10 @@ public sealed class ClientRuntimeViewModelTests
             timestamp,
             ImmutableArray<SnapshotSectionMetrics>.Empty,
             reads);
-        var failure = SnapshotCaptureFailure.MappingReadFailed;
+        var quality = failure ==
+            SnapshotCaptureFailure.LocationTransition
+                ? SnapshotQuality.Incoherent
+                : SnapshotQuality.Partial;
         var result = succeeded
             ? new SnapshotCaptureResult(
                 new ClientSnapshot(
@@ -280,9 +338,12 @@ public sealed class ClientRuntimeViewModelTests
                 metrics)
             : new SnapshotCaptureResult(
                 snapshot: null,
-                SnapshotQuality.Partial,
+                quality,
                 new SnapshotCaptureError(
-                    SnapshotSection.Presence,
+                    failure ==
+                        SnapshotCaptureFailure.LocationTransition
+                            ? SnapshotSection.Coherence
+                            : SnapshotSection.Presence,
                     failure,
                     "The scripted capture failed."),
                 metrics);
@@ -292,9 +353,11 @@ public sealed class ClientRuntimeViewModelTests
             failedCount: succeeded ? 0 : 1,
             new SnapshotDurationStatistics(
                 sampleCount: 1,
-                TimeSpan.Zero,
-                TimeSpan.Zero,
-                TimeSpan.Zero),
+                minimum: TimeSpan.Zero,
+                average: TimeSpan.Zero,
+                median: TimeSpan.Zero,
+                percentile95: TimeSpan.Zero,
+                maximum: TimeSpan.Zero),
             reads,
             succeeded
                 ? ImmutableDictionary<SnapshotCaptureFailure, int>.Empty
@@ -405,6 +468,14 @@ public sealed class ClientRuntimeViewModelTests
         }
 
         public void CompleteViews() => views.Writer.TryComplete();
+
+        public void Fail(Exception exception)
+        {
+            captures.Writer.TryComplete(exception);
+            views.Writer.TryComplete(exception);
+            commands.Writer.TryComplete(exception);
+            completion.TrySetException(exception);
+        }
 
         public async Task<MacroCommand> ReadCommandAsync()
         {

@@ -5,8 +5,6 @@ namespace SleepHunter.Models
     {
         public const string LyliacPlantKey = @"Lyliac Plant";
         public const string LyliacVineyardKey = @"Lyliac Vineyard";
-        public const string FasSpioradKey = @"Fas Spiorad";
-
         private AbilityTargetType targetType;
         private string prompt;
         private bool opensDialog;

@@ -102,42 +102,34 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!-- Start Macro Button -->
+                    <!-- Macro Toggle Button -->
                     <Button Style="{StaticResource ObsidianToolBarButton}"
-                            Command="{Binding SelectedClient.StartOrResumeMacroCommand}"
+                            Command="{Binding SelectedClient.ToggleMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="{Binding SelectedClient.StartMacroLabel}"
+                                   Content="{Binding SelectedClient.MacroToggleLabel, FallbackValue=_Start Macro, TargetNullValue=_Start Macro}"
                                    Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
-                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            <TextBlock Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        FontSize="20"
-                                       Margin="0,2,0,0"
-                                       Text="&#xE102;"/>
-                        </DockPanel>
-                    </Button>
-                    <!-- Pause Macro Button -->
-                    <Button Style="{StaticResource ObsidianToolBarButton}"
-                            Command="{Binding SelectedClient.PauseMacroCommand}"
-                            Padding="4,8,4,2">
-                        <DockPanel>
-                            <Label DockPanel.Dock="Bottom"
-                                   Content="_Pause Macro"
-                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                   Margin="0"
-                                   Padding="4,0,4,4"/>
-                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Bottom"
-                                       FontSize="20"
-                                       Margin="0,2,0,0"
-                                       Text="&#xE103;"/>
+                                       Margin="0,2,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource ObsidianSymbolText}">
+                                        <Setter Property="Text" Value="&#xE102;"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedClient.IsMacroRunning}"
+                                                         Value="True">
+                                                <Setter Property="Text" Value="&#xE103;"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DockPanel>
                     </Button>
                     <!-- Stop Macro Button -->
@@ -240,7 +232,7 @@
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                         <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
-                        <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
+                        <EventSetter Event="PreviewKeyDown" Handler="clientListBox_KeyDown"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
@@ -612,6 +604,9 @@
                             Padding="2,1"
                             ToolTip="Hides the spell queue."
                             Command="{Binding MacroPersistence.HideSpellQueueCommand}"/>
+
+                    <Border Name="SpellQueueHeaderAccentInset"
+                            Style="{StaticResource ObsidianAccentInsetBorder}"/>
                 </Grid>
             </Border>
 
@@ -673,6 +668,40 @@
                 </ListBox.ItemContainerStyle>
             </ListBox>
 
+            <TextBlock Name="EmptySpellQueuePlaceholder"
+                       Grid.Row="3"
+                       Panel.ZIndex="1"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       MaxWidth="260"
+                       Margin="24"
+                       Text="Double click a spell to add to queue"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       Opacity="0.65"
+                       IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock"
+                           BasedOn="{StaticResource ObsidianText}">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=Visibility}"
+                                               Value="Visible"/>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=HasItems}"
+                                               Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
             <Separator Grid.Row="4"
                        Style="{StaticResource ObsidianSeparator}"
                        Margin="0"
@@ -711,19 +740,153 @@
             </Grid>
         </Grid>
         
-        <!-- Bottom Decorator -->
+        <!-- Runtime Status -->
         <Border Grid.Row="2"
                 Grid.ColumnSpan="4"
-                Height="4"
-                Background="{DynamicResource ObsidianBackground}"/>
+                Panel.ZIndex="8"
+                MinHeight="28"
+                Padding="10,3,20,5"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                BorderThickness="0,1,0,4">
+            <DockPanel LastChildFill="True">
+                <ToggleButton Name="runtimeDetailsButton"
+                              DockPanel.Dock="Right"
+                              Width="24"
+                              Height="22"
+                              Margin="8,0,0,0"
+                              Padding="3"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              Background="Transparent"
+                              BorderBrush="Transparent"
+                              BorderThickness="1"
+                              Focusable="False"
+                              AutomationProperties.Name="Runtime details"
+                              IsEnabled="{Binding SelectedClient.HasRuntime, FallbackValue=False, TargetNullValue=False}"
+                              IsChecked="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                              PreviewMouseLeftButtonDown="RuntimeDetailsButton_PreviewMouseLeftButtonDown"
+                              ToolTip="Runtime details">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Grid>
+                                <Border Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="2">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      Margin="{TemplateBinding Padding}"/>
+                                </Border>
+                                <Border Name="AccentInsetBorder"
+                                        Style="{StaticResource ObsidianAccentInsetBorder}"
+                                        Visibility="Collapsed"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="BorderBrush"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="Background"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Collapsed"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                    <Grid Width="14" Height="14">
+                        <Ellipse Stroke="{DynamicResource ObsidianForeground}"
+                                 StrokeThickness="1.5"/>
+                        <Path Data="M 7,6.5 L 7,10.5 M 7,3.5 L 7,4"
+                              Stroke="{DynamicResource ObsidianForeground}"
+                              StrokeThickness="1.7"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"/>
+                    </Grid>
+                </ToggleButton>
 
-        <Path Name="WindowResizeGrip" 
-              Grid.RowSpan="3"
-              Grid.ColumnSpan="4"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Bottom"
-              Width="16" Height="16"
-              Fill="{DynamicResource ObsidianBackground}"
-              Data="M 0,16 l 16,-16 v 16 h -16 z"/>
+                <Popup Name="runtimeDetailsPopup"
+                       IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                       Placement="Top"
+                       PlacementTarget="{Binding ElementName=runtimeDetailsButton}"
+                       HorizontalOffset="-556"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade"
+                       Closed="RuntimeDetailsPopup_Closed">
+                    <Border Width="580"
+                            Margin="0,0,0,4"
+                            Padding="12"
+                            Background="{DynamicResource ObsidianControlBackground}"
+                            BorderBrush="{DynamicResource ObsidianBackground}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource ObsidianText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Text="Runtime Details"/>
+                            <TextBox Grid.Row="1"
+                                     Width="554"
+                                     Height="310"
+                                     Style="{StaticResource ObsidianNonEraseTextBox}"
+                                     Padding="8"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
+                                     VerticalContentAlignment="Stretch"
+                                     Text="{Binding DataContext.SelectedClient.RuntimeDetailsSnapshot, ElementName=runtimeDetailsButton, Mode=OneWay}"/>
+                            <TextBlock Grid.Row="2"
+                                       Style="{StaticResource ObsidianText}"
+                                       Margin="0,8,0,0"
+                                       Opacity="0.7"
+                                       Text="Select the diagnostic text and press Ctrl+C to copy."/>
+                        </Grid>
+                    </Border>
+                </Popup>
+
+                <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock"
+                               BasedOn="{StaticResource ObsidianText}">
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedClient.IsRuntimeStatusError}"
+                                             Value="True">
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource ObsidianError}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </DockPanel>
+        </Border>
     </Grid>
 </Window>

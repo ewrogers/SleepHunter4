@@ -25,7 +25,8 @@ namespace SleepHunter.Settings
         private bool saveMacroStates;
         private string selectedTheme;
 
-        private PlayerSortOrder clientSortOrder = PlayerSortOrder.LoginTime;
+        private PlayerSortOrder clientSortOrder =
+            PlayerSortOrder.LaunchOrder;
         private bool suppressLoginNotification = true;
         private bool applyModifiersKeyFix = true;
         private bool allowAltToShowGroundItems = true;
@@ -575,13 +576,6 @@ namespace SleepHunter.Settings
 
         public UserSettings() { }
 
-        public static UserSettings CreateDefaults()
-        {
-            var settings = new UserSettings();
-            settings.ResetDefaults();
-            return settings;
-        }
-
         public void ResetDefaults()
         {
             Version = CurrentVersion;
@@ -591,7 +585,7 @@ namespace SleepHunter.Settings
             SaveMacroStates = true;
 
             SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
-            clientSortOrder = PlayerSortOrder.LoginTime;
+            clientSortOrder = PlayerSortOrder.LaunchOrder;
             InventoryIconSize = 46;
             SkillIconSize = 46;
             InventoryGridWidth = 12;

@@ -20,6 +20,7 @@ namespace SleepHunter.ViewModels
         private readonly CancellationTokenSource disposeCancellation = new();
         private readonly Task capturePump;
         private readonly IClientRuntimeHost host;
+        private readonly Task hostMonitor;
         private readonly IUiDispatcher uiDispatcher;
         private readonly Task viewPump;
 
@@ -37,6 +38,7 @@ namespace SleepHunter.ViewModels
 
             capturePump = PumpCapturesAsync(disposeCancellation.Token);
             viewPump = PumpViewsAsync(disposeCancellation.Token);
+            hostMonitor = MonitorHostAsync(disposeCancellation.Token);
         }
 
         public ClientIdentity Client => host.Client;
@@ -59,11 +61,24 @@ namespace SleepHunter.ViewModels
         [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
         [NotifyPropertyChangedFor(nameof(LatestCaptureResult))]
         [NotifyPropertyChangedFor(nameof(LatestSnapshot))]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
         public partial SnapshotCaptureObservation LatestCapture
         {
             get;
             private set;
         }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
+        public partial ClientSnapshot LastSuccessfulSnapshot
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
+        public partial Exception RuntimeFailure { get; private set; }
 
         public SnapshotCaptureError CaptureError =>
             LatestCapture?.Result.Error;
@@ -78,13 +93,25 @@ namespace SleepHunter.ViewModels
         public bool HasCapture => LatestCapture is not null;
 
         public bool IsCaptureHealthy =>
+            RuntimeFailure is null &&
             LatestCapture?.Result.Succeeded == true;
+
+        public bool IsHostAvailable =>
+            Volatile.Read(ref disposeState) == 0 &&
+            isHostAvailable;
 
         public SnapshotCaptureResult LatestCaptureResult =>
             LatestCapture?.Result;
 
         public ClientSnapshot LatestSnapshot =>
             LatestCapture?.Result.Snapshot;
+
+        public ClientSnapshot PresentationSnapshot =>
+            LatestSnapshot ??
+            (CaptureError?.Failure ==
+                SnapshotCaptureFailure.LocationTransition
+                    ? LastSuccessfulSnapshot
+                    : null);
 
         public AutomationConfiguration Automation =>
             Current?.Automation ?? AutomationConfiguration.Disabled;
@@ -116,7 +143,7 @@ namespace SleepHunter.ViewModels
             if (!isFirstDispose)
             {
                 await Task
-                    .WhenAll(capturePump, viewPump)
+                    .WhenAll(capturePump, viewPump, hostMonitor)
                     .ConfigureAwait(false);
                 return;
             }
@@ -134,7 +161,8 @@ namespace SleepHunter.ViewModels
                     .WhenAll(
                         host.DisposeAsync().AsTask(),
                         capturePump,
-                        viewPump)
+                        viewPump,
+                        hostMonitor)
                     .ConfigureAwait(false);
             }
             finally
@@ -179,6 +207,13 @@ namespace SleepHunter.ViewModels
                 when (cancellationToken.IsCancellationRequested)
             {
             }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: host.Completion.IsCompleted)
+                    .ConfigureAwait(false);
+            }
         }
 
         private async Task PumpViewsAsync(
@@ -201,6 +236,13 @@ namespace SleepHunter.ViewModels
                 when (cancellationToken.IsCancellationRequested)
             {
             }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: host.Completion.IsCompleted)
+                    .ConfigureAwait(false);
+            }
             finally
             {
                 if (!cancellationToken.IsCancellationRequested)
@@ -210,12 +252,80 @@ namespace SleepHunter.ViewModels
                             () =>
                             {
                                 isHostAvailable = false;
+                                OnPropertyChanged(
+                                    nameof(IsHostAvailable));
                                 NotifyCommands();
                             },
                             CancellationToken.None)
                         .ConfigureAwait(false);
                 }
             }
+        }
+
+        private async Task MonitorHostAsync(
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await host.Completion
+                    .WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await RecordRuntimeFailureAsync(
+                            new InvalidOperationException(
+                                "The client runtime stopped unexpectedly."),
+                            hostUnavailable: true)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: true)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        private ValueTask RecordRuntimeFailureAsync(
+            Exception exception,
+            bool hostUnavailable)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            return uiDispatcher.InvokeAsync(
+                () =>
+                {
+                    if (Volatile.Read(ref disposeState) != 0)
+                        return;
+
+                    RuntimeFailure ??= Unwrap(exception);
+                    if (hostUnavailable)
+                    {
+                        isHostAvailable = false;
+                        OnPropertyChanged(nameof(IsHostAvailable));
+                    }
+
+                    NotifyCommands();
+                },
+                CancellationToken.None);
+        }
+
+        private static Exception Unwrap(Exception exception)
+        {
+            if (exception is AggregateException aggregate)
+            {
+                var flattened = aggregate.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    return flattened.InnerExceptions[0];
+            }
+
+            return exception;
         }
 
         private bool CanChangeLifecycle(MacroLifecycle lifecycle) =>
@@ -244,6 +354,13 @@ namespace SleepHunter.ViewModels
             PauseCommand.NotifyCanExecuteChanged();
             ResumeCommand.NotifyCanExecuteChanged();
             StopCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnLatestCaptureChanged(
+            SnapshotCaptureObservation value)
+        {
+            if (value?.Result.Snapshot is { } snapshot)
+                LastSuccessfulSnapshot = snapshot;
         }
 
         private Task SendAsync(

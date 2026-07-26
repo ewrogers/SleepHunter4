@@ -82,7 +82,7 @@
                         <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
                             <TextBlock Name="NameText"
                                        Style="{StaticResource ObsidianText}"
-                                       Foreground="{StaticResource ObsidianForeground}"
+                                       Foreground="{DynamicResource ObsidianForeground}"
                                        FontSize="16"
                                        Text="{Binding Name}"
                                        TextWrapping="WrapWithOverflow"
@@ -120,7 +120,7 @@
 
                                 <ProgressBar Name="ProgressBar"
                                              Grid.Column="1"
-                                             Height="10"
+                                             Height="12"
                                              Value="{Binding PercentCompleted, Mode=OneWay}"
                                              Style="{StaticResource ObsidianProgressBar}"
                                              VerticalAlignment="Center"
@@ -180,7 +180,6 @@
                 <Setter TargetName="CompletedText" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="False">
-                <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
                 <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
                 <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
                 <Setter TargetName="TargetLevelText" Property="Foreground" Value="{StaticResource ObsidianInactive}"/>
@@ -188,7 +187,6 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="NameText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
                 <Setter TargetName="TargetText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
                 <Setter TargetName="CurrentLevelText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
                 <Setter TargetName="TargetLevelText" Property="Foreground" Value="{StaticResource ObsidianForeground}"/>
@@ -204,7 +202,10 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
                 <Setter TargetName="Icon" Property="Opacity" Value="1"/>
+                <Setter TargetName="IconBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
+                <Setter TargetName="IconBorder" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
                 <Setter TargetName="IconBorder" Property="BorderThickness" Value="3"/>
+                <Setter TargetName="IconBorder" Property="CornerRadius" Value="3"/>
                 <Setter TargetName="IconBorder" Property="Margin" Value="5,2"/>
             </DataTrigger>
         </DataTemplate.Triggers>

@@ -7,15 +7,17 @@ The `Spell Macro Settings` settings tab contains settings for spell macros.
 ## Default Spell Rotation Mode
 
 This setting determines how the [Spell Queue](../main-window/spell-queue.md) will alternate casting of spells.
-By default, this is `Round Robin`.
+By default, this is `Singular Order`.
 
 You can use `Singular Order` to cast spells in the order they are added to the queue, only moving to the next spell when the current spell reaches the desired level.
 
-- `No Rotation` - Do not rotate spells, even when the spell has reached the target level.
-- `Singular Order` - Rotate to the next spell once the current one has reached the target level.
-- `Round Robin` - Rotate to the next spell after each cast.
+- `No Rotation` - Select the first ready spell from the top of the queue for every cast.
+- `Singular Order` - Keep casting the current spell and advance once it reaches its target level or is no longer available.
+- `Round Robin` - Advance to the next ready spell after each issued cast, wrapping at the bottom.
 
-**NOTE:** If the `Skip Spells on Cooldown` setting is enabled, it will temporarily skip that spell in the queue.
+See [Spell Rotation](../main-window/spell-queue.md#spell-rotation) for detailed waiting, priority, and live-edit behavior.
+
+**NOTE:** `No Rotation` and `Round Robin` can pass over a cooling spell when `Skip Spells on Cooldown` is enabled. `Singular Order` waits on its current spell instead of skipping it.
 
 ## Zero Line Delay
 

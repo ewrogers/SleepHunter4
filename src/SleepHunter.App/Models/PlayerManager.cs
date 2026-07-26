@@ -16,7 +16,7 @@ namespace SleepHunter.Models
         private PlayerManager() { }
 
         private readonly ConcurrentDictionary<int, Player> players = new();
-        private PlayerSortOrder sortOrder = PlayerSortOrder.LoginTime;
+        private PlayerSortOrder sortOrder = PlayerSortOrder.LaunchOrder;
         private bool showAllClients;
 
         public event PlayerEventHandler PlayerAdded;
@@ -24,8 +24,6 @@ namespace SleepHunter.Models
         public event PropertyChangedEventHandler PlayerPropertyChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public int Count => players.Count;
 
         public PlayerSortOrder SortOrder
         {
@@ -49,20 +47,9 @@ namespace SleepHunter.Models
         {
             get
             {
-                var sortedClients = Enumerable.Empty<Player>();
-
-                if (SortOrder == PlayerSortOrder.LoginTime)
-                    sortedClients = from p in LoggedInPlayers orderby p.LoginTimestamp?.Ticks ?? p.Process.ProcessId select p;
-                else if (SortOrder == PlayerSortOrder.Alphabetical)
-                    sortedClients = from p in LoggedInPlayers orderby p.Name select p;
-                else if (SortOrder == PlayerSortOrder.HighestHealth)
-                    sortedClients = from p in LoggedInPlayers orderby p.Stats.MaximumHealth descending select p;
-                else if (SortOrder == PlayerSortOrder.HighestMana)
-                    sortedClients = from p in LoggedInPlayers orderby p.Stats.MaximumMana descending select p;
-                else if (SortOrder == PlayerSortOrder.HighestCombined)
-                    sortedClients = from p in LoggedInPlayers orderby (p.Stats.MaximumHealth + p.Stats.MaximumMana * 2) descending select p;
-                else
-                    sortedClients = from p in LoggedInPlayers orderby p.Name where p.IsLoggedIn select p;
+                var sortedClients = SortPlayers(
+                    LoggedInPlayers,
+                    SortOrder);
 
                 var visiblePlayers = sortedClients.ToList();
 
@@ -71,6 +58,34 @@ namespace SleepHunter.Models
 
                 return visiblePlayers;
             }
+        }
+
+        internal static IEnumerable<Player> SortPlayers(
+            IEnumerable<Player> source,
+            PlayerSortOrder sortOrder)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+
+            return sortOrder switch
+            {
+                PlayerSortOrder.LaunchOrder =>
+                    source.OrderBy(player => player.Process.CreationTime)
+                        .ThenBy(player => player.Process.ProcessId),
+                PlayerSortOrder.Alphabetical =>
+                    source.OrderBy(player => player.Name),
+                PlayerSortOrder.HighestHealth =>
+                    source.OrderByDescending(
+                        player => player.Stats.MaximumHealth),
+                PlayerSortOrder.HighestMana =>
+                    source.OrderByDescending(
+                        player => player.Stats.MaximumMana),
+                PlayerSortOrder.HighestCombined =>
+                    source.OrderByDescending(
+                        player =>
+                            player.Stats.MaximumHealth +
+                            (player.Stats.MaximumMana * 2)),
+                _ => source.OrderBy(player => player.Name)
+            };
         }
 
         public void AddNewClient(
@@ -101,23 +116,6 @@ namespace SleepHunter.Models
                 OnPlayerAdded(player);
         }
 
-        public bool ContainsPlayer(int processId) => players.ContainsKey(processId);
-
-        public Player GetPlayer(int processId)
-        {
-            players.TryGetValue(processId, out var player);
-            return player;
-        }
-
-        public Player GetPlayerByName(string playerName)
-        {
-            foreach (var player in players.Values)
-                if (string.Equals(player.Name, playerName, StringComparison.OrdinalIgnoreCase))
-                    return player;
-
-            return null;
-        }
-
         public bool RemovePlayer(int processId)
         {
             var wasRemoved = players.TryRemove(processId, out var removedPlayer);
@@ -130,16 +128,6 @@ namespace SleepHunter.Models
             }
 
             return wasRemoved;
-        }
-
-        public void ClearPlayers()
-        {
-            var keys = players.Keys.ToList();
-
-            foreach (var key in keys)
-                RemovePlayer(key);
-
-            players.Clear();
         }
 
         public void UpdateClients(Predicate<Player> predicate = null)

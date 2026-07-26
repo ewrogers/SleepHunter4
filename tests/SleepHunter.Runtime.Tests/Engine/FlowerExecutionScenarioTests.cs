@@ -118,6 +118,111 @@ public sealed class FlowerExecutionScenarioTests
     }
 
     [Test]
+    public void ShouldCancelManaRestorationWhenManaRecoversDuringCast()
+    {
+        var plant = Spell(
+            FlowerSpellNames.Plant,
+            slot: 1,
+            manaCost: 100);
+        var restoration = Spell(
+            FlowerSpellNames.ManaRestoration,
+            slot: 2);
+        var scenario = CreateRunningScenario(
+            [plant, restoration],
+            currentMana: 0);
+        scenario.Send(
+            new AddFlowerQueueEntryCommand(
+                Entry(1, SpellTarget.Self)));
+        var policy = new FlowerExecutionPolicy(
+            spell: TestSpellPolicy,
+            restoreMana: true,
+            restoreManaOnDemand: true,
+            manaRestorationThreshold: 900);
+        var requested = scenario.Send(new FlowerCommand(policy));
+        var originalDeadline = requested.ScheduledEvents.Single();
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var cancelled = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(currentMana: 1000),
+            spellbook: new SpellbookSnapshot([plant, restoration]),
+            location: SourceLocation());
+        scenario.AdvanceBy(
+            originalDeadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        var staleDeadline = scenario.Dispatch(
+            originalDeadline.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)requested.Intent!).SpellName,
+                Is.EqualTo(FlowerSpellNames.ManaRestoration));
+            Assert.That(
+                cancelled.Intent,
+                Is.TypeOf<CancelSpellIntent>());
+            Assert.That(
+                cancelled.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Cancelled));
+            Assert.That(
+                cancelled.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Cancelled));
+            Assert.That(cancelled.State.PendingAction, Is.Null);
+            Assert.That(
+                staleDeadline.State,
+                Is.SameAs(cancelled.State));
+            Assert.That(staleDeadline.Intent, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldKeepRestoringManaWhileManaIsStillBelowThreshold()
+    {
+        var plant = Spell(
+            FlowerSpellNames.Plant,
+            slot: 1,
+            manaCost: 100);
+        var restoration = Spell(
+            FlowerSpellNames.ManaRestoration,
+            slot: 2);
+        var scenario = CreateRunningScenario(
+            [plant, restoration],
+            currentMana: 0);
+        scenario.Send(
+            new AddFlowerQueueEntryCommand(
+                Entry(1, SpellTarget.Self)));
+        var policy = new FlowerExecutionPolicy(
+            spell: TestSpellPolicy,
+            restoreMana: true,
+            manaRestorationThreshold: 900);
+        scenario.Send(new FlowerCommand(policy));
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(currentMana: 500),
+            spellbook: new SpellbookSnapshot([plant, restoration]),
+            location: SourceLocation());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(observed.Intent, Is.Null);
+            Assert.That(
+                observed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+            Assert.That(
+                observed.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Casting));
+        });
+    }
+
+    [Test]
     public void ShouldRotateConfiguredFlowerAreaOnlyWhenPlantIsIssued()
     {
         var area = SpellTarget.RelativeArea(0, 0, 0, 1);
@@ -262,7 +367,7 @@ public sealed class FlowerExecutionScenarioTests
     }
 
     [Test]
-    public void ShouldRestoreManaThenPlantFromFreshSnapshot()
+    public void ShouldRestoreZeroManaThenPlantFromFreshSnapshot()
     {
         var entry = Entry(1, SpellTarget.Self);
         var restoration = Spell(
@@ -274,7 +379,7 @@ public sealed class FlowerExecutionScenarioTests
             manaCost: 100);
         var scenario = CreateRunningScenario(
             [plant, restoration],
-            currentMana: 50);
+            currentMana: 0);
         scenario.Send(new AddFlowerQueueEntryCommand(entry));
         var policy = new FlowerExecutionPolicy(
             spell: TestSpellPolicy,

@@ -3,6 +3,7 @@
 ![image](../screenshots/skills-tab.png)
 
 Skills are arranged as a grid of icon buttons similar to the game client, displaying the current level of the skill and the cooldown status (if on cooldown).
+Each position keeps its dim one-based client slot number visible, including empty positions.
 
 ## Skill Organization
 
@@ -16,6 +17,10 @@ Skills are organized into 3 tabs:
 
 Double-clicking a skill will toggle it on or off for macroing.
 When a skill is "enabled" for macroing, the icon will be highlighted white and a thick border will be displayed around the skill.
+Skills can be toggled while the macro is running. The complete updated
+configuration is applied to the runtime without stopping or pausing it.
+Ready skills may also be used while a spell is casting because skill input
+does not interrupt the active cast.
 
 ## Cooldown Display
 

@@ -155,7 +155,7 @@ namespace SleepHunter.Tests.Settings
         }
 
         [Test]
-        public void ShouldExposeWorldGroupAndEventDispatcherRoots()
+        public void ShouldExposeWorldGroupDialogAndChatRoots()
         {
             var worldUser =
                 (DynamicMemoryVariable)layout.GetVariable(
@@ -166,9 +166,20 @@ namespace SleepHunter.Tests.Settings
             var groupCache =
                 (DynamicMemoryVariable)layout.GetVariable(
                     "GroupMemberCache");
-            var eventEntries =
+            var inputManager =
                 (DynamicMemoryVariable)layout.GetVariable(
-                    "EventPaneEntries");
+                    "InputManager");
+            var activeEventDispatcher =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "ActiveEventDispatcher");
+            var dialogVtable = layout.GetVariable(
+                "WindowMessageDialogPaneVtable");
+            var chatVtable = layout.GetVariable(
+                "ChatInputPaneVtable");
+            var tellReceiverVtable = layout.GetVariable(
+                "TellReceiverInputPaneVtable");
+            var tellVtable = layout.GetVariable(
+                "TellInputPaneVtable");
 
             Assert.Multiple(() =>
             {
@@ -178,9 +189,70 @@ namespace SleepHunter.Tests.Settings
                     Is.EqualTo(new long[] { 0x158, 0 }));
                 Assert.That(groupCache.Size, Is.EqualTo(0x41));
                 Assert.That(groupCache.Count, Is.EqualTo(64));
-                Assert.That(eventEntries.Address, Is.EqualTo(0x6D9220));
-                Assert.That(eventEntries.Offsets.Select(offset => offset.Offset),
-                    Is.EqualTo(new long[] { 0x64, 0 }));
+                Assert.That(inputManager.Address, Is.EqualTo(0x6D9260));
+                Assert.That(inputManager.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0 }));
+                Assert.That(
+                    activeEventDispatcher.Address,
+                    Is.EqualTo(0x73D944));
+                Assert.That(
+                    activeEventDispatcher.Offsets.Select(
+                        offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0 }));
+                Assert.That(dialogVtable.Address, Is.EqualTo(0x672A84));
+                Assert.That(chatVtable.Address, Is.EqualTo(0x682FEC));
+                Assert.That(
+                    tellReceiverVtable.Address,
+                    Is.EqualTo(0x68306C));
+                Assert.That(tellVtable.Address, Is.EqualTo(0x6830EC));
+            });
+        }
+
+        [Test]
+        public void ShouldExposeCoherentMapInventoryAndEffectSources()
+        {
+            var mapWidth =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "MapWidth");
+            var mapTransferActive =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "MapTransferActive");
+            var inventoryPanes =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "InventoryPanes");
+            var effects =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "ActiveSpellEffects");
+            var groupCount =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "GroupMemberCount");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(mapWidth.Address, Is.EqualTo(0x73D964));
+                Assert.That(
+                    mapWidth.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x128 }));
+                Assert.That(mapWidth.Offsets[0].IsNegative, Is.True);
+                Assert.That(
+                    mapTransferActive.Offsets.Single().Offset,
+                    Is.EqualTo(0x77));
+                Assert.That(
+                    mapTransferActive.Offsets.Single().IsNegative,
+                    Is.True);
+                Assert.That(
+                    inventoryPanes.Offsets.Select(
+                        offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x4DF8, 0x1A0 }));
+                Assert.That(inventoryPanes.Count, Is.EqualTo(60));
+                Assert.That(
+                    effects.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x4E04, 0x190 }));
+                Assert.That(effects.Size, Is.EqualTo(30));
+                Assert.That(effects.Count, Is.EqualTo(10));
+                Assert.That(
+                    groupCount.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x20, 0x1044 }));
             });
         }
 

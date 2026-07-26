@@ -33,6 +33,8 @@ application.
 - [ ] Confirm Launch Client is enabled after `ClientLayout.xml` loads.
 - [ ] Confirm Start, Pause, Stop, and Stop All are disabled with no selected
   in-world client.
+- [ ] Confirm the disabled Start Macro button still shows its caption before a
+  client is selected.
 - [ ] Open Settings and each metadata editor, then close them normally.
 - [ ] Change the theme and each icon-grid width, then confirm the main view
   updates.
@@ -54,14 +56,45 @@ application.
 Do not test a deliberately corrupted patch against an important client
 installation. Use a disposable copy.
 
+## 2a. Metadata Editor
+
+- [ ] Open the metadata editor and confirm the initial skills tab appears
+  promptly without a long UI-thread pause.
+- [ ] Scroll quickly through skills and spells, switch to staves, and confirm
+  rows render correctly without blank, duplicated, or stale recycled content.
+- [ ] Close and reopen the editor, then confirm add, edit, remove, save, and
+  revert behavior still updates the visible collections.
+
 ## 3. Discovery, Attach, and Snapshots
 
 - [ ] Confirm each launched process appears once in the client list.
-- [ ] Confirm the runtime indicator changes from waiting to a healthy snapshot.
+- [ ] Select a client and confirm the compact bottom-right runtime indicator
+  changes from waiting to `Healthy` without displaying timings or a ticking
+  snapshot sequence.
+- [ ] Trigger a recoverable capture failure and confirm the compact indicator
+  shows the concise failure in red.
+- [ ] Open the runtime details button, confirm nested mapping and memory failures
+  include the variable, address, byte counts, native error code, and rolling
+  average, minimum, and maximum capture times, then select and copy the
+  diagnostic text with `Ctrl+C`.
+- [ ] Dismiss runtime details by clicking outside it, reopen it immediately,
+  close it with the details button, and confirm the text and scrollbars remain
+  visible through the bottom of a multiline error.
 - [ ] Log in and confirm name, class, map, coordinates, health, and mana update.
+- [ ] Change maps and confirm the old map name and coordinates remain together
+  until the new map name and coordinates appear together, without a persistent
+  `MappingReadFailed` status for `MapName`.
 - [ ] Confirm inventory, equipment, skill, and spell panes populate correctly.
 - [ ] Confirm item quantities, durability, learned levels, and cooldown overlays
   update without stale entries.
+- [ ] Leave a Debug build attached to a live client while observations update
+  and confirm no cross-thread `NotifyCanExecuteChanged` exception occurs.
+- [ ] Confirm inventory, skill, and spell slots show dim slot numbers, and
+  equipment slots show the expected abbreviated top-left badges.
+- [ ] Confirm current and maximum durability are in the correct order for both
+  inventory and equipment, with cool blue durability text.
+- [ ] Confirm an occupied inventory slot shows its tooltip from the full slot
+  surface, including transparent space around the sprite.
 - [ ] Open and close chat, dialogs, sense, inventory expansion, and minimized
   mode, then confirm their observed state clears correctly.
 - [ ] Log out and back in without restarting SleepHunter.
@@ -75,7 +108,9 @@ Use a harmless queue in a safe map for the first pass.
 - [ ] Select a logged-in client and confirm Start becomes available after the
   first healthy in-world snapshot.
 - [ ] Start automation and confirm the card shows a running state.
-- [ ] Pause and resume from the toolbar.
+- [ ] Confirm the same toolbar control changes from Start Macro to Pause Macro
+  and changes from the play icon to the pause icon while running, then returns
+  to Resume Macro and the play icon while paused.
 - [ ] Stop from the toolbar and confirm no further actions are issued.
 - [ ] Run two clients, then use Stop All.
 - [ ] Assign, transfer, invoke, and clear a global hotkey.
@@ -87,9 +122,12 @@ Use a harmless queue in a safe map for the first pass.
 ## 5. Skills, Spells, Staffs, and Panels
 
 - [ ] Double-click skills to enable and disable them while automation is
-  stopped.
+  running, and confirm automation remains running and uses the updated
+  selection.
 - [ ] Run a skill cycle and confirm cooldowns prevent premature reuse.
-- [ ] Add, edit, reorder, remove, and clear spell queue entries.
+- [ ] While automation is running, add, edit, reorder, remove, and clear spell
+  queue entries, and confirm each completed edit takes effect without pausing
+  or stopping the macro.
 - [ ] Test no-target, self, alternate-character, relative-tile, and
   screen-position targets that are safe for the test map.
 - [ ] Confirm configured user-typing behavior defers automation while chat is
@@ -106,7 +144,9 @@ Use a harmless queue in a safe map for the first pass.
 
 ## 6. Flowering and Cross-Client State
 
-- [ ] Add, edit, reorder, remove, and clear flower targets.
+- [ ] While automation is running, add, edit, reorder, remove, and clear flower
+  targets, and confirm each completed edit takes effect without pausing or
+  stopping the macro.
 - [ ] Run flowering with an alternate character and confirm roster targeting
   follows live snapshots.
 - [ ] Test Lyliac Plant and Lyliac Vineyard separately when the character
@@ -129,6 +169,8 @@ Use a harmless queue in a safe map for the first pass.
 ## 8. Persistence
 
 - [ ] Save a current macro and confirm the file extension is `.sh4x`.
+- [ ] Confirm file dialogs label `.sh4x` as SleepHunter 4 Macro Files and
+  `.sh4` as SleepHunter 4 Legacy Files.
 - [ ] Confirm the saved `.sh4x` file is JSON and can be loaded again.
 - [ ] Import a legacy `.sh4` XML macro, then save it and confirm the new output
   is `.sh4x` JSON.

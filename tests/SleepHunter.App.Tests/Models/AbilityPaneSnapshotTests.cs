@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 
 using SleepHunter.Models;
@@ -74,41 +74,21 @@ namespace SleepHunter.Tests.Models
             });
         }
 
-        [Test]
-        public void ShouldShowClientReportedSpellActionDelayWithoutALocalTimestamp()
+        [TestCase(1, 1)]
+        [TestCase(36, 36)]
+        [TestCase(37, 1)]
+        [TestCase(72, 36)]
+        [TestCase(73, 1)]
+        [TestCase(90, 18)]
+        public void ShouldDisplayOneBasedSlotsWithinEachAbilityPane(
+            int slot,
+            int expectedRelativeSlot)
         {
-            var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Local);
+            var ability = new Skill { Slot = slot };
 
             Assert.That(
-                Spellbook.IsSpellCooldownActive(true, null, TimeSpan.Zero, now),
-                Is.True);
-        }
-
-        [Test]
-        public void ShouldRetainLocalSpellCooldownFallback()
-        {
-            var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Local);
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(
-                    Spellbook.IsSpellCooldownActive(
-                        false,
-                        now - TimeSpan.FromSeconds(1),
-                        TimeSpan.FromSeconds(2),
-                        now),
-                    Is.True);
-                Assert.That(
-                    Spellbook.IsSpellCooldownActive(
-                        false,
-                        now - TimeSpan.FromSeconds(3),
-                        TimeSpan.FromSeconds(2),
-                        now),
-                    Is.False);
-                Assert.That(
-                    Spellbook.IsSpellCooldownActive(false, null, TimeSpan.FromSeconds(2), now),
-                    Is.False);
-            });
+                ability.RelativeSlot,
+                Is.EqualTo(expectedRelativeSlot));
         }
 
         [Test]

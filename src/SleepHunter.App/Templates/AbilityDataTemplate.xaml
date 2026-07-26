@@ -40,7 +40,7 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Margin="-2"
-                                Opacity="0.7"
+                                Opacity="0.45"
                                 Panel.ZIndex="1">
                             <TextBlock Name="SlotText"
                                        Style="{StaticResource ObsidianText}"
@@ -182,15 +182,19 @@
             </Grid>
         </Border>
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsEmpty}" Value="False"/>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True"/>
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="SlotNumberBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.8"/>
+                <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.65"/>
                 <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="LevelBorder" Property="Opacity" Value="1.0"/>
                 <Setter TargetName="NameText" Property="Opacity" Value="0.75"/>
-            </DataTrigger>
+            </MultiDataTrigger>
 
             <DataTrigger Binding="{Binding CanImprove, Mode=OneWay}" Value="False">
                 <Setter TargetName="ToolTipLevelText" Property="Text" Value="Does Not Improve"/>
@@ -278,7 +282,7 @@
                     <Setter TargetName="LevelBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                     <Setter TargetName="SlotNumberBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                     <Setter TargetName="SlotBorder" Property="Background" Value="{StaticResource ObsidianSeparatorColor}"/>
-                    <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="1"/>
+                    <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.75"/>
                     <Setter TargetName="SlotBorder" Property="BorderThickness" Value="3"/>
                     <Setter TargetName="SlotBorder" Property="CornerRadius" Value="3"/>
                     <Setter TargetName="Border" Property="Margin" Value="0"/>
@@ -306,7 +310,6 @@
                 <Setter TargetName="Icon" Property="ToolTip" Value="{x:Null}"/>
                 <Setter TargetName="Icon" Property="Visibility" Value="Hidden"/>
                 <Setter TargetName="SlotBorder" Property="BorderBrush" Value="Transparent"/>
-                <Setter TargetName="SlotNumberBorder" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="LevelBorder" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="CooldownRectangle" Property="Visibility" Value="Collapsed"/>

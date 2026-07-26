@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0"?>
 <ClientLayout PointerWidth="Bit32">
+  <!--
+    Darkages.exe 7.4.1.0
+    SHA-256: 054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6
+    Static addresses assume the documented preferred image layout.
+  -->
   <ExecutableName>Darkages.exe</ExecutableName>
   <WindowClassName>DarkAges</WindowClassName>
   <WindowTitle>Darkages</WindowTitle>
@@ -226,9 +231,17 @@
         <Offset Value="15C88" />
       </Offsets>
     </Dynamic>
+    <!--
+      DarkAges.exe 7.4.1.0, SHA-256
+      054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6:
+      the GUI object field at 4CAC contains a 32-bit pointer to the ASCII text
+      buffer. The legacy reader detected this conditionally from the field
+      bytes. The explicit zero offset makes the final dereference deterministic.
+    -->
     <Dynamic Key="MapName" Address="82B768" MaxLength="32">
       <Offsets>
         <Offset Value="4CAC" />
+        <Offset Value="0" />
       </Offsets>
     </Dynamic>
     <Dynamic Key="MapNumber" Address="73D964" Type="UInt32">
@@ -244,6 +257,31 @@
     <Dynamic Key="MapY" Address="73D964" Type="Int32">
       <Offsets>
         <Offset Value="B4" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapWidth" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="128" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapHeight" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="124" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapFlags" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="8C" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapWeather" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="88" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapTransferActive" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="77" IsNegative="true" />
       </Offsets>
     </Dynamic>
     <Dynamic Key="Inventory" Address="73D964" MaxLength="256" Size="262" Count="60">
@@ -298,6 +336,12 @@
       <Offsets>
         <Offset Value="20" IsNegative="true" />
         <Offset Value="1044" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ActiveSpellEffects" Address="82B768" Size="30" Count="10">
+      <Offsets>
+        <Offset Value="4E04" />
+        <Offset Value="190" />
       </Offsets>
     </Dynamic>
     <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="128" Count="18">
@@ -372,43 +416,19 @@
         <Offset Value="4C60" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="DialogOpen" Address="85118C" Type="Byte">
+    <Dynamic Key="ActiveEventDispatcher" Address="73D944" Type="UInt32">
       <Offsets>
-        <Offset Value="59C" />
-        <Offset Value="594" />
-        <Offset Value="18" />
-        <Offset Value="24" />
-        <Offset Value="A20" />
-      </Offsets>
-    </Dynamic>
-    <Dynamic Key="SenseOpen" Address="6FB194" Type="Byte">
-      <Offsets>
-        <Offset Value="4C" />
-        <Offset Value="44" />
-        <Offset Value="18" />
-        <Offset Value="E" />
-      </Offsets>
-    </Dynamic>
-    <Dynamic Key="UserChatting" Address="6EB118" Type="Byte">
-      <Offsets>
-        <Offset Value="438" />
-      </Offsets>
-    </Dynamic>
-    <Dynamic Key="EventPaneEntries" Address="6D9220" Size="12">
-      <Offsets>
-        <Offset Value="64" />
         <Offset Value="0" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="EventPaneCount" Address="6D9220" Type="Int32">
+    <Static Key="WindowMessageDialogPaneVtable" Address="672A84" Type="UInt32" />
+    <Dynamic Key="InputManager" Address="6D9260" Type="UInt32">
       <Offsets>
-        <Offset Value="68" />
+        <Offset Value="0" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="EventPaneCapacity" Address="6D9220" Type="Int32">
-      <Offsets>
-        <Offset Value="6C" />
-      </Offsets>
-    </Dynamic>
+    <Static Key="ChatInputPaneVtable" Address="682FEC" Type="UInt32" />
+    <Static Key="TellReceiverInputPaneVtable" Address="68306C" Type="UInt32" />
+    <Static Key="TellInputPaneVtable" Address="6830EC" Type="UInt32" />
   </Variables>
 </ClientLayout>

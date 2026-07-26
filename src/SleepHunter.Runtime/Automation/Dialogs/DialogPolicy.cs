@@ -6,14 +6,16 @@ public sealed record DialogPolicy
         TimeSpan.FromSeconds(2),
         TimeSpan.FromMilliseconds(50));
 
-    public DialogPolicy(TimeSpan closeDelay, TimeSpan actionDuration)
+    public DialogPolicy(
+        TimeSpan observationTimeout,
+        TimeSpan actionDuration)
     {
-        if (closeDelay <= TimeSpan.Zero)
+        if (observationTimeout <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(closeDelay),
-                closeDelay,
-                "Dialog close delays must be positive.");
+                nameof(observationTimeout),
+                observationTimeout,
+                "Dialog observation timeouts must be positive.");
         }
 
         if (actionDuration <= TimeSpan.Zero)
@@ -24,11 +26,11 @@ public sealed record DialogPolicy
                 "Dialog close action durations must be positive.");
         }
 
-        CloseDelay = closeDelay;
+        ObservationTimeout = observationTimeout;
         ActionDuration = actionDuration;
     }
 
-    public TimeSpan CloseDelay { get; }
+    public TimeSpan ObservationTimeout { get; }
 
     public TimeSpan ActionDuration { get; }
 }

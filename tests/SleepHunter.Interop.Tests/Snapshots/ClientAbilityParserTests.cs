@@ -107,7 +107,13 @@ public sealed class ClientAbilityParserTests
         var snapshot = new byte[
             ClientAbilityParser.SpellPaneSnapshotSize];
         snapshot[0] = 73;
+        BinaryPrimitives.WriteUInt16LittleEndian(
+            snapshot.AsSpan(0x02),
+            222);
+        snapshot[0x04] = 1;
         Encoding.ASCII.GetBytes("ard cradh").CopyTo(snapshot.AsSpan(0x05));
+        Encoding.ASCII.GetBytes("Which target?").CopyTo(
+            snapshot.AsSpan(0x85));
         snapshot[0x105] = 4;
         snapshot[0x107] = 1;
         var catalog = new AbilitySnapshotCatalog(
@@ -134,7 +140,10 @@ public sealed class ClientAbilityParserTests
                     castLines: 4,
                     manaCost: 500,
                     TimeSpan.FromSeconds(4),
-                    isActionDelayed: true)));
+                    isActionDelayed: true,
+                    icon: 222,
+                    argumentType: 1,
+                    prompt: "Which target?")));
     }
 
     [Test]
@@ -142,8 +151,19 @@ public sealed class ClientAbilityParserTests
     {
         var snapshot = new byte[
             ClientAbilityParser.SkillPaneSnapshotSize];
+        BinaryPrimitives.WriteUInt16LittleEndian(snapshot, 111);
         Encoding.ASCII.GetBytes("Assail 3").CopyTo(snapshot.AsSpan(0x02));
         snapshot[0x182] = 37;
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            snapshot.AsSpan(0x184),
+            15);
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            snapshot.AsSpan(0x188),
+            1000);
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            snapshot.AsSpan(0x18C),
+            2000);
+        snapshot[0x190] = 1;
         snapshot[0x192] = 1;
         BinaryPrimitives.WriteInt32LittleEndian(
             snapshot.AsSpan(0x1AC, 4),
@@ -167,7 +187,12 @@ public sealed class ClientAbilityParserTests
                     maximumLevel: 0,
                     manaCost: 0,
                     TimeSpan.Zero,
-                    isActionDelayed: true)));
+                    isActionDelayed: true,
+                    icon: 111,
+                    cooldownProgress: 15,
+                    cooldownStartedAt: 1000,
+                    cooldownEndsAt: 2000,
+                    isCooldownVisualActive: true)));
     }
 
     [Test]

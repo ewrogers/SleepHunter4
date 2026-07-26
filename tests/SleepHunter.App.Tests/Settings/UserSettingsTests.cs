@@ -1,5 +1,6 @@
 ﻿using System.Xml.Serialization;
 
+using SleepHunter.Models;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Tests.Settings
@@ -21,6 +22,39 @@ namespace SleepHunter.Tests.Settings
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
             Assert.That(settings.MakeExchangeDialogDraggable, Is.True);
             Assert.That(settings.ShowExchangeResultsInMessageBar, Is.False);
+            Assert.That(
+                settings.ClientSortOrder,
+                Is.EqualTo(PlayerSortOrder.LaunchOrder));
+        }
+
+        [Test]
+        public void ShouldLoadLegacyLoginTimeAsLaunchOrder()
+        {
+            var settings = Deserialize(
+                "<UserSettings>" +
+                "<ClientSortOrder>LoginTime</ClientSortOrder>" +
+                "</UserSettings>");
+
+            Assert.That(
+                settings.ClientSortOrder,
+                Is.EqualTo(PlayerSortOrder.LaunchOrder));
+        }
+
+        [Test]
+        public void ShouldSaveLaunchOrderUsingTheNewName()
+        {
+            var settings = new UserSettings
+            {
+                ClientSortOrder = PlayerSortOrder.LaunchOrder
+            };
+            using var writer = new StringWriter();
+
+            Serializer.Serialize(writer, settings);
+
+            Assert.That(
+                writer.ToString(),
+                Does.Contain(
+                    "<ClientSortOrder>LaunchOrder</ClientSortOrder>"));
         }
 
         [Test]

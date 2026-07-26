@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Xml.Serialization;
 
 namespace SleepHunter.Settings
@@ -18,10 +19,6 @@ namespace SleepHunter.Settings
         private ColorThemeManager() { }
 
         private readonly ConcurrentDictionary<string, ColorTheme> colorThemes = new(StringComparer.OrdinalIgnoreCase);
-
-        public event ColorThemeEventHandler ThemeAdded;
-        public event ColorThemeEventHandler ThemeChanged;
-        public event ColorThemeEventHandler ThemeRemoved;
 
         public ColorTheme this[string key]
         {
@@ -43,13 +40,7 @@ namespace SleepHunter.Settings
             if (string.IsNullOrWhiteSpace(theme.Name))
                 throw new ArgumentException("Key cannot be null or whitespace.", nameof(theme.Name));
 
-            var alreadyExists = colorThemes.ContainsKey(theme.Name);
             colorThemes[theme.Name] = theme;
-
-            if (alreadyExists)
-                OnThemeChanged(theme);
-            else
-                OnThemeAdded(theme);
         }
 
         public ColorTheme GetTheme(string key)
@@ -66,30 +57,6 @@ namespace SleepHunter.Settings
                 throw new ArgumentNullException(nameof(key));
 
             return colorThemes.ContainsKey(key);
-        }
-
-        public bool RemoveTheme(string key)
-        {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
-            if (!colorThemes.ContainsKey(key))
-                return false;
-
-            bool wasRemoved = colorThemes.TryRemove(key, out var removedTheme);
-
-            if (wasRemoved)
-                OnThemeRemoved(removedTheme);
-
-            return wasRemoved;
-        }
-
-        public void ClearThemes()
-        {
-            foreach (var theme in colorThemes.Values)
-                OnThemeRemoved(theme);
-
-            colorThemes.Clear();
         }
 
         public void LoadFromFile(string filename)
@@ -134,40 +101,72 @@ namespace SleepHunter.Settings
             if (!colorThemes.ContainsKey(themeKey))
                 return;
 
-            var theme = colorThemes[themeKey];
-
-            Application.Current.Resources["ObsidianBackground"] = theme.Background;
-            Application.Current.Resources["ObsidianForeground"] = theme.Foreground;
+            ApplyThemeResources(colorThemes[themeKey]);
         }
 
         public void ApplyDefaultTheme()
         {
-            Application.Current.Resources["ObsidianBackground"] = DefaultTheme.Background;
-            Application.Current.Resources["ObsidianForeground"] = DefaultTheme.Foreground;
+            ApplyThemeResources(DefaultTheme);
         }
 
-        private void OnThemeAdded(ColorTheme theme)
+        internal static Color CreateAccentInsetColor(
+            Color accentColor)
         {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
+            const byte insetAlpha = 0x20;
+            var channel = GetContrastingChannel(accentColor);
 
-            ThemeAdded?.Invoke(this, new ColorThemeEventArgs(theme));
+            return Color.FromArgb(
+                insetAlpha,
+                channel,
+                channel,
+                channel);
         }
 
-        private void OnThemeChanged(ColorTheme theme)
+        internal static Color CreateAccentForegroundColor(
+            Color accentColor)
         {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
-
-            ThemeChanged?.Invoke(this, new ColorThemeEventArgs(theme));
+            var channel = GetContrastingChannel(accentColor);
+            return Color.FromArgb(
+                byte.MaxValue,
+                channel,
+                channel,
+                channel);
         }
 
-        private void OnThemeRemoved(ColorTheme theme)
+        private static byte GetContrastingChannel(
+            Color accentColor)
         {
-            if (theme == null)
-                throw new ArgumentNullException(nameof(theme));
+            var luminance =
+                0.2126 * ToLinearColorValue(accentColor.R) +
+                0.7152 * ToLinearColorValue(accentColor.G) +
+                0.0722 * ToLinearColorValue(accentColor.B);
+            var blackContrast = (luminance + 0.05) / 0.05;
+            var whiteContrast = 1.05 / (luminance + 0.05);
+            return blackContrast >= whiteContrast
+                ? (byte)0
+                : (byte)255;
+        }
 
-            ThemeRemoved?.Invoke(this, new ColorThemeEventArgs(theme));
+        private static void ApplyThemeResources(ColorTheme theme)
+        {
+            var resources = Application.Current.Resources;
+            resources["ObsidianBackground"] = theme.Background;
+            resources["ObsidianForeground"] = theme.Foreground;
+            resources["ObsidianAccentInsetBorderBrush"] =
+                new SolidColorBrush(
+                    CreateAccentInsetColor(theme.Background.Color));
+            resources["ObsidianAccentForeground"] =
+                new SolidColorBrush(
+                    CreateAccentForegroundColor(
+                        theme.Background.Color));
+        }
+
+        private static double ToLinearColorValue(byte channel)
+        {
+            var value = channel / 255.0;
+            return value <= 0.04045
+                ? value / 12.92
+                : Math.Pow((value + 0.055) / 1.055, 2.4);
         }
     }
 }

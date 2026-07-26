@@ -15,7 +15,10 @@ public sealed record SpellSnapshot
         int manaCost,
         TimeSpan cooldown,
         bool isActionDelayed = false,
-        bool opensDialog = false)
+        bool opensDialog = false,
+        ushort icon = 0,
+        byte argumentType = 0,
+        string? prompt = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -76,6 +79,11 @@ public sealed record SpellSnapshot
         Cooldown = cooldown;
         IsActionDelayed = isActionDelayed;
         OpensDialog = opensDialog;
+        Icon = icon;
+        ArgumentType = argumentType;
+        Prompt = string.IsNullOrWhiteSpace(prompt)
+            ? null
+            : prompt.Trim();
     }
 
     public string Name { get; }
@@ -115,4 +123,10 @@ public sealed record SpellSnapshot
     public bool IsActionDelayed { get; }
 
     public bool OpensDialog { get; }
+
+    public ushort Icon { get; }
+
+    public byte ArgumentType { get; }
+
+    public string? Prompt { get; }
 }

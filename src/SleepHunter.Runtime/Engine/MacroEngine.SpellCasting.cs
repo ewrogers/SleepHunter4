@@ -18,10 +18,27 @@ public sealed partial class MacroEngine
     private static MacroDecision CastNextSpell(
         MacroState currentState,
         CastNextSpellCommand command,
-        MacroTimestamp currentTime)
+        MacroTimestamp currentTime) =>
+        CastNextSpell(
+            currentState,
+            command,
+            currentTime,
+            manaRestorationPolicy: null,
+            manaRestorationStaffCatalog: null);
+
+    private static MacroDecision CastNextSpell(
+        MacroState currentState,
+        CastNextSpellCommand command,
+        MacroTimestamp currentTime,
+        FlowerExecutionPolicy? manaRestorationPolicy,
+        FlowerStaffCatalog? manaRestorationStaffCatalog)
     {
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
+            currentState.SpellCast is
+            {
+                Status: SpellCastStatus.Casting
+            } ||
             currentState.LatestSnapshot is not
             {
                 Presence: ClientPresence.InWorld
@@ -34,6 +51,42 @@ public sealed partial class MacroEngine
             currentState.SpellCast?.SnapshotRequiredAfter is not
             { } requiredAfter ||
             snapshot.CaptureStartedAt > requiredAfter;
+        if (manaRestorationPolicy is not null &&
+            ShouldRestoreManaForSpellQueue(
+                currentState,
+                snapshot,
+                currentTime,
+                command.Policy.Cast,
+                manaRestorationPolicy))
+        {
+            var restorationEntry = CreateFlowerSpellEntry(
+                FlowerActionKind.RestoreMana,
+                SpellTarget.None);
+            var restorationPlan = PlanFlowerSpell(
+                restorationEntry,
+                snapshot,
+                currentState.SpellCooldowns,
+                currentTime,
+                command.Policy.Cast,
+                snapshotIsFresh);
+            if (restorationPlan.HasSelection)
+            {
+                var restorationCast = SpellCastState.FromPlan(
+                    restorationPlan,
+                    command.Policy,
+                    currentState.SpellCast?.SnapshotRequiredAfter,
+                    SpellCastOrigin.ManaRestoration);
+                return BeginSpellCast(
+                    currentState,
+                    restorationCast,
+                    restorationPlan,
+                    (manaRestorationStaffCatalog ??
+                     FlowerStaffCatalog.Empty).GetCandidates(
+                        FlowerActionKind.RestoreMana),
+                    currentTime);
+            }
+        }
+
         var plan = PlanSpell(
             currentState.SpellQueue,
             snapshot,
@@ -454,7 +507,8 @@ public sealed partial class MacroEngine
         if (selectedSpell.OpensDialog)
         {
             var dialogDueAt =
-                currentTime.Add(spellCast.Policy.Dialog.CloseDelay);
+                currentTime.Add(
+                    spellCast.Policy.Dialog.ObservationTimeout);
             dialog = DialogState.Scheduled(
                 spellCast.Policy.Dialog,
                 dialogDueAt);
@@ -543,22 +597,21 @@ public sealed partial class MacroEngine
 
     private static MacroDecision HandleSpellCastDeadline(
         MacroState currentState,
-        PendingAction pendingAction,
-        CastSpellIntent intent,
+        SpellCastState spellCast,
         MacroTimestamp currentTime)
     {
-        if (currentState.SpellCast is not
+        if (spellCast is not
             {
                 Status: SpellCastStatus.Casting,
-                Plan.SelectedSpell: { } spell
-            } spellCast ||
-            spellCast.ActionId != intent.ActionId)
+                Plan.SelectedSpell: { } spell,
+                CompletesAt: { } completesAt
+            })
         {
             return Unchanged(currentState);
         }
 
         var cooldowns = currentState.SpellCooldowns.Prune(currentTime);
-        var readyAt = pendingAction.Deadline.Add(spell.Cooldown);
+        var readyAt = completesAt.Add(spell.Cooldown);
         if (readyAt > currentTime)
         {
             cooldowns = cooldowns.WithCooldown(spell.Name, readyAt);
@@ -571,7 +624,7 @@ public sealed partial class MacroEngine
         {
             flower = flower.Succeeded(
                 flower.Action == FlowerActionKind.Plant
-                    ? pendingAction.Deadline
+                    ? completesAt
                     : null);
         }
 
@@ -581,7 +634,7 @@ public sealed partial class MacroEngine
             currentState.StopReason,
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
-            pendingAction: null,
+            currentState.PendingAction,
             spellCooldowns: cooldowns,
             spellCast: succeeded,
             flower: flower);
@@ -609,9 +662,9 @@ public sealed partial class MacroEngine
         ClientSnapshot snapshot,
         MacroTimestamp currentTime) =>
         PlanSpell(
-            spellCast.Origin == SpellCastOrigin.Flower
-                ? spellCast.Plan.Queue
-                : currentState.SpellQueue,
+            spellCast.Origin == SpellCastOrigin.SpellQueue
+                ? currentState.SpellQueue
+                : spellCast.Plan.Queue,
             snapshot,
             currentState.SpellCooldowns,
             currentTime,

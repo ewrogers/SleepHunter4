@@ -99,23 +99,6 @@ namespace SleepHunter.IO.Process
             catch { return false; }
         }
 
-        public static bool TryReadChar(this MemoryVariable variable, BinaryReader reader, out char value)
-        {
-            value = '\0';
-
-            try
-            {
-                var success = TryReadByte(variable, reader, out var byteValue);
-
-                if (!success)
-                    return false;
-
-                value = (char)byteValue;
-                return true;
-            }
-            catch { return false; }
-        }
-
         public static bool TryReadByte(this MemoryVariable variable, BinaryReader reader, out byte value)
         {
             value = 0;
@@ -206,44 +189,6 @@ namespace SleepHunter.IO.Process
                 reader.BaseStream.Position = address;
 
                 value = reader.ReadUInt32();
-                return true;
-            }
-            catch { return false; }
-        }
-
-        public static bool TryReadInt64(this MemoryVariable variable, BinaryReader reader, out long value)
-        {
-            value = 0;
-
-            try
-            {
-                var address = DereferenceValue(variable, reader);
-
-                if (address == 0)
-                    return false;
-
-                reader.BaseStream.Position = address;
-
-                value = reader.ReadInt64();
-                return true;
-            }
-            catch { return false; }
-        }
-
-        public static bool TryReadUInt64(this MemoryVariable variable, BinaryReader reader, out ulong value)
-        {
-            value = 0;
-
-            try
-            {
-                var address = DereferenceValue(variable, reader);
-
-                if (address == 0)
-                    return false;
-
-                reader.BaseStream.Position = address;
-
-                value = reader.ReadUInt64();
                 return true;
             }
             catch { return false; }

@@ -198,6 +198,12 @@ public sealed class ClientSnapshotSchedulerTests
             Assert.That(statistics.SucceededCount, Is.EqualTo(2));
             Assert.That(statistics.FailedCount, Is.EqualTo(2));
             Assert.That(
+                statistics.Duration.Minimum,
+                Is.EqualTo(TimeSpan.FromMilliseconds(20)));
+            Assert.That(
+                statistics.Duration.Average,
+                Is.EqualTo(TimeSpan.FromMilliseconds(47.5)));
+            Assert.That(
                 statistics.Duration.Median,
                 Is.EqualTo(TimeSpan.FromMilliseconds(35)));
             Assert.That(

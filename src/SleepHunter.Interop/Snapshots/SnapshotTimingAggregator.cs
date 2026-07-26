@@ -91,11 +91,21 @@ internal sealed class SnapshotTimingAggregator
         var medianTicks = orderedTicks.Length % 2 == 0
             ? Midpoint(orderedTicks[middle - 1], orderedTicks[middle])
             : orderedTicks[middle];
+        var averageTicks = decimal.ToInt64(
+            decimal.Round(
+                orderedTicks.Aggregate(
+                    0m,
+                    (total, ticks) => total + ticks) /
+                orderedTicks.Length,
+                decimals: 0,
+                MidpointRounding.AwayFromZero));
         var percentile95Index = Math.Max(
             0,
             (int)Math.Ceiling(orderedTicks.Length * 0.95) - 1);
         return new SnapshotDurationStatistics(
             orderedTicks.Length,
+            TimeSpan.FromTicks(orderedTicks[0]),
+            TimeSpan.FromTicks(averageTicks),
             TimeSpan.FromTicks(medianTicks),
             TimeSpan.FromTicks(orderedTicks[percentile95Index]),
             TimeSpan.FromTicks(orderedTicks[^1]));

@@ -20,14 +20,6 @@ namespace SleepHunter.Common
             OnPropertyChanged(propertyName);
         }
 
-        public void RaisePropertyChanging(string propertyName)
-        {
-            if (propertyName == null)
-                throw new ArgumentNullException(nameof(propertyName));
-
-            OnPropertyChanging(propertyName);
-        }
-
         protected virtual bool SetProperty<T>(ref T backingStore,
             T newValue,
             [CallerMemberName] string propertyName = "",
