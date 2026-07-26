@@ -68,8 +68,8 @@ public sealed class ClientCollectionParserTests
             rawSprite: 0x8123,
             dyeColor: 1,
             "Holy Diana",
-            currentDurability: 29976,
-            maximumDurability: 30000);
+            currentDurability: 2596615,
+            maximumDurability: 2600000);
         WriteRichEquipmentItem(
             snapshot,
             slotIndex: 2,
@@ -91,8 +91,8 @@ public sealed class ClientCollectionParserTests
                         "Holy Diana",
                         sprite: 0x8123,
                         dyeColor: 1,
-                        currentDurability: 29976,
-                        maximumDurability: 30000),
+                        currentDurability: 2596615,
+                        maximumDurability: 2600000),
                     new EquipmentItemSnapshot(
                         3,
                         "Dragon Shield",
@@ -152,16 +152,16 @@ public sealed class ClientCollectionParserTests
     {
         var snapshot = new byte[ClientInventoryParser.PaneSnapshotSize];
         BinaryPrimitives.WriteUInt16LittleEndian(snapshot, 0x8123);
-        Encoding.ASCII.GetBytes("Holy Diana [29976/30000]").CopyTo(
+        Encoding.ASCII.GetBytes("Holy Diana [13499/15000]").CopyTo(
             snapshot.AsSpan(0x02));
         snapshot[0x82] = 3;
         snapshot[0x84] = 1;
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xA8),
-            30000);
+            13499);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xAC),
-            29976);
+            15000);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xB0),
             1);
@@ -180,9 +180,9 @@ public sealed class ClientCollectionParserTests
                     "Holy Diana",
                     sprite: 0x8123,
                     dyeColor: 3,
-                    displayName: "Holy Diana [29976/30000]",
-                    currentDurability: 29976,
-                    maximumDurability: 30000)));
+                    displayName: "Holy Diana [13499/15000]",
+                    currentDurability: 13499,
+                    maximumDurability: 15000)));
     }
 
     [Test]
@@ -291,10 +291,10 @@ public sealed class ClientCollectionParserTests
         var durabilityOffset = 0x938 + slotIndex * 0x08;
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.Slice(durabilityOffset),
-            maximumDurability);
+            currentDurability);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.Slice(durabilityOffset + sizeof(uint)),
-            currentDurability);
+            maximumDurability);
     }
 
     private static void WriteCompactEquipmentItem(

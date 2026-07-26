@@ -56,7 +56,7 @@ public sealed class ExtendedSnapshotTests
             displayName: "Viper's Gland [ 12 ]",
             quantity: 12,
             isStackable: true,
-            currentDurability: 12345,
+            currentDurability: 13499,
             maximumDurability: 15000);
         var equipment = new EquipmentSnapshot(
         [
@@ -69,8 +69,8 @@ public sealed class ExtendedSnapshotTests
                 "Winter Scarf",
                 sprite: 0x8D24,
                 dyeColor: 1,
-                currentDurability: 29976,
-                maximumDurability: 30000)
+                currentDurability: 2596615,
+                maximumDurability: 2600000)
         ]);
 
         Assert.Multiple(() =>
@@ -79,7 +79,7 @@ public sealed class ExtendedSnapshotTests
             Assert.That(inventoryItem.IsStackable, Is.True);
             Assert.That(
                 inventoryItem.CurrentDurability,
-                Is.EqualTo(12345));
+                Is.EqualTo(13499));
             Assert.That(
                 inventoryItem.MaximumDurability,
                 Is.EqualTo(15000));
@@ -87,7 +87,10 @@ public sealed class ExtendedSnapshotTests
             Assert.That(equipment.Find(18)?.Name, Is.EqualTo("Winter Scarf"));
             Assert.That(
                 equipment.Find(18)?.CurrentDurability,
-                Is.EqualTo(29976));
+                Is.EqualTo(2596615));
+            Assert.That(
+                equipment.Find(18)?.MaximumDurability,
+                Is.EqualTo(2600000));
         });
     }
 

@@ -41,12 +41,12 @@ internal static class ClientEquipmentParser
             var durabilityOffset =
                 DurabilityArrayOffset +
                 index * DurabilityRecordSize;
-            var maximumDurability =
+            var currentDurability =
                 BinaryPrimitives.ReadUInt32LittleEndian(
                     snapshot.Slice(
                         durabilityOffset,
                         sizeof(uint)));
-            var currentDurability =
+            var maximumDurability =
                 BinaryPrimitives.ReadUInt32LittleEndian(
                     snapshot.Slice(
                         durabilityOffset + sizeof(uint),

@@ -191,8 +191,8 @@ public sealed class ClientSnapshotCaptureTests
                             "Holy Diana",
                             sprite: 0x8123,
                             dyeColor: 1,
-                            currentDurability: 29976,
-                            maximumDurability: 30000),
+                            currentDurability: 13499,
+                            maximumDurability: 15000),
                         new InventoryItemSnapshot(
                             3,
                             "Gnarl",
@@ -210,7 +210,9 @@ public sealed class ClientSnapshotCaptureTests
                         new EquipmentItemSnapshot(
                             1,
                             "Holy Diana",
-                            sprite: 0x8123),
+                            sprite: 0x8123,
+                            currentDurability: 2596615,
+                            maximumDurability: 2600000),
                         new EquipmentItemSnapshot(
                             3,
                             "Dragon Shield",
@@ -1433,8 +1435,8 @@ public sealed class ClientSnapshotCaptureTests
             dyeColor: 1,
             "Holy Diana",
             quantity: 1,
-            currentDurability: 29976,
-            maximumDurability: 30000);
+            currentDurability: 13499,
+            maximumDurability: 15000);
         WriteInventoryPane(
             source,
             ThirdInventoryPaneAddress,
@@ -1451,7 +1453,9 @@ public sealed class ClientSnapshotCaptureTests
             equipment,
             slotIndex: 0,
             rawSprite: 0x8123,
-            "Holy Diana");
+            "Holy Diana",
+            currentDurability: 2596615,
+            maximumDurability: 2600000);
         WriteRichEquipmentItem(
             equipment,
             slotIndex: 2,
@@ -1890,10 +1894,10 @@ public sealed class ClientSnapshotCaptureTests
         snapshot[0x84] = checked((byte)slot);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xA8),
-            maximumDurability);
+            currentDurability);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xAC),
-            currentDurability);
+            maximumDurability);
         BinaryPrimitives.WriteUInt32LittleEndian(
             snapshot.AsSpan(0xB0),
             quantity);
@@ -1932,7 +1936,9 @@ public sealed class ClientSnapshotCaptureTests
         Span<byte> snapshot,
         int slotIndex,
         ushort rawSprite,
-        string name)
+        string name,
+        uint currentDurability = 0,
+        uint maximumDurability = 0)
     {
         BinaryPrimitives.WriteUInt16LittleEndian(
             snapshot.Slice(slotIndex * sizeof(ushort)),
@@ -1941,6 +1947,13 @@ public sealed class ClientSnapshotCaptureTests
             snapshot.Slice(
                 0x36 +
                 slotIndex * ClientEquipmentParser.CompactNameLength));
+        var durabilityOffset = 0x938 + slotIndex * 0x08;
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            snapshot.Slice(durabilityOffset),
+            currentDurability);
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            snapshot.Slice(durabilityOffset + sizeof(uint)),
+            maximumDurability);
     }
 
     private static void WriteCompactEquipmentItem(

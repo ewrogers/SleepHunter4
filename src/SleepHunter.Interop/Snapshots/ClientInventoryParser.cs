@@ -84,9 +84,9 @@ internal static class ClientInventoryParser
         var displayName = ClientText.ReadNullTerminatedAscii(
             snapshot.Slice(0x02, 0x80));
         var slot = snapshot[0x84];
-        var maximumDurability = BinaryPrimitives.ReadUInt32LittleEndian(
-            snapshot.Slice(0xA8, sizeof(uint)));
         var currentDurability = BinaryPrimitives.ReadUInt32LittleEndian(
+            snapshot.Slice(0xA8, sizeof(uint)));
+        var maximumDurability = BinaryPrimitives.ReadUInt32LittleEndian(
             snapshot.Slice(0xAC, sizeof(uint)));
         var quantity = BinaryPrimitives.ReadUInt32LittleEndian(
             snapshot.Slice(0xB0, sizeof(uint)));

@@ -60,6 +60,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Corrected all Instrumental Attack ranks to use normal skill activation.
 - Prevented stale client data from appearing as a garbled character name.
 - Corrected equipment and appearance readings for the supported 7.41 client.
+- Restored equipment icons and durability details, plus inventory durability numbers, for equipped and carried items.
 - Fixed skill cooldowns remaining visible after they end and restored live spell cooldowns in the UI.
 - Corrected inventory and equipment durability values, improved durability tooltip color, and made inventory tooltips respond across the full slot.
 - Kept the last valid map visible during map transitions while preventing automation until the new location is read consistently.

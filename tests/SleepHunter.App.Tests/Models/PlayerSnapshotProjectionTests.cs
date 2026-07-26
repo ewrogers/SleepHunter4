@@ -35,9 +35,17 @@ public sealed class PlayerSnapshotProjectionTests
             Assert.That(player.Location.X, Is.EqualTo(12));
             Assert.That(inventoryItem.Name, Is.EqualTo("Viper's Gland"));
             Assert.That(inventoryItem.Quantity, Is.EqualTo(12));
-            Assert.That(inventoryItem.Durability, Is.EqualTo(900));
+            Assert.That(inventoryItem.Durability, Is.EqualTo(13499));
+            Assert.That(
+                inventoryItem.MaximumDurability,
+                Is.EqualTo(15000));
             Assert.That(gold.Quantity, Is.EqualTo(3700));
             Assert.That(equipment.Name, Is.EqualTo("Bardocle"));
+            Assert.That(equipment.IconIndex, Is.EqualTo(0x809A));
+            Assert.That(equipment.Durability, Is.EqualTo(2596615));
+            Assert.That(
+                equipment.MaximumDurability,
+                Is.EqualTo(2600000));
             Assert.That(skill, Is.Not.Null);
             Assert.That(skill.MinHealthPercent, Is.EqualTo(25));
             Assert.That(skill.CooldownRemainingFraction, Is.EqualTo(0.5));
@@ -114,8 +122,8 @@ public sealed class PlayerSnapshotProjectionTests
                         displayName: "Viper's Gland [ 12 ]",
                         quantity: 12,
                         isStackable: true,
-                        currentDurability: 900,
-                        maximumDurability: 1000)
+                        currentDurability: 13499,
+                        maximumDurability: 15000)
                 ]),
             equipment: new EquipmentSnapshot(
                 [
@@ -123,8 +131,8 @@ public sealed class PlayerSnapshotProjectionTests
                         slot: 1,
                         name: "Bardocle",
                         sprite: 0x809A,
-                        currentDurability: 800,
-                        maximumDurability: 1000)
+                        currentDurability: 2596615,
+                        maximumDurability: 2600000)
                 ]),
             vitals: new VitalsSnapshot(
                 currentHealth: 300,
