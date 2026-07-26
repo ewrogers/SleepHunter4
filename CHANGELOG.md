@@ -63,6 +63,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Restored equipment icons and durability details, plus inventory durability numbers, for equipped and carried items.
 - Fixed skill cooldowns remaining visible after they end and restored live spell cooldowns in the UI.
 - Corrected inventory and equipment durability values, improved durability tooltip color, and made inventory tooltips respond across the full slot.
+- Fixed clients starting in certain inns appearing logged out until they changed maps.
 - Kept the last valid map visible during map transitions while preventing automation until the new location is read consistently.
 - Kept the Start Macro label visible before selecting a client and preserved Resume Macro for paused clients.
 - Restored updates to the selected macro queue.

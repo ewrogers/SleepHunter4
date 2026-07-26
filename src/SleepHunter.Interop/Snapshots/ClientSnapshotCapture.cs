@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
+using System.Buffers.Binary;
 using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Runtime.Automation.Panels;
@@ -1522,12 +1523,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             return false;
         }
 
-        if (!reader.TryReadText(
-                MapNameKey,
-                StrictAscii,
+        if (!TryReadMapName(
+                reader,
                 out var mapName,
-                out var mapNameError,
-                requireTerminator: true))
+                out var mapNameError))
         {
             location = null;
             error = MappingFailure(
@@ -1538,20 +1537,20 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(mapName))
+        if (!IsValidMapName(mapName))
         {
             location = null;
             error = InvalidValue(
                 SnapshotSection.Location,
                 MapNameKey,
-                "The observed map name is empty.");
+                "The observed map name is empty or contains invalid text.");
             failureQuality = SnapshotQuality.Incoherent;
             return false;
         }
 
         location = new MapLocationSnapshot(
             (int)mapNumber,
-            mapName,
+            mapName!,
             x,
             y,
             width,
@@ -1563,6 +1562,134 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         failureQuality = SnapshotQuality.Unknown;
         return true;
     }
+
+    private static bool TryReadMapName(
+        MappedMemoryReader reader,
+        out string? mapName,
+        out MappedMemoryReadError? error)
+    {
+        var definition = reader.Map.Find(MapNameKey);
+        if (definition is null)
+        {
+            mapName = null;
+            error = new MappedMemoryReadError(
+                MappedMemoryReadFailure.VariableNotFound,
+                MapNameKey,
+                MemoryValueKind.Text);
+            return false;
+        }
+
+        if (definition.ValueKind != MemoryValueKind.Text)
+        {
+            mapName = null;
+            error = new MappedMemoryReadError(
+                MappedMemoryReadFailure.ValueKindMismatch,
+                definition.Key,
+                MemoryValueKind.Text,
+                definition.ValueKind);
+            return false;
+        }
+
+        if (!reader.TryResolveAddress(
+                definition.Key,
+                out var fieldAddress,
+                out error))
+        {
+            mapName = null;
+            return false;
+        }
+
+        Span<byte> fieldPrefix =
+            stackalloc byte[(int)reader.Session.Limits.PointerWidth];
+        if (!reader.Session.TryRead(
+                fieldAddress,
+                fieldPrefix,
+                out var prefixError))
+        {
+            mapName = null;
+            error = MapNameReadFailed(prefixError);
+            return false;
+        }
+
+        var valueAddress = fieldAddress;
+        if (!LooksLikeInlineMapNamePrefix(fieldPrefix))
+        {
+            valueAddress = reader.Session.Limits.PointerWidth switch
+            {
+                PointerWidth.Bit32 => new MemoryAddress(
+                    BinaryPrimitives.ReadUInt32LittleEndian(fieldPrefix)),
+                PointerWidth.Bit64 => new MemoryAddress(
+                    BinaryPrimitives.ReadUInt64LittleEndian(fieldPrefix)),
+                _ => MemoryAddress.Null
+            };
+
+            if (valueAddress.IsNull)
+            {
+                mapName = null;
+                error = MapNameReadFailed(
+                    new MemoryReadError(
+                        MemoryReadFailure.NullPointer,
+                        fieldAddress,
+                        fieldPrefix.Length));
+                return false;
+            }
+        }
+
+        if (!reader.Session.TryReadString(
+                valueAddress,
+                definition.MaximumLength,
+                StrictAscii,
+                out mapName,
+                out var textError,
+                requireTerminator: true))
+        {
+            error = MapNameReadFailed(textError);
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    private static bool LooksLikeInlineMapNamePrefix(
+        ReadOnlySpan<byte> fieldPrefix)
+    {
+        var hasCharacter = false;
+        for (var index = 0; index < fieldPrefix.Length; index++)
+        {
+            var value = fieldPrefix[index];
+            if (value == 0)
+                return hasCharacter;
+
+            var isLetter =
+                value is >= (byte)'A' and <= (byte)'Z' or
+                    >= (byte)'a' and <= (byte)'z';
+            var isDigit = value is >= (byte)'0' and <= (byte)'9';
+            if (!isLetter &&
+                !isDigit &&
+                value != (byte)' ' &&
+                value != (byte)'-' &&
+                value != (byte)'\'')
+            {
+                return false;
+            }
+
+            if (!hasCharacter && !isLetter && !isDigit)
+                return false;
+
+            hasCharacter = true;
+        }
+
+        return hasCharacter;
+    }
+
+    private static MappedMemoryReadError MapNameReadFailed(
+        MemoryReadError? error) =>
+        new(
+            MappedMemoryReadFailure.ValueReadFailed,
+            MapNameKey,
+            ActualKind: MemoryValueKind.Text,
+            MemoryError: error);
 
     private static bool TryValidateCoherence(
         MappedMemoryReader reader,
@@ -1877,6 +2004,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
 
     private static bool IsAsciiLetter(char character) =>
         character is >= 'A' and <= 'Z' or >= 'a' and <= 'z';
+
+    private static bool IsValidMapName(string? mapName) =>
+        !string.IsNullOrWhiteSpace(mapName) &&
+        mapName.All(character => character is >= ' ' and <= '~');
 
     private static bool IsNullPointer(MappedMemoryReadError? error) =>
         error is

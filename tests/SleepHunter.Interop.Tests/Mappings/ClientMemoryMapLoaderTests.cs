@@ -44,7 +44,7 @@ public sealed class ClientMemoryMapLoaderTests
             Assert.That(mapName?.ValueKind, Is.EqualTo(MemoryValueKind.Text));
             Assert.That(
                 mapName?.Address.Offsets.Select(offset => offset.Value),
-                Is.EqualTo(new long[] { 0x4CAC, 0 }));
+                Is.EqualTo(new long[] { 0x4CAC }));
             Assert.That(
                 eventDispatcher?.Address.BaseAddress,
                 Is.EqualTo(new MemoryAddress(0x73D944)));

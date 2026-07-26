@@ -762,6 +762,32 @@ public sealed class ClientSnapshotCaptureTests
     }
 
     [Test]
+    public void ShouldCaptureInlineMapNameWithoutDereferencingItsText()
+    {
+        var source = CreateMemoryImage();
+        WriteFixedAscii(
+            source,
+            new MemoryAddress(MapNameRootAddress),
+            "Rucesion Inn",
+            length: 32);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(
+                result.Snapshot?.Location?.MapName,
+                Is.EqualTo("Rucesion Inn"));
+            Assert.That(
+                source.Reads,
+                Has.None.Matches<(MemoryAddress Address, int Length)>(
+                    read => read.Address.Value == 0x65637552));
+        });
+    }
+
+    [Test]
     public void ShouldTreatMissingMapNameAsTransitionAfterStableMap()
     {
         var source = CreateMemoryImage();
@@ -1665,9 +1691,7 @@ public sealed class ClientSnapshotCaptureTests
             MemoryValueKind.Unsigned32),
         new(
             "MapName",
-            new PointerChain(
-                new MemoryAddress(MapNameRootAddress),
-                ImmutableArray.Create(new PointerOffset(0))),
+            new PointerChain(new MemoryAddress(MapNameRootAddress)),
             MemoryValueKind.Text,
             maximumLength: 32),
         Block(
