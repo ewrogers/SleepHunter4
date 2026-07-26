@@ -87,6 +87,8 @@ installation. Use a disposable copy.
 - [ ] Confirm inventory, equipment, skill, and spell panes populate correctly.
 - [ ] Confirm item quantities, durability, learned levels, and cooldown overlays
   update without stale entries.
+- [ ] Leave a Debug build attached to a live client while observations update
+  and confirm no cross-thread `NotifyCanExecuteChanged` exception occurs.
 - [ ] Confirm inventory, skill, and spell slots show dim slot numbers, and
   equipment slots show the expected abbreviated top-left badges.
 - [ ] Confirm current and maximum durability are in the correct order for both

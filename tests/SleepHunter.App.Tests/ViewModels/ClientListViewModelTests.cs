@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Collections.Concurrent;
 using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
@@ -27,6 +28,49 @@ namespace SleepHunter.Tests.ViewModels;
 
 public sealed class ClientListViewModelTests
 {
+    [Test]
+    public async Task ShouldMarshalLegacyObservationsToTheUiDispatcher()
+    {
+        using var player = CreatePlayer();
+        var dispatcher = new QueuedUiDispatcher();
+        using var item = new ClientListItemViewModel(
+            player,
+            macroConfiguration: null,
+            runtime: null,
+            configurationMapper: null,
+            setupFactory: null,
+            getSettings: null,
+            uiDispatcher: dispatcher);
+        var observedThread = new TaskCompletionSource<int>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        item.PropertyChanged +=
+            (_, args) =>
+            {
+                if (args.PropertyName ==
+                    nameof(ClientListItemViewModel.Name))
+                {
+                    observedThread.TrySetResult(
+                        Environment.CurrentManagedThreadId);
+                }
+            };
+
+        await Task.Run(() => player.Name = "Worker Update");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dispatcher.PendingCount, Is.EqualTo(1));
+            Assert.That(observedThread.Task.IsCompleted, Is.False);
+        });
+
+        var uiThread = Environment.CurrentManagedThreadId;
+        dispatcher.ExecuteNext();
+
+        Assert.That(
+            await observedThread.Task.WaitAsync(
+                TimeSpan.FromSeconds(1)),
+            Is.EqualTo(uiThread));
+    }
+
     [Test]
     public void ShouldOwnSelectionAndClearItWithTheRemovedClient()
     {
@@ -865,5 +909,49 @@ public sealed class ClientListViewModelTests
             action();
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class QueuedUiDispatcher : IUiDispatcher
+    {
+        private readonly ConcurrentQueue<Invocation> invocations =
+            new();
+
+        public int PendingCount => invocations.Count;
+
+        public ValueTask InvokeAsync(
+            Action action,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var completion = new TaskCompletionSource<bool>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            invocations.Enqueue(
+                new Invocation(action, completion));
+            return new ValueTask(completion.Task);
+        }
+
+        public void ExecuteNext()
+        {
+            if (!invocations.TryDequeue(out var invocation))
+            {
+                throw new InvalidOperationException(
+                    "No UI invocation is pending.");
+            }
+
+            try
+            {
+                invocation.Action();
+                invocation.Completion.SetResult(true);
+            }
+            catch (Exception exception)
+            {
+                invocation.Completion.SetException(exception);
+                throw;
+            }
+        }
+
+        private sealed record Invocation(
+            Action Action,
+            TaskCompletionSource<bool> Completion);
     }
 }

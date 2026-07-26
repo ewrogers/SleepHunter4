@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Marshaled legacy client observation notifications through the WPF dispatcher so command availability updates cannot access bound buttons from the client-polling thread
 - Reset the runtime-details toggle when its popup is dismissed so the details panel can be reopened immediately
 - Stretched the runtime-details text viewport so multiline error diagnostics and scrollbars are not clipped at the bottom
 - Corrected runtime character-class decoding to use the client's sequential values from `0` for Peasant through `5` for Monk, including `3` for Wizard

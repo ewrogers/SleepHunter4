@@ -28,6 +28,7 @@ namespace SleepHunter.ViewModels
             configurationMapper;
         private readonly Func<UserSettings> getSettings;
         private readonly IRuntimeAutomationSetupFactory setupFactory;
+        private readonly IUiDispatcher uiDispatcher;
         private bool isDisposed;
 
         public ClientListItemViewModel(
@@ -39,7 +40,8 @@ namespace SleepHunter.ViewModels
                 runtime,
                 configurationMapper: null,
                 setupFactory: null,
-                getSettings: null)
+                getSettings: null,
+                uiDispatcher: null)
         {
         }
 
@@ -49,7 +51,8 @@ namespace SleepHunter.ViewModels
             ClientRuntimeViewModel runtime,
             IPlayerMacroConfigurationMapper configurationMapper,
             IRuntimeAutomationSetupFactory setupFactory,
-            Func<UserSettings> getSettings)
+            Func<UserSettings> getSettings,
+            IUiDispatcher uiDispatcher = null)
         {
             Player = player ??
                 throw new ArgumentNullException(nameof(player));
@@ -62,6 +65,7 @@ namespace SleepHunter.ViewModels
             this.configurationMapper = configurationMapper;
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
+            this.uiDispatcher = uiDispatcher;
 
             Player.PropertyChanged += OnObservedPropertyChanged;
             Player.Location.PropertyChanged += OnObservedPropertyChanged;
@@ -326,27 +330,53 @@ namespace SleepHunter.ViewModels
                 LastErrorStatus = $"Automation: {value.Message}";
         }
 
-        private async void OnObservedPropertyChanged(
+        private void OnObservedPropertyChanged(
             object sender,
             PropertyChangedEventArgs e)
         {
-            NotifyObservedState();
-            if (!ReferenceEquals(sender, MacroConfiguration) ||
-                !IsMacroRunning ||
-                !IsRuntimeConfigurationProperty(e.PropertyName))
-            {
-                return;
-            }
+            _ = ProcessObservedPropertyChangedAsync(sender, e);
+        }
 
-            LastAutomationError = null;
+        private async Task ProcessObservedPropertyChangedAsync(
+            object sender,
+            PropertyChangedEventArgs e)
+        {
             try
             {
+                await InvokeOnUiAsync(
+                    () =>
+                    {
+                        if (!isDisposed)
+                            NotifyObservedState();
+                    });
+                if (isDisposed ||
+                    !ReferenceEquals(sender, MacroConfiguration) ||
+                    !IsMacroRunning ||
+                    !IsRuntimeConfigurationProperty(e.PropertyName))
+                {
+                    return;
+                }
+
+                LastAutomationError = null;
                 await ApplyLiveAutomationSetupAsync();
             }
             catch (Exception exception)
             {
-                LastAutomationError = exception;
+                if (isDisposed)
+                    return;
+
+                await InvokeOnUiAsync(
+                    () => LastAutomationError = exception);
             }
+        }
+
+        private ValueTask InvokeOnUiAsync(Action action)
+        {
+            if (uiDispatcher is not null)
+                return uiDispatcher.InvokeAsync(action);
+
+            action();
+            return ValueTask.CompletedTask;
         }
 
         private void OnRuntimePropertyChanged(
