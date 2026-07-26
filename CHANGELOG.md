@@ -49,6 +49,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Fixed
 
 - Fixed a runtime error that could occur after a flower cast completed and its next waiting interval began.
+- Fixed normal spell casting and flowering failing to interleave when a prioritized flower target was temporarily unavailable.
+- Prevented Fas Spiorad from being cast again before its successful mana update can be observed, while preserving retries when mana stays low.
+- Kept Stop Macro available during capture errors and removed stale running indicators when a client runtime stops unexpectedly.
 - Fixed Fas Spiorad behavior so active casts are rechecked against current mana and cancelled when no longer needed, while still retrying when mana is low.
 - Prevented automatic staff selection from unequipping a weapon unless another usable staff improves casting.
 - Restored the active-cast highlight on the correct spell queue item.

@@ -667,7 +667,8 @@ public sealed class ClientListViewModelTests
                     isActionDelayed: true)
             ])));
         await WaitUntilAsync(
-            () => item.ToggleMacroCommand.CanExecute(null));
+            () => item.ToggleMacroCommand.CanExecute(null) &&
+                  macroConfiguration.QueuedSpells.Single().CurrentLevel == 5);
 
         Assert.Multiple(() =>
         {
@@ -1005,6 +1006,8 @@ public sealed class ClientListViewModelTests
         Assert.Multiple(() =>
         {
             Assert.That(item.IsRuntimeStatusError, Is.True);
+            Assert.That(item.IsMacroRunning, Is.False);
+            Assert.That(item.MacroToggleLabel, Is.EqualTo("Start Macro"));
             Assert.That(
                 item.RuntimeStatus,
                 Is.EqualTo(
@@ -1013,6 +1016,12 @@ public sealed class ClientListViewModelTests
             Assert.That(
                 item.RuntimeDetailsSnapshot,
                 Does.Contain("Runtime available: No"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain("Macro lifecycle: Stopped"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain("Macro stop reason: RuntimeFailure"));
             Assert.That(
                 item.RuntimeDetailsSnapshot,
                 Does.Contain("Runtime failure"));

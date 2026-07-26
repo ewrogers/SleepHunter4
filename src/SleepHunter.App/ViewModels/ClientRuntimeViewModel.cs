@@ -307,6 +307,20 @@ namespace SleepHunter.ViewModels
                     RuntimeFailure ??= Unwrap(exception);
                     if (hostUnavailable)
                     {
+                        if (Current is
+                            {
+                                Lifecycle: MacroLifecycle.Running or
+                                    MacroLifecycle.Paused
+                            } current)
+                        {
+                            Current = current with
+                            {
+                                Lifecycle = MacroLifecycle.Stopped,
+                                StopReason = MacroStopReason.RuntimeFailure,
+                                PendingActionId = null
+                            };
+                        }
+
                         isHostAvailable = false;
                         OnPropertyChanged(nameof(IsHostAvailable));
                     }

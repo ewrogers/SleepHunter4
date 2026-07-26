@@ -359,9 +359,11 @@ internal static class MacroDecisionInvariants
             FlowerStatus.WaitingForPanel =>
                 flowerSpellCast?.Status == SpellCastStatus.WaitingForPanel,
             FlowerStatus.TargetUnavailable =>
-                flowerSpellCast?.Status == SpellCastStatus.TargetUnavailable,
+                flowerSpellCast is null ||
+                flowerSpellCast.Status == SpellCastStatus.TargetUnavailable,
             FlowerStatus.IssueFailed =>
-                flowerSpellCast?.Status == SpellCastStatus.IssueFailed,
+                flowerSpellCast is null ||
+                flowerSpellCast.Status == SpellCastStatus.IssueFailed,
             FlowerStatus.Casting =>
                 flowerSpellCast?.Status == SpellCastStatus.Casting,
             FlowerStatus.Succeeded =>

@@ -15,6 +15,9 @@ namespace SleepHunter.Runtime.Engine;
 
 public sealed partial class MacroEngine
 {
+    private static readonly TimeSpan ManaRestorationObservationWindow =
+        TimeSpan.FromSeconds(2);
+
     private static MacroDecision CastNextSpell(
         MacroState currentState,
         CastNextSpellCommand command,
@@ -612,6 +615,17 @@ public sealed partial class MacroEngine
 
         var cooldowns = currentState.SpellCooldowns.Prune(currentTime);
         var readyAt = completesAt.Add(spell.Cooldown);
+        if (string.Equals(
+                spell.Name,
+                FlowerSpellNames.ManaRestoration,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            var observationReadyAt = completesAt.Add(
+                ManaRestorationObservationWindow);
+            if (observationReadyAt > readyAt)
+                readyAt = observationReadyAt;
+        }
+
         if (readyAt > currentTime)
         {
             cooldowns = cooldowns.WithCooldown(spell.Name, readyAt);

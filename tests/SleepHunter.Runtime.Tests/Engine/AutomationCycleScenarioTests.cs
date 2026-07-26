@@ -268,6 +268,221 @@ public sealed class AutomationCycleScenarioTests
     }
 
     [Test]
+    public void ShouldContinueSpellsWhenPrioritizedFlowerTargetIsUnavailable()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var flowerEntry = new FlowerQueueEntry(
+            new FlowerQueueEntryId(1),
+            SpellTarget.Character("Monitor"),
+            interval: TimeSpan.Zero);
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var queuedSpell = Spell(spellEntry.Name, slot: 2);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot(
+                [plant, queuedSpell]),
+            location: Location());
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(new AddFlowerQueueEntryCommand(flowerEntry));
+        scenario.ObserveClientRoster(
+            sequence: 1,
+            clients:
+            [
+                new ClientRosterEntry(
+                    new ClientIdentity("monitor-client"),
+                    "Monitor",
+                    ClientPresence.InWorld,
+                    isMacroRunning: true,
+                    isWaitingForMana: false,
+                    new MapLocationSnapshot(
+                        mapNumber: 1,
+                        mapName: "test map",
+                        x: 55,
+                        y: 55),
+                    Vitals())
+            ]);
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    floweringEnabled: true,
+                    flowerBeforeSpells: true,
+                    spellPolicy: TestSpellPolicy,
+                    flowerPolicy: new FlowerExecutionPolicy(
+                        spell: TestSpellPolicy))));
+        var started = scenario.Start();
+
+        var cycle = scenario.Dispatch(
+            started.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(cycle.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)cycle.Intent!).SpellName,
+                Is.EqualTo(queuedSpell.Name));
+            Assert.That(
+                cycle.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.TargetUnavailable));
+            Assert.That(
+                cycle.State.SpellCast?.Origin,
+                Is.EqualTo(SpellCastOrigin.SpellQueue));
+            Assert.That(
+                cycle.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+        });
+    }
+
+    [Test]
+    public void ShouldWaitForManaRestorationEffectBeforeRetrying()
+    {
+        var scenario = new MacroScenario();
+        var queuedEntry = SpellEntry();
+        var queuedSpell = Spell(
+            queuedEntry.Name,
+            slot: 1,
+            manaCost: 500);
+        var restoration = Spell(
+            FlowerSpellNames.ManaRestoration,
+            slot: 2);
+        var spellbook = new SpellbookSnapshot(
+            [queuedSpell, restoration]);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(
+                currentMana: 100,
+                maximumMana: 1000),
+            spellbook: spellbook);
+        scenario.Send(new AddSpellQueueEntryCommand(queuedEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    spellPolicy: TestSpellPolicy,
+                    flowerPolicy: new FlowerExecutionPolicy(
+                        spell: TestSpellPolicy,
+                        restoreManaOnDemand: true))));
+        var started = scenario.Start();
+        var restoring = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        var deadline = restoring.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            deadline.DueAt.Elapsed - scenario.CurrentTime.Elapsed);
+        var completed = scenario.Dispatch(deadline.Input);
+
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(500));
+        var unchangedMana = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(
+                currentMana: 100,
+                maximumMana: 1000),
+            spellbook: spellbook);
+        var waiting = scenario.Dispatch(
+            unchangedMana.RaisedEvents.Single());
+
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(500));
+        var restoredMana = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(
+                currentMana: 500,
+                maximumMana: 1000),
+            spellbook: spellbook);
+        var resumed = scenario.Dispatch(
+            restoredMana.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                ((CastSpellIntent)restoring.Intent!).SpellName,
+                Is.EqualTo(FlowerSpellNames.ManaRestoration));
+            Assert.That(
+                completed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Succeeded));
+            Assert.That(waiting.Intent, Is.Null);
+            Assert.That(waiting.State.PendingAction, Is.Null);
+            Assert.That(
+                waiting.State.SpellCooldowns.GetReadyAt(
+                    FlowerSpellNames.ManaRestoration,
+                    unchangedMana.State.LatestSnapshot!.CaptureCompletedAt),
+                Is.Not.Null);
+            Assert.That(resumed.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)resumed.Intent!).SpellName,
+                Is.EqualTo(queuedSpell.Name));
+        });
+    }
+
+    [Test]
+    public void ShouldRetryManaRestorationAfterObservationWindow()
+    {
+        var scenario = new MacroScenario();
+        var queuedEntry = SpellEntry();
+        var queuedSpell = Spell(
+            queuedEntry.Name,
+            slot: 1,
+            manaCost: 500);
+        var restoration = Spell(
+            FlowerSpellNames.ManaRestoration,
+            slot: 2);
+        var spellbook = new SpellbookSnapshot(
+            [queuedSpell, restoration]);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(
+                currentMana: 100,
+                maximumMana: 1000),
+            spellbook: spellbook);
+        scenario.Send(new AddSpellQueueEntryCommand(queuedEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    spellPolicy: TestSpellPolicy,
+                    flowerPolicy: new FlowerExecutionPolicy(
+                        spell: TestSpellPolicy,
+                        restoreManaOnDemand: true))));
+        var started = scenario.Start();
+        var restoring = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        var deadline = restoring.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            deadline.DueAt.Elapsed - scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(deadline.Input);
+
+        scenario.AdvanceBy(TimeSpan.FromSeconds(2));
+        var unchangedMana = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(
+                currentMana: 100,
+                maximumMana: 1000),
+            spellbook: spellbook);
+        var retry = scenario.Dispatch(
+            unchangedMana.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(retry.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)retry.Intent!).SpellName,
+                Is.EqualTo(FlowerSpellNames.ManaRestoration));
+        });
+    }
+
+    [Test]
     public void ShouldCancelSpellQueueManaRestorationAfterManaRecovers()
     {
         var scenario = new MacroScenario();

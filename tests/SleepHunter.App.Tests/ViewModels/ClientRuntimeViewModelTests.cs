@@ -190,6 +190,36 @@ public sealed class ClientRuntimeViewModelTests
     }
 
     [Test]
+    public async Task ShouldAllowStopWhileRunningCaptureIsUnhealthy()
+    {
+        var host = new RecordingRuntimeHost();
+        await using var viewModel = new ClientRuntimeViewModel(
+            host,
+            new RecordingUiDispatcher());
+        host.PublishView(CreateView(0, MacroLifecycle.Running));
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 1,
+            succeeded: false));
+        await WaitUntilAsync(
+            () => viewModel.Current?.Lifecycle ==
+                      MacroLifecycle.Running &&
+                  viewModel.CaptureSequence?.Value == 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.IsHostAvailable, Is.True);
+            Assert.That(viewModel.StopCommand.CanExecute(null), Is.True);
+        });
+
+        await viewModel.StopCommand.ExecuteAsync(null);
+
+        Assert.That(
+            await host.ReadCommandAsync(),
+            Is.TypeOf<StopMacroCommand>());
+    }
+
+    [Test]
     public async Task ShouldDisposeTheOwnedHostAndDisableCommands()
     {
         var host = new RecordingRuntimeHost();
@@ -260,6 +290,12 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(viewModel.RuntimeFailure, Is.SameAs(failure));
             Assert.That(viewModel.IsHostAvailable, Is.False);
             Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(
+                viewModel.Current?.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Stopped));
+            Assert.That(
+                viewModel.Current?.StopReason,
+                Is.EqualTo(MacroStopReason.RuntimeFailure));
             Assert.That(viewModel.StartCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.PauseCommand.CanExecute(null), Is.False);
             Assert.That(viewModel.ResumeCommand.CanExecute(null), Is.False);
