@@ -9,9 +9,10 @@ internal static class ClientEquipmentParser
     public const int RichSnapshotSize = 0x9C8;
     public const int CompactNameLength = 128;
 
-    private const int WeaponIndex = 0;
-    private const int ShieldIndex = 2;
+    private const int DyeArrayOffset = 0x24;
     private const int NameArrayOffset = 0x36;
+    private const int DurabilityArrayOffset = 0x938;
+    private const int DurabilityRecordSize = 0x08;
 
     public static EquipmentSnapshot ParseRich(
         ReadOnlySpan<byte> snapshot,
@@ -24,13 +25,43 @@ internal static class ClientEquipmentParser
                 $"An equipment snapshot must contain {RichSnapshotSize} bytes.");
         }
 
-        var weaponName = recordCount > WeaponIndex
-            ? ReadRichName(snapshot, WeaponIndex)
-            : null;
-        var shieldName = recordCount > ShieldIndex
-            ? ReadRichName(snapshot, ShieldIndex)
-            : null;
-        return new EquipmentSnapshot(weaponName, shieldName);
+        var items = new List<EquipmentItemSnapshot>(recordCount);
+        for (var index = 0; index < recordCount; index++)
+        {
+            var rawSprite = BinaryPrimitives.ReadUInt16LittleEndian(
+                snapshot.Slice(
+                    index * sizeof(ushort),
+                    sizeof(ushort)));
+            var name = ReadRichName(snapshot, index);
+            if (rawSprite == 0 || string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+
+            var durabilityOffset =
+                DurabilityArrayOffset +
+                index * DurabilityRecordSize;
+            var maximumDurability =
+                BinaryPrimitives.ReadUInt32LittleEndian(
+                    snapshot.Slice(
+                        durabilityOffset,
+                        sizeof(uint)));
+            var currentDurability =
+                BinaryPrimitives.ReadUInt32LittleEndian(
+                    snapshot.Slice(
+                        durabilityOffset + sizeof(uint),
+                        sizeof(uint)));
+            items.Add(
+                new EquipmentItemSnapshot(
+                    index + 1,
+                    name,
+                    rawSprite,
+                    snapshot[DyeArrayOffset + index],
+                    currentDurability,
+                    maximumDurability));
+        }
+
+        return new EquipmentSnapshot(items);
     }
 
     public static EquipmentSnapshot ParseCompact(
@@ -54,13 +85,20 @@ internal static class ClientEquipmentParser
                 $"A compact equipment snapshot with {recordCount} records must contain {expectedLength} bytes.");
         }
 
-        var weaponName = recordCount > WeaponIndex
-            ? ReadCompactName(snapshot, WeaponIndex, nameLength)
-            : null;
-        var shieldName = recordCount > ShieldIndex
-            ? ReadCompactName(snapshot, ShieldIndex, nameLength)
-            : null;
-        return new EquipmentSnapshot(weaponName, shieldName);
+        var items = new List<EquipmentItemSnapshot>(recordCount);
+        for (var index = 0; index < recordCount; index++)
+        {
+            var name = ReadCompactName(snapshot, index, nameLength);
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                items.Add(
+                    new EquipmentItemSnapshot(
+                        index + 1,
+                        name));
+            }
+        }
+
+        return new EquipmentSnapshot(items);
     }
 
     private static string? ReadRichName(

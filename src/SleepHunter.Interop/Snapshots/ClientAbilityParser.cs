@@ -57,7 +57,9 @@ internal static partial class ClientAbilityParser
                     currentLevel,
                     maximumLevel,
                     isActionDelayed: false,
-                    catalog));
+                    catalog,
+                    icon: BinaryPrimitives.ReadUInt16LittleEndian(
+                        record.Slice(2, sizeof(ushort)))));
         }
 
         return CreateSkillbook(skills);
@@ -88,6 +90,8 @@ internal static partial class ClientAbilityParser
 
             var rawName = ClientText.ReadNullTerminatedAscii(
                 record.Slice(5, NameLength));
+            var prompt = ClientText.ReadNullTerminatedAscii(
+                record.Slice(0x105, NameLength));
             var name = ParseName(
                 rawName,
                 suffixLeft: 0,
@@ -102,7 +106,11 @@ internal static partial class ClientAbilityParser
                     maximumLevel,
                     clientCastLines: 0,
                     isActionDelayed: false,
-                    catalog));
+                    catalog,
+                    icon: BinaryPrimitives.ReadUInt16LittleEndian(
+                        record.Slice(2, sizeof(ushort))),
+                    argumentType: record[4],
+                    prompt));
         }
 
         return CreateSpellbook(spells);
@@ -118,9 +126,17 @@ internal static partial class ClientAbilityParser
         }
 
         return new SkillPaneRecord(
+            BinaryPrimitives.ReadUInt16LittleEndian(snapshot),
             ClientText.ReadNullTerminatedAscii(
                 snapshot.Slice(0x02, PaneNameLength)),
             snapshot[0x182],
+            BinaryPrimitives.ReadUInt32LittleEndian(
+                snapshot.Slice(0x184, sizeof(uint))),
+            BinaryPrimitives.ReadUInt32LittleEndian(
+                snapshot.Slice(0x188, sizeof(uint))),
+            BinaryPrimitives.ReadUInt32LittleEndian(
+                snapshot.Slice(0x18C, sizeof(uint))),
+            snapshot[0x190] != 0,
             snapshot[0x192] != 0,
             BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x1AC, 4)),
             BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x1B4, 4)));
@@ -136,9 +152,14 @@ internal static partial class ClientAbilityParser
         }
 
         return new SpellPaneRecord(
+            BinaryPrimitives.ReadUInt16LittleEndian(
+                snapshot.Slice(0x02, sizeof(ushort))),
             ClientText.ReadNullTerminatedAscii(
                 snapshot.Slice(0x05, PaneNameLength)),
+            ClientText.ReadNullTerminatedAscii(
+                snapshot.Slice(0x85, PaneNameLength)),
             snapshot[0x00],
+            snapshot[0x04],
             snapshot[0x105],
             snapshot[0x107] != 0,
             BinaryPrimitives.ReadInt32LittleEndian(snapshot.Slice(0x120, 4)),
@@ -163,7 +184,12 @@ internal static partial class ClientAbilityParser
             currentLevel,
             maximumLevel,
             record.IsActionDelayed,
-            catalog);
+            catalog,
+            record.Icon,
+            record.CooldownProgress,
+            record.CooldownStartedAt,
+            record.CooldownEndsAt,
+            record.IsCooldownVisualActive);
     }
 
     public static SpellSnapshot CreateSpell(
@@ -185,7 +211,10 @@ internal static partial class ClientAbilityParser
             maximumLevel,
             record.CastLines,
             record.IsActionDelayed,
-            catalog);
+            catalog,
+            record.Icon,
+            record.ArgumentType,
+            record.Prompt);
     }
 
     public static SkillbookSnapshot CreateSkillbook(
@@ -224,7 +253,12 @@ internal static partial class ClientAbilityParser
         int currentLevel,
         int maximumLevel,
         bool isActionDelayed,
-        AbilitySnapshotCatalog catalog)
+        AbilitySnapshotCatalog catalog,
+        ushort icon = 0,
+        uint cooldownProgress = 0,
+        uint cooldownStartedAt = 0,
+        uint cooldownEndsAt = 0,
+        bool isCooldownVisualActive = false)
     {
         var metadata = catalog.FindSkill(name);
         return new SkillSnapshot(
@@ -238,7 +272,12 @@ internal static partial class ClientAbilityParser
             metadata?.OpensDialog ?? false,
             metadata?.RequiresDisarm ?? false,
             metadata?.HealthCondition,
-            isActionDelayed);
+            isActionDelayed,
+            icon,
+            cooldownProgress,
+            cooldownStartedAt,
+            cooldownEndsAt,
+            isCooldownVisualActive);
     }
 
     private static SpellSnapshot CreateSpell(
@@ -248,7 +287,10 @@ internal static partial class ClientAbilityParser
         int maximumLevel,
         int clientCastLines,
         bool isActionDelayed,
-        AbilitySnapshotCatalog catalog)
+        AbilitySnapshotCatalog catalog,
+        ushort icon = 0,
+        byte argumentType = 0,
+        string? prompt = null)
     {
         var metadata = catalog.FindSpell(name);
         var castLines = clientCastLines > 0
@@ -265,7 +307,10 @@ internal static partial class ClientAbilityParser
             metadata?.ManaCost ?? 0,
             metadata?.Cooldown ?? TimeSpan.Zero,
             isActionDelayed,
-            metadata?.OpensDialog ?? false);
+            metadata?.OpensDialog ?? false,
+            icon,
+            argumentType,
+            prompt);
     }
 
     private static string ParseName(
@@ -351,15 +396,23 @@ internal static partial class ClientAbilityParser
     private static partial Regex AbilityWithLevelRegex();
 
     internal readonly record struct SkillPaneRecord(
+        ushort Icon,
         string RawName,
         byte Slot,
+        uint CooldownProgress,
+        uint CooldownStartedAt,
+        uint CooldownEndsAt,
+        bool IsCooldownVisualActive,
         bool IsActionDelayed,
         int NameSuffixLeft,
         int BaseNameLength);
 
     internal readonly record struct SpellPaneRecord(
+        ushort Icon,
         string RawName,
+        string Prompt,
         byte Slot,
+        byte ArgumentType,
         byte CastLines,
         bool IsActionDelayed,
         int NameSuffixLeft,

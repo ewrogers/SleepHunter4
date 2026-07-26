@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added typed numeric memory variables for byte, signed-byte, 16-bit, and 32-bit values while preserving legacy formatted-string mappings for older client profiles
 - Expanded supported-client character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
 - Added the parsed 64-entry group-member cache, including names and starred state
+- Added immutable active spell-effect snapshots with icon and server-supplied duration stage
+- Added bounded world-entity snapshots for ground items, monsters, NPCs, and players, including coordinates, documented sprites, RTTI type, creature state, human appearance, resolved resource identities, and monster-disguise state
 - Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
 - Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
 - Added inventory pane display names and stackability alongside the existing stable compact inventory identity
@@ -78,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown
 - Show pane-backed spell cooldowns in the UI from the client's live action-delay state
-- Corrected live inventory and equipment durability ordering to read current durability before maximum durability, and changed durability tooltip text to a cooler blue
+- Corrected live inventory and equipment pane durability ordering to read maximum durability before current durability, and changed durability tooltip text to a cooler blue
 - Held map transitions until map number and name form a coherent identity, while retaining the last coherent UI projection and continuing to reject automation actions until capture recovers
 - Made occupied inventory tooltips respond across the full slot instead of only over the item sprite
 - Kept the Start Macro caption visible before a client is selected while preserving the Resume Macro caption for paused clients

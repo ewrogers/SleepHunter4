@@ -15,8 +15,33 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string CharacterNameKey = "CharacterName";
     private const string CharacterIdKey = "CharacterId";
     private const string CharacterClassKey = "CharacterClass";
+    private const string UserStateKey = "UserState";
+    private const string PrivilegeLevelKey = "PrivilegeLevel";
     private const string LevelKey = "Level";
     private const string AbilityLevelKey = "AbilityLevel";
+    private const string GoldKey = "Gold";
+    private const string TotalExperienceKey = "TotalExperience";
+    private const string StrengthKey = "Strength";
+    private const string DexterityKey = "Dexterity";
+    private const string WisdomKey = "Wisdom";
+    private const string ConstitutionKey = "Constitution";
+    private const string IntelligenceKey = "Intelligence";
+    private const string StatPointsKey = "StatPoints";
+    private const string ExperienceToNextLevelKey = "ExperienceToNextLevel";
+    private const string GamePointsKey = "GamePoints";
+    private const string AbilityToNextLevelKey = "AbilityToNextLevel";
+    private const string TotalAbilityKey = "TotalAbility";
+    private const string WeightKey = "Weight";
+    private const string MaximumWeightKey = "MaximumWeight";
+    private const string ArmorClassKey = "ArmorClass";
+    private const string DamageModifierKey = "DamageModifier";
+    private const string HitModifierKey = "HitModifier";
+    private const string AttackElementKey = "AttackElement";
+    private const string DefenseElementKey = "DefenseElement";
+    private const string MagicResistanceKey = "MagicResistance";
+    private const string ActionStateKey = "ActionState";
+    private const string ShowAbilityMetadataKey = "ShowAbilityMetadata";
+    private const string ShowMasterMetadataKey = "ShowMasterMetadata";
     private const string CurrentHealthKey = "CurrentHealth";
     private const string MaximumHealthKey = "MaximumHealth";
     private const string CurrentManaKey = "CurrentMana";
@@ -28,7 +53,13 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string MapNameKey = "MapName";
     private const string MapXKey = "MapX";
     private const string MapYKey = "MapY";
+    private const string MapWidthKey = "MapWidth";
+    private const string MapHeightKey = "MapHeight";
+    private const string MapFlagsKey = "MapFlags";
+    private const string MapWeatherKey = "MapWeather";
+    private const string MapTransferActiveKey = "MapTransferActive";
     private const string InventoryKey = "Inventory";
+    private const string InventoryPanesKey = "InventoryPanes";
     private const string EquipmentKey = "Equipment";
     private const string EquipmentSnapshotKey = "EquipmentSnapshot";
     private const string SkillbookKey = "Skillbook";
@@ -37,6 +68,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string SkillbookPaneCapacityKey = "SkillbookPaneCapacity";
     private const string SpellbookPanesKey = "SpellbookPanes";
     private const string SpellbookPaneCapacityKey = "SpellbookPaneCapacity";
+    private const string GroupMemberCacheKey = "GroupMemberCache";
+    private const string GroupMemberCountKey = "GroupMemberCount";
+    private const string ActiveSpellEffectsKey = "ActiveSpellEffects";
+    private const string WorldObjectListKey = "WorldObjectList";
 
     private static readonly Encoding StrictAscii = Encoding.GetEncoding(
         Encoding.ASCII.CodePage,
@@ -49,8 +84,33 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(CharacterNameKey, MemoryValueKind.Text),
         new(CharacterIdKey, MemoryValueKind.Unsigned32),
         new(CharacterClassKey, MemoryValueKind.Byte),
+        new(UserStateKey, MemoryValueKind.Unsigned32),
+        new(PrivilegeLevelKey, MemoryValueKind.Signed32),
         new(LevelKey, MemoryValueKind.Byte),
         new(AbilityLevelKey, MemoryValueKind.Byte),
+        new(GoldKey, MemoryValueKind.Unsigned32),
+        new(TotalExperienceKey, MemoryValueKind.Unsigned32),
+        new(StrengthKey, MemoryValueKind.Unsigned16),
+        new(DexterityKey, MemoryValueKind.Unsigned16),
+        new(WisdomKey, MemoryValueKind.Unsigned16),
+        new(ConstitutionKey, MemoryValueKind.Unsigned16),
+        new(IntelligenceKey, MemoryValueKind.Unsigned16),
+        new(StatPointsKey, MemoryValueKind.Unsigned16),
+        new(ExperienceToNextLevelKey, MemoryValueKind.Unsigned32),
+        new(GamePointsKey, MemoryValueKind.Unsigned32),
+        new(AbilityToNextLevelKey, MemoryValueKind.Unsigned32),
+        new(TotalAbilityKey, MemoryValueKind.Unsigned32),
+        new(WeightKey, MemoryValueKind.Unsigned32),
+        new(MaximumWeightKey, MemoryValueKind.Unsigned32),
+        new(ArmorClassKey, MemoryValueKind.SByte),
+        new(DamageModifierKey, MemoryValueKind.Byte),
+        new(HitModifierKey, MemoryValueKind.Byte),
+        new(AttackElementKey, MemoryValueKind.Unsigned16),
+        new(DefenseElementKey, MemoryValueKind.Unsigned16),
+        new(MagicResistanceKey, MemoryValueKind.Unsigned16),
+        new(ActionStateKey, MemoryValueKind.Byte),
+        new(ShowAbilityMetadataKey, MemoryValueKind.Unsigned32),
+        new(ShowMasterMetadataKey, MemoryValueKind.Unsigned32),
         new(CurrentHealthKey, MemoryValueKind.Unsigned32),
         new(MaximumHealthKey, MemoryValueKind.Unsigned32),
         new(CurrentManaKey, MemoryValueKind.Unsigned32),
@@ -62,7 +122,13 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(MapNameKey, MemoryValueKind.Text),
         new(MapXKey, MemoryValueKind.Signed32),
         new(MapYKey, MemoryValueKind.Signed32),
+        new(MapWidthKey, MemoryValueKind.Signed32),
+        new(MapHeightKey, MemoryValueKind.Signed32),
+        new(MapFlagsKey, MemoryValueKind.Unsigned32),
+        new(MapWeatherKey, MemoryValueKind.Byte),
+        new(MapTransferActiveKey, MemoryValueKind.Byte),
         new(InventoryKey, MemoryValueKind.Binary),
+        new(InventoryPanesKey, MemoryValueKind.Binary),
         new(EquipmentKey, MemoryValueKind.Binary),
         new(EquipmentSnapshotKey, MemoryValueKind.Binary),
         new(SkillbookKey, MemoryValueKind.Binary),
@@ -70,7 +136,11 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(SkillbookPanesKey, MemoryValueKind.Binary),
         new(SkillbookPaneCapacityKey, MemoryValueKind.Signed32),
         new(SpellbookPanesKey, MemoryValueKind.Binary),
-        new(SpellbookPaneCapacityKey, MemoryValueKind.Signed32)
+        new(SpellbookPaneCapacityKey, MemoryValueKind.Signed32),
+        new(GroupMemberCacheKey, MemoryValueKind.Binary),
+        new(GroupMemberCountKey, MemoryValueKind.Unsigned32),
+        new(ActiveSpellEffectsKey, MemoryValueKind.Binary),
+        new(WorldObjectListKey, MemoryValueKind.Unsigned32)
     ];
 
     private readonly ClientIdentity client;
@@ -566,6 +636,102 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             }
         }
 
+        GroupSnapshot? group = null;
+        if (requestedSections.HasFlag(SnapshotCaptureSections.Group))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var groupSucceeded = TryReadGroup(
+                reader,
+                out group,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.Group,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                groupSucceeded);
+            if (!groupSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
+        ActiveSpellEffectsSnapshot? activeSpellEffects = null;
+        if (requestedSections.HasFlag(
+                SnapshotCaptureSections.ActiveSpellEffects))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var effectsSucceeded = TryReadActiveSpellEffects(
+                reader,
+                out activeSpellEffects,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.ActiveSpellEffects,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                effectsSucceeded);
+            if (!effectsSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
+        WorldEntitiesSnapshot? worldEntities = null;
+        if (requestedSections.HasFlag(
+                SnapshotCaptureSections.WorldEntities))
+        {
+            sectionStartedAt = clock.GetCurrentTimestamp();
+            readsBefore = session.Metrics;
+            var entitiesSucceeded = TryReadWorldEntities(
+                reader,
+                character!.CharacterId,
+                out worldEntities,
+                out error,
+                out failureQuality);
+            sectionCompletedAt = clock.GetCurrentTimestamp();
+            AddSection(
+                sections,
+                SnapshotSection.WorldEntities,
+                sectionStartedAt,
+                sectionCompletedAt,
+                readsBefore,
+                session.Metrics,
+                entitiesSucceeded);
+            if (!entitiesSucceeded)
+            {
+                return Failure(
+                    sequence,
+                    startedAt,
+                    session,
+                    sections,
+                    failureQuality,
+                    error!);
+            }
+        }
+
         sectionStartedAt = clock.GetCurrentTimestamp();
         readsBefore = session.Metrics;
         var coherenceSucceeded = TryValidateCoherence(
@@ -613,7 +779,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook,
             spellbook,
             isInventoryExpanded,
-            isUserChatting);
+            isUserChatting,
+            group,
+            activeSpellEffects,
+            worldEntities);
     }
 
     private SnapshotCaptureResult Success(
@@ -631,7 +800,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         SkillbookSnapshot? skillbook = null,
         SpellbookSnapshot? spellbook = null,
         bool isInventoryExpanded = false,
-        bool isUserChatting = false)
+        bool isUserChatting = false,
+        GroupSnapshot? group = null,
+        ActiveSpellEffectsSnapshot? activeSpellEffects = null,
+        WorldEntitiesSnapshot? worldEntities = null)
     {
         var completedAt = clock.GetCurrentTimestamp();
         var snapshot = new ClientSnapshot(
@@ -650,7 +822,10 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             skillbook: skillbook,
             location: location,
             isInventoryExpanded: isInventoryExpanded,
-            isUserChatting: isUserChatting);
+            isUserChatting: isUserChatting,
+            group: group,
+            activeSpellEffects: activeSpellEffects,
+            worldEntities: worldEntities);
         var metrics = new SnapshotCaptureMetrics(
             sequence,
             startedAt,
@@ -832,12 +1007,197 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             return false;
         }
 
+        if (!TryReadCharacterUInt32(
+                reader,
+                UserStateKey,
+                out var rawUserState,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterInt32(
+                reader,
+                PrivilegeLevelKey,
+                out var privilegeLevel,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                GoldKey,
+                out var gold,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                TotalExperienceKey,
+                out var totalExperience,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                StrengthKey,
+                out var strength,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                DexterityKey,
+                out var dexterity,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                WisdomKey,
+                out var wisdom,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                ConstitutionKey,
+                out var constitution,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                IntelligenceKey,
+                out var intelligence,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                StatPointsKey,
+                out var statPoints,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                ExperienceToNextLevelKey,
+                out var experienceToNextLevel,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                GamePointsKey,
+                out var gamePoints,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                AbilityToNextLevelKey,
+                out var abilityToNextLevel,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                TotalAbilityKey,
+                out var totalAbility,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                WeightKey,
+                out var weight,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                MaximumWeightKey,
+                out var maximumWeight,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterSByte(
+                reader,
+                ArmorClassKey,
+                out var armorClass,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterByte(
+                reader,
+                DamageModifierKey,
+                out var damageModifier,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterByte(
+                reader,
+                HitModifierKey,
+                out var hitModifier,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                AttackElementKey,
+                out var attackElement,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                DefenseElementKey,
+                out var defenseElement,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt16(
+                reader,
+                MagicResistanceKey,
+                out var magicResistance,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterByte(
+                reader,
+                ActionStateKey,
+                out var actionState,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                ShowAbilityMetadataKey,
+                out var showAbilityMetadata,
+                out error,
+                out failureQuality) ||
+            !TryReadCharacterUInt32(
+                reader,
+                ShowMasterMetadataKey,
+                out var showMasterMetadata,
+                out error,
+                out failureQuality))
+        {
+            character = null;
+            return false;
+        }
+
+        var userStateValue = (byte)(rawUserState & byte.MaxValue);
+        var userState = userStateValue <=
+            (byte)CharacterUserState.NeedHelp
+            ? (CharacterUserState)userStateValue
+            : CharacterUserState.Unknown;
         character = new CharacterSnapshot(
             characterClass,
             presence.Level,
             abilityLevel,
             presence.CharacterName,
-            characterId);
+            characterId,
+            userState,
+            privilegeLevel,
+            gold,
+            totalExperience,
+            strength,
+            dexterity,
+            wisdom,
+            constitution,
+            intelligence,
+            statPoints,
+            experienceToNextLevel,
+            gamePoints,
+            abilityToNextLevel,
+            totalAbility,
+            weight,
+            maximumWeight,
+            armorClass,
+            damageModifier,
+            hitModifier,
+            attackElement,
+            defenseElement,
+            magicResistance,
+            actionState,
+            showAbilityMetadata != 0,
+            showMasterMetadata != 0);
         error = null;
         failureQuality = SnapshotQuality.Unknown;
         return true;
@@ -1038,6 +1398,101 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             return false;
         }
 
+        if (!reader.TryReadInt32(
+                MapWidthKey,
+                out var width,
+                out var widthError))
+        {
+            location = null;
+            error = MappingFailure(
+                SnapshotSection.Location,
+                MapWidthKey,
+                widthError);
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (!reader.TryReadInt32(
+                MapHeightKey,
+                out var height,
+                out var heightError))
+        {
+            location = null;
+            error = MappingFailure(
+                SnapshotSection.Location,
+                MapHeightKey,
+                heightError);
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (width <= 0 ||
+            height <= 0 ||
+            x >= width ||
+            y >= height)
+        {
+            location = null;
+            error = InvalidValue(
+                SnapshotSection.Location,
+                MapWidthKey,
+                $"Map dimensions {width} by {height} do not contain position ({x}, {y}).");
+            failureQuality = SnapshotQuality.Incoherent;
+            return false;
+        }
+
+        if (!reader.TryReadUInt32(
+                MapFlagsKey,
+                out var flags,
+                out var flagsError))
+        {
+            location = null;
+            error = MappingFailure(
+                SnapshotSection.Location,
+                MapFlagsKey,
+                flagsError);
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (!reader.TryReadByte(
+                MapWeatherKey,
+                out var weather,
+                out var weatherError))
+        {
+            location = null;
+            error = MappingFailure(
+                SnapshotSection.Location,
+                MapWeatherKey,
+                weatherError);
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (!reader.TryReadByte(
+                MapTransferActiveKey,
+                out var transferActive,
+                out var transferError))
+        {
+            location = null;
+            error = MappingFailure(
+                SnapshotSection.Location,
+                MapTransferActiveKey,
+                transferError);
+            failureQuality = SnapshotQuality.Partial;
+            return false;
+        }
+
+        if (transferActive != 0)
+        {
+            location = null;
+            error = StateChanged(
+                SnapshotSection.Location,
+                MapTransferActiveKey,
+                "The client map transfer is still active.");
+            failureQuality = SnapshotQuality.Incoherent;
+            return false;
+        }
+
         if (!reader.TryReadText(
                 MapNameKey,
                 StrictAscii,
@@ -1069,7 +1524,12 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             (int)mapNumber,
             mapName,
             x,
-            y);
+            y,
+            width,
+            height,
+            flags,
+            weather,
+            isTransferActive: false);
         error = null;
         failureQuality = SnapshotQuality.Unknown;
         return true;
@@ -1237,6 +1697,116 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         error = null;
         failureQuality = SnapshotQuality.Unknown;
         return true;
+    }
+
+    private static bool TryReadCharacterUInt32(
+        MappedMemoryReader reader,
+        string key,
+        out uint value,
+        out SnapshotCaptureError? error,
+        out SnapshotQuality failureQuality)
+    {
+        if (reader.TryReadUInt32(key, out value, out var readError))
+        {
+            error = null;
+            failureQuality = SnapshotQuality.Unknown;
+            return true;
+        }
+
+        error = MappingFailure(
+            SnapshotSection.Character,
+            key,
+            readError);
+        failureQuality = SnapshotQuality.Partial;
+        return false;
+    }
+
+    private static bool TryReadCharacterInt32(
+        MappedMemoryReader reader,
+        string key,
+        out int value,
+        out SnapshotCaptureError? error,
+        out SnapshotQuality failureQuality)
+    {
+        if (reader.TryReadInt32(key, out value, out var readError))
+        {
+            error = null;
+            failureQuality = SnapshotQuality.Unknown;
+            return true;
+        }
+
+        error = MappingFailure(
+            SnapshotSection.Character,
+            key,
+            readError);
+        failureQuality = SnapshotQuality.Partial;
+        return false;
+    }
+
+    private static bool TryReadCharacterUInt16(
+        MappedMemoryReader reader,
+        string key,
+        out ushort value,
+        out SnapshotCaptureError? error,
+        out SnapshotQuality failureQuality)
+    {
+        if (reader.TryReadUInt16(key, out value, out var readError))
+        {
+            error = null;
+            failureQuality = SnapshotQuality.Unknown;
+            return true;
+        }
+
+        error = MappingFailure(
+            SnapshotSection.Character,
+            key,
+            readError);
+        failureQuality = SnapshotQuality.Partial;
+        return false;
+    }
+
+    private static bool TryReadCharacterByte(
+        MappedMemoryReader reader,
+        string key,
+        out byte value,
+        out SnapshotCaptureError? error,
+        out SnapshotQuality failureQuality)
+    {
+        if (reader.TryReadByte(key, out value, out var readError))
+        {
+            error = null;
+            failureQuality = SnapshotQuality.Unknown;
+            return true;
+        }
+
+        error = MappingFailure(
+            SnapshotSection.Character,
+            key,
+            readError);
+        failureQuality = SnapshotQuality.Partial;
+        return false;
+    }
+
+    private static bool TryReadCharacterSByte(
+        MappedMemoryReader reader,
+        string key,
+        out sbyte value,
+        out SnapshotCaptureError? error,
+        out SnapshotQuality failureQuality)
+    {
+        if (reader.TryReadSByte(key, out value, out var readError))
+        {
+            error = null;
+            failureQuality = SnapshotQuality.Unknown;
+            return true;
+        }
+
+        error = MappingFailure(
+            SnapshotSection.Character,
+            key,
+            readError);
+        failureQuality = SnapshotQuality.Partial;
+        return false;
     }
 
     private static bool TryMapCharacterClass(
@@ -1407,6 +1977,12 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             capacity: ClientInventoryParser.RecordCount);
         ValidateBinaryLayout(
             map,
+            InventoryPanesKey,
+            maximumLength: 0,
+            recordSize: ClientInventoryParser.PanePointerSize,
+            capacity: ClientInventoryParser.RecordCount);
+        ValidateBinaryLayout(
+            map,
             EquipmentKey,
             maximumLength: ClientEquipmentParser.CompactNameLength,
             recordSize: ClientEquipmentParser.CompactNameLength,
@@ -1441,6 +2017,18 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             maximumLength: 0,
             recordSize: ClientAbilityParser.PanePointerSize,
             capacity: ClientAbilityParser.PaneRecordCount);
+        ValidateBinaryLayout(
+            map,
+            GroupMemberCacheKey,
+            maximumLength: ClientGroupParser.NameLength,
+            recordSize: ClientGroupParser.RecordSize,
+            capacity: ClientGroupParser.RecordCount);
+        ValidateBinaryLayout(
+            map,
+            ActiveSpellEffectsKey,
+            maximumLength: 0,
+            recordSize: ClientSpellEffectParser.SnapshotSize,
+            capacity: ClientSpellEffectParser.RecordCount);
     }
 
     private static void ValidateBinaryLayout(

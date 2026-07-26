@@ -18,7 +18,12 @@ public sealed record SkillSnapshot
         bool opensDialog = false,
         bool requiresDisarm = false,
         HealthCondition? healthCondition = null,
-        bool isActionDelayed = false)
+        bool isActionDelayed = false,
+        ushort icon = 0,
+        uint cooldownProgress = 0,
+        uint cooldownStartedAt = 0,
+        uint cooldownEndsAt = 0,
+        bool isCooldownVisualActive = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -74,6 +79,11 @@ public sealed record SkillSnapshot
         HealthCondition =
             healthCondition ?? SleepHunter.Runtime.Automation.HealthCondition.Any;
         IsActionDelayed = isActionDelayed;
+        Icon = icon;
+        CooldownProgress = cooldownProgress;
+        CooldownStartedAt = cooldownStartedAt;
+        CooldownEndsAt = cooldownEndsAt;
+        IsCooldownVisualActive = isCooldownVisualActive;
     }
 
     public string Name { get; }
@@ -99,6 +109,16 @@ public sealed record SkillSnapshot
     public HealthCondition HealthCondition { get; }
 
     public bool IsActionDelayed { get; }
+
+    public ushort Icon { get; }
+
+    public uint CooldownProgress { get; }
+
+    public uint CooldownStartedAt { get; }
+
+    public uint CooldownEndsAt { get; }
+
+    public bool IsCooldownVisualActive { get; }
 
     public static ClientPanel GetPanelForSlot(int slot)
     {

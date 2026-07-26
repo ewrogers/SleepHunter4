@@ -67,8 +67,8 @@ namespace SleepHunter.Tests.Models
             Encoding.ASCII.GetBytes("Viper's Gland [ 12 ]").CopyTo(snapshot.AsSpan(0x02));
             snapshot[0x82] = 6;
             snapshot[0x84] = 7;
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xA8), 12345);
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xAC), 15000);
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xA8), 15000);
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xAC), 12345);
             BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0xB0), 1234567);
             snapshot[0xB4] = 1;
 

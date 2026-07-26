@@ -21,7 +21,10 @@ public sealed record ClientSnapshot
         SkillbookSnapshot? skillbook = null,
         MapLocationSnapshot? location = null,
         bool isInventoryExpanded = false,
-        bool isUserChatting = false)
+        bool isUserChatting = false,
+        GroupSnapshot? group = null,
+        ActiveSpellEffectsSnapshot? activeSpellEffects = null,
+        WorldEntitiesSnapshot? worldEntities = null)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -64,6 +67,9 @@ public sealed record ClientSnapshot
         Location = location;
         IsInventoryExpanded = isInventoryExpanded;
         IsUserChatting = isUserChatting;
+        Group = group;
+        ActiveSpellEffects = activeSpellEffects;
+        WorldEntities = worldEntities;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -97,6 +103,12 @@ public sealed record ClientSnapshot
     public bool IsInventoryExpanded { get; }
 
     public bool IsUserChatting { get; }
+
+    public GroupSnapshot? Group { get; }
+
+    public ActiveSpellEffectsSnapshot? ActiveSpellEffects { get; }
+
+    public WorldEntitiesSnapshot? WorldEntities { get; }
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }

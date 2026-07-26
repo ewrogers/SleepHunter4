@@ -8,5 +8,15 @@ public enum SnapshotCaptureSections
     Equipment = 1 << 1,
     Skillbook = 1 << 2,
     Spellbook = 1 << 3,
-    All = Inventory | Equipment | Skillbook | Spellbook
+    Group = 1 << 4,
+    ActiveSpellEffects = 1 << 5,
+    WorldEntities = 1 << 6,
+    All =
+        Inventory |
+        Equipment |
+        Skillbook |
+        Spellbook |
+        Group |
+        ActiveSpellEffects |
+        WorldEntities
 }

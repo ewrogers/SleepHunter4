@@ -184,6 +184,54 @@ namespace SleepHunter.Tests.Settings
             });
         }
 
+        [Test]
+        public void ShouldExposeCoherentMapInventoryAndEffectSources()
+        {
+            var mapWidth =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "MapWidth");
+            var mapTransferActive =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "MapTransferActive");
+            var inventoryPanes =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "InventoryPanes");
+            var effects =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "ActiveSpellEffects");
+            var groupCount =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "GroupMemberCount");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(mapWidth.Address, Is.EqualTo(0x73D964));
+                Assert.That(
+                    mapWidth.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x128 }));
+                Assert.That(mapWidth.Offsets[0].IsNegative, Is.True);
+                Assert.That(
+                    mapTransferActive.Offsets.Single().Offset,
+                    Is.EqualTo(0x77));
+                Assert.That(
+                    mapTransferActive.Offsets.Single().IsNegative,
+                    Is.True);
+                Assert.That(
+                    inventoryPanes.Offsets.Select(
+                        offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x4DF8, 0x1A0 }));
+                Assert.That(inventoryPanes.Count, Is.EqualTo(60));
+                Assert.That(
+                    effects.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x4E04, 0x190 }));
+                Assert.That(effects.Size, Is.EqualTo(30));
+                Assert.That(effects.Count, Is.EqualTo(10));
+                Assert.That(
+                    groupCount.Offsets.Select(offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0x20, 0x1044 }));
+            });
+        }
+
         private static string FindLayoutFile()
         {
             var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);

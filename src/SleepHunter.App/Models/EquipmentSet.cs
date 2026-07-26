@@ -164,9 +164,9 @@ namespace SleepHunter.Models
                 var name = ReadNullTerminatedAscii(
                     snapshot.Slice(NameArrayOffset + index * EquipmentNameLength, EquipmentNameLength));
                 var durabilityOffset = DurabilityArrayOffset + index * DurabilityRecordSize;
-                var durability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
-                    snapshot.Slice(durabilityOffset, sizeof(uint)));
                 var maximumDurability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
+                    snapshot.Slice(durabilityOffset, sizeof(uint)));
+                var durability = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
                     snapshot.Slice(durabilityOffset + sizeof(uint), sizeof(uint)));
 
                 records[index] = new EquipmentRecord(

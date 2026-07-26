@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0"?>
 <ClientLayout PointerWidth="Bit32">
+  <!--
+    Darkages.exe 7.4.1.0
+    SHA-256: 054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6
+    Static addresses assume the documented preferred image layout.
+  -->
   <ExecutableName>Darkages.exe</ExecutableName>
   <WindowClassName>DarkAges</WindowClassName>
   <WindowTitle>Darkages</WindowTitle>
@@ -254,6 +259,31 @@
         <Offset Value="B4" IsNegative="true" />
       </Offsets>
     </Dynamic>
+    <Dynamic Key="MapWidth" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="128" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapHeight" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="124" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapFlags" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="8C" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapWeather" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="88" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapTransferActive" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="77" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
     <Dynamic Key="Inventory" Address="73D964" MaxLength="256" Size="262" Count="60">
       <Offsets>
         <Offset Value="20" IsNegative="true" />
@@ -306,6 +336,12 @@
       <Offsets>
         <Offset Value="20" IsNegative="true" />
         <Offset Value="1044" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ActiveSpellEffects" Address="82B768" Size="30" Count="10">
+      <Offsets>
+        <Offset Value="4E04" />
+        <Offset Value="190" />
       </Offsets>
     </Dynamic>
     <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="128" Count="18">

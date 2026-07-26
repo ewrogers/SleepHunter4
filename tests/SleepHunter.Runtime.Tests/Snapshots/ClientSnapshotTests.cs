@@ -107,6 +107,28 @@ public sealed class ClientSnapshotTests
             mapName: "map",
             x: 50,
             y: 50);
+        var group = new GroupSnapshot(
+        [
+            new GroupMemberSnapshot("Aislinn", isStarred: true)
+        ]);
+        var activeSpellEffects = new ActiveSpellEffectsSnapshot(
+        [
+            new ActiveSpellEffectSnapshot(
+                1,
+                icon: 321,
+                SpellEffectDurationStage.White)
+        ]);
+        var worldEntities = new WorldEntitiesSnapshot(
+        [
+            new WorldEntitySnapshot(
+                1234,
+                WorldEntityType.Player,
+                x: 50,
+                y: 50,
+                sprite: 100,
+                name: "Aislinn",
+                isLocalPlayer: true)
+        ]);
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -122,7 +144,11 @@ public sealed class ClientSnapshotTests
             spellbook,
             skillbook,
             location,
-            isInventoryExpanded: true);
+            isInventoryExpanded: true,
+            isUserChatting: false,
+            group,
+            activeSpellEffects,
+            worldEntities);
 
         Assert.Multiple(() =>
         {
@@ -134,6 +160,13 @@ public sealed class ClientSnapshotTests
             Assert.That(snapshot.Skillbook, Is.EqualTo(skillbook));
             Assert.That(snapshot.Location, Is.EqualTo(location));
             Assert.That(snapshot.IsInventoryExpanded, Is.True);
+            Assert.That(snapshot.Group, Is.EqualTo(group));
+            Assert.That(
+                snapshot.ActiveSpellEffects,
+                Is.EqualTo(activeSpellEffects));
+            Assert.That(
+                snapshot.WorldEntities,
+                Is.EqualTo(worldEntities));
         });
     }
 }

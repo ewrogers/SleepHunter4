@@ -29,6 +29,10 @@ still used by `ClientLaunchService`; extracting it into
 `SleepHunter.Patching` remains a focused follow-up rather than being mixed into
 dead-code removal.
 
+The unified runtime mapping coverage, field sources, coherence rules, and
+documented client limits are recorded in
+[MEMORY_MAPPING.md](MEMORY_MAPPING.md).
+
 ## Executive Decision
 
 SleepHunter will receive a new unit-tested runtime built beside the legacy

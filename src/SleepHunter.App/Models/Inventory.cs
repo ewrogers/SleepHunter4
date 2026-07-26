@@ -247,8 +247,8 @@ namespace SleepHunter.Models
                 ReadNullTerminatedAscii(snapshot.Slice(0x02, 0x80)),
                 snapshot[0x82],
                 snapshot[0x84],
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xAC, 4)),
+                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
                 System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xB0, 4)),
                 snapshot[0xB4] != 0);
         }
