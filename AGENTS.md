@@ -23,11 +23,11 @@ speculative behavior.
 
 ## Repository Layout
 
-- `SleepHunter/` contains the main .NET 10 WPF application.
-- `SleepHunter.Updater/` contains the Windows updater.
-- `SleepHunter.Tests/` contains NUnit tests.
-- `data/` contains runtime XML data, including client versions, themes, skills,
-  spells, and staves.
+- `src/SleepHunter.App/` contains the main .NET 10 WPF application.
+- `src/SleepHunter.Updater/` contains the Windows updater.
+- `tests/SleepHunter.App.Tests/` contains the WPF application NUnit tests.
+- `data/` contains runtime XML data, including the client layout, themes,
+  skills, spells, and staves.
 - `docs/` contains the mdBook documentation source.
 - `CHANGELOG.md` is the authoritative changelog. Documentation deployment copies
   it into the generated documentation output.
@@ -64,7 +64,7 @@ For a focused test run, use an NUnit-compatible filter and still run the full
 suite before handing off a substantial change.
 
 ```powershell
-dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj `
+dotnet test tests/SleepHunter.App.Tests/SleepHunter.App.Tests.csproj `
     --configuration Release `
     --no-build `
     --filter "FullyQualifiedName~TestClassOrMethod"
@@ -99,8 +99,7 @@ mdbook test
 
 ## Memory Mapping and Live Client Safety
 
-- Treat `data/Versions.xml` as the source of client-specific mapping
-  configuration.
+- Treat `data/ClientLayout.xml` as the source of client mapping configuration.
 - Do not guess addresses, offsets, pointer depth, field widths, signedness, or
   collection capacities. Base changes on client documentation, disassembly,
   packet behavior, or a reproducible live-memory observation.
@@ -136,7 +135,7 @@ mdbook test
 
 ## Tests
 
-- Use NUnit in `SleepHunter.Tests/`.
+- Use NUnit in `tests/SleepHunter.App.Tests/`.
 - Name tests as behavior statements, following the existing `Should...` pattern.
 - Use `Assert.Multiple` when several properties describe one parsed snapshot or
   result.

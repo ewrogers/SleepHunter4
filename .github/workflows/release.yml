@@ -35,7 +35,7 @@ jobs:
           }
 
           $version = $Matches.version
-          $projectPath = "SleepHunter/SleepHunter.csproj"
+          $projectPath = "src/SleepHunter.App/SleepHunter.App.csproj"
           $appVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/Version").Node.InnerText
           $assemblyVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/AssemblyVersion").Node.InnerText
           $fileVersion = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/FileVersion").Node.InnerText
@@ -48,7 +48,7 @@ jobs:
               throw "Release tag '$tag' does not match the SleepHunter project metadata"
           }
 
-          $updaterProjectPath = "SleepHunter.Updater/SleepHunter.Updater.csproj"
+          $updaterProjectPath = "src/SleepHunter.Updater/SleepHunter.Updater.csproj"
           $updaterVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/Version").Node.InnerText
           $updaterAssemblyVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/AssemblyVersion").Node.InnerText
           $updaterFileVersion = (Select-Xml -Path $updaterProjectPath -XPath "/Project/PropertyGroup/FileVersion").Node.InnerText
@@ -85,7 +85,7 @@ jobs:
       - name: Publish SleepHunter
         shell: pwsh
         run: |
-          dotnet publish SleepHunter/SleepHunter.csproj `
+          dotnet publish src/SleepHunter.App/SleepHunter.App.csproj `
               --runtime win-x64 `
               --configuration Release `
               -p:PublishSingleFile=true `
@@ -97,7 +97,7 @@ jobs:
       - name: Publish Updater
         shell: pwsh
         run: |
-          dotnet publish SleepHunter.Updater/SleepHunter.Updater.csproj `
+          dotnet publish src/SleepHunter.Updater/SleepHunter.Updater.csproj `
               --runtime win-x64 `
               --configuration Release `
               -p:PublishSingleFile=true `
