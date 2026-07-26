@@ -64,17 +64,11 @@ namespace SleepHunter.IO.Process
                 NativeMethods.GetWindowText(windowHandle, windowTextBuffer, windowTextBuffer.Capacity);
                 var windowText = windowTextBuffer.ToString();
 
-                // Get Window Rectangle
-                NativeMethods.GetClientRect(windowHandle, out var windowRect);
-
                 var process = new ClientProcess
                 {
                     ProcessId = processId,
                     WindowHandle = windowHandle,
-                    WindowClassName = className,
-                    WindowTitle = windowText,
-                    WindowWidth = windowRect.Width,
-                    WindowHeight = windowRect.Height,
+                    WindowTitle = windowText
                 };
 
                 // Add to found clients

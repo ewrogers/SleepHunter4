@@ -5,6 +5,7 @@ using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
+using SleepHunter.Models;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
@@ -83,6 +84,42 @@ public sealed class ClientRuntimeRegistryTests
             Assert.That(registry.Count, Is.EqualTo(1));
             Assert.That(factory.AttachCount, Is.EqualTo(1));
             Assert.That(logger.InfoMessages.Length, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ShouldProjectRuntimeSnapshotsIntoThePlayerModel()
+    {
+        var factory = new RecordingRuntimeFactory();
+        await using var registry = CreateRegistry(
+            factory,
+            new RecordingLogger());
+        var descriptor = Descriptor(processId: 1234);
+        using var player = new Player(
+            new ClientProcess
+            {
+                ProcessId = descriptor.ProcessId,
+                WindowHandle = descriptor.WindowHandle
+            });
+
+        await registry.AttachAsync(
+            descriptor,
+            TimeSpan.FromMilliseconds(200));
+        var wasBound = registry.BindPresentation(player);
+        factory.LastHost!.PublishCapture(
+            CreateCapture(
+                descriptor.Client,
+                sequenceValue: 1,
+                characterName: "Projected"));
+        await WaitUntilAsync(() => player.IsLoggedIn);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(wasBound, Is.True);
+            Assert.That(player.Name, Is.EqualTo("Projected"));
+            Assert.That(player.Stats.CurrentHealth, Is.EqualTo(100));
+            Assert.That(player.Location.MapName, Is.EqualTo("Test Map"));
+            Assert.That(player.LastSnapshotSequence, Is.EqualTo(1));
         });
     }
 

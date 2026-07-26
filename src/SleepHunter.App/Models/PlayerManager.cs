@@ -100,7 +100,7 @@ namespace SleepHunter.Models
             player.PropertyChanged += Player_PropertyChanged;
 
             AddPlayer(player);
-            player.Update();
+            player.RefreshProcess();
         }
 
         public void AddPlayer(Player player)
@@ -119,15 +119,15 @@ namespace SleepHunter.Models
         public bool RemovePlayer(int processId)
         {
             var wasRemoved = players.TryRemove(processId, out var removedPlayer);
+            if (!wasRemoved)
+                return false;
+
             removedPlayer.PropertyChanged -= Player_PropertyChanged;
 
-            if (wasRemoved)
-            {
-                OnPlayerRemoved(removedPlayer);
-                removedPlayer.Dispose();
-            }
+            OnPlayerRemoved(removedPlayer);
+            removedPlayer.Dispose();
 
-            return wasRemoved;
+            return true;
         }
 
         public void UpdateClients(Predicate<Player> predicate = null)
@@ -137,7 +137,7 @@ namespace SleepHunter.Models
                 try
                 {
                     if (predicate == null || predicate(client))
-                        client.Update();
+                        client.RefreshProcess();
                 }
                 catch { }
             }

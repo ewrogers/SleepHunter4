@@ -10,39 +10,26 @@ namespace SleepHunter.IO.Process
     public sealed class ProcessMemoryAccessor : IDisposable
     {
         private bool isDisposed;
-        private readonly int processId;
         private nint processHandle;
-        private readonly ProcessAccess access;
 
-        public int ProcessId => processId;
-        public nint ProcessHandle => processHandle;
-        public ProcessAccess Access => access;
-
-        public ProcessMemoryAccessor(int processId, ProcessAccess access = ProcessAccess.ReadWrite)
+        public ProcessMemoryAccessor(int processId)
         {
-            this.processId = processId;
-            this.access = access;
-
-            processHandle = NativeMethods.OpenProcess(access.ToWin32Flags(), false, processId);
+            processHandle = NativeMethods.OpenProcess(
+                ProcessAccess.ReadWrite.ToWin32Flags(),
+                false,
+                processId);
 
             if (processHandle == 0)
                 throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Unable to open process {processId}: {Marshal.GetLastPInvokeErrorMessage()}");
         }
 
-        public Stream GetStream()
+        public Stream GetWritableStream()
         {
             CheckIfDisposed();
-            return new ProcessMemoryStream(processHandle, ProcessAccess.Read, leaveOpen: true);
-        }
-
-        public Stream GetWriteableStream()
-        {
-            CheckIfDisposed();
-
-            if (!access.HasFlag(ProcessAccess.Write))
-                throw new InvalidOperationException("Accessor is not writeable");
-
-            return new ProcessMemoryStream(processHandle, ProcessAccess.ReadWrite, leaveOpen: true);
+            return new ProcessMemoryStream(
+                processHandle,
+                ProcessAccess.ReadWrite,
+                leaveOpen: true);
         }
 
         ~ProcessMemoryAccessor() => Dispose(false);

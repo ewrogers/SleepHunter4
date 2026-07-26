@@ -21,12 +21,6 @@ namespace SleepHunter.IO.Process
         public override bool CanWrite => processHandle != 0 && access.HasFlag(ProcessAccess.Write);
         public override bool CanTimeout => false;
 
-        public nint ProcessHandle
-        {
-            get => processHandle;
-            private set => processHandle = value;
-        }
-
         public override long Length => throw new NotSupportedException($"{nameof(Length)} is not supported.");
 
         public override long Position

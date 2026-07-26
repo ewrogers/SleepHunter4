@@ -203,10 +203,9 @@ namespace SleepHunter.Services.Clients
         {
             var processId = process.ProcessId;
             using var accessor = new ProcessMemoryAccessor(
-                processId,
-                ProcessAccess.ReadWrite);
+                processId);
             using var patchStream =
-                accessor.GetWriteableStream();
+                accessor.GetWritableStream();
             using var writer = new BinaryWriter(
                 patchStream,
                 Encoding.ASCII,

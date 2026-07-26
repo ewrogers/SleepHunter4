@@ -99,6 +99,13 @@ change its own collections while SleepHunter is observing them. Compact
 inventory, skill, spell, and cooldown readings remain available as compatibility
 fallbacks when richer client panes cannot be read safely.
 
+The interop layer is the application's only live client reader. It publishes
+coherent snapshots to the automation runtime, and the WPF application projects
+those same snapshots into the client list, vitals, inventory, equipment, skill,
+and spell views. The application does not run a second client-reading path.
+Direct process memory access remains only in the signature-checked client
+launcher patch flow described above.
+
 Live-client verification guidance is maintained in
 [Live Smoke Testing](./SMOKE_TESTING.md).
 
@@ -134,6 +141,15 @@ Repository layout:
 
 The application project is named `SleepHunter.App`, while the shipped product
 and executable remain `SleepHunter` and `SleepHunter.exe`.
+
+The client list and runtime automation state use MVVM view models and observable
+snapshot projections. The application is not yet fully MVVM. Code-behind remains
+for WPF window and Win32 host integration, and command or interaction logic
+still exists in the main window, metadata, settings, target, editor, and update
+dialogs. Moving that interaction logic into view models is the remaining UI
+migration boundary. New presentation behavior should be implemented in view
+models, bindings, templates, converters, or services rather than expanding that
+code-behind.
 
 Changes that affect live client mappings, input, patches, or automation should
 include deterministic tests and still be verified against the supported 7.41

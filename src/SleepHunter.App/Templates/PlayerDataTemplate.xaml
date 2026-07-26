@@ -157,13 +157,13 @@
                                 Orientation="Horizontal">
                         <TextBlock Name="StatusText"
                                    Style="{StaticResource ObsidianText}"
-                                   Text="{Binding Status}"
                                    TextWrapping="WrapWithOverflow"
                                    TextAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="14"
                                    Margin="4,0"
-                                   Opacity="0.7"/>
+                                   Opacity="0.7"
+                                   Visibility="Collapsed"/>
                     </StackPanel>
 
                     <!-- Map Location -->
@@ -320,9 +320,6 @@
         </DockPanel>
 
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding Status}" Value="{x:Null}">
-                <Setter TargetName="StatusText" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
             <DataTrigger Binding="{Binding IsLoggedIn}" Value="False">
                 <Setter TargetName="NameText" Property="Text" Value="{Binding Process.WindowTitle}"/>
                 <Setter TargetName="MapText" Property="Text" Value="Client detected"/>

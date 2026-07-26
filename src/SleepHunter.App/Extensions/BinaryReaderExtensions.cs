@@ -27,23 +27,5 @@ namespace SleepHunter.Extensions
             return stringBuffer.ToString();
         }
 
-        public static string ReadNullTerminatedString(this BinaryReader reader, int maxLength = -1)
-        {
-            var buffer = new StringBuilder(256);
-
-            var c = reader.ReadChar();
-
-            while (c != '\0')
-            {
-                buffer.Append(c);
-
-                if (buffer.Length >= maxLength && maxLength > 0)
-                    break;
-
-                c = reader.ReadChar();
-            }
-
-            return buffer.ToString();
-        }
     }
 }

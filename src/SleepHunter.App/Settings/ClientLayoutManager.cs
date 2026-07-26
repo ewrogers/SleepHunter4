@@ -123,12 +123,6 @@ namespace SleepHunter.Settings
                 throw new InvalidDataException(
                     "The client layout executable name is required.");
             }
-
-            if (layout.Variables is null || layout.Variables.Count == 0)
-            {
-                throw new InvalidDataException(
-                    "The client layout must contain memory variables.");
-            }
         }
     }
 }

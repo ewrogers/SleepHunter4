@@ -32,7 +32,7 @@ namespace SleepHunter.Tests.ViewModels;
 public sealed class ClientListViewModelTests
 {
     [Test]
-    public async Task ShouldMarshalLegacyObservationsToTheUiDispatcher()
+    public async Task ShouldMarshalPlayerPresentationObservationsToTheUiDispatcher()
     {
         using var player = CreatePlayer();
         var dispatcher = new QueuedUiDispatcher();
@@ -129,13 +129,15 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
-    public async Task ShouldUseRuntimeObservationsAndFallBackAfterFailure()
+    public async Task ShouldUseRuntimeObservationsAndRetainProjectedStateAfterFailure()
     {
         using var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
             new InlineUiDispatcher());
+        using var projection =
+            new ClientSnapshotProjection(player, runtime);
         using var item = new ClientListItemViewModel(
             player,
             runtime);
@@ -144,9 +146,9 @@ public sealed class ClientListViewModelTests
         {
             Assert.That(item.HasRuntime, Is.True);
             Assert.That(item.UsesRuntimeSnapshot, Is.False);
-            Assert.That(item.Name, Is.EqualTo("Legacy"));
+            Assert.That(item.Name, Is.EqualTo("Presentation"));
             Assert.That(item.CurrentHealth, Is.EqualTo(100));
-            Assert.That(item.MapName, Is.EqualTo("Legacy Map"));
+            Assert.That(item.MapName, Is.EqualTo("Presentation Map"));
         });
 
         host.PublishCapture(CreateCapture(
@@ -191,8 +193,8 @@ public sealed class ClientListViewModelTests
         {
             Assert.That(item.UsesRuntimeSnapshot, Is.True);
             Assert.That(item.IsLoggedIn, Is.False);
-            Assert.That(item.Name, Is.EqualTo("Legacy"));
-            Assert.That(item.CurrentHealth, Is.EqualTo(100));
+            Assert.That(item.Name, Is.EqualTo("Runtime"));
+            Assert.That(item.CurrentHealth, Is.Zero);
         });
 
         host.PublishCapture(CreateCapture(
@@ -218,9 +220,9 @@ public sealed class ClientListViewModelTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(item.Name, Is.EqualTo("Legacy"));
-            Assert.That(item.CurrentHealth, Is.EqualTo(100));
-            Assert.That(item.MapName, Is.EqualTo("Legacy Map"));
+            Assert.That(item.Name, Is.EqualTo("Runtime"));
+            Assert.That(item.CurrentHealth, Is.Zero);
+            Assert.That(item.MapName, Is.Null);
             Assert.That(item.HasLastErrorStatus, Is.True);
             Assert.That(
                 item.LastErrorStatus,
@@ -1056,19 +1058,18 @@ public sealed class ClientListViewModelTests
         {
             ProcessId = Environment.ProcessId,
             WindowHandle = new nint(1),
-            WindowTitle = "Legacy Window"
+            WindowTitle = "Presentation Window"
         };
         var player = new Player(process)
         {
-            Name = "Legacy",
-            IsLoggedIn = true,
-            Status = "Legacy status"
+            Name = "Presentation",
+            IsLoggedIn = true
         };
         player.Stats.CurrentHealth = 100;
         player.Stats.MaximumHealth = 200;
         player.Stats.CurrentMana = 150;
         player.Stats.MaximumMana = 250;
-        player.Location.MapName = "Legacy Map";
+        player.Location.MapName = "Presentation Map";
         player.Location.X = 10;
         player.Location.Y = 20;
         return player;

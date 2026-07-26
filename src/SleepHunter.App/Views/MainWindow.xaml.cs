@@ -268,6 +268,7 @@ namespace SleepHunter.Views
                     e.Player.Process.ProcessId,
                     e.Player.Process.WindowHandle),
                 UserSettingsManager.Instance.Settings.ClientUpdateInterval);
+            runtimeClients.BindPresentation(e.Player);
 
             UpdateClientList();
         }
@@ -276,6 +277,8 @@ namespace SleepHunter.Views
         {
             logger.LogInfo($"Game client process removed with pid: {e.Player.Process.ProcessId}");
 
+            runtimeClients.UnbindPresentation(
+                e.Player.Process.ProcessId);
             await OnPlayerLoggedOutAsync(e.Player);
 
             UpdateClientList();
@@ -293,7 +296,7 @@ namespace SleepHunter.Views
             if (sender is not Player player)
                 return;
 
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
 
             if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
             {
@@ -329,7 +332,7 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
 
             player.LoginTimestamp ??= DateTime.Now;
 
@@ -371,7 +374,7 @@ namespace SleepHunter.Views
             if (player == null || string.IsNullOrWhiteSpace(player.Name))
                 return;
 
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
 
             if (player.LoginTimestamp is null)
                 return;
@@ -1638,7 +1641,7 @@ namespace SleepHunter.Views
 
         private async void UpdateClientList()
         {
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
 
             if (isDisposed || isShutdownInProgress)
                 return;

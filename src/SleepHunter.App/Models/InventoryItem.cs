@@ -12,12 +12,9 @@ namespace SleepHunter.Models
         private bool isEmpty;
         private int slot;
         private int iconIndex;
-        private byte color;
         private bool isGold;
         private string name;
-        private string clientDisplayName;
         private int quantity;
-        private bool canStack;
         private uint durability;
         private uint maximumDurability;
         private ImageSource icon;
@@ -43,12 +40,6 @@ namespace SleepHunter.Models
 
         public int SpriteNumber => IconIndex > 0x8000 ? IconIndex - 0x8000 : IconIndex;
 
-        public byte Color
-        {
-            get => color;
-            set => SetProperty(ref color, value);
-        }
-
         public bool IsGold
         {
             get => isGold;
@@ -68,12 +59,6 @@ namespace SleepHunter.Models
 
         public string DisplayName => ColorTextRegex.Replace(Name ?? string.Empty, string.Empty);
 
-        public string ClientDisplayName
-        {
-            get => clientDisplayName;
-            set => SetProperty(ref clientDisplayName, value);
-        }
-
         public int Quantity
         {
             get => quantity;
@@ -91,12 +76,6 @@ namespace SleepHunter.Models
         public string QuantityBadgeText => IsGold ? FormattedQuantity : $"x{FormattedQuantity}";
 
         public bool ShowsQuantity => IsGold || Quantity > 1;
-
-        public bool CanStack
-        {
-            get => canStack;
-            set => SetProperty(ref canStack, value);
-        }
 
         public uint Durability
         {
@@ -125,12 +104,15 @@ namespace SleepHunter.Models
 
         private InventoryItem() { }
 
-        public InventoryItem(int slot, string name, int iconIndex = 0, byte color = 0, int quantity = 1)
+        public InventoryItem(
+            int slot,
+            string name,
+            int iconIndex = 0,
+            int quantity = 1)
         {
             this.slot = slot;
             this.name = name;
             this.iconIndex = iconIndex;
-            this.color = color;
             this.quantity = quantity;
 
             isEmpty = false;

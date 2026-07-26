@@ -24,9 +24,6 @@ namespace SleepHunter.Tests.Settings
                 Assert.That(
                     layout.WindowClassName,
                     Is.EqualTo("DarkAges"));
-                Assert.That(
-                    layout.ContainsVariable("Value"),
-                    Is.True);
                 Assert.That(stream.CanRead, Is.True);
             });
         }

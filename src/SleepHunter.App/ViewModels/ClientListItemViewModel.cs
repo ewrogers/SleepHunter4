@@ -142,8 +142,6 @@ namespace SleepHunter.ViewModels
 
         public ClientProcess Process => Player.Process;
 
-        public ClientState GameClient => Player.GameClient;
-
         public Inventory Inventory => Player.Inventory;
 
         public EquipmentSet Equipment => Player.Equipment;
@@ -155,8 +153,6 @@ namespace SleepHunter.ViewModels
         public string Name =>
             ObservedSnapshot?.Character?.Name ??
             Player.Name;
-
-        public string Status => Player.Status;
 
         public bool IsLoggedIn =>
             ObservedSnapshot is { } snapshot
@@ -931,7 +927,6 @@ namespace SleepHunter.ViewModels
         {
             OnPropertyChanged(nameof(CurrentHealth));
             OnPropertyChanged(nameof(CurrentMana));
-            OnPropertyChanged(nameof(GameClient));
             OnPropertyChanged(nameof(CanReplaceMacroConfiguration));
             OnPropertyChanged(nameof(HasHotkey));
             OnPropertyChanged(nameof(HasRuntime));
@@ -952,7 +947,6 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(RuntimeStatus));
             OnPropertyChanged(nameof(RuntimeDetailsText));
             OnPropertyChanged(nameof(MacroToggleLabel));
-            OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(UsesRuntimeSnapshot));
             StopMacroCommand.NotifyCanExecuteChanged();
             ToggleMacroCommand.NotifyCanExecuteChanged();

@@ -1,358 +1,120 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using SleepHunter.Common;
-using SleepHunter.IO.Process;
 using SleepHunter.Media;
+using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Models
 {
-    public sealed class Inventory : UpdatableObject, IEnumerable<InventoryItem>
+    public sealed class Inventory :
+        ObservableObject,
+        IEnumerable<InventoryItem>
     {
-        private const string InventoryKey = @"Inventory";
-        private const string InventoryPanesKey = @"InventoryPanes";
-        private const string GoldKey = @"Gold";
         private const int GoldIconIndex = 136;
-        internal const int InventoryRecordSize = 0x106;
-        internal const int InventoryPaneSnapshotSize = 0xB5;
 
-        public static readonly int InventoryCount = 60;
+        public const int InventoryCount = 60;
 
-        private readonly Stream stream;
-        private readonly BinaryReader reader;
-        private readonly InventoryItem[] inventory = new InventoryItem[InventoryCount];
+        private readonly InventoryItem[] inventory =
+            new InventoryItem[InventoryCount];
         private int gold;
-
-        public Player Owner { get; init; }
 
         public IEnumerable<InventoryItem> ItemsAndGold => inventory;
 
         public int Gold
         {
             get => gold;
-            set => SetProperty(ref gold, value, nameof(Gold), (_) =>
-            {
-                UpdateGoldInventoryItem();
-                RaisePropertyChanged(nameof(ItemsAndGold));
-            });
+            private set => SetProperty(
+                ref gold,
+                value,
+                onChanged: (_) => UpdateGoldInventoryItem());
         }
 
-        public IEnumerable<string> ItemNames =>
-            from i in inventory where !i.IsEmpty && !string.IsNullOrWhiteSpace(i.Name) select i.Name;
-
-        public Inventory(Player owner)
+        public Inventory()
         {
-            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-
-            stream = owner.Accessor.GetStream();
-            reader = new BinaryReader(stream, Encoding.ASCII);
-
-            for (var i = 0; i < inventory.Length; i++)
-                inventory[i] = InventoryItem.MakeEmpty(i + 1);
+            for (var index = 0; index < inventory.Length; index++)
+                inventory[index] = InventoryItem.MakeEmpty(index + 1);
 
             UpdateGoldInventoryItem();
         }
 
-        protected override void OnUpdate()
+        internal void Apply(
+            InventorySnapshot snapshot,
+            uint observedGold)
         {
-            var layout = Owner.Layout;
+            var items = snapshot?.Items ?? [];
+            var bySlot = items.ToDictionary(item => item.Slot);
 
-            if (layout == null)
+            for (var slot = 1; slot < InventoryCount; slot++)
             {
-                ResetDefaults();
-                return;
-            }
-
-            if (!layout.TryGetVariable(InventoryKey, out var inventoryVariable))
-            {
-                ResetDefaults();
-                return;
-            }
-
-            if (!inventoryVariable.TryDereferenceValue(reader, out var basePointer))
-            {
-                ResetDefaults();
-                return;
-            }
-
-            stream.Position = basePointer;
-
-            var entryCount = Math.Min(inventory.Length, inventoryVariable.Count);
-            var snapshotLength = checked(entryCount * InventoryRecordSize);
-            var snapshot = reader.ReadBytes(snapshotLength);
-            if (snapshot.Length != snapshotLength)
-                throw new EndOfStreamException("The inventory snapshot was incomplete.");
-
-            if (!inventoryVariable.TryDereferenceValue(reader, out var currentBasePointer) ||
-                currentBasePointer != basePointer)
-            {
-                return;
-            }
-
-            var records = ParseInventorySnapshot(snapshot, entryCount);
-            var paneRecords = ReadInventoryPaneRecords(layout, records);
-
-            // Gold is the last item, skip it
-            for (var i = 0; i < entryCount - 1; i++)
-            {
-                var record = records[i];
-                inventory[i].IsEmpty = !record.IsPresent;
-                inventory[i].IconIndex = record.RawSprite;
-                inventory[i].Color = record.DyeColor;
-                inventory[i].IsGold = false;
-                inventory[i].Name = record.Name;
-                var hasMatchingPane = HasMatchingPaneRecord(record, paneRecords[i], i + 1);
-                inventory[i].ClientDisplayName = hasMatchingPane
-                    ? paneRecords[i].DisplayName
-                    : record.Name;
-                inventory[i].CanStack = hasMatchingPane && paneRecords[i].CanStack;
-                inventory[i].Quantity = record.IsPresent
-                    ? GetQuantity(record, paneRecords[i], i + 1)
-                    : 0;
-                inventory[i].MaximumDurability = hasMatchingPane
-                    ? paneRecords[i].MaximumDurability
-                    : 0;
-                inventory[i].Durability = hasMatchingPane
-                    ? paneRecords[i].Durability
-                    : 0;
-                inventory[i].Icon = record.IsPresent
-                    ? IconManager.Instance.GetInventoryItemIcon(record.RawSprite, record.DyeColor)
-                    : null;
-            }
-
-            UpdateGold();
-        }
-
-        private InventoryPaneRecord[] ReadInventoryPaneRecords(
-            Settings.ClientLayout layout,
-            IReadOnlyList<InventoryRecord> inventoryRecords)
-        {
-            var paneRecords = new InventoryPaneRecord[inventoryRecords.Count];
-            if (!layout.TryGetVariable(InventoryPanesKey, out var panesVariable) ||
-                !panesVariable.TryDereferenceValue(reader, out var panePointersAddress))
-            {
-                return paneRecords;
-            }
-
-            try
-            {
-                stream.Position = panePointersAddress;
-                var pointers = reader.ReadBytes(checked(inventoryRecords.Count * sizeof(uint)));
-                if (pointers.Length != inventoryRecords.Count * sizeof(uint))
-                    return paneRecords;
-
-                for (var index = 0; index < inventoryRecords.Count; index++)
+                var item = inventory[slot - 1];
+                if (!bySlot.TryGetValue(slot, out var observed))
                 {
-                    if (!inventoryRecords[index].IsPresent)
-                        continue;
-
-                    var paneAddress = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(
-                        pointers.AsSpan(index * sizeof(uint), sizeof(uint)));
-                    if (paneAddress == 0)
-                        continue;
-
-                    try
-                    {
-                        stream.Position = paneAddress + 0x190;
-                        var paneSnapshot = reader.ReadBytes(InventoryPaneSnapshotSize);
-                        if (paneSnapshot.Length == InventoryPaneSnapshotSize)
-                            paneRecords[index] = ParseInventoryPaneSnapshot(paneSnapshot);
-                    }
-                    catch
-                    {
-                        // Keep the compact-record fallback for this slot.
-                    }
+                    ResetItem(item);
+                    continue;
                 }
 
-                if (!panesVariable.TryDereferenceValue(reader, out var currentPanePointersAddress) ||
-                    currentPanePointersAddress != panePointersAddress)
-                {
-                    return new InventoryPaneRecord[inventoryRecords.Count];
-                }
-            }
-            catch
-            {
-                // The live pane is optional; compact inventory records remain usable without it.
-            }
-
-            return paneRecords;
-        }
-
-        private static int GetQuantity(
-            InventoryRecord inventoryRecord,
-            InventoryPaneRecord paneRecord,
-            int expectedSlot)
-        {
-            if (!HasMatchingPaneRecord(inventoryRecord, paneRecord, expectedSlot) || paneRecord.Quantity == 0)
-                return 1;
-
-            return paneRecord.Quantity > int.MaxValue ? int.MaxValue : (int)paneRecord.Quantity;
-        }
-
-        private static bool HasMatchingPaneRecord(
-            InventoryRecord inventoryRecord,
-            InventoryPaneRecord paneRecord,
-            int expectedSlot) =>
-            paneRecord.IsValid &&
-            paneRecord.Slot == expectedSlot &&
-            paneRecord.RawSprite == inventoryRecord.RawSprite;
-
-        internal static InventoryRecord[] ParseInventorySnapshot(ReadOnlySpan<byte> snapshot, int recordCount)
-        {
-            if (recordCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(recordCount));
-
-            var expectedLength = checked(recordCount * InventoryRecordSize);
-            if (snapshot.Length != expectedLength)
-                throw new InvalidDataException(
-                    $"An inventory snapshot with {recordCount} records must contain {expectedLength} bytes.");
-
-            var records = new InventoryRecord[recordCount];
-            for (var index = 0; index < recordCount; index++)
-            {
-                var record = snapshot.Slice(index * InventoryRecordSize, InventoryRecordSize);
-                var nameBytes = record.Slice(5, 256);
-                var terminator = nameBytes.IndexOf((byte)0);
-                if (terminator >= 0)
-                    nameBytes = nameBytes[..terminator];
-
-                records[index] = new InventoryRecord(
-                    record[0] != 0,
-                    System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(record.Slice(2, 2)),
-                    record[4],
-                    Encoding.ASCII.GetString(nameBytes));
+                item.IsEmpty = false;
+                item.IconIndex = observed.Sprite;
+                item.IsGold = false;
+                item.Name = observed.Name;
+                item.Quantity = ToDisplayValue(observed.Quantity);
+                item.Durability = observed.CurrentDurability;
+                item.MaximumDurability =
+                    observed.MaximumDurability;
+                item.Icon = IconManager.Instance
+                    .GetInventoryItemIcon(
+                        observed.Sprite,
+                        observed.DyeColor);
             }
 
-            return records;
+            Gold = ToDisplayValue(observedGold);
         }
 
-        internal readonly record struct InventoryRecord(
-            bool IsPresent,
-            ushort RawSprite,
-            byte DyeColor,
-            string Name);
-
-        internal static InventoryPaneRecord ParseInventoryPaneSnapshot(ReadOnlySpan<byte> snapshot)
-        {
-            if (snapshot.Length != InventoryPaneSnapshotSize)
-                throw new InvalidDataException(
-                    $"An inventory pane snapshot must contain {InventoryPaneSnapshotSize} bytes.");
-
-            return new InventoryPaneRecord(
-                true,
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(snapshot),
-                ReadNullTerminatedAscii(snapshot.Slice(0x02, 0x80)),
-                snapshot[0x82],
-                snapshot[0x84],
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xAC, 4)),
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xA8, 4)),
-                System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(snapshot.Slice(0xB0, 4)),
-                snapshot[0xB4] != 0);
-        }
-
-        internal readonly record struct InventoryPaneRecord(
-            bool IsValid,
-            ushort RawSprite,
-            string DisplayName,
-            byte DyeColor,
-            byte Slot,
-            uint Durability,
-            uint MaximumDurability,
-            uint Quantity,
-            bool CanStack);
-
-        private static string ReadNullTerminatedAscii(ReadOnlySpan<byte> bytes)
-        {
-            var terminator = bytes.IndexOf((byte)0);
-            if (terminator >= 0)
-                bytes = bytes[..terminator];
-
-            return Encoding.ASCII.GetString(bytes);
-        }
-
-        private void UpdateGold()
-        {
-            var layout = Owner.Layout;
-
-            if (layout == null)
-            {
-                ResetDefaults();
-                return;
-            }
-
-            if (!layout.TryGetVariable(GoldKey, out var goldVariable))
-            {
-                Gold = 0;
-                return;
-            }
-
-            if (goldVariable.TryReadUInt32(reader, out var goldValue))
-                Gold = (int)goldValue;
-            else
-                Gold = 0;
-
-            UpdateGoldInventoryItem();
-        }
-
-        private void UpdateGoldInventoryItem()
-        {
-            inventory[InventoryCount - 1].IsEmpty = false;
-            inventory[InventoryCount - 1].IconIndex = GoldIconIndex;
-            inventory[InventoryCount - 1].Color = 0;
-            inventory[InventoryCount - 1].IsGold = true;
-            inventory[InventoryCount - 1].Name = "Gold";
-            inventory[InventoryCount - 1].ClientDisplayName = "Gold";
-            inventory[InventoryCount - 1].CanStack = true;
-            inventory[InventoryCount - 1].Quantity = Gold;
-            inventory[InventoryCount - 1].MaximumDurability = 0;
-            inventory[InventoryCount - 1].Durability = 0;
-            inventory[InventoryCount - 1].Icon = IconManager.Instance.GetItemIcon(GoldIconIndex);
-        }
-
-        protected override void Dispose(bool isDisposing)
-        {
-            if (isDisposed)
-                return;
-
-            if (isDisposing)
-            {
-                reader?.Dispose();
-                stream?.Dispose();
-            }
-
-            base.Dispose(isDisposing);
-        }
-
-        private void ResetDefaults()
-        {
-            for (var i = 0; i < inventory.Length; i++)
-            {
-                inventory[i].IsEmpty = true;
-                inventory[i].IconIndex = 0;
-                inventory[i].Color = 0;
-                inventory[i].IsGold = false;
-                inventory[i].Name = null;
-                inventory[i].ClientDisplayName = null;
-                inventory[i].CanStack = false;
-                inventory[i].Quantity = 0;
-                inventory[i].MaximumDurability = 0;
-                inventory[i].Durability = 0;
-                inventory[i].Icon = null;
-            }
-
-            Gold = 0;
-        }
+        internal void Reset() => Apply(
+            InventorySnapshot.Empty,
+            observedGold: 0);
 
         public IEnumerator<InventoryItem> GetEnumerator()
         {
             foreach (var item in inventory)
+            {
                 if (!item.IsEmpty)
                     yield return item;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void UpdateGoldInventoryItem()
+        {
+            var item = inventory[^1];
+            item.IsEmpty = false;
+            item.IconIndex = GoldIconIndex;
+            item.IsGold = true;
+            item.Name = "Gold";
+            item.Quantity = Gold;
+            item.Durability = 0;
+            item.MaximumDurability = 0;
+            item.Icon = IconManager.Instance
+                .GetInventoryItemIcon(GoldIconIndex);
+        }
+
+        private static void ResetItem(InventoryItem item)
+        {
+            item.IsEmpty = true;
+            item.IconIndex = 0;
+            item.IsGold = false;
+            item.Name = null;
+            item.Quantity = 0;
+            item.Durability = 0;
+            item.MaximumDurability = 0;
+            item.Icon = null;
+        }
+
+        private static int ToDisplayValue(uint value) =>
+            value > int.MaxValue
+                ? int.MaxValue
+                : (int)value;
     }
 }

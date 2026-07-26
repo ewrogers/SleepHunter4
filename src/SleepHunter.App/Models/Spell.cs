@@ -6,7 +6,6 @@ namespace SleepHunter.Models
         public const string LyliacPlantKey = @"Lyliac Plant";
         public const string LyliacVineyardKey = @"Lyliac Vineyard";
         private AbilityTargetType targetType;
-        private string prompt;
         private bool opensDialog;
         private double? minHealthPercent;
         private double? maxHealthPercent;
@@ -15,12 +14,6 @@ namespace SleepHunter.Models
         {
             get { return targetType; }
             set { SetProperty(ref targetType, value); }
-        }
-
-        public string Prompt
-        {
-            get { return prompt; }
-            set { SetProperty(ref prompt, value); }
         }
 
         public bool OpensDialog

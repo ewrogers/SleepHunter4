@@ -251,6 +251,19 @@ public sealed class MacroConfigurationSerializerTests
               }
             }
             """;
+        const string duplicated = """
+            {
+              "format": "SleepHunter.MacroConfiguration",
+              "format": "SleepHunter.MacroConfiguration",
+              "version": "1",
+              "metadata": {},
+              "skills": [],
+              "spells": [],
+              "flowering": {
+                "queue": []
+              }
+            }
+            """;
         const string nullEntry = """
             {
               "format": "SleepHunter.MacroConfiguration",
@@ -273,6 +286,10 @@ public sealed class MacroConfigurationSerializerTests
             Assert.That(
                 () => MacroConfigurationSerializer.Load(
                     new StringReader(commented)),
+                Throws.TypeOf<MacroConfigurationException>());
+            Assert.That(
+                () => MacroConfigurationSerializer.Load(
+                    new StringReader(duplicated)),
                 Throws.TypeOf<MacroConfigurationException>());
             Assert.That(
                 () => MacroConfigurationSerializer.Load(

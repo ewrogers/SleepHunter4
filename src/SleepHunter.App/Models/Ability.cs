@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Windows.Media;
 
 using SleepHunter.Common;
@@ -8,14 +7,10 @@ namespace SleepHunter.Models
 {
     public abstract class Ability : ObservableObject
     {
-        private static readonly Regex AbilityWithoutLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex AbilityWithLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)\s*\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         private bool isEmpty;
         private int slot;
         private InterfacePanel panel;
         private string name;
-        private int iconIndex;
         private ImageSource icon;
         private TimeSpan cooldown;
         private bool isOnCooldown;
@@ -25,10 +20,6 @@ namespace SleepHunter.Models
         private int manaCost;
         private bool canImprove;
         private bool isActive;
-        private bool isActionDelayed;
-        private int clientNameSuffixLeft;
-        private int clientNameSuffixRight;
-        private int clientBaseNameLength;
         private bool hasClientCooldownProgress;
         private double cooldownRemainingFraction = 1.0;
 
@@ -70,12 +61,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref name, value);
         }
 
-        public int IconIndex
-        {
-            get => iconIndex;
-            set => SetProperty(ref iconIndex, value);
-        }
-
         public ImageSource Icon
         {
             get => icon;
@@ -86,12 +71,6 @@ namespace SleepHunter.Models
         {
             get => isOnCooldown;
             set => SetProperty(ref isOnCooldown, value);
-        }
-
-        public bool IsActionDelayed
-        {
-            get => isActionDelayed;
-            set => SetProperty(ref isActionDelayed, value);
         }
 
         public bool HasClientCooldownProgress
@@ -142,24 +121,6 @@ namespace SleepHunter.Models
             set => SetProperty(ref canImprove, value);
         }
 
-        public int ClientNameSuffixLeft
-        {
-            get => clientNameSuffixLeft;
-            set => SetProperty(ref clientNameSuffixLeft, value);
-        }
-
-        public int ClientNameSuffixRight
-        {
-            get => clientNameSuffixRight;
-            set => SetProperty(ref clientNameSuffixRight, value);
-        }
-
-        public int ClientBaseNameLength
-        {
-            get => clientBaseNameLength;
-            set => SetProperty(ref clientBaseNameLength, value);
-        }
-
         public static InterfacePanel GetSkillPanelForSlot(int slot)
         {
             if (slot <= 36)
@@ -182,32 +143,5 @@ namespace SleepHunter.Models
             return InterfacePanel.WorldSpells;
         }
 
-        public static bool TryParseLevels(string skillSpellText, out string name, out int currentLevel, out int maximumLevel)
-        {
-            name = null;
-            currentLevel = 0;
-            maximumLevel = 0;
-
-            var match = AbilityWithLevelRegex.Match(skillSpellText);
-
-            if (match.Success)
-            {
-                name = match.Groups["name"].Value.Trim();
-                _ = int.TryParse(match.Groups["current"].Value, out currentLevel);
-                _ = int.TryParse(match.Groups["max"].Value, out maximumLevel);
-                return true;
-            }
-
-            match = AbilityWithoutLevelRegex.Match(skillSpellText);
-            if (match.Success)
-            {
-                name = match.Groups["name"].Value.Trim();
-                currentLevel = 0;
-                maximumLevel = 0;
-                return true;
-            }
-
-            return false;
-        }
     }
 }

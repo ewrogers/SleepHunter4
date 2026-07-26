@@ -106,7 +106,7 @@ namespace SleepHunter.Views
 
         private async void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
         {
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
             BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
         }
 
@@ -115,7 +115,7 @@ namespace SleepHunter.Views
             if (sender is not Player player)
                 return;
 
-            await Dispatcher.SwitchToUIThread();
+            await Dispatcher.InvokeAsync(static () => { });
 
             if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
                string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))

@@ -1,46 +1,33 @@
-﻿using System;
-using System.IO;
-using System.Text;
+using System;
+using System.Linq;
 using SleepHunter.Common;
-using SleepHunter.IO.Process;
 using SleepHunter.Macro;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Models
 {
-    public sealed class Player : UpdatableObject, IDisposable
+    public sealed class Player :
+        ObservableObject,
+        IDisposable
     {
-        private const string CharacterNameKey = @"CharacterName";
-        private const string WorldUserFuncKey = @"WorldUserFunc";
-
-        private readonly ProcessMemoryAccessor accessor;
-        private readonly ClientState gameClient;
-        private readonly Inventory inventory;
-        private readonly EquipmentSet equipment;
-        private readonly Skillbook skillbook;
-        private readonly Spellbook spellbook;
-        private readonly PlayerStats stats;
-        private readonly CharacterProfile profile;
-        private readonly PlayerModifiers modifiers;
-        private readonly MapLocation location;
-
-        private readonly Stream stream;
-        private readonly BinaryReader reader;
+        private readonly Inventory inventory = new();
+        private readonly EquipmentSet equipment = new();
+        private readonly Skillbook skillbook = new();
+        private readonly Spellbook spellbook = new();
+        private readonly PlayerStats stats = new();
+        private readonly MapLocation location = new();
 
         private ClientLayout layout;
-        private long nameSessionAddress;
-
         private string name;
         private DateTime? loginTimestamp;
         private bool isLoggedIn;
-        private string status;
         private Hotkey hotkey;
         private int selectedTabIndex;
         private bool hasLyliacPlant;
         private bool hasLyliacVineyard;
-
-        public event EventHandler LoggedIn;
-        public event EventHandler LoggedOut;
+        private long lastSnapshotSequence;
+        private bool isDisposed;
 
         public ClientProcess Process { get; init; }
 
@@ -50,17 +37,11 @@ namespace SleepHunter.Models
             set => SetProperty(ref layout, value);
         }
 
-        public nint ProcessHandle => accessor.ProcessHandle;
-
-        public ProcessMemoryAccessor Accessor => accessor;
-
         public string Name
         {
             get => name;
             set => SetProperty(ref name, value);
         }
-
-        public ClientState GameClient => gameClient;
 
         public Inventory Inventory => inventory;
 
@@ -71,10 +52,6 @@ namespace SleepHunter.Models
         public Spellbook Spellbook => spellbook;
 
         public PlayerStats Stats => stats;
-
-        public CharacterProfile Profile => profile;
-
-        public PlayerModifiers Modifiers => modifiers;
 
         public MapLocation Location => location;
 
@@ -90,21 +67,23 @@ namespace SleepHunter.Models
             set => SetProperty(ref loginTimestamp, value);
         }
 
-        public string Status
-        {
-            get => status;
-            set => SetProperty(ref status, value);
-        }
-
         public string HotkeyString => hotkey?.ToString();
 
         public Hotkey Hotkey
         {
             get => hotkey;
-            set => SetProperty(ref hotkey, value, onChanged: (playerClass) => { RaisePropertyChanged(nameof(HotkeyString)); RaisePropertyChanged(nameof(HasHotkey)); });
+            set => SetProperty(
+                ref hotkey,
+                value,
+                onChanged: (_) =>
+                {
+                    RaisePropertyChanged(nameof(HotkeyString));
+                    RaisePropertyChanged(nameof(HasHotkey));
+                });
         }
 
-        public bool HasHotkey => !string.IsNullOrWhiteSpace(HotkeyString);
+        public bool HasHotkey =>
+            !string.IsNullOrWhiteSpace(HotkeyString);
 
         public int SelectedTabIndex
         {
@@ -115,168 +94,109 @@ namespace SleepHunter.Models
         public bool HasLyliacPlant
         {
             get => hasLyliacPlant;
-            set => SetProperty(ref hasLyliacPlant, value);
+            private set => SetProperty(ref hasLyliacPlant, value);
         }
 
         public bool HasLyliacVineyard
         {
             get => hasLyliacVineyard;
-            set => SetProperty(ref hasLyliacVineyard, value);
+            private set => SetProperty(
+                ref hasLyliacVineyard,
+                value);
+        }
+
+        public long LastSnapshotSequence
+        {
+            get => lastSnapshotSequence;
+            private set => SetProperty(
+                ref lastSnapshotSequence,
+                value);
         }
 
         public Player(ClientProcess process)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process));
-            accessor = new ProcessMemoryAccessor(process.ProcessId, ProcessAccess.Read);
-
-            stream = accessor.GetStream();
-            reader = new BinaryReader(stream, Encoding.ASCII);
-
-            gameClient = new ClientState(this);
-            inventory = new Inventory(this);
-            equipment = new EquipmentSet(this);
-            skillbook = new Skillbook(this);
-            spellbook = new Spellbook(this);
-            stats = new PlayerStats(this);
-            profile = new CharacterProfile(this);
-            modifiers = new PlayerModifiers(this);
-            location = new MapLocation(this);
+            Process = process ??
+                throw new ArgumentNullException(nameof(process));
         }
 
-        ~Player() => Dispose(false);
+        public void ApplySnapshot(ClientSnapshot snapshot)
+        {
+            ArgumentNullException.ThrowIfNull(snapshot);
+            ObjectDisposedException.ThrowIf(isDisposed, this);
 
-        protected override void Dispose(bool isDisposing)
+            if (!snapshot.IsUsable ||
+                snapshot.Sequence.Value <= LastSnapshotSequence)
+            {
+                return;
+            }
+
+            var character = snapshot.Character;
+            var isInWorld =
+                snapshot.Presence == ClientPresence.InWorld &&
+                !string.IsNullOrWhiteSpace(character?.Name);
+            if (!isInWorld)
+            {
+                SetLoggedOutPresentation();
+                LastSnapshotSequence = snapshot.Sequence.Value;
+                return;
+            }
+
+            Name = character.Name;
+            stats.Apply(snapshot.Vitals);
+            location.Apply(snapshot.Location);
+            inventory.Apply(
+                snapshot.Inventory,
+                character.Gold);
+            equipment.Apply(snapshot.Equipment);
+            skillbook.Apply(snapshot.Skillbook);
+            spellbook.Apply(snapshot.Spellbook);
+            UpdateSpecialSpellFlags(snapshot.Spellbook);
+            IsLoggedIn = true;
+            LastSnapshotSequence = snapshot.Sequence.Value;
+        }
+
+        public void RefreshProcess() => Process.Refresh();
+
+        public void Dispose()
         {
             if (isDisposed)
                 return;
 
-            if (isDisposing)
-            {
-                gameClient.Dispose();
-                inventory.Dispose();
-                equipment.Dispose();
-                skillbook.Dispose();
-                spellbook.Dispose();
-                stats.Dispose();
-                profile.Dispose();
-                modifiers.Dispose();
-                location.Dispose();
-
-                stream.Dispose();
-                reader.Dispose();
-                accessor.Dispose();
-            }
-
-            base.Dispose(isDisposing);
+            isDisposed = true;
         }
 
-        protected override void OnUpdate()
+        public override string ToString() =>
+            Name ??
+            string.Format(
+                "Process {0}",
+                Process.ProcessId.ToString());
+
+        private void SetLoggedOutPresentation()
         {
-            Process.TryUpdate();
-            gameClient.TryUpdate();
-
-            try
-            {
-                UpdateName(accessor);
-            }
-            catch { }
-
-            stats.TryUpdate();
-            profile.TryUpdate();
-            modifiers.TryUpdate();
-            location.TryUpdate();
-            inventory.TryUpdate();
-            equipment.TryUpdate();
-            skillbook.TryUpdate();
-            spellbook.TryUpdate();
-
-            var wasLoggedIn = IsLoggedIn;
-            var isNowLoggedIn = !string.IsNullOrWhiteSpace(Name) && stats.Level > 0;
-
-            if (isNowLoggedIn && !wasLoggedIn)
-                OnLoggedIn();
-            else if (wasLoggedIn && !isNowLoggedIn)
-                OnLoggedOut();
-        }
-
-        private void UpdateName(ProcessMemoryAccessor accessor)
-        {
-            if (accessor == null)
-                throw new ArgumentNullException(nameof(accessor));
-
-            if (layout == null)
-            {
-                ClearCharacterNameSession();
-                return;
-            }
-
-            if (layout.TryGetVariable(WorldUserFuncKey, out var sessionVariable))
-            {
-                if (!sessionVariable.TryDereferenceValue(reader, out var sessionAddress))
-                {
-                    ClearCharacterNameSession();
-                    return;
-                }
-
-                if (nameSessionAddress != sessionAddress)
-                {
-                    Name = null;
-                    nameSessionAddress = sessionAddress;
-                }
-            }
-
-            if (!layout.TryGetVariable(CharacterNameKey, out var nameVariable))
-                return;
-
-            string candidateName;
-            if (nameVariable is DynamicMemoryVariable)
-            {
-                if (!nameVariable.TryReadString(reader, out candidateName))
-                    return;
-            }
-            else
-            {
-                var nameAddress = nameVariable.DereferenceValue(reader);
-                if (!RuntimeMemoryReader.TryReadAsciiString(
-                    reader,
-                    nameAddress,
-                    nameVariable.MaxLength,
-                    out candidateName,
-                    requireTerminator: true))
-                {
-                    return;
-                }
-            }
-
-            if (IsValidCharacterName(candidateName))
-                Name = candidateName;
-        }
-
-        internal static bool IsValidCharacterName(string candidateName) =>
-            CharacterProfile.IsValidGroupMemberName(candidateName);
-
-        private void ClearCharacterNameSession()
-        {
-            nameSessionAddress = 0;
-            Name = null;
-        }
-
-        private void OnLoggedIn()
-        {
-            IsLoggedIn = true;
-            LoggedIn?.Invoke(this, EventArgs.Empty);
-        }
-
-        void OnLoggedOut()
-        {
-            // This memory gets re-allocated when a new character logs into the same client instance
-            skillbook.ResetCooldownPointer();
-            nameSessionAddress = 0;
-
             IsLoggedIn = false;
-            LoggedOut?.Invoke(this, EventArgs.Empty);
+            stats.Reset();
+            location.Reset();
+            inventory.Reset();
+            equipment.Reset();
+            skillbook.Reset();
+            spellbook.Reset();
+            HasLyliacPlant = false;
+            HasLyliacVineyard = false;
         }
 
-        public override string ToString() => Name ?? string.Format("Process {0}", Process.ProcessId.ToString());
+        private void UpdateSpecialSpellFlags(
+            SpellbookSnapshot snapshot)
+        {
+            HasLyliacPlant = snapshot?.Spells.Any(
+                spell => string.Equals(
+                    spell.Name,
+                    Spell.LyliacPlantKey,
+                    StringComparison.OrdinalIgnoreCase)) == true;
+            HasLyliacVineyard = snapshot?.Spells.Any(
+                spell => string.Equals(
+                    spell.Name,
+                    Spell.LyliacVineyardKey,
+                    StringComparison.OrdinalIgnoreCase)) == true;
+        }
     }
 }

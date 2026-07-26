@@ -25,6 +25,7 @@ public static class MacroConfigurationSerializer
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
+        AllowDuplicateProperties = false,
         AllowTrailingCommas = false,
         MaxDepth = 64,
         PropertyNameCaseInsensitive = false,

@@ -37,11 +37,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Upgraded SleepHunter and the updater to .NET 10 LTS.
 - Simplified client setup by replacing separate version profiles with one verified configuration for supported clients.
 - Improved client launch and patch handling so failures are reported and partially launched clients are cleaned up safely.
+- Unified the client list, vitals, inventory, equipment, skill, and spell displays behind the same coherent runtime snapshots used by automation.
+- Made current `.sh4x` macro files reject ambiguous duplicate fields instead of silently accepting them.
 
 ### Removed
 
 - Removed the Zolian-only Water & Beds feature.
 - Removed legacy Zolian and Auto-Detect client profiles, along with the unused client-version selector.
+- Removed the old background client-reading path that duplicated the current runtime and could allow displayed information to disagree.
 
 ### Fixed
 

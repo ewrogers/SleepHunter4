@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Xml.Serialization;
 
 using SleepHunter.Common;
-using SleepHunter.IO.Process;
 
 namespace SleepHunter.Settings
 {
@@ -28,7 +26,6 @@ namespace SleepHunter.Settings
         private long multipleInstanceAddress;
         private long introVideoAddress;
         private long noWallAddress;
-        private List<MemoryVariable> variables = new();
 
         [XmlAttribute]
         public string PointerWidth
@@ -171,42 +168,8 @@ namespace SleepHunter.Settings
             }
         }
 
-        [XmlArray("Variables")]
-        [XmlArrayItem("Static", typeof(MemoryVariable))]
-        [XmlArrayItem("Dynamic", typeof(DynamicMemoryVariable))]
-        [XmlArrayItem("Search", typeof(SearchMemoryVariable))]
-        public List<MemoryVariable> Variables
-        {
-            get => variables;
-            set => SetProperty(ref variables, value);
-        }
-
         public ClientLayout()
         {
-        }
-
-        public bool TryGetVariable(string key, out MemoryVariable variable)
-        {
-            variable = GetVariable(key);
-            return variable != null;
-        }
-
-        public MemoryVariable GetVariable(string key)
-        {
-            foreach (var variable in variables)
-                if (string.Equals(variable.Key, key, StringComparison.OrdinalIgnoreCase))
-                    return variable;
-
-            return null;
-        }
-
-        public bool ContainsVariable(string key)
-        {
-            foreach (var variable in variables)
-                if (string.Equals(variable.Key, key, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
         }
     }
 }

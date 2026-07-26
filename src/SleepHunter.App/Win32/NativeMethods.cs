@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Input;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace SleepHunter.Win32
 {
@@ -30,25 +29,12 @@ namespace SleepHunter.Win32
         [DllImport("user32", EntryPoint = "GetWindowThreadProcessId", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern int GetWindowThreadProcessId(nint windowHandle, out int processId);
 
-        [DllImport("user32", EntryPoint = "GetClientRect", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetClientRect(nint windowHandle, out Rect clientRectangle);
-
-        [DllImport("user32", EntryPoint = "PostMessage", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern bool PostMessage(nint windowHandle, uint message, nuint wParam, nuint lParam);
-
         [DllImport("user32", EntryPoint = "SendMessage", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern nint SendMessage(nint windowHandle, uint message, nuint wParam, nuint lParam);
 
         [DllImport("user32", EntryPoint = "ReleaseCapture", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool ReleaseCapture();
-
-        [DllImport("user32", EntryPoint = "VkKeyScan", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern ushort VkKeyScan(char character);
-
-        [DllImport("user32", EntryPoint = "MapVirtualKey", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern uint MapVirtualKey(uint keyCode, VirtualKeyMapMode mapMode);
 
         [DllImport("user32", EntryPoint = "SetForegroundWindow", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -81,10 +67,6 @@ namespace SleepHunter.Win32
         [DllImport("kernel32", EntryPoint = "GlobalDeleteAtom", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern ushort GlobalDeleteAtom(ushort atom);
 
-        [DllImport("kernel32", EntryPoint = "GetProcessTimes", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetProcessTimes(nint processHandle, out FILETIME creationTime, out FILETIME exitTime, out FILETIME kernelTIme, out FILETIME userTime);
-
         [DllImport("kernel32", EntryPoint = "OpenProcess", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern nint OpenProcess(ProcessAccessFlags desiredAccess, bool inheritHandle, int processId);
 
@@ -95,9 +77,6 @@ namespace SleepHunter.Win32
         [DllImport("kernel32", EntryPoint = "WriteProcessMemory", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool WriteProcessMemory(nint processHandle, nint baseAddress, byte[] buffer, int count, out nint numberOfBytesWritten);
-
-        [DllImport("kernel32", EntryPoint = "VirtualQueryEx", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern nint VirtualQueryEx(nint processHandle, nint baseAddress, out MemoryBasicInformation memoryInformation, nint size);
 
         [DllImport("kernel32", EntryPoint = "ResumeThread", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern int ResumeThread(nint threadHandle);
@@ -145,7 +124,5 @@ namespace SleepHunter.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetPhysicallyInstalledSystemMemory(out long totalMemoryKilobytes);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern void GetNativeSystemInfo(out SystemInfo systemInfo);
     }
 }

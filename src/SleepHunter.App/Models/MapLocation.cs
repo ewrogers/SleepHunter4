@@ -1,35 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Text;
-
 using SleepHunter.Common;
-using SleepHunter.IO.Process;
+using SleepHunter.Runtime.Snapshots;
 
 namespace SleepHunter.Models
 {
-    public sealed class MapLocation : UpdatableObject
+    public sealed class MapLocation : ObservableObject
     {
-        private const string MapNumberKey = @"MapNumber";
-        private const string MapNameKey = @"MapName";
-        private const string MapXKey = @"MapX";
-        private const string MapYKey = @"MapY";
-
-        private readonly Stream stream;
-        private readonly BinaryReader reader;
-
-        private int mapNumber;
         private int x;
         private int y;
         private string mapName;
-        private string mapHash;
-
-        public Player Owner { get; init; }
-
-        public int MapNumber
-        {
-            get => mapNumber;
-            set => SetProperty(ref mapNumber, value);
-        }
 
         public int X
         {
@@ -49,85 +27,14 @@ namespace SleepHunter.Models
             set => SetProperty(ref mapName, value);
         }
 
-        public string MapHash
+        internal void Apply(MapLocationSnapshot snapshot)
         {
-            get => mapHash;
-            set => SetProperty(ref mapHash, value);
+            MapName = snapshot?.MapName;
+            X = snapshot?.X ?? 0;
+            Y = snapshot?.Y ?? 0;
         }
 
-        public MapLocation(Player owner)
-        {
-            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        internal void Reset() => Apply(null);
 
-            stream = owner.Accessor.GetStream();
-            reader = new BinaryReader(stream, Encoding.ASCII);
-        }
-
-        protected override void OnUpdate()
-        {
-            var layout = Owner.Layout;
-
-            if (layout == null)
-            {
-                ResetDefaults();
-                return;
-            }
-
-            var mapNumberVariable = layout.GetVariable(MapNumberKey);
-            var mapXVariable = layout.GetVariable(MapXKey);
-            var mapYVariable = layout.GetVariable(MapYKey);
-            var mapNameVariable = layout.GetVariable(MapNameKey);
-
-            if (mapNumberVariable != null && mapNumberVariable.TryReadInt32(reader, out var mapNumber))
-                MapNumber = mapNumber;
-            else
-                MapNumber = 0;
-
-            if (mapXVariable != null && mapXVariable.TryReadInt32(reader, out var mapX))
-                X = mapX;
-            else
-                X = 0;
-
-            if (mapYVariable != null && mapYVariable.TryReadInt32(reader, out var mapY))
-                Y = mapY;
-            else
-                Y = 0;
-
-            if (mapNameVariable != null && mapNameVariable.TryReadString(reader, out var mapName))
-                MapName = mapName;
-            else
-                MapName = null;
-        }
-
-        protected override void Dispose(bool isDisposing)
-        {
-            if (isDisposed)
-                return;
-
-            if (isDisposing)
-            {
-                reader?.Dispose();
-                stream?.Dispose();
-            }
-
-            base.Dispose(isDisposing);
-        }
-
-        private void ResetDefaults()
-        {
-            MapNumber = 0;
-            X = 0;
-            Y = 0;
-            MapName = null;
-            MapHash = null;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0} [{1}] @ {2}, {3}", MapName ?? "Unknown Map",
-               MapNumber.ToString(),
-               X.ToString(),
-               Y.ToString());
-        }
     }
 }
