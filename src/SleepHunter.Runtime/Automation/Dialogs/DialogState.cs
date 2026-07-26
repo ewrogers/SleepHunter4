@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Time;
 
 namespace SleepHunter.Runtime.Automation.Dialogs;
@@ -10,13 +11,17 @@ public sealed record DialogState
         DialogPolicy policy,
         MacroTimestamp? dueAt,
         ClientActionId? actionId,
-        MacroTimestamp? completesAt)
+        MacroTimestamp? completesAt,
+        SnapshotSequence? lastCancelSnapshotSequence,
+        MacroTimestamp? snapshotRequiredAfter)
     {
         Status = status;
         Policy = policy;
         DueAt = dueAt;
         ActionId = actionId;
         CompletesAt = completesAt;
+        LastCancelSnapshotSequence = lastCancelSnapshotSequence;
+        SnapshotRequiredAfter = snapshotRequiredAfter;
     }
 
     public DialogStatus Status { get; private init; }
@@ -29,6 +34,10 @@ public sealed record DialogState
 
     public MacroTimestamp? CompletesAt { get; }
 
+    public SnapshotSequence? LastCancelSnapshotSequence { get; }
+
+    public MacroTimestamp? SnapshotRequiredAfter { get; }
+
     internal static DialogState Scheduled(
         DialogPolicy policy,
         MacroTimestamp dueAt) =>
@@ -37,7 +46,9 @@ public sealed record DialogState
             policy,
             dueAt,
             actionId: null,
-            completesAt: null);
+            completesAt: null,
+            lastCancelSnapshotSequence: null,
+            snapshotRequiredAfter: null);
 
     internal DialogState Rescheduled(MacroTimestamp dueAt) =>
         new(
@@ -45,24 +56,61 @@ public sealed record DialogState
             Policy,
             dueAt,
             actionId: null,
-            completesAt: null);
+            completesAt: null,
+            lastCancelSnapshotSequence: LastCancelSnapshotSequence,
+            snapshotRequiredAfter: null);
 
     internal DialogState Closing(
         ClientActionId actionId,
-        MacroTimestamp completesAt) =>
+        MacroTimestamp completesAt,
+        SnapshotSequence observedSnapshotSequence) =>
         new(
             DialogStatus.Closing,
             Policy,
             DueAt,
             actionId,
-            completesAt);
+            completesAt,
+            observedSnapshotSequence,
+            snapshotRequiredAfter: null);
+
+    internal DialogState AwaitingObservation(
+        MacroTimestamp snapshotRequiredAfter) =>
+        new(
+            DialogStatus.AwaitingObservation,
+            Policy,
+            DueAt,
+            actionId: null,
+            completesAt: null,
+            lastCancelSnapshotSequence: LastCancelSnapshotSequence,
+            snapshotRequiredAfter: snapshotRequiredAfter);
 
     internal DialogState Closed() =>
-        this with { Status = DialogStatus.Closed };
+        new(
+            DialogStatus.Closed,
+            Policy,
+            DueAt,
+            actionId: null,
+            completesAt: null,
+            lastCancelSnapshotSequence: LastCancelSnapshotSequence,
+            snapshotRequiredAfter: SnapshotRequiredAfter);
 
     internal DialogState IssueFailed() =>
-        this with { Status = DialogStatus.IssueFailed };
+        new(
+            DialogStatus.IssueFailed,
+            Policy,
+            DueAt,
+            actionId: null,
+            completesAt: null,
+            lastCancelSnapshotSequence: LastCancelSnapshotSequence,
+            snapshotRequiredAfter: SnapshotRequiredAfter);
 
     internal DialogState Cancelled() =>
-        this with { Status = DialogStatus.Cancelled };
+        new(
+            DialogStatus.Cancelled,
+            Policy,
+            DueAt,
+            actionId: null,
+            completesAt: null,
+            lastCancelSnapshotSequence: LastCancelSnapshotSequence,
+            snapshotRequiredAfter: SnapshotRequiredAfter);
 }

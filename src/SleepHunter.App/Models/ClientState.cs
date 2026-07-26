@@ -14,8 +14,6 @@ namespace SleepHunter.Models
         private const string ActivePanelKey = @"ActivePanel";
         private const string InventoryExpandedKey = @"InventoryExpanded";
         private const string MinimizedModeKey = @"MinimizedMode";
-        private const string DialogOpenKey = @"DialogOpen";
-        private const string SenseOpenKey = @"SenseOpen";
         private const string UserChattingKey = @"UserChatting";
         private const string EventPaneEntriesKey = @"EventPaneEntries";
         private const string EventPaneCountKey = @"EventPaneCount";
@@ -37,8 +35,6 @@ namespace SleepHunter.Models
         private InterfacePanel activePanel;
         private bool isInventoryExpanded;
         private bool isMinimizedMode;
-        private bool isDialogOpen;
-        private bool isSenseOpen;
         private bool isUserChatting;
 
         public Player Owner { get; init; }
@@ -59,18 +55,6 @@ namespace SleepHunter.Models
         {
             get => isMinimizedMode;
             set => SetProperty(ref isMinimizedMode, value);
-        }
-
-        public bool IsDialogOpen
-        {
-            get => isDialogOpen;
-            set => SetProperty(ref isDialogOpen, value);
-        }
-
-        public bool IsSenseOpen
-        {
-            get => isSenseOpen;
-            set => SetProperty(ref isSenseOpen, value);
         }
 
         public bool IsUserChatting
@@ -100,8 +84,6 @@ namespace SleepHunter.Models
             var activePanelVariable = layout.GetVariable(ActivePanelKey);
             var inventoryExpandedVariable = layout.GetVariable(InventoryExpandedKey);
             var minimizedModeVariable = layout.GetVariable(MinimizedModeKey);
-            var dialogOpenVariable = layout.GetVariable(DialogOpenKey);
-            var senseOpenVariable = layout.GetVariable(SenseOpenKey);
             var userChattingVariable = layout.GetVariable(UserChattingKey);
 
             if (activePanelVariable != null && activePanelVariable.TryReadByte(reader, out var activePanelByte))
@@ -118,16 +100,6 @@ namespace SleepHunter.Models
                 IsMinimizedMode = isMinimizedMode;
             else
                 IsMinimizedMode = false;
-
-            if (dialogOpenVariable != null && dialogOpenVariable.TryReadBoolean(reader, out var isDialogOpen))
-                IsDialogOpen = isDialogOpen;
-            else
-                IsDialogOpen = false;
-
-            if (senseOpenVariable != null && senseOpenVariable.TryReadBoolean(reader, out isSenseOpen))
-                IsSenseOpen = isSenseOpen;
-            else
-                IsSenseOpen = false;
 
             if (TryReadChatInputState(layout, out var isUserChatting) ||
                 userChattingVariable != null && userChattingVariable.TryReadBoolean(reader, out isUserChatting))
@@ -159,8 +131,6 @@ namespace SleepHunter.Models
             ActivePanel = InterfacePanel.Unknown;
             IsInventoryExpanded = false;
             IsMinimizedMode = false;
-            IsDialogOpen = false;
-            IsSenseOpen = false;
             IsUserChatting = false;
         }
 

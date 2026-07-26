@@ -23,6 +23,8 @@ public sealed class ClientMemoryMapLoaderTests
         var cooldowns = map.Find("SkillCooldowns");
         var activePanel = map.Find("ActivePanel");
         var mapName = map.Find("MapName");
+        var eventDispatcher = map.Find("ActiveEventDispatcher");
+        var dialogVtable = map.Find("WindowMessageDialogPaneVtable");
         Assert.Multiple(() =>
         {
             Assert.That(map.PointerWidth, Is.EqualTo(PointerWidth.Bit32));
@@ -43,6 +45,16 @@ public sealed class ClientMemoryMapLoaderTests
             Assert.That(
                 mapName?.Address.Offsets.Select(offset => offset.Value),
                 Is.EqualTo(new long[] { 0x4CAC, 0 }));
+            Assert.That(
+                eventDispatcher?.Address.BaseAddress,
+                Is.EqualTo(new MemoryAddress(0x73D944)));
+            Assert.That(
+                eventDispatcher?.Address.Offsets.Select(offset => offset.Value),
+                Is.EqualTo(new long[] { 0 }));
+            Assert.That(
+                dialogVtable?.Address.BaseAddress,
+                Is.EqualTo(new MemoryAddress(0x672A84)));
+            Assert.That(dialogVtable?.Address.IsStatic, Is.True);
         });
     }
 

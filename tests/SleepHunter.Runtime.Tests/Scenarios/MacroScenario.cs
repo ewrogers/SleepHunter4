@@ -66,7 +66,8 @@ internal sealed class MacroScenario
         SkillbookSnapshot? skillbook = null,
         MapLocationSnapshot? location = null,
         bool isInventoryExpanded = false,
-        bool isUserChatting = false)
+        bool isUserChatting = false,
+        MessageDialogsSnapshot? messageDialogs = null)
     {
         var startedAt = captureStartedAt ?? CurrentTime;
         var completedAt = captureCompletedAt ?? CurrentTime;
@@ -86,7 +87,8 @@ internal sealed class MacroScenario
             skillbook,
             location,
             isInventoryExpanded,
-            isUserChatting);
+            isUserChatting,
+            messageDialogs: messageDialogs);
 
         return Apply(new ClientSnapshotObserved(snapshot));
     }

@@ -474,10 +474,26 @@ internal static class MacroDecisionInvariants
              decision.State.Dialog.CompletesAt !=
              decision.State.PendingAction!.Deadline ||
              decision.State.PendingAction.Attempt != 1 ||
-             decision.State.PendingAction.MaximumAttempts != 1))
+             decision.State.PendingAction.MaximumAttempts != 1 ||
+             decision.State.Dialog.LastCancelSnapshotSequence !=
+             decision.State.PendingAction.BaselineSnapshotSequence ||
+             decision.State.Dialog.SnapshotRequiredAfter is not null))
         {
             throw new InvalidOperationException(
                 "Pending dialog metadata must match its client action.");
+        }
+
+        if (decision.State.Dialog is
+            {
+                Status: DialogStatus.AwaitingObservation
+            } awaitingDialog &&
+            (awaitingDialog.ActionId is not null ||
+             awaitingDialog.CompletesAt is not null ||
+             awaitingDialog.LastCancelSnapshotSequence is null ||
+             awaitingDialog.SnapshotRequiredAfter is null))
+        {
+            throw new InvalidOperationException(
+                "A dialog awaiting observation requires a completed cancellation baseline.");
         }
 
         if (decision.State.Dialog is

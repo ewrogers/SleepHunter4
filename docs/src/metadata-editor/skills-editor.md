@@ -54,8 +54,10 @@ The cooldown of the skill, in seconds (if applicable). A zero-cool down means th
 
 ### Opens Dialog on Use
 
-Whether the skill opens a dialog when used. This is used to determine if the popup should be dismissed to continue macroing.
-For example `Peek`, `Sense`, `Martial Awareness`, etc.
+Whether the skill opens a popup when used. SleepHunter observes the client's
+active popup collection, dismisses each visible popup, and confirms that the
+collection is empty before completing cleanup. For example, `Peek`, `Sense`,
+and `Martial Awareness` use this setting.
 
 ### Does Not Level
 

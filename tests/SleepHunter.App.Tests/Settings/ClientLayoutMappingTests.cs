@@ -169,6 +169,11 @@ namespace SleepHunter.Tests.Settings
             var eventEntries =
                 (DynamicMemoryVariable)layout.GetVariable(
                     "EventPaneEntries");
+            var activeEventDispatcher =
+                (DynamicMemoryVariable)layout.GetVariable(
+                    "ActiveEventDispatcher");
+            var dialogVtable = layout.GetVariable(
+                "WindowMessageDialogPaneVtable");
 
             Assert.Multiple(() =>
             {
@@ -181,6 +186,14 @@ namespace SleepHunter.Tests.Settings
                 Assert.That(eventEntries.Address, Is.EqualTo(0x6D9220));
                 Assert.That(eventEntries.Offsets.Select(offset => offset.Offset),
                     Is.EqualTo(new long[] { 0x64, 0 }));
+                Assert.That(
+                    activeEventDispatcher.Address,
+                    Is.EqualTo(0x73D944));
+                Assert.That(
+                    activeEventDispatcher.Offsets.Select(
+                        offset => offset.Offset),
+                    Is.EqualTo(new long[] { 0 }));
+                Assert.That(dialogVtable.Address, Is.EqualTo(0x672A84));
             });
         }
 

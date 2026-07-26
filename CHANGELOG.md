@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expanded supported-client character state with base class, advanced display class, level, ability level, character ID, user state, action lock, progression, attributes, vitals, weight, combat modifiers, elements, nation, title, guild, guild rank, and self-look metadata
 - Added the parsed 64-entry group-member cache, including names and starred state
 - Added immutable active spell-effect snapshots with icon and server-supplied duration stage
+- Added immutable message-dialog snapshots with registration metadata, copied display text, and a generic `IsPopupOpen` projection
 - Added bounded world-entity snapshots for ground items, monsters, NPCs, and players, including coordinates, documented sprites, RTTI type, creature state, human appearance, resolved resource identities, and monster-disguise state
 - Added pane-backed 90-slot skill and spell state, including action delays, learned-level suffix data, spell cast lines, and skill cooldown progress and wrap-safe timestamps
 - Added a native-style 30-step vertical skill cooldown overlay that shrinks from top to bottom as the client progress counter advances
@@ -34,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Projected immutable automation configuration and enabled state through the Community Toolkit runtime ViewModel
 - Promoted per-client runtime hosts from read-only shadow capture to the active command boundary, with a shared clock, immutable ability metadata, and deduplicated cross-client rosters
 - Made deterministic automation wait while the user is typing, dismiss dialogs opened by spells as well as skills, and apply configurable pause or stop policies when the observed map or coordinates change
+- Changed popup cleanup to react to coherent dialog observations, re-observe after each Escape, and close stacked popups one at a time
 - Preserved the user-selected client panel across automatic spell, skill, and flowering actions through deterministic, bounded restoration attempts
 - Added an application composition boundary that converts persisted queues and macro settings into an atomic runtime setup command with class-aware staff catalogs
 - Honored the option to wait behind a cooling spell instead of skipping it, and safely mapped legacy close-client movement actions to runtime stop behavior
@@ -68,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the WPF-era macro XML serializer and serialized state DTOs from the current save and runtime-start paths
 - Removed the transition-era shadow macro configuration view model and duplicate queue synchronization on file load
 - Removed the unused blocking player-interface input stack, direct `PostMessage` automator, deferred-action residue, panel-coordinate helpers, and other unreferenced legacy utilities
+- Removed the Sense-specific and single-pointer dialog-open mappings in favor of the active event-dispatcher collection
 - Removed unused application helpers, events, converters, collection APIs, and the unconsumed world-entity model that duplicated live client memory traversal
 
 ### Fixed
@@ -86,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kept the Start Macro caption visible before a client is selected while preserving the Resume Macro caption for paused clients
 - Restored selected macro queue notifications by correcting the reversed subscription guard
 - Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
-- Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available
+- Reset stale pane-only item, skill, spell, and chat state when the corresponding live data is no longer available
+- Avoid sending Escape when an expected popup never appears, while immediately dismissing an observed popup without waiting for the old fixed delay
 - Corrected global hotkey reassignment to release the active registration instead of an unregistered replacement value, while retaining the previous assignment when a native operation fails
 - Restored selected-character hotkey capture through preview input and made each registered global hotkey toggle its owning character without relying on the active window or current selection
 - Kept per-client capture observations flowing when optional spell-state projection fails, allowing mana displays to recover after a zero-mana flowering observation

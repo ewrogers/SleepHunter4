@@ -129,6 +129,13 @@ public sealed class ClientSnapshotTests
                 name: "Aislinn",
                 isLocalPlayer: true)
         ]);
+        var messageDialogs = new MessageDialogsSnapshot(
+        [
+            new MessageDialogSnapshot(
+                treeDepth: 2,
+                registrationIdentity: 44,
+                "Sense result")
+        ]);
         var snapshot = new ClientSnapshot(
             new SnapshotSequence(1),
             MacroTimestamp.Zero,
@@ -148,7 +155,8 @@ public sealed class ClientSnapshotTests
             isUserChatting: false,
             group,
             activeSpellEffects,
-            worldEntities);
+            worldEntities,
+            messageDialogs);
 
         Assert.Multiple(() =>
         {
@@ -167,6 +175,30 @@ public sealed class ClientSnapshotTests
             Assert.That(
                 snapshot.WorldEntities,
                 Is.EqualTo(worldEntities));
+            Assert.That(
+                snapshot.MessageDialogs,
+                Is.EqualTo(messageDialogs));
+            Assert.That(snapshot.IsPopupOpen, Is.True);
+        });
+    }
+
+    [Test]
+    public void ShouldDefaultToNoOpenPopups()
+    {
+        var snapshot = new ClientSnapshot(
+            new SnapshotSequence(1),
+            MacroTimestamp.Zero,
+            MacroTimestamp.Zero,
+            new ClientIdentity("client"),
+            SnapshotQuality.Complete,
+            ClientPresence.InWorld);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                snapshot.MessageDialogs,
+                Is.EqualTo(MessageDialogsSnapshot.Empty));
+            Assert.That(snapshot.IsPopupOpen, Is.False);
         });
     }
 }

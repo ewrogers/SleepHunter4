@@ -27,6 +27,7 @@ or reduced offsets account for those adjustments:
 | `0x0073D964` | `WorldPane + 0x2EC` | World fields use negative offsets; session and object-list fields recover their documented child pointers |
 | `0x0082B768` | `GUIBackPane + 0x190` | GUI child offsets are reduced by `0x190` before dereferencing |
 | `0x006FC914` | complete `EquipPane *` | Equipment fields use their direct offsets |
+| `0x0073D944` | active `EventDispatcher *` | Message dialogs use the owned `EventHandlerList` at dispatcher offset `+0x60` |
 
 The supported executable's preferred image addresses remain in
 `data/ClientLayout.xml`. Client patching independently verifies the executable
@@ -45,6 +46,7 @@ hash before applying byte patches.
 | Map | ID, width, height, camera coordinates, flags, weather, transfer state, and best-effort name | `WorldPane`, plus the existing GUI name source |
 | World entities | ID, tile coordinates, broad type, draw layer, broad category, collision, direction, creature type, and available appearance | Bounded `WorldObjectList` tree walk with exact RTTI names |
 | Active spell effects | Slot, icon, server duration stage | `SpelledViewPane` parallel icon and stage arrays |
+| Message dialogs | Registration depth and identity plus copied display text | Stable, bounded active event-tree walk filtered to visible and registered `WindowMessageDialogPane` entries |
 
 The richer character snapshot includes class, level, ability level, user state,
 privilege level, character ID, gold, total experience, attributes, stat points,
@@ -72,6 +74,23 @@ The group roster is the most recent `SSelfLook` cache, not a visible-player
 list. A zero count is an empty roster. Names are unique in the published
 snapshot, and the raw starred byte is retained without assigning it an
 unverified social meaning.
+
+Message dialogs are not singletons. The reader snapshots the active
+dispatcher pointer, entry pointer, count, capacity, and each 12-byte
+registration record. It accepts only the exact `WindowMessageDialogPane`
+vtable at `0x00672A84` with the registration bit set and visibility enabled.
+It then follows the shared content-control text path, reads the exact bounded
+byte count, decodes strict ASCII for the supported English client, and
+normalizes carriage returns to line feeds. The dispatcher header and complete
+registration array must remain unchanged through the walk.
+
+The reverse-engineering reference identifies `0x79736F62` at pane offset
+`+0x04` as an `LObject` live cookie. A read-only observation of the supported
+English client found an active, registered, visible message pane with a zero
+cookie while its coherent control path contained the displayed text
+`WORLD East Woodland Crossroads`. The cookie is therefore not used as an open
+gate. Stable event-tree membership, exact vtable, registration, visibility,
+and a coherent text copy are the verified open criteria.
 
 ## World Entities
 
@@ -169,6 +188,8 @@ Deterministic tests cover:
 - All-slot equipment parsing and documented durability ordering.
 - Group bounds, names, and starred state.
 - Active effect icon and stage parsing.
+- Message-dialog enumeration, ASCII text extraction, registration bounds,
+  visibility filtering, and event-tree mutation rejection.
 - World tree traversal, RTTI normalization, entity classification, sprites,
   coordinates, appearance, and generation-change rejection.
 - Mapping roots, adjusted offsets, record sizes, and capacities.

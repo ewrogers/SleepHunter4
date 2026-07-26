@@ -33,6 +33,7 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong GroupMemberCacheRootAddress = 0x1C00;
     private const ulong ActiveSpellEffectsRootAddress = 0x1D00;
     private const ulong WorldObjectListRootAddress = 0x1E00;
+    private const ulong EventDispatcherRootAddress = 0x1F00;
     private const ulong CharacterNameAddress = 0x5000;
     private const ulong MapNameAddress = 0x5100;
     private const ulong InventoryAddress = 0x6000;
@@ -51,6 +52,8 @@ public sealed class ClientSnapshotCaptureTests
     private const ulong ActiveSpellEffectsAddress = 0x2B000;
     private const ulong WorldObjectListAddress = 0x2C000;
     private const ulong WorldObjectTreeHeadAddress = 0x2C100;
+    private const ulong EventDispatcherAddress = 0x2D000;
+    private const ulong WindowMessageDialogPaneVtableAddress = 0x672A84;
     private const ulong LevelAddress = PlayerAddress + 0x10;
     private const ulong AbilityLevelAddress = PlayerAddress + 0x11;
     private const ulong CharacterClassAddress = PlayerAddress + 0x12;
@@ -264,6 +267,10 @@ public sealed class ClientSnapshotCaptureTests
                 result.Snapshot?.WorldEntities,
                 Is.EqualTo(WorldEntitiesSnapshot.Empty));
             Assert.That(
+                result.Snapshot?.MessageDialogs,
+                Is.EqualTo(MessageDialogsSnapshot.Empty));
+            Assert.That(result.Snapshot?.IsPopupOpen, Is.False);
+            Assert.That(
                 result.Metrics.Sections.Select(section => section.Section),
                 Is.EqualTo(
                     new[]
@@ -273,6 +280,7 @@ public sealed class ClientSnapshotCaptureTests
                         SnapshotSection.Vitals,
                         SnapshotSection.ClientState,
                         SnapshotSection.Location,
+                        SnapshotSection.MessageDialogs,
                         SnapshotSection.Inventory,
                         SnapshotSection.Equipment,
                         SnapshotSection.Skillbook,
@@ -1214,6 +1222,12 @@ public sealed class ClientSnapshotCaptureTests
         source.WriteUInt32(
             new MemoryAddress(WorldObjectListRootAddress),
             (uint)WorldObjectListAddress);
+        source.WriteUInt32(
+            new MemoryAddress(EventDispatcherRootAddress),
+            (uint)EventDispatcherAddress);
+        source.Write(
+            new MemoryAddress(EventDispatcherAddress + 0x64),
+            new byte[12]);
         source.WriteInt32(
             new MemoryAddress(SkillbookPaneCapacityAddress),
             1);
@@ -1635,6 +1649,18 @@ public sealed class ClientSnapshotCaptureTests
             new PointerChain(
                 new MemoryAddress(WorldObjectListRootAddress),
                 ImmutableArray.Create(new PointerOffset(0))),
+            MemoryValueKind.Unsigned32),
+        new(
+            "ActiveEventDispatcher",
+            new PointerChain(
+                new MemoryAddress(EventDispatcherRootAddress),
+                ImmutableArray.Create(new PointerOffset(0))),
+            MemoryValueKind.Unsigned32),
+        new(
+            "WindowMessageDialogPaneVtable",
+            new PointerChain(
+                new MemoryAddress(
+                    WindowMessageDialogPaneVtableAddress)),
             MemoryValueKind.Unsigned32)
     ];
 

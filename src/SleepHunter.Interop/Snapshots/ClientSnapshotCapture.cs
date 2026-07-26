@@ -72,6 +72,9 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private const string GroupMemberCountKey = "GroupMemberCount";
     private const string ActiveSpellEffectsKey = "ActiveSpellEffects";
     private const string WorldObjectListKey = "WorldObjectList";
+    private const string ActiveEventDispatcherKey = "ActiveEventDispatcher";
+    private const string WindowMessageDialogPaneVtableKey =
+        "WindowMessageDialogPaneVtable";
 
     private static readonly Encoding StrictAscii = Encoding.GetEncoding(
         Encoding.ASCII.CodePage,
@@ -140,7 +143,9 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         new(GroupMemberCacheKey, MemoryValueKind.Binary),
         new(GroupMemberCountKey, MemoryValueKind.Unsigned32),
         new(ActiveSpellEffectsKey, MemoryValueKind.Binary),
-        new(WorldObjectListKey, MemoryValueKind.Unsigned32)
+        new(WorldObjectListKey, MemoryValueKind.Unsigned32),
+        new(ActiveEventDispatcherKey, MemoryValueKind.Unsigned32),
+        new(WindowMessageDialogPaneVtableKey, MemoryValueKind.Unsigned32)
     ];
 
     private readonly ClientIdentity client;
@@ -512,6 +517,33 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
                 error!);
         }
 
+        sectionStartedAt = clock.GetCurrentTimestamp();
+        readsBefore = session.Metrics;
+        var dialogsSucceeded = TryReadMessageDialogs(
+            reader,
+            out var messageDialogs,
+            out error,
+            out failureQuality);
+        sectionCompletedAt = clock.GetCurrentTimestamp();
+        AddSection(
+            sections,
+            SnapshotSection.MessageDialogs,
+            sectionStartedAt,
+            sectionCompletedAt,
+            readsBefore,
+            session.Metrics,
+            dialogsSucceeded);
+        if (!dialogsSucceeded)
+        {
+            return Failure(
+                sequence,
+                startedAt,
+                session,
+                sections,
+                failureQuality,
+                error!);
+        }
+
         InventorySnapshot? inventory = null;
         if (requestedSections.HasFlag(SnapshotCaptureSections.Inventory))
         {
@@ -782,7 +814,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             isUserChatting,
             group,
             activeSpellEffects,
-            worldEntities);
+            worldEntities,
+            messageDialogs);
     }
 
     private SnapshotCaptureResult Success(
@@ -803,7 +836,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         bool isUserChatting = false,
         GroupSnapshot? group = null,
         ActiveSpellEffectsSnapshot? activeSpellEffects = null,
-        WorldEntitiesSnapshot? worldEntities = null)
+        WorldEntitiesSnapshot? worldEntities = null,
+        MessageDialogsSnapshot? messageDialogs = null)
     {
         var completedAt = clock.GetCurrentTimestamp();
         var snapshot = new ClientSnapshot(
@@ -825,7 +859,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             isUserChatting: isUserChatting,
             group: group,
             activeSpellEffects: activeSpellEffects,
-            worldEntities: worldEntities);
+            worldEntities: worldEntities,
+            messageDialogs: messageDialogs);
         var metrics = new SnapshotCaptureMetrics(
             sequence,
             startedAt,

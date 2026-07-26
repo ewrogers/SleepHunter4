@@ -297,7 +297,8 @@ public sealed partial class MacroEngine
         if (selectedSkill.OpensDialog)
         {
             var dialogDueAt =
-                currentTime.Add(skillUse.Policy.Dialog.CloseDelay);
+                currentTime.Add(
+                    skillUse.Policy.Dialog.ObservationTimeout);
             dialog = DialogState.Scheduled(
                 skillUse.Policy.Dialog,
                 dialogDueAt);

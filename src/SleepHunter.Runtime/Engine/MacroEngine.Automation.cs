@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Dialogs;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
@@ -63,6 +64,10 @@ public sealed partial class MacroEngine
         if (!configuration.IsEnabled ||
             currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
+            currentState.Dialog is
+            {
+                Status: DialogStatus.AwaitingObservation
+            } ||
             currentState.LatestSnapshot is not
             {
                 Presence: ClientPresence.InWorld
@@ -261,6 +266,10 @@ public sealed partial class MacroEngine
         if (decision.State.Revision == previousState.Revision ||
             decision.State.Lifecycle != MacroLifecycle.Running ||
             decision.State.PendingAction is not null ||
+            decision.State.Dialog is
+            {
+                Status: DialogStatus.AwaitingObservation
+            } ||
             decision.Intent is not null ||
             !decision.State.Automation.IsEnabled ||
             WasPreservedPanelRestored(previousState, decision.State) ||

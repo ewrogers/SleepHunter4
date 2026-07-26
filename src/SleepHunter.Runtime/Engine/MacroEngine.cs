@@ -396,6 +396,18 @@ public sealed partial class MacroEngine : IMacroEngine
                     CancelPendingPanelPreservation(currentState));
         }
 
+        if (!clientLoggedOut)
+        {
+            var dialogObservation = ObservePendingDialog(
+                currentState,
+                snapshot,
+                currentTime);
+            if (dialogObservation.State.Revision != currentState.Revision)
+            {
+                return dialogObservation;
+            }
+        }
+
         if (!clientLoggedOut &&
             CanConfirmPanelTransition(currentState.PendingAction, snapshot))
         {
@@ -750,7 +762,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 HandleDialogCloseDeadline(
                     currentState,
                     pendingAction,
-                    cancelDialogIntent),
+                    cancelDialogIntent,
+                    currentTime),
             _ => Unchanged(currentState)
         };
     }

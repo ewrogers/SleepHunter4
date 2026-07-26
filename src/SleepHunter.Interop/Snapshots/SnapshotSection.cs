@@ -15,5 +15,6 @@ public enum SnapshotSection
     Group,
     ActiveSpellEffects,
     WorldEntities,
+    MessageDialogs,
     Coherence
 }

@@ -1216,12 +1216,17 @@ As of July 24, 2026:
   a snapshot captured after that boundary before planning another skill.
 - Do not automatically retry a skill or assail intent because replaying an
   uncertain activation can trigger the action twice.
-- Represent delayed dialog cleanup as scheduled `DialogCloseDue` events and
-  `CancelDialogIntent`, not callbacks. A newer dialog-opening spell or skill
-  supersedes an older close event through its recorded due time.
-- Defer a due dialog close until the active bounded client action ends. Dialog
-  cancellation itself is a single-attempt bounded action and is cancelled by
-  pause, stop, or logout.
+- Capture every visible, registered `WindowMessageDialogPane` from the active
+  event-dispatcher tree into an immutable collection with copied ASCII text.
+  Derive `IsPopupOpen` from `MessageDialogs.Count > 0` instead of a
+  skill-specific pointer flag.
+- Treat `DialogCloseDue` as the observation timeout for an expected popup, not
+  as a blind delay before Escape. Request `CancelDialogIntent` as soon as a
+  coherent snapshot contains a popup, and send no input when the timeout
+  arrives with an empty collection.
+- After each single-attempt popup cancellation, require a newer snapshot. Close
+  the workflow when the collection is empty, or request one more cancellation
+  when another popup remains. Pause, stop, and logout cancel this workflow.
 - Treat the coherent user-chatting observation as an automation gate. Continue
   accepting snapshots while the user types, but do not select a new automatic
   action until a later snapshot shows that typing has ended.

@@ -458,7 +458,8 @@ public sealed partial class MacroEngine
         if (selectedSpell.OpensDialog)
         {
             var dialogDueAt =
-                currentTime.Add(spellCast.Policy.Dialog.CloseDelay);
+                currentTime.Add(
+                    spellCast.Policy.Dialog.ObservationTimeout);
             dialog = DialogState.Scheduled(
                 spellCast.Policy.Dialog,
                 dialogDueAt);

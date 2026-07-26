@@ -120,4 +120,13 @@ public sealed class ExtendedSnapshotTests
                 Throws.ArgumentException);
         });
     }
+
+    [Test]
+    public void ShouldRejectNullMessageDialogEntries()
+    {
+        Assert.That(
+            () => new MessageDialogsSnapshot(
+                new MessageDialogSnapshot[] { null! }),
+            Throws.ArgumentException);
+    }
 }

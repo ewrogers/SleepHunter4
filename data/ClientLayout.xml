@@ -416,23 +416,12 @@
         <Offset Value="4C60" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="DialogOpen" Address="85118C" Type="Byte">
+    <Dynamic Key="ActiveEventDispatcher" Address="73D944" Type="UInt32">
       <Offsets>
-        <Offset Value="59C" />
-        <Offset Value="594" />
-        <Offset Value="18" />
-        <Offset Value="24" />
-        <Offset Value="A20" />
+        <Offset Value="0" />
       </Offsets>
     </Dynamic>
-    <Dynamic Key="SenseOpen" Address="6FB194" Type="Byte">
-      <Offsets>
-        <Offset Value="4C" />
-        <Offset Value="44" />
-        <Offset Value="18" />
-        <Offset Value="E" />
-      </Offsets>
-    </Dynamic>
+    <Static Key="WindowMessageDialogPaneVtable" Address="672A84" Type="UInt32" />
     <Dynamic Key="UserChatting" Address="6EB118" Type="Byte">
       <Offsets>
         <Offset Value="438" />

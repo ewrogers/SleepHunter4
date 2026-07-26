@@ -119,11 +119,22 @@ public sealed class SpellCastingScenarioTests
             castDeadline.DueAt.Elapsed -
             scenario.CurrentTime.Elapsed);
         scenario.Dispatch(castDeadline.Input);
-        scenario.AdvanceBy(
-            dialogDue.DueAt.Elapsed -
-            scenario.CurrentTime.Elapsed);
-
-        var closeRequested = scenario.Dispatch(dialogDue.Input);
+        var closeRequested = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(
+                Spell(
+                    "spell",
+                    slot: 1,
+                    opensDialog: true)),
+            messageDialogs: new MessageDialogsSnapshot(
+            [
+                new MessageDialogSnapshot(
+                    treeDepth: 1,
+                    registrationIdentity: 1,
+                    "Spell result")
+            ]));
 
         Assert.Multiple(() =>
         {
@@ -136,6 +147,7 @@ public sealed class SpellCastingScenarioTests
             Assert.That(
                 closeRequested.Intent,
                 Is.TypeOf<CancelDialogIntent>());
+            Assert.That(scenario.CurrentTime, Is.LessThan(dialogDue.DueAt));
         });
     }
 

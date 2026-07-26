@@ -24,7 +24,8 @@ public sealed record ClientSnapshot
         bool isUserChatting = false,
         GroupSnapshot? group = null,
         ActiveSpellEffectsSnapshot? activeSpellEffects = null,
-        WorldEntitiesSnapshot? worldEntities = null)
+        WorldEntitiesSnapshot? worldEntities = null,
+        MessageDialogsSnapshot? messageDialogs = null)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -70,6 +71,7 @@ public sealed record ClientSnapshot
         Group = group;
         ActiveSpellEffects = activeSpellEffects;
         WorldEntities = worldEntities;
+        MessageDialogs = messageDialogs ?? MessageDialogsSnapshot.Empty;
     }
 
     public SnapshotSequence Sequence { get; }
@@ -109,6 +111,10 @@ public sealed record ClientSnapshot
     public ActiveSpellEffectsSnapshot? ActiveSpellEffects { get; }
 
     public WorldEntitiesSnapshot? WorldEntities { get; }
+
+    public MessageDialogsSnapshot MessageDialogs { get; }
+
+    public bool IsPopupOpen => MessageDialogs.Count > 0;
 
     public bool IsUsable => Quality == SnapshotQuality.Complete;
 }
