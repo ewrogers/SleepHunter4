@@ -605,7 +605,7 @@ public sealed partial class MacroEngine
         FlowerQueueState flowerQueue,
         AutomationConfiguration configuration)
     {
-        if (!IsActiveFlower(currentState.Flower))
+        if (!IsPendingFlower(currentState.Flower))
             return false;
 
         if (!configuration.FloweringEnabled)
@@ -640,8 +640,7 @@ public sealed partial class MacroEngine
         currentState.Flower is
         {
             Status: FlowerStatus.WaitingForStaff or
-                FlowerStatus.WaitingForPanel or
-                FlowerStatus.Casting,
+                FlowerStatus.WaitingForPanel,
             Plan:
             {
                 SelectionKind: FlowerSelectionKind.QueueEntry,
@@ -649,6 +648,13 @@ public sealed partial class MacroEngine
             }
         } &&
         !flowerQueue.Entries.Contains(selectedEntry);
+
+    private static bool IsPendingFlower(FlowerState? flower) =>
+        flower is
+        {
+            Status: FlowerStatus.WaitingForStaff or
+                FlowerStatus.WaitingForPanel
+        };
 
     private static bool IsActiveFlower(FlowerState? flower) =>
         flower is
