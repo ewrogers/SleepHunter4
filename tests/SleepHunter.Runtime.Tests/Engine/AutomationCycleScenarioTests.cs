@@ -337,6 +337,171 @@ public sealed class AutomationCycleScenarioTests
     }
 
     [Test]
+    public void ShouldContinueAutomaticFloweringAfterLiveQueueRemoval()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var flowerEntry = new FlowerQueueEntry(
+            new FlowerQueueEntryId(1),
+            SpellTarget.Self,
+            interval: TimeSpan.Zero);
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var queuedSpell = Spell(spellEntry.Name, slot: 2);
+        var flowerPolicy = new FlowerExecutionPolicy(
+            target: new FlowerTargetPolicy(
+                autoFlowerWaitingCharacters: true),
+            spell: TestSpellPolicy);
+        var configuration = new AutomationConfiguration(
+            spellsEnabled: true,
+            floweringEnabled: true,
+            flowerBeforeSpells: true,
+            spellPolicy: TestSpellPolicy,
+            flowerPolicy: flowerPolicy);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.Stats,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot(
+                [plant, queuedSpell]),
+            location: Location());
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(new AddFlowerQueueEntryCommand(flowerEntry));
+        scenario.Send(new ConfigureAutomationCommand(configuration));
+        var started = scenario.Start();
+        var flowering = scenario.Dispatch(
+            started.RaisedEvents.Single());
+
+        var updated = scenario.Send(
+            new ApplyAutomationSetupCommand(
+                new ReplaceQueuesCommand(
+                    [spellEntry],
+                    SpellQueueRotation.Priority,
+                    skills: [],
+                    flowers: []),
+                configuration));
+        var continued = scenario.Dispatch(
+            updated.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                flowering.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForPanel));
+            Assert.That(
+                updated.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(updated.State.FlowerQueue.Entries, Is.Empty);
+            Assert.That(updated.State.PendingAction, Is.Null);
+            Assert.That(
+                updated.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Cancelled));
+            Assert.That(
+                updated.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Cancelled));
+            Assert.That(
+                continued.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForTarget));
+            Assert.That(
+                continued.State.SpellCast?.Origin,
+                Is.EqualTo(SpellCastOrigin.SpellQueue));
+            Assert.That(
+                continued.Intent,
+                Is.TypeOf<SwitchPanelIntent>());
+        });
+    }
+
+    [Test]
+    public void ShouldReleaseOrphanedFlowerBeforeSpellFirstAutomation()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var flowerEntry = new FlowerQueueEntry(
+            new FlowerQueueEntryId(1),
+            SpellTarget.Self,
+            interval: TimeSpan.Zero);
+        var plant = Spell(FlowerSpellNames.Plant, slot: 1);
+        var queuedSpell = Spell(spellEntry.Name, slot: 2);
+        var flowerPolicy = new FlowerExecutionPolicy(
+            target: new FlowerTargetPolicy(
+                autoFlowerWaitingCharacters: true),
+            spell: TestSpellPolicy);
+        var flowerFirst = new AutomationConfiguration(
+            spellsEnabled: true,
+            floweringEnabled: true,
+            flowerBeforeSpells: true,
+            spellPolicy: TestSpellPolicy,
+            flowerPolicy: flowerPolicy);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.Stats,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot(
+                [plant, queuedSpell]),
+            location: Location());
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(new AddFlowerQueueEntryCommand(flowerEntry));
+        scenario.Send(new ConfigureAutomationCommand(flowerFirst));
+        var started = scenario.Start();
+        var flowering = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        var active = flowering.State;
+        var spellFirst = new AutomationConfiguration(
+            spellsEnabled: true,
+            floweringEnabled: true,
+            flowerBeforeSpells: false,
+            spellPolicy: TestSpellPolicy,
+            flowerPolicy: flowerPolicy);
+        var orphaned = new MacroState(
+            active.Revision,
+            active.Lifecycle,
+            active.StopReason,
+            active.LatestSnapshot,
+            active.LastTransitionAt,
+            pendingAction: null,
+            active.SpellQueue,
+            nextClientActionId: active.NextClientActionId,
+            spellCooldowns: active.SpellCooldowns,
+            spellCast: active.SpellCast!.Cancelled(),
+            skillQueue: active.SkillQueue,
+            skillCooldowns: active.SkillCooldowns,
+            skillUse: active.SkillUse,
+            disarm: active.Disarm,
+            dialog: active.Dialog,
+            flowerQueue: FlowerQueueState.Empty,
+            flowerSchedules: FlowerScheduleState.Empty,
+            clientRoster: active.ClientRoster,
+            flower: active.Flower,
+            spellTargetRotations: active.SpellTargetRotations,
+            flowerTargetRotations: TargetRotationState.Empty,
+            lastActionIssue: active.LastActionIssue,
+            automation: spellFirst);
+
+        var continued = new MacroEngine().Decide(
+            orphaned,
+            new AutomationCycleRequested(),
+            scenario.CurrentTime);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                orphaned.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForPanel));
+            Assert.That(
+                continued.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Cancelled));
+            Assert.That(
+                continued.State.SpellCast?.Origin,
+                Is.EqualTo(SpellCastOrigin.SpellQueue));
+            Assert.That(
+                continued.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.WaitingForPanel));
+            Assert.That(
+                continued.Intent,
+                Is.TypeOf<SwitchPanelIntent>());
+        });
+    }
+
+    [Test]
     public void ShouldWaitForManaRestorationEffectBeforeRetrying()
     {
         var scenario = new MacroScenario();

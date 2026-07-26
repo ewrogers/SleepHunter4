@@ -383,7 +383,10 @@ internal static class MacroDecisionInvariants
         if (!flowerStatusMatchesSpell)
         {
             throw new InvalidOperationException(
-                "Flower action status must match its spell cast state.");
+                $"Flower action status '{decision.State.Flower?.Status}' " +
+                "must match spell cast origin " +
+                $"'{decision.State.SpellCast?.Origin}' and status " +
+                $"'{decision.State.SpellCast?.Status}'.");
         }
 
         var pendingDisarmIntent =

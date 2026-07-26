@@ -804,6 +804,49 @@ public sealed class ClientListViewModelTests
             updated.Queues.SpellQueue.Entries.Single().Name,
             Is.EqualTo("updated spell"));
 
+        macroConfiguration.FlowerAlternateCharacters = true;
+        var automaticFlowering = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                automaticFlowering.Configuration.FloweringEnabled,
+                Is.True);
+            Assert.That(
+                automaticFlowering.Queues.FlowerQueue.Entries,
+                Is.Empty);
+        });
+
+        var liveFlower = new FlowerQueueItem
+        {
+            Target = new SleepHunter.Models.SpellTarget
+            {
+                Mode = SpellTargetMode.Self
+            },
+            Interval = TimeSpan.FromSeconds(10)
+        };
+        macroConfiguration.AddToFlowerQueue(liveFlower);
+        var flowerAdded = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.That(
+            flowerAdded.Queues.FlowerQueue.Entries.Single().Id.Value,
+            Is.EqualTo(liveFlower.Id));
+
+        item.MacroEditor.SelectedFlower = liveFlower;
+        item.MacroEditor.RemoveSelectedFlowerCommand.Execute(null);
+        var flowerRemoved = (ApplyAutomationSetupCommand)
+            await host.ReadCommandAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                flowerRemoved.Configuration.FloweringEnabled,
+                Is.True);
+            Assert.That(
+                flowerRemoved.Queues.FlowerQueue.Entries,
+                Is.Empty);
+            Assert.That(item.IsMacroRunning, Is.True);
+        });
+
         await item.ToggleMacroCommand.ExecuteAsync(null);
         Assert.That(
             await host.ReadCommandAsync(),

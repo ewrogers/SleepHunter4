@@ -489,6 +489,38 @@ public sealed class FlowerExecutionScenarioTests
     }
 
     [Test]
+    public void ShouldCancelActiveFlowerWhenItsQueueEntryIsRemoved()
+    {
+        var scenario = CreateRunningScenario(
+            [Spell(FlowerSpellNames.Plant, slot: 1)],
+            activePanel: ClientPanel.Stats);
+        var entry = Entry(1, SpellTarget.Self);
+        scenario.Send(new AddFlowerQueueEntryCommand(entry));
+        var flowering = scenario.Send(new FlowerCommand(TestPolicy));
+
+        var removed = scenario.Send(
+            new RemoveFlowerQueueEntryCommand(entry.Id));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                flowering.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.WaitingForPanel));
+            Assert.That(
+                removed.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(removed.State.FlowerQueue.Entries, Is.Empty);
+            Assert.That(removed.State.PendingAction, Is.Null);
+            Assert.That(
+                removed.State.Flower?.Status,
+                Is.EqualTo(FlowerStatus.Cancelled));
+            Assert.That(
+                removed.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Cancelled));
+        });
+    }
+
+    [Test]
     public void ShouldReuseStaffAndPanelPrerequisitesForPlant()
     {
         var plant = Spell(FlowerSpellNames.Plant, slot: 1);

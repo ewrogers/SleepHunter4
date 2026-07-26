@@ -966,6 +966,9 @@ public sealed partial class MacroEngine : IMacroEngine
         ReplaceQueuesCommand command,
         MacroTimestamp currentTime)
     {
+        var cancelFlower = ShouldCancelFlowerForQueueUpdate(
+            currentState,
+            command.FlowerQueue);
         var spellTargetRotations =
             currentState.SpellTargetRotations.Synchronize(
                 command.SpellQueue.Entries.Select(entry =>
@@ -982,7 +985,8 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.FlowerQueue.Equals(command.FlowerQueue) &&
             currentState.SpellTargetRotations.Equals(spellTargetRotations) &&
             currentState.FlowerSchedules.Equals(flowerSchedules) &&
-            currentState.FlowerTargetRotations.Equals(flowerTargetRotations))
+            currentState.FlowerTargetRotations.Equals(flowerTargetRotations) &&
+            !cancelFlower)
         {
             return Unchanged(currentState);
         }
@@ -993,13 +997,28 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.StopReason,
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
-            currentState.PendingAction,
+            cancelFlower ? null : currentState.PendingAction,
             command.SpellQueue,
+            panelTransition: cancelFlower
+                ? CancelPendingPanelTransition(currentState)
+                : currentState.PanelTransition,
+            staffSwitch: cancelFlower
+                ? CancelPendingStaffSwitch(currentState)
+                : currentState.StaffSwitch,
+            spellCast: cancelFlower
+                ? CancelPendingSpellCast(currentState)
+                : currentState.SpellCast,
             skillQueue: command.SkillQueue,
             flowerQueue: command.FlowerQueue,
             flowerSchedules: flowerSchedules,
+            flower: cancelFlower
+                ? CancelPendingFlower(currentState)
+                : currentState.Flower,
             spellTargetRotations: spellTargetRotations,
-            flowerTargetRotations: flowerTargetRotations);
+            flowerTargetRotations: flowerTargetRotations,
+            panelPreservation: cancelFlower
+                ? CancelPendingPanelPreservation(currentState)
+                : currentState.PanelPreservation);
     }
 
     private static MacroDecision ApplyAutomationSetup(
@@ -1008,6 +1027,10 @@ public sealed partial class MacroEngine : IMacroEngine
         MacroTimestamp currentTime)
     {
         var queues = command.Queues;
+        var cancelFlower = ShouldCancelFlowerForSetupUpdate(
+            currentState,
+            queues.FlowerQueue,
+            command.Configuration);
         var spellTargetRotations =
             currentState.SpellTargetRotations.Synchronize(
                 queues.SpellQueue.Entries.Select(entry =>
@@ -1038,7 +1061,8 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.Automation.Equals(command.Configuration) &&
             Equals(
                 currentState.PanelPreservation,
-                panelPreservation))
+                panelPreservation) &&
+            !cancelFlower)
         {
             return Unchanged(currentState);
         }
@@ -1049,15 +1073,29 @@ public sealed partial class MacroEngine : IMacroEngine
             currentState.StopReason,
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
-            currentState.PendingAction,
+            cancelFlower ? null : currentState.PendingAction,
             queues.SpellQueue,
+            panelTransition: cancelFlower
+                ? CancelPendingPanelTransition(currentState)
+                : currentState.PanelTransition,
+            staffSwitch: cancelFlower
+                ? CancelPendingStaffSwitch(currentState)
+                : currentState.StaffSwitch,
+            spellCast: cancelFlower
+                ? CancelPendingSpellCast(currentState)
+                : currentState.SpellCast,
             skillQueue: queues.SkillQueue,
             flowerQueue: queues.FlowerQueue,
             flowerSchedules: flowerSchedules,
+            flower: cancelFlower
+                ? CancelPendingFlower(currentState)
+                : currentState.Flower,
             spellTargetRotations: spellTargetRotations,
             flowerTargetRotations: flowerTargetRotations,
             automation: command.Configuration,
-            panelPreservation: panelPreservation);
+            panelPreservation: cancelFlower
+                ? CancelPendingPanelPreservation(currentState)
+                : panelPreservation);
     }
 
     private static MacroDecision ChangeSpellQueue(
@@ -1138,6 +1176,14 @@ public sealed partial class MacroEngine : IMacroEngine
             scheduledEvents = ImmutableArray<ScheduledMacroEvent>.Empty;
         }
 
+        var nextSpellCast = spellCast ?? currentState.SpellCast;
+        var nextFlower = flower ?? currentState.Flower;
+        if (IsActiveFlower(nextFlower) &&
+            nextSpellCast?.Origin != SpellCastOrigin.Flower)
+        {
+            nextFlower = nextFlower!.Cancelled();
+        }
+
         var nextState = new MacroState(
             checked(currentState.Revision + 1),
             lifecycle,
@@ -1150,7 +1196,7 @@ public sealed partial class MacroEngine : IMacroEngine
             nextClientActionId ?? currentState.NextClientActionId,
             staffSwitch ?? currentState.StaffSwitch,
             spellCooldowns ?? currentState.SpellCooldowns,
-            spellCast ?? currentState.SpellCast,
+            nextSpellCast,
             skillQueue ?? currentState.SkillQueue,
             skillCooldowns ?? currentState.SkillCooldowns,
             skillUse ?? currentState.SkillUse,
@@ -1159,7 +1205,7 @@ public sealed partial class MacroEngine : IMacroEngine
             flowerQueue ?? currentState.FlowerQueue,
             flowerSchedules ?? currentState.FlowerSchedules,
             clientRoster ?? currentState.ClientRoster,
-            flower ?? currentState.Flower,
+            nextFlower,
             spellTargetRotations ?? currentState.SpellTargetRotations,
             flowerTargetRotations ?? currentState.FlowerTargetRotations,
             lastActionIssue ?? currentState.LastActionIssue,

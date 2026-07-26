@@ -1,4 +1,5 @@
 ﻿using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Automation.Spells;
@@ -555,6 +556,9 @@ public sealed partial class MacroEngine
         FlowerQueueState flowerQueue,
         MacroTimestamp currentTime)
     {
+        var cancelFlower = ShouldCancelFlowerForQueueUpdate(
+            currentState,
+            flowerQueue);
         var schedules = currentState.FlowerSchedules.Synchronize(
             flowerQueue,
             currentTime);
@@ -563,7 +567,8 @@ public sealed partial class MacroEngine
                 KeyValuePair.Create(entry.Id.Value, entry.Target)));
         if (currentState.FlowerQueue.Equals(flowerQueue) &&
             currentState.FlowerSchedules.Equals(schedules) &&
-            currentState.FlowerTargetRotations.Equals(targetRotations))
+            currentState.FlowerTargetRotations.Equals(targetRotations) &&
+            !cancelFlower)
         {
             return Unchanged(currentState);
         }
@@ -574,20 +579,88 @@ public sealed partial class MacroEngine
             currentState.StopReason,
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
-            currentState.PendingAction,
+            cancelFlower ? null : currentState.PendingAction,
+            panelTransition: cancelFlower
+                ? CancelPendingPanelTransition(currentState)
+                : currentState.PanelTransition,
+            staffSwitch: cancelFlower
+                ? CancelPendingStaffSwitch(currentState)
+                : currentState.StaffSwitch,
+            spellCast: cancelFlower
+                ? CancelPendingSpellCast(currentState)
+                : currentState.SpellCast,
             flowerQueue: flowerQueue,
             flowerSchedules: schedules,
-            flowerTargetRotations: targetRotations);
+            flower: cancelFlower
+                ? CancelPendingFlower(currentState)
+                : currentState.Flower,
+            flowerTargetRotations: targetRotations,
+            panelPreservation: cancelFlower
+                ? CancelPendingPanelPreservation(currentState)
+                : currentState.PanelPreservation);
     }
 
-    private static FlowerState? CancelPendingFlower(
-        MacroState currentState) =>
+    private static bool ShouldCancelFlowerForSetupUpdate(
+        MacroState currentState,
+        FlowerQueueState flowerQueue,
+        AutomationConfiguration configuration)
+    {
+        if (!IsActiveFlower(currentState.Flower))
+            return false;
+
+        if (!configuration.FloweringEnabled)
+            return true;
+
+        if (currentState.Flower is
+            {
+                Action: FlowerActionKind.Vineyard
+            } &&
+            !configuration.FlowerPolicy.UseVineyard)
+        {
+            return true;
+        }
+
+        if (currentState.Flower is
+            {
+                Plan.SelectionKind: FlowerSelectionKind.WaitingCharacter
+            } &&
+            !configuration.FlowerPolicy.Target.AutoFlowerWaitingCharacters)
+        {
+            return true;
+        }
+
+        return ShouldCancelFlowerForQueueUpdate(
+            currentState,
+            flowerQueue);
+    }
+
+    private static bool ShouldCancelFlowerForQueueUpdate(
+        MacroState currentState,
+        FlowerQueueState flowerQueue) =>
         currentState.Flower is
         {
             Status: FlowerStatus.WaitingForStaff or
                 FlowerStatus.WaitingForPanel or
+                FlowerStatus.Casting,
+            Plan:
+            {
+                SelectionKind: FlowerSelectionKind.QueueEntry,
+                SelectedEntry: { } selectedEntry
+            }
+        } &&
+        !flowerQueue.Entries.Contains(selectedEntry);
+
+    private static bool IsActiveFlower(FlowerState? flower) =>
+        flower is
+        {
+            Status: FlowerStatus.WaitingForStaff or
+                FlowerStatus.WaitingForPanel or
                 FlowerStatus.Casting
-        } flower
-            ? flower.Cancelled()
+        };
+
+    private static FlowerState? CancelPendingFlower(
+        MacroState currentState) =>
+        IsActiveFlower(currentState.Flower)
+            ? currentState.Flower!.Cancelled()
             : currentState.Flower;
 }
