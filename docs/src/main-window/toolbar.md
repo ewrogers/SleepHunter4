@@ -7,8 +7,7 @@ The toolbar has the following buttons:
 - [Launch Client](#launch-client)
 - [Load State](#load-state)
 - [Save State](#save-state)
-- [Start Macro](#start-macro)
-- [Pause Macro](#pause-macro)
+- [Start, Pause, and Resume Macro](#start-pause-and-resume-macro)
 - [Stop Macro](#stop-macro)
 - [Stop All](#stop-all)
 - [Metadata Editor](#metadata-editor)
@@ -22,22 +21,23 @@ By default, game clients that are not actively "logged in" will **not** be displ
 
 ## Load State
 
-This button will open a dialog to manually open the current character's state from a file.
+This button will open a dialog to load the current character's macro configuration.
+Current `.sh4x` JSON files and legacy `.sh4` XML files can be loaded.
 
-**NOTE:** Any skills/spells that are not available on the character will be ignored and not added to the queue.
+**NOTE:** Skills and spells that are not currently available on the character are preserved in the configuration instead of being discarded.
 
 ## Save State
 
-This button will open a dialog to manually save the current character's state to a file.
+This button will save the current character's macro configuration as a versioned `.sh4x` JSON file.
+Legacy `.sh4` XML is import-only and is never written by the new save path.
 
-## Start Macro
+## Start, Pause, and Resume Macro
 
-This button will start macroing the selected character, performing any actions that they have queued.
-If paused, this will resume macroing the selected character.
-
-## Pause Macro
-
-This button will pause macroing the selected character, retaining the current state of the macro.
+This state-aware button starts macroing the selected character and changes to
+`Pause Macro` while automation is running. After pausing, the same control
+changes to `Resume Macro`. It shows the pause icon only while automation is
+running and uses the play icon for starting or resuming. Pausing retains the
+current macro state.
 
 ## Stop Macro
 

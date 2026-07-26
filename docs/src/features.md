@@ -1,4 +1,4 @@
-# Features
+﻿# Features
 
 SleepHunter is an incredibly powerful automation tool for [Dark Ages](https://www.darkages.com).
 
@@ -16,11 +16,12 @@ No errant mouse clicks or keyboard presses in other applications will occur whil
 SleepHunter scans all running processes to find Dark Ages game clients automatically.
 It can detect multiple game clients running on the same computer at the same time.
 
-Uses client signature to differentiate between varying client versions (including modified clients).
+It uses the configured signature and window metadata to recognize compatible
+clients without selecting among alternate runtime layouts.
 
 ### Runtime Patching
 
-SleepHunter can launch new game client instances and patch supported versions at runtime. Available tweaks include allowing
+SleepHunter can launch new game client instances and patch the configured client at runtime. Available tweaks include allowing
 multiple instances, skipping the intro video, suppressing the login delay, cleaning up stuck modifier keys, showing ground
 items while Alt is held, displaying stack quantities in merchant and storage dialogs, and hiding foreground walls.
 
@@ -80,9 +81,10 @@ This allows it special functionality when supporting other characters and priori
 SleepHunter allows user-defined hotkeys to start, pause, and resume automation for each character.
 This can be used to pause automation when you need to do something manually, or to resume automation when you are done.
 
-### Auto-Save Macro State
+### Auto-Save Macro Configuration
 
-SleepHunter automatically saves the state of each character's last macro when the application is closed.
+SleepHunter automatically saves each character's last macro configuration as a versioned `.sh4x` JSON file when the application is closed.
+Existing `.sh4` XML files can still be imported and are migrated to `.sh4x` when used as an autosave.
 This allows you to easily resume automation where you left off, even after you close the application.
 
 ### Color Themes

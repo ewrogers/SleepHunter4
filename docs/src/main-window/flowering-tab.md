@@ -22,6 +22,9 @@ For more information about the `Flower Target` dialog, see the sidebar.
 
 Double-clicking a flower target will bring up the `Flower Target` dialog for modifying the cast target.
 You can re-arrange the order of the targets by dragging and dropping them.
+Flower targets can be added, edited, reordered, or removed while the macro is
+running. Each completed change is applied to the runtime without stopping or
+pausing it.
 
 ## Flowering Timer
 

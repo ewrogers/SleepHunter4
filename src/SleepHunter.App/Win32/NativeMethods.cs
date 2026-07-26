@@ -1,0 +1,122 @@
+﻿using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Input;
+
+namespace SleepHunter.Win32
+{
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal delegate bool EnumWindowsProc(nint windowHandle, nint lParam);
+
+    internal static class NativeMethods
+    {
+        [DllImport("user32", EntryPoint = "EnumWindows", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool EnumWindows(EnumWindowsProc enumWindowProc, nint lParam);
+
+        [DllImport("user32", EntryPoint = "GetClassName", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern int GetClassName(nint windowHandle, StringBuilder className, int maxLength);
+
+        [DllImport("user32", EntryPoint = "GetWindowTextLength", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern int GetWindowTextLength(nint windowHandle);
+
+        [DllImport("user32", EntryPoint = "GetWindowText", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern int GetWindowText(nint windowHandle, StringBuilder windowText, int maxLength);
+
+        [DllImport("user32", EntryPoint = "SetWindowText", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetWindowText(nint windowHandle, string windowText);
+
+        [DllImport("user32", EntryPoint = "GetWindowThreadProcessId", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern int GetWindowThreadProcessId(nint windowHandle, out int processId);
+
+        [DllImport("user32", EntryPoint = "SendMessage", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern nint SendMessage(nint windowHandle, uint message, nuint wParam, nuint lParam);
+
+        [DllImport("user32", EntryPoint = "ReleaseCapture", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ReleaseCapture();
+
+        [DllImport("user32", EntryPoint = "SetForegroundWindow", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetForegroundWindow(nint windowHandle);
+
+        [DllImport("user32", EntryPoint = "RegisterHotKey", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool RegisterHotKey(nint windowHandle, int hotkeyId, ModifierKeys modifiers, int virtualKey);
+
+        [DllImport("user32", EntryPoint = "UnregisterHotKey", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool UnregisterHotKey(nint windowHandle, int hotkeyId);
+
+        [DllImport("kernel32", EntryPoint = "CreateProcess", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool CreateProcess(string applicationPath,
+           string commandLineArgs,
+           ref SecurityAttributes processSecurityAttributes,
+           ref SecurityAttributes threadSecurityAttributes,
+           bool inheritHandle,
+           ProcessCreationFlags creationFlags,
+           nint environment,
+           string currentDirectory,
+           ref StartupInfo startupInfo,
+           out ProcessInformation processInformation);
+
+        [DllImport("kernel32", EntryPoint = "OpenProcess", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern nint OpenProcess(ProcessAccessFlags desiredAccess, bool inheritHandle, int processId);
+
+        [DllImport("kernel32", EntryPoint = "ReadProcessMemory", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ReadProcessMemory(nint processHandle, nint baseAddress, byte[] buffer, int count, out nint numberOfBytesRead);
+
+        [DllImport("kernel32", EntryPoint = "WriteProcessMemory", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool WriteProcessMemory(nint processHandle, nint baseAddress, byte[] buffer, int count, out nint numberOfBytesWritten);
+
+        [DllImport("kernel32", EntryPoint = "ResumeThread", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern int ResumeThread(nint threadHandle);
+
+        [DllImport("kernel32", EntryPoint = "TerminateProcess", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool TerminateProcess(nint processHandle, uint exitCode);
+
+        [DllImport("kernel32", EntryPoint = "VirtualAllocEx", SetLastError = true)]
+        internal static extern nint VirtualAllocEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryAllocationType allocationType, VirtualMemoryProtection protection);
+
+        [DllImport("kernel32", EntryPoint = "VirtualFreeEx", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool VirtualFreeEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryFreeType freeType);
+
+        [DllImport("kernel32", EntryPoint = "VirtualProtectEx", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool VirtualProtectEx(nint processHandle, nint baseAddress, nuint size,
+            VirtualMemoryProtection newProtection, out VirtualMemoryProtection oldProtection);
+
+        [DllImport("kernel32", EntryPoint = "FlushInstructionCache", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool FlushInstructionCache(nint processHandle, nint baseAddress, nuint size);
+
+        [DllImport("ntdll", EntryPoint = "NtQueryInformationProcess")]
+        internal static extern int NtQueryInformationProcess(nint processHandle,
+            ProcessInformationClass processInformationClass, out nint processInformation,
+            int processInformationLength, out int returnLength);
+
+        [DllImport("ntdll", EntryPoint = "NtQueryInformationProcess")]
+        internal static extern int NtQueryInformationProcess(nint processHandle,
+            ProcessInformationClass processInformationClass, out ProcessBasicInformation processInformation,
+            int processInformationLength, out int returnLength);
+
+        [DllImport("ntdll", EntryPoint = "RtlNtStatusToDosError")]
+        internal static extern uint RtlNtStatusToDosError(int status);
+
+        [DllImport("kernel32", EntryPoint = "CloseHandle", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool CloseHandle(nint handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetPhysicallyInstalledSystemMemory(out long totalMemoryKilobytes);
+
+    }
+}

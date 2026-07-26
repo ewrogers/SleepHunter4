@@ -1,0 +1,434 @@
+﻿<?xml version="1.0"?>
+<ClientLayout PointerWidth="Bit32">
+  <!--
+    Darkages.exe 7.4.1.0
+    SHA-256: 054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6
+    Static addresses assume the documented preferred image layout.
+  -->
+  <ExecutableName>Darkages.exe</ExecutableName>
+  <WindowClassName>DarkAges</WindowClassName>
+  <WindowTitle>Darkages</WindowTitle>
+  <SupportsFlowering>true</SupportsFlowering>
+  <SupportsLoginNotificationSuppression>true</SupportsLoginNotificationSuppression>
+  <SupportsModifiersKeyFix>true</SupportsModifiersKeyFix>
+  <SupportsAltToShowGroundItems>true</SupportsAltToShowGroundItems>
+  <SupportsImprovedAutoFollow>true</SupportsImprovedAutoFollow>
+  <SupportsItemQuantitiesInDialogs>true</SupportsItemQuantitiesInDialogs>
+  <SupportsDraggableExchangeDialog>true</SupportsDraggableExchangeDialog>
+  <SupportsExchangeResultsInMessageBar>true</SupportsExchangeResultsInMessageBar>
+  <MultipleInstanceAddress>57A7CE</MultipleInstanceAddress>
+  <IntroVideoAddress>42E61F</IntroVideoAddress>
+  <NoWallAddress>5FD874</NoWallAddress>
+  <Variables>
+    <Static Key="CharacterName" Address="73D910" MaxLength="16" />
+    <Dynamic Key="WorldUserFunc" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="WorldObjectList" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="158" IsNegative="true" />
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="PrivilegeLevel" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="104C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="CharacterId" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1050" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="UserState" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1048" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Level" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1058" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="AbilityLevel" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1059" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Gold" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="105C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="TotalExperience" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1060" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Strength" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1064" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Dexterity" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1068" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Wisdom" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="106A" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Constitution" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="106C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Intelligence" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="106E" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="StatPoints" Address="73D964" Type="UInt16">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1070" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ExperienceToNextLevel" Address="82B768" Type="UInt32">
+      <Offsets>
+        <Offset Value="4E10" />
+        <Offset Value="1D0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="GamePoints" Address="82B768" Type="UInt32">
+      <Offsets>
+        <Offset Value="4E10" />
+        <Offset Value="1D4" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="AbilityToNextLevel" Address="82B768" Type="UInt32">
+      <Offsets>
+        <Offset Value="4E10" />
+        <Offset Value="1D8" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="TotalAbility" Address="82B768" Type="UInt32">
+      <Offsets>
+        <Offset Value="4E10" />
+        <Offset Value="1E0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ArmorClass" Address="82B768" Type="SByte">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="4F8" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="DamageModifier" Address="82B768" Type="Byte">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="4F9" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="HitModifier" Address="82B768" Type="Byte">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="4FA" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="AttackElement" Address="82B768" Type="UInt16">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="4FC" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="DefenseElement" Address="82B768" Type="UInt16">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="4FE" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MagicResistance" Address="82B768" Type="UInt16">
+      <Offsets>
+        <Offset Value="4E14" />
+        <Offset Value="500" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="CurrentHealth" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1078" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MaximumHealth" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="107C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="CurrentMana" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1080" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MaximumMana" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1084" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="CharacterClass" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1089" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ShowMasterMetadata" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="15C74" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ShowAbilityMetadata" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="15C78" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MaximumWeight" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="15C80" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Weight" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="15C84" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ActionState" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="15C88" />
+      </Offsets>
+    </Dynamic>
+    <!--
+      DarkAges.exe 7.4.1.0, SHA-256
+      054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6:
+      the GUI object field at 4CAC contains either inline ASCII text or a
+      32-bit pointer to the text buffer. Rucesion inn maps use the inline form.
+      The snapshot reader validates the bounded field prefix before deciding
+      whether to read the field or its pointer.
+    -->
+    <Dynamic Key="MapName" Address="82B768" MaxLength="32">
+      <Offsets>
+        <Offset Value="4CAC" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapNumber" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="80" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapX" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="B0" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapY" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="B4" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapWidth" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="128" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapHeight" Address="73D964" Type="Int32">
+      <Offsets>
+        <Offset Value="124" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapFlags" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="8C" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapWeather" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="88" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MapTransferActive" Address="73D964" Type="Byte">
+      <Offsets>
+        <Offset Value="77" IsNegative="true" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Inventory" Address="73D964" MaxLength="256" Size="262" Count="60">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1092" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="InventoryPanes" Address="82B768" Size="4" Count="60">
+      <Offsets>
+        <Offset Value="4DF8" />
+        <Offset Value="1A0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Nation" Address="6FC914" Type="Byte">
+      <Offsets>
+        <Offset Value="9DB" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Title" Address="6FC914" MaxLength="256">
+      <Offsets>
+        <Offset Value="ADC" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="DisplayClass" Address="6FC914" MaxLength="128">
+      <Offsets>
+        <Offset Value="BDC" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Guild" Address="6FC914" MaxLength="128">
+      <Offsets>
+        <Offset Value="C5C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="GuildRank" Address="6FC914" MaxLength="128">
+      <Offsets>
+        <Offset Value="CDC" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="GroupMembers" Address="6FC914" MaxLength="512">
+      <Offsets>
+        <Offset Value="D5C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="GroupMemberCache" Address="73D964" MaxLength="64" Size="65" Count="64">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="4" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="GroupMemberCount" Address="73D964" Type="UInt32">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="1044" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ActiveSpellEffects" Address="82B768" Size="30" Count="10">
+      <Offsets>
+        <Offset Value="4E04" />
+        <Offset Value="190" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Equipment" Address="6FC914" MaxLength="128" Size="128" Count="18">
+      <Offsets>
+        <Offset Value="1152" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="EquipmentSnapshot" Address="6FC914" Size="2504" Count="18">
+      <Offsets>
+        <Offset Value="111C" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Skillbook" Address="73D964" MaxLength="256" Size="260" Count="89">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="10210" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="Spellbook" Address="73D964" MaxLength="256" Size="518" Count="89">
+      <Offsets>
+        <Offset Value="20" IsNegative="true" />
+        <Offset Value="4DFA" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="SkillbookPanes" Address="82B768" Size="4" Count="90">
+      <Offsets>
+        <Offset Value="4DFC" />
+        <Offset Value="224" />
+        <Offset Value="194" />
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="SkillbookPaneCapacity" Address="82B768" Type="Int32">
+      <Offsets>
+        <Offset Value="4DFC" />
+        <Offset Value="224" />
+        <Offset Value="190" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="SpellbookPanes" Address="82B768" Size="4" Count="90">
+      <Offsets>
+        <Offset Value="4DFC" />
+        <Offset Value="228" />
+        <Offset Value="194" />
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="SpellbookPaneCapacity" Address="82B768" Type="Int32">
+      <Offsets>
+        <Offset Value="4DFC" />
+        <Offset Value="228" />
+        <Offset Value="190" />
+      </Offsets>
+    </Dynamic>
+    <Search Key="SkillCooldowns" Address="67639C" Size="4" Offset="194">
+      <Offsets>
+        <Offset Value="322" />
+      </Offsets>
+    </Search>
+    <Dynamic Key="ActivePanel" Address="82B768" Type="Byte">
+      <Offsets>
+        <Offset Value="4E18" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="InventoryExpanded" Address="82B768" Type="Byte">
+      <Offsets>
+        <Offset Value="4E20" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="MinimizedMode" Address="82B768" Type="Byte">
+      <Offsets>
+        <Offset Value="4C60" />
+      </Offsets>
+    </Dynamic>
+    <Dynamic Key="ActiveEventDispatcher" Address="73D944" Type="UInt32">
+      <Offsets>
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Static Key="WindowMessageDialogPaneVtable" Address="672A84" Type="UInt32" />
+    <Dynamic Key="InputManager" Address="6D9260" Type="UInt32">
+      <Offsets>
+        <Offset Value="0" />
+      </Offsets>
+    </Dynamic>
+    <Static Key="ChatInputPaneVtable" Address="682FEC" Type="UInt32" />
+    <Static Key="TellReceiverInputPaneVtable" Address="68306C" Type="UInt32" />
+    <Static Key="TellInputPaneVtable" Address="6830EC" Type="UInt32" />
+  </Variables>
+</ClientLayout>

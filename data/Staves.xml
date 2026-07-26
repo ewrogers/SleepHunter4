@@ -1,57 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <StaffMetadata>
   <Staves>
-    <Staff Name="Holy Apollo" Level="19" Class="Priest">
+    <Staff Name="Holy Apollo" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="2" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Holy Diana" Level="19" Class="Priest">
+    <Staff Name="Holy Diana" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Decrease" Scope="All" Value="2" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Holy Gaea" Level="19" Class="Priest">
+    <Staff Name="Holy Gaea" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="4" MinThreshold="4" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Holy Hermes" Level="19" Class="Priest">
+    <Staff Name="Holy Hermes" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="Group" Name="ioc" Value="0" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Holy Kronos" Level="19" Class="Priest">
+    <Staff Name="Holy Kronos" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="2" MaxThreshold="2" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Holy Zeus" Level="19" Class="Priest">
+    <Staff Name="Holy Zeus" Level="11" Class="Priest">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="2" MinThreshold="4" MaxThreshold="4" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Magus Apollo" Level="19" Class="Wizard">
+    <Staff Name="Magus Apollo" Level="11" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="3" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Magus Ares" Level="19" Class="Wizard">
+    <Staff Name="Magus Ares" Level="11" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="Group" Name="cradh" Value="1" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Magus Diana" Level="19" Class="Wizard">
+    <Staff Name="Magus Diana" Level="11" Class="Wizard">
       <LineModifiers>
         <Lines Action="Decrease" Scope="All" Name="" Value="1" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Magus Gaea" Level="19" Class="Wizard">
+    <Staff Name="Magus Gaea" Level="11" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="4" MinThreshold="4" />
       </LineModifiers>
     </Staff>
-    <Staff Name="Magus Kronos" Level="19" Class="Wizard">
+    <Staff Name="Magus Kronos" Level="11" Class="Wizard">
       <LineModifiers>
         <Lines Action="Set" Scope="All" Name="" Value="1" MinThreshold="2" MaxThreshold="2" />
       </LineModifiers>

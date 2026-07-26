@@ -1,9 +1,9 @@
-# Patches Settings
+﻿# Patches Settings
 
 The `Patches` settings tab organizes client launch modifications into `Startup`, `Input`, `Render`, and `Interface` sections.
 
 Patches are applied only when SleepHunter launches a new client. Changing these settings does not modify clients that are already running.
-Each patch is applied only when the detected client version declares support for it. SleepHunter verifies the client before applying runtime hooks and terminates the suspended launch if a required verification or patch fails, rather than starting a partially patched client.
+Each patch is applied only when the configured client layout declares support for it. SleepHunter verifies the client before applying runtime hooks and terminates the suspended launch if a required verification or patch fails, rather than starting a partially patched client.
 
 ## Startup
 
@@ -22,7 +22,7 @@ By default, this is `Enabled`.
 This setting bypasses the login notification and its associated transfer delay when a supported Dark Ages game client is started.
 By default, this is `Enabled`.
 
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ## Input
 
@@ -32,7 +32,7 @@ This setting clears held keys and modifiers when a supported Dark Ages game clie
 It prevents client hotkeys from becoming stuck when key-release events are sent to another window.
 
 By default, this is `Enabled`.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ### Show Ground Items with Alt
 
@@ -41,7 +41,7 @@ Releasing Alt returns the client to its normal rendering behavior.
 
 By default, this is `Enabled`.
 The patch also enables modifier cleanup on focus loss so the client cannot leave Alt stuck when focus changes.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ### Improved Auto-Follow
 
@@ -50,7 +50,7 @@ The minimum-distance control sets when the client stops, with a valid range of 1
 The default distance is 3 tiles, while right-clicking without Shift keeps the normal follow-and-attack behavior.
 
 By default, this is `Enabled`.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ## Render
 
@@ -70,7 +70,7 @@ Long item names are shortened with two dots when necessary so the quantity remai
 
 By default, this is `Enabled`.
 The patch changes only the displayed label; it does not change the item, quantity, or server interaction.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ### Make Exchange Window Draggable
 
@@ -78,11 +78,11 @@ This setting allows the exchange window to be dragged to a different position.
 Moving it can keep the extended inventory area accessible while an exchange is open.
 
 By default, this is `Enabled`.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.
 
 ### Show Exchange Results in Message Bar
 
 This setting shows final accepted and cancelled exchange messages in the floating message bar and suppresses the matching popup dialogs.
 
 By default, this is `Disabled`.
-The setting has no effect for client versions that do not support the patch.
+The setting has no effect when the configured client layout does not support the patch.

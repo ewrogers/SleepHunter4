@@ -1,186 +1,160 @@
-
 # SleepHunter
-<img src="SleepHunter/SleepHunter.png" width=32 height=32/> <img src="SleepHunter.Updater/SleepHunter-Updater.png" width=32 height=32/>
-Dark Ages Automation Tool + Updater
 
----
+<img src="src/SleepHunter.App/SleepHunter.png" width="32" height="32" alt="SleepHunter icon" />
+<img src="src/SleepHunter.Updater/SleepHunter-Updater.png" width="32" height="32" alt="SleepHunter Updater icon" />
 
-<img src="docs/src/screenshots/SleepHunter.png"/>
+SleepHunter is a Windows automation companion for the
+[Dark Ages](https://www.darkages.com) game client. It helps manage multiple
+characters and automate repetitive skill, spell, and flowering routines without
+taking over the user's mouse or keyboard.
 
-## Requirements ✅
+## Highlights
 
-- [Dark Ages](https://www.darkages.com) Client 7.41 (current latest)
-- .NET 9.0 Desktop Runtime
-    - Windows arm64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-arm64-installer)
-    - Windows x64 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-x64-installer)
-    - Windows x86 - [Download Link](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.10-windows-x86-installer)
-- Windows 7, 10, 11 (64-bit)
+- Per-client automation for skills, spell queues, and flower queues
+- Live queue editing, drag-and-drop reordering, rotation modes, and target-level goals
+- Automatic Fas Spiorad use, class-aware staff switching, and alternate-character targeting
+- Global character hotkeys for starting, pausing, and resuming macros
+- Coherent live character, map, inventory, equipment, group, cooldown, dialog, and nearby-entity observations
+- Automatic safety behavior while typing, changing maps, switching client panels, or handling dialogs
+- Inventory and equipment icons, slot details, cooldown feedback, runtime diagnostics, and customizable color themes
+- Versioned `.sh4x` macro files with import support for legacy `.sh4` files
+- Built-in update checks and a separate updater
 
-## Installation 💾
+## Requirements
 
-1. Download the [latest release](https://github.com/ewrogers/SleepHunter4/releases/)
-2. Extract all files to `C:\SleepHunter` (or your choosing)
-3. Open `SleepHunter.exe`
-4. Configure your DA installation path in `Settings->Game Client` (if different)
-5. Profit!
+- A 64-bit Windows version supported by
+  [.NET 10](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)
+- The [.NET 10 Desktop Runtime for x64](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+- A supported 32-bit Dark Ages 7.41 client, or a compatible custom executable
+  configured through `data/ClientLayout.xml`
 
-### Game Client Launcher Patches
+SleepHunter is published for `win-x64`. The Dark Ages client it observes remains
+a 32-bit process.
 
-When you start Dark Ages from the SleepHunter toolbar, SleepHunter launches the client in a suspended state and applies the enabled patches from `Settings->Game Client` before allowing it to run. Starting Dark Ages directly does not apply these patches, and changing a patch setting does not affect clients that are already running.
+## Installation
 
-The available launcher patches provide the following benefits:
+1. Download the latest archive from
+   [GitHub Releases](https://github.com/ewrogers/SleepHunter4/releases).
+2. Extract every file to a folder of your choice.
+3. Run `SleepHunter.exe`.
+4. Set the Dark Ages executable under `Settings > Game Client` if it was not
+   detected automatically.
+5. Review the options under `Settings > Patches` before launching a client from
+   the SleepHunter toolbar.
 
-- **Allow Multiple Instances** lets you run more than one Dark Ages client at the same time.
-- **Skip Intro Video** takes you directly to the login flow.
-- **Suppress Login Notification** removes the login notice and its associated transfer delay.
-- **Apply Modifiers Key Fix** clears held keys when the client loses focus, preventing Alt, Ctrl, or Shift from becoming stuck.
-- **Show Ground Items with Alt** reveals up to 255 ground items as translucent hints while either Alt key is held, including items hidden behind static map art.
-- **Show Item Quantities in Dialogs** adds stack quantities to item names in inventory-based merchant and storage dialogs.
-- **No Foreground Walls** hides foreground wall tiles to make obscured areas and items easier to see.
+SleepHunter can check for updates under `Settings > Updates`. Updating preserves
+the existing `Settings.xml` file while replacing application and runtime data
+files with the release versions.
 
-All quality-of-life patches above are enabled by default except **No Foreground Walls**. Patches are applied only to client versions that explicitly support them. Runtime hooks are signature-checked, and SleepHunter stops the suspended launch if a required patch cannot be verified or applied rather than starting a partially patched client.
+## Automation
 
-See [Game Client Settings](./docs/src/settings/game-client.md) for the full option reference.
+Each logged-in client has an independent macro configuration and runtime.
+SleepHunter can interleave ready skills, cast queued spells using the selected
+rotation mode, and distribute mana through Lyliac Plant or Lyliac Vineyard.
+Queues and skill toggles can be changed while automation is running, and each
+complete edit is applied without stopping the macro.
 
-## Zolian Support ⭕
+The combined macro toolbar button changes between Start, Pause, and Resume.
+Stopping resets temporary runtime state such as flower intervals, but it does
+not remove configured skills, spells, or flower targets.
 
-As of version 4.8.0 and newer, SleepHunter now supports the [Zolian 9.1.1+ client](https://www.thebucknetwork.com/Zolian) out of the box.
+The selected client status bar shows healthy observations, expected transition
+waits, and actionable failures. Its details view includes recent read timing,
+captured state, and nested error information for troubleshooting.
 
-You will need to configure the `Settings->Game Client` path to point to your Zolian installation.
-For example `C:\Zolian\Zolian 9.1.1.exe`.
+## Client launcher patches
 
-Restart SleepHunter once and you should see the proper skill/spell icons displayed.
+Patches are applied only when SleepHunter launches a new client. Changing a
+setting does not modify clients that are already running.
 
-**NOTE:** While the client is supported, you will need custom metadata files for skills, spells, and staves.
+| Patch | Default | Purpose |
+| --- | --- | --- |
+| Allow Multiple Instances | Enabled | Allows more than one Dark Ages client to run |
+| Skip Intro Video | Enabled | Opens the login flow without playing the intro |
+| Suppress Login Notification | Enabled | Removes the login notice and transfer delay |
+| Apply Modifiers Key Fix | Enabled | Prevents Alt, Ctrl, or Shift from remaining stuck after focus changes |
+| Show Ground Items with Alt | Enabled | Reveals up to 255 ground items as translucent hints while Alt is held |
+| Improved Auto-Follow | Enabled | Follows a player or monster without attacking while Shift and right-click are used |
+| No Foreground Walls | Disabled | Hides foreground wall tiles |
+| Show Item Quantities in Dialogs | Enabled | Adds stack quantities to merchant and storage item names |
+| Make Exchange Window Draggable | Enabled | Allows the exchange window to be repositioned |
+| Show Exchange Results in Message Bar | Disabled | Moves accepted and cancelled exchange results to the floating message bar |
 
-## Documentation 📚
+Runtime hooks are signature-checked. If the configured executable cannot be
+verified or a required patch fails, SleepHunter stops the suspended launch
+instead of running a partially patched client.
 
-The documentation for SleepHunter is located in the [docs](./docs) folder.
-It is written in [Markdown](https://www.markdownguide.org/) and can be viewed in any text editor.
+See [Patches Settings](./docs/src/settings/patches.md) for the full option
+reference.
 
-There is a GitHub action that will automatically build the documentation into a static website and publish it to GitHub Pages.
+## Client compatibility
 
-[View Documentation](https://ewrogers.github.io/SleepHunter4/)
+SleepHunter uses one verified layout in `data/ClientLayout.xml` for process
+detection, memory addresses, and patch metadata. Compatible custom clients can
+use updated values in that mapping, but layouts must be based on documented
+client behavior or reproducible live observations.
 
-## Auto-Update 🔄
+Live reads are bounded and checked for consistency because the game client can
+change its own collections while SleepHunter is observing them. Compact
+inventory, skill, spell, and cooldown readings remain available as compatibility
+fallbacks when richer client panes cannot be read safely.
 
-Starting with version 4.1.0, the long awaited auto-update functionality is now working!
-It pulls from the [latest release](https://github.com/ewrogers/SleepHunter4/releases) section.
+The interop layer is the application's only live client reader. It publishes
+coherent snapshots to the automation runtime, and the WPF application projects
+those same snapshots into the client list, vitals, inventory, equipment, skill,
+and spell views. The application does not run a second client-reading path.
+Direct process memory access remains only in the signature-checked client
+launcher patch flow described above.
 
-This means you can update from within the SleepHunter application itself by going to `Settings->Updates`.
-If there is a new version available, you can update to it which will download, install, and restart SleepHunter.
+Live-client verification guidance is maintained in
+[Live Smoke Testing](./SMOKE_TESTING.md).
 
-**NOTE**: Your user settings **will be preserved**, but all other existing data files will be overwritten.
+## Documentation
 
-## Finding Memory Pointers 🔎
+- [User Manual](https://ewrogers.github.io/SleepHunter4/)
+- [Documentation Source](./docs)
+- [Release Notes](./CHANGELOG.md)
+- [Release Process](./RELEASING.md)
 
-SleepHunter relies on reverse-engineered memory addresses that point to game data within the client.
-These are read at runtime which allow the application to be aware of character location, stats, inventory, skills, spells, and UI state.
+## Development
 
-These are likely to change each client version and must be re-located with new offsets to continue functioning properly.
-
-These are defined in the `Versions.xml` file, and are mostly either `StaticVariable` or `DynamicVariable` types.
-
-Numeric variables can declare their in-memory representation with the `Type` attribute (`Byte`, `SByte`,
-`Int16`, `UInt16`, `Int32`, or `UInt32`). Omitting it preserves the legacy behavior of reading a formatted decimal
-string. The USDA 7.41 profile uses the client's documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`,
-and `EquipPane` roots instead of deriving character stats from UI text.
-
-For 7.41, `Player.Stats` exposes direct level, ability level, progression, attributes, vitals, weight,
-armor class, combat modifiers, elements, and magic resistance. `Player.Profile` exposes the raw base class
-as `CharacterClass` plus the separately retained
-`DisplayClass` string used for advanced classes such as Summoner. It also includes the character ID,
-user state, action lock, nation, title, guild, guild rank, group-member text, and the two self-look
-metadata flags. The parsed `GroupMemberNames` cache is also available for matching live players.
-
-Inventory keeps its compact session record for stable item identity and enriches it from the live item pane
-with the display label, stack flag, quantity, and correctly ordered current/maximum durability. Equipment
-reads all 18 sprite, dye, name, and durability entries from the complete `EquipPane`.
-
-The skillbook and spellbook prefer the UI's 90-slot pointer arrays, exposing action-delay state, client
-name-suffix fields, spell cast lines, and skill cooldown progress/start/end timestamps. Their original
-compact session mappings—and the legacy skill cooldown scan—remain as fallbacks if a pane snapshot cannot
-be read safely.
-
-`Player.WorldEntities.KnownEntities` is an ID-keyed snapshot of the living objects currently known to the
-client, including name (when the server supplied one), ID, map X/Y, direction, runtime kind, local-player
-state, and group membership. It includes nearest-player, nearest-monster, and nearest-group-member queries.
-This is the client's known-object collection, not a promise that every object survived the renderer's
-viewport culling for the latest frame.
-
-The 7.41 character-name buffer is only accepted while the corresponding `WorldUserFunc` generation is
-live and the bounded name is structurally valid. Chat typing detection now looks for a visible, registered
-chat/tell input pane and retains the older flag as a compatibility fallback.
-
-The 7.41 roots and layouts were reconciled against the
-[`darkages-741-re` runtime state guide](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/state-walking.md)
-and its
-[`WorldUserFunc` character layout](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/session.md),
-[`inventory and character panes`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/inventory-ui.md),
-and [`world-object layouts`](https://github.com/ewrogers/darkages-741-re/blob/3db2f062e94dc3ccb4d33d1f376a5122d5f8b497/docs/appendix/runtime/world.md).
-One executable-verified exception is the `EquipPane` singleton: the signed `7D4E--1K` USDA client uses
-`0x006FC914`; the nearby `0x006FC8EC` global listed in the reference is null in the live client.
-
-### Static Variables
-
-You can think of a `StaticVariable` as one that is always located in the same spot in memory.
-These do **not** change each time the client is opened or switching characters in the same client instance.
-
-These are the most basic, but unfortunately not very common.
-
-### Dynamic Variables
-
-In the case where memory pointers change each client instance, a `DynamicVariable` must be used.
-You can think of these as one or more pointers that can be followed in to get the data value.
-
-Eventually, the pointer chain should end with a static base address that can be used.
-
-These are the most common types of variables you will encounter, though they may have a single offset or multiple pointers in a chain.
-
-### Search Variables
-
-A less common type, a `SearchVariable` scans a region of memory looking for a certain pattern.
-These are more resilient to change but also require a bit of tweaking to get working properly.
-
-It is not recommended you use these unless absolutely necessary.
-
-### Reverse Engineering Tools
-
-You will need a program like [CheatEngine 7.5+](https://github.com/cheat-engine/cheat-engine).
-This program is not very pretty, but it *is* very powerful.
-
-It is recommended that you follow the tutorial and complete the first few activities to get familiar with the concepts.
-You will be using many of them when working to get memory offsets from the Dark Ages client.
-
-### Why would I need to do this?
-
-If you are using a custom client or a client version that is not currently supported, you will need to do this to retain SleepHunter functionality.
-
-Some examples may be getting this to work with the Korean Legends of Darkness (LoD) client or a previous client version like 7.18 or older.
-
-Or if in the random event that a new client version is released after years of no updates, who knows!
-
-## Contributing 👨🏻‍💻
-
-I am always accepting of pull requests (PRs) against this repository for additional features, bug fixes, and enhancements.
-Now that Auto-Update is functional, it should be much easier to distribute these changes to users of the application.
-
-It is recommended that you use [Visual Studio 2022+](https://visualstudio.microsoft.com/vs/0) for developing on Windows.
-I am not sure of WPF support within other IDEs.
-
-The repository includes focused unit tests for memory pointer walking and snapshot parsing. Live-client
-validation is still important for version-specific pointer or lifecycle changes.
-
-## Packaging 📦
-
-To package and deploy the application and updater binaries as neat, single-file executables, use the following command:
+Development requires Windows and the .NET 10 SDK selected by `global.json`.
+Open `SleepHunter.sln` in a compatible .NET IDE, or use the repository root:
 
 ```powershell
-cd SleepHunter
-dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true --self-contained false
-
+dotnet restore SleepHunter.sln
+dotnet build SleepHunter.sln --configuration Release --no-restore
+dotnet test SleepHunter.sln --configuration Release --no-build
+dotnet run --project src/SleepHunter.App/SleepHunter.App.csproj --configuration Release
 ```
 
-You should then see the binaries in `$PROJECT_ROOT/bin/Release/.net9.0-windows/win-x64/publish`.
+Repository layout:
 
-Unfortunately, it seems publishing through VS 2022 does not respect the `PublishSingleFile` property, even when specified in the `.csproj` file.
+- `src/SleepHunter.App/` contains the WPF application
+- `src/SleepHunter.Updater/` contains the updater
+- `src/SleepHunter.Runtime/` contains deterministic automation state and planning
+- `src/SleepHunter.Interop/` contains guarded client observation and input
+- `src/SleepHunter.Persistence/` contains versioned macro persistence
+- `tests/` contains the NUnit test projects
+- `data/` contains client mappings, themes, and ability metadata
+- `docs/` contains the mdBook user manual
+
+The application project is named `SleepHunter.App`, while the shipped product
+and executable remain `SleepHunter` and `SleepHunter.exe`.
+
+The client list and runtime automation state use MVVM view models and observable
+snapshot projections. The application is not yet fully MVVM. Code-behind remains
+for WPF window and Win32 host integration, and command or interaction logic
+still exists in the main window, metadata, settings, target, editor, and update
+dialogs. Moving that interaction logic into view models is the remaining UI
+migration boundary. New presentation behavior should be implemented in view
+models, bindings, templates, converters, or services rather than expanding that
+code-behind.
+
+Changes that affect live client mappings, input, patches, or automation should
+include deterministic tests and still be verified against the supported 7.41
+client. Read [AGENTS.md](./AGENTS.md) before contributing.
+
+## License
+
+SleepHunter is available under the [MIT License](./LICENSE).

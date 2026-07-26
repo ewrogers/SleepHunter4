@@ -23,7 +23,7 @@ bld/
 [Oo]bj/
 
 # Do not ignore actual Release services
-!SleepHunter/Services/Releases/
+!src/SleepHunter.App/Services/Releases/
 
 # Visual Studo 2015 cache/options directory
 .vs/
@@ -58,6 +58,7 @@ dlldata.c
 *.tlh
 *.tmp
 *.tmp_proj
+*_wpftmp.csproj
 *.log
 *.vspscc
 *.vssscc

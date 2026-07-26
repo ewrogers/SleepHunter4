@@ -1,0 +1,397 @@
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SleepHunter.Interop.Hosting;
+using SleepHunter.Interop.Snapshots;
+using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Commands;
+using SleepHunter.Runtime.Engine;
+using SleepHunter.Runtime.Snapshots;
+
+namespace SleepHunter.ViewModels
+{
+    public sealed partial class ClientRuntimeViewModel :
+        ObservableObject,
+        IAsyncDisposable
+    {
+        private readonly CancellationTokenSource disposeCancellation = new();
+        private readonly Task capturePump;
+        private readonly IClientRuntimeHost host;
+        private readonly Task hostMonitor;
+        private readonly IUiDispatcher uiDispatcher;
+        private readonly Task viewPump;
+
+        private int disposeState;
+        private volatile bool isHostAvailable = true;
+
+        public ClientRuntimeViewModel(
+            IClientRuntimeHost host,
+            IUiDispatcher uiDispatcher)
+        {
+            this.host = host ??
+                throw new ArgumentNullException(nameof(host));
+            this.uiDispatcher = uiDispatcher ??
+                throw new ArgumentNullException(nameof(uiDispatcher));
+
+            capturePump = PumpCapturesAsync(disposeCancellation.Token);
+            viewPump = PumpViewsAsync(disposeCancellation.Token);
+            hostMonitor = MonitorHostAsync(disposeCancellation.Token);
+        }
+
+        public ClientIdentity Client => host.Client;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(StartCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+        [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+        [NotifyPropertyChangedFor(nameof(Automation))]
+        [NotifyPropertyChangedFor(nameof(IsAutomationEnabled))]
+        [NotifyPropertyChangedFor(nameof(PanelPreservation))]
+        public partial MacroViewSnapshot Current { get; private set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CaptureError))]
+        [NotifyPropertyChangedFor(nameof(CaptureSequence))]
+        [NotifyPropertyChangedFor(nameof(CaptureStatistics))]
+        [NotifyPropertyChangedFor(nameof(HasCapture))]
+        [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
+        [NotifyPropertyChangedFor(nameof(LatestCaptureResult))]
+        [NotifyPropertyChangedFor(nameof(LatestSnapshot))]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
+        public partial SnapshotCaptureObservation LatestCapture
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
+        public partial ClientSnapshot LastSuccessfulSnapshot
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
+        public partial Exception RuntimeFailure { get; private set; }
+
+        public SnapshotCaptureError CaptureError =>
+            LatestCapture?.Result.Error;
+
+        public SnapshotSequence? CaptureSequence =>
+            LatestCapture?.Result.Metrics.Sequence;
+
+        public SnapshotCaptureStatistics CaptureStatistics =>
+            LatestCapture?.Statistics ??
+            host.CaptureStatistics;
+
+        public bool HasCapture => LatestCapture is not null;
+
+        public bool IsCaptureHealthy =>
+            RuntimeFailure is null &&
+            LatestCapture?.Result.Succeeded == true;
+
+        public bool IsHostAvailable =>
+            Volatile.Read(ref disposeState) == 0 &&
+            isHostAvailable;
+
+        public SnapshotCaptureResult LatestCaptureResult =>
+            LatestCapture?.Result;
+
+        public ClientSnapshot LatestSnapshot =>
+            LatestCapture?.Result.Snapshot;
+
+        public ClientSnapshot PresentationSnapshot =>
+            LatestSnapshot ??
+            (CaptureError?.Failure ==
+                SnapshotCaptureFailure.LocationTransition
+                    ? LastSuccessfulSnapshot
+                    : null);
+
+        public AutomationConfiguration Automation =>
+            Current?.Automation ?? AutomationConfiguration.Disabled;
+
+        public bool IsAutomationEnabled => Automation.IsEnabled;
+
+        public PanelPreservationState PanelPreservation =>
+            Current?.PanelPreservation;
+
+        public ValueTask SendCommandAsync(
+            MacroCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposing();
+            return host.SendCommandAsync(command, cancellationToken);
+        }
+
+        internal bool PublishClientRoster(ClientRosterSnapshot snapshot)
+        {
+            ArgumentNullException.ThrowIfNull(snapshot);
+            ThrowIfDisposing();
+            return host.PublishClientRoster(snapshot);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            var isFirstDispose =
+                Interlocked.Exchange(ref disposeState, 1) == 0;
+            if (!isFirstDispose)
+            {
+                await Task
+                    .WhenAll(capturePump, viewPump, hostMonitor)
+                    .ConfigureAwait(false);
+                return;
+            }
+
+            StartCommand.Cancel();
+            PauseCommand.Cancel();
+            ResumeCommand.Cancel();
+            StopCommand.Cancel();
+            disposeCancellation.Cancel();
+            NotifyCommands();
+
+            try
+            {
+                await Task
+                    .WhenAll(
+                        host.DisposeAsync().AsTask(),
+                        capturePump,
+                        viewPump,
+                        hostMonitor)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                disposeCancellation.Dispose();
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStart))]
+        private Task StartAsync(CancellationToken cancellationToken) =>
+            SendAsync(new StartMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanPause))]
+        private Task PauseAsync(CancellationToken cancellationToken) =>
+            SendAsync(new PauseMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanResume))]
+        private Task ResumeAsync(CancellationToken cancellationToken) =>
+            SendAsync(new ResumeMacroCommand(), cancellationToken);
+
+        [RelayCommand(CanExecute = nameof(CanStop))]
+        private Task StopAsync(CancellationToken cancellationToken) =>
+            SendAsync(new StopMacroCommand(), cancellationToken);
+
+        private async Task PumpCapturesAsync(
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await foreach (var capture in host.Captures
+                                   .ReadAllAsync(cancellationToken)
+                                   .ConfigureAwait(false))
+                {
+                    await uiDispatcher
+                        .InvokeAsync(
+                            () => LatestCapture = capture,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: host.Completion.IsCompleted)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        private async Task PumpViewsAsync(
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await foreach (var view in host.Views
+                                   .ReadAllAsync(cancellationToken)
+                                   .ConfigureAwait(false))
+                {
+                    await uiDispatcher
+                        .InvokeAsync(
+                            () => Current = view,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: host.Completion.IsCompleted)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await uiDispatcher
+                        .InvokeAsync(
+                            () =>
+                            {
+                                isHostAvailable = false;
+                                OnPropertyChanged(
+                                    nameof(IsHostAvailable));
+                                NotifyCommands();
+                            },
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task MonitorHostAsync(
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await host.Completion
+                    .WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await RecordRuntimeFailureAsync(
+                            new InvalidOperationException(
+                                "The client runtime stopped unexpectedly."),
+                            hostUnavailable: true)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                await RecordRuntimeFailureAsync(
+                        exception,
+                        hostUnavailable: true)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        private ValueTask RecordRuntimeFailureAsync(
+            Exception exception,
+            bool hostUnavailable)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            return uiDispatcher.InvokeAsync(
+                () =>
+                {
+                    if (Volatile.Read(ref disposeState) != 0)
+                        return;
+
+                    RuntimeFailure ??= Unwrap(exception);
+                    if (hostUnavailable)
+                    {
+                        if (Current is
+                            {
+                                Lifecycle: MacroLifecycle.Running or
+                                    MacroLifecycle.Paused
+                            } current)
+                        {
+                            Current = current with
+                            {
+                                Lifecycle = MacroLifecycle.Stopped,
+                                StopReason = MacroStopReason.RuntimeFailure,
+                                PendingActionId = null
+                            };
+                        }
+
+                        isHostAvailable = false;
+                        OnPropertyChanged(nameof(IsHostAvailable));
+                    }
+
+                    NotifyCommands();
+                },
+                CancellationToken.None);
+        }
+
+        private static Exception Unwrap(Exception exception)
+        {
+            if (exception is AggregateException aggregate)
+            {
+                var flattened = aggregate.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    return flattened.InnerExceptions[0];
+            }
+
+            return exception;
+        }
+
+        private bool CanChangeLifecycle(MacroLifecycle lifecycle) =>
+            Volatile.Read(ref disposeState) == 0 &&
+            isHostAvailable &&
+            Current?.Lifecycle == lifecycle;
+
+        private bool CanStart() =>
+            CanChangeLifecycle(MacroLifecycle.Stopped);
+
+        private bool CanPause() =>
+            CanChangeLifecycle(MacroLifecycle.Running);
+
+        private bool CanResume() =>
+            CanChangeLifecycle(MacroLifecycle.Paused);
+
+        private bool CanStop() =>
+            Volatile.Read(ref disposeState) == 0 &&
+            isHostAvailable &&
+            Current?.Lifecycle is
+                MacroLifecycle.Running or MacroLifecycle.Paused;
+
+        private void NotifyCommands()
+        {
+            StartCommand.NotifyCanExecuteChanged();
+            PauseCommand.NotifyCanExecuteChanged();
+            ResumeCommand.NotifyCanExecuteChanged();
+            StopCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnLatestCaptureChanged(
+            SnapshotCaptureObservation value)
+        {
+            if (value?.Result.Snapshot is { } snapshot)
+                LastSuccessfulSnapshot = snapshot;
+        }
+
+        private Task SendAsync(
+            MacroCommand command,
+            CancellationToken cancellationToken)
+        {
+            ThrowIfDisposing();
+            return host
+                .SendCommandAsync(command, cancellationToken)
+                .AsTask();
+        }
+
+        private void ThrowIfDisposing()
+        {
+            ObjectDisposedException.ThrowIf(
+                Volatile.Read(ref disposeState) != 0,
+                this);
+        }
+    }
+}

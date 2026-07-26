@@ -1,0 +1,895 @@
+﻿<Window x:Class="SleepHunter.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctl="clr-namespace:SleepHunter.Controls"
+        xmlns:macro="clr-namespace:SleepHunter.Macro"
+        xmlns:settings="clr-namespace:SleepHunter.Settings"
+        Title="SleepHunter" 
+        Width="1024" Height="768"
+        MinWidth="880" MinHeight="600"
+        Style="{StaticResource ObsidianWindow}"
+        WindowStartupLocation="CenterScreen"
+        SourceInitialized="Window_SourceInitialized"
+        ContentRendered="Window_Shown"
+        Closing="Window_Closing"
+        Closed="Window_Closed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" MinWidth="240" MaxWidth="360"/>
+            <ColumnDefinition Width="*" MinWidth="200"/>
+            <ColumnDefinition Width="260" MinWidth="260" MaxWidth="360"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Overlay when showing Modal Dialogs -->
+        <Grid Name="modalOverlay" Grid.RowSpan="3" Grid.ColumnSpan="4" Panel.ZIndex="10" Visibility="Hidden">
+            <Border Background="Black" Opacity="0.3"/>
+            <Border Background="{StaticResource ScanlineBrush}" Opacity="0.7"/>
+        </Grid>
+
+        <!-- Tool Bar -->
+        <Border Grid.ColumnSpan="4" 
+                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                BorderThickness="0,0,0,1"
+                Panel.ZIndex="9">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <!-- Launch Client Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding ClientLaunch.LaunchClientCommand}"
+                            Padding="6,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Lau_nch Client"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE1E2;"/>
+                        </DockPanel>
+                    </Button>
+                    <!-- Load Macro State Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding MacroPersistence.LoadMacroCommand}"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Load State"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE197;"/>
+                        </DockPanel>
+                    </Button>
+                    <!-- Save Macro State Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding MacroPersistence.SaveMacroCommand}"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Save State"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE105;"/>
+                        </DockPanel>
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Macro Toggle Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding SelectedClient.ToggleMacroCommand}"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="{Binding SelectedClient.MacroToggleLabel, FallbackValue=_Start Macro, TargetNullValue=_Start Macro}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource ObsidianSymbolText}">
+                                        <Setter Property="Text" Value="&#xE102;"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedClient.IsMacroRunning}"
+                                                         Value="True">
+                                                <Setter Property="Text" Value="&#xE103;"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+                    </Button>
+                    <!-- Stop Macro Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding SelectedClient.StopMacroCommand}"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="S_top Macro"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE20D;"/>
+                        </DockPanel>
+                    </Button>
+                    <!-- Stop All Macros Button -->
+                    <Button Style="{StaticResource ObsidianToolBarButton}"
+                            Command="{Binding StopAllMacrosCommand}"
+                            Padding="4,8,4,2">
+                        <DockPanel>
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="Stop _All"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0,2,0,0"
+                                       Text="&#xE20E;"/>
+                        </DockPanel>
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Metadata Editor Button -->
+                    <Button Name="metadataEditorButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="metadataEditorButton_Click"
+                            Padding="4,8,4,2">
+                        <DockPanel VerticalAlignment="Stretch">
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="_Metadata Editor"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0"
+                                       Text="&#xE104;"/>
+                        </DockPanel>
+                    </Button>
+                    <!-- Settings Button -->
+                    <Button Name="settingsButton"
+                            Style="{StaticResource ObsidianToolBarButton}"
+                            Click="settingsButton_Click"
+                            Padding="4,8,8,2">
+                        <DockPanel VerticalAlignment="Stretch">
+                            <Label DockPanel.Dock="Bottom"
+                                   Content="App Settin_gs"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   Margin="0"
+                                   Padding="4,0,4,4"/>
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="20"
+                                       Margin="0"
+                                       Text="&#xE2FC;"/>
+                        </DockPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <!-- Client List Box -->
+            <ListBox Name="clientListBox"
+                     Grid.Row="1"
+                     BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                     BorderThickness="0,1,0,0"
+                     ItemTemplate="{StaticResource PlayerDataTemplate}"
+                     ItemsSource="{Binding Clients}"
+                     SelectedItem="{Binding SelectedClient, Mode=TwoWay}"
+                     Style="{StaticResource ObsidianListBox}"
+                     Margin="0"
+                     SelectionChanged="clientListBox_SelectionChanged"
+                     SelectionMode="Single">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                        <Setter Property="Focusable" Value="True"/>
+                        <Setter Property="IsTabStop" Value="True"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
+                        <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+        </StackPanel>
+
+
+        <!-- Grid Splitter -->
+        <GridSplitter Grid.Row="1"
+                      Width="1"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Stretch"
+                      Panel.ZIndex="10"
+                      Style="{StaticResource ObsidianGridSplitter}"/>
+
+        <!-- Spell/Skills/Flower Tabs -->
+        <TabControl Name="tabControl"
+                    Grid.Row="1" Grid.Column="1"
+                    Grid.ColumnSpan="{Binding MacroPersistence.MacroContentColumnSpan}"
+                    Style="{StaticResource ObsidianTabControl}"
+                    SelectedIndex="0"
+                    SelectionChanged="tabControl_SelectionChanged"
+                    Margin="-1,-1,0,0"
+                    Padding="0">
+
+            <!-- Inventory Tab -->
+            <TabItem Name="inventoryTab" Header="_Inventory" IsEnabled="False">
+                <ListBox Name="inventoryListBox"
+                         Style="{StaticResource ObsidianInventoryListBox}"
+                         ItemTemplate="{StaticResource InventoryItemDataTemplate}"
+                         ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Inventory.ItemsAndGold}"
+                         VerticalContentAlignment="Top"/>
+            </TabItem>
+
+            <!-- Equipment Tab -->
+            <TabItem Name="equipmentTab" Header="_Equipment" IsEnabled="False">
+                <ItemsControl Name="equipmentItemsControl"
+                              ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Equipment.SortedBySlot}"
+                              ItemTemplate="{StaticResource EquipmentItemDataTemplate}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="16">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Grid IsItemsHost="True">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Grid.Row"
+                                    Value="{Binding Slot, Converter={StaticResource EquipmentSlotPositionConverter}, ConverterParameter=Row}"/>
+                            <Setter Property="Grid.Column"
+                                    Value="{Binding Slot, Converter={StaticResource EquipmentSlotPositionConverter}, ConverterParameter=Column}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+            </TabItem>
+
+            <!-- Skills Tabs-->
+            <TabItem Name="skillsTab" Header="S_kills" IsEnabled="False">
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}"
+                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
+                    <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
+                        <!-- Temuair Skills -->
+                        <ListBox Name="temuairSkillListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.TemuairSkills}"
+                                 VerticalContentAlignment="Top">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                    <!-- Medenia Skills -->
+                    <TabItem Header="_Medenia" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
+                        <ListBox Name="medeniaSkillListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.MedeniaSkills}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                    <!-- World Skills -->
+                    <TabItem Header="_World" IsEnabled="{Binding Path=IsEnabled, ElementName=skillsTab}">
+                        <ListBox Name="worldSkillListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Skillbook.WorldSkills}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="skillListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
+            <!-- Spells Tabs-->
+            <TabItem Name="spellsTab" Header="S_pells" IsEnabled="False">
+                <!-- Temuair Spells -->
+                <TabControl Style="{StaticResource ObsidianPanelTabControl}"
+                            IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
+                    <TabItem Header="_Temuair" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
+                        <ListBox Name="temuairSpellListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.TemuairSpells}"
+                                 VerticalContentAlignment="Top">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                    <!-- Medenia Spells -->
+                    <TabItem Header="_Medenia" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
+                        <ListBox Name="medeniaSpellListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.MedeniaSpells}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                    <!-- World Spells -->
+                    <TabItem Header="_World" IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}">
+                        <ListBox Name="worldSpellListBox" 
+                                 Style="{StaticResource ObsidianSkillListBox}"
+                                 ItemTemplate="{StaticResource AbilityDataTemplate}"
+                                 ItemsSource="{Binding ElementName=clientListBox, Path=SelectedItem.Spellbook.WorldSpells}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianSkillListBoxItem}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="spellListBox_ItemDoubleClick"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
+            <!-- Flowering Tab -->
+            <TabItem Name="flowerTab"
+                     Header="_Flowering"
+                     IsEnabled="False"
+                     Visibility="Collapsed">
+                <Grid IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Flower Settings -->
+                    <Border BorderBrush="{StaticResource ObsidianSeparatorColor}" 
+                            BorderThickness="0,0,0,1"
+                            Padding="0,8">
+                        <UniformGrid HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Rows="1">
+                            <CheckBox Name="flowerAlternateCharactersCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      FontSize="14"
+                                      Margin="16,4"
+                                      IsChecked="{Binding SelectedClient.MacroConfiguration.FlowerAlternateCharacters, Mode=TwoWay}"
+                                      ToolTip="This enables automatic flowering for your alternate characters (if they require mana).">
+                                _Auto-Flower My Characters
+                            </CheckBox>
+                            <CheckBox Name="flowerVineyardCheckBox"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      FontSize="14"
+                                      Margin="16,4"
+                                      IsChecked="{Binding SelectedClient.MacroConfiguration.UseLyliacVineyard, Mode=TwoWay}"
+                                      ToolTip="This will enable automatic casting of Lyliac Vineyard (on cooldown).">
+                                Use Lyliac _Vineyard
+                            </CheckBox>
+                        </UniformGrid>
+                    </Border>
+
+                    <!-- Flower Queue -->
+                    <ListBox Name="flowerListBox"
+                             Grid.Row="1"
+                             Style="{StaticResource ObsidianListBox}"
+                             ItemTemplate="{StaticResource FlowerQueueItemDataTemplate}"
+                             ItemsSource="{Binding SelectedClient.MacroEditor.FlowerTargets}"
+                             SelectedItem="{Binding SelectedClient.MacroEditor.SelectedFlower, Mode=TwoWay}"
+                             SelectionMode="Single"
+                             Margin="0"
+                             GiveFeedback="flowerQueueListBox_GiveFeedback">
+                        <ListBox.InputBindings>
+                            <KeyBinding Key="Delete"
+                                        Command="{Binding SelectedClient.MacroEditor.RemoveSelectedFlowerCommand}"/>
+                            <KeyBinding Key="Back"
+                                        Command="{Binding SelectedClient.MacroEditor.RemoveSelectedFlowerCommand}"/>
+                        </ListBox.InputBindings>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                                <Setter Property="AllowDrop" Value="True"/>
+                                <EventSetter Event="MouseDoubleClick" Handler="flowerQueueListBox_ItemDoubleClick"/>
+                                <EventSetter Event="PreviewMouseMove" Handler="flowerQueueListBox_PreviewMouseMove"/>
+                                <EventSetter Event="Drop" Handler="flowerQueueListBox_Drop"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <!-- Buttons -->
+                    <Border Grid.Row="2"
+                            BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                            BorderThickness="0,1,0,0">
+                        <UniformGrid Rows="1"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch">
+                            <!-- Add Target to Queue -->
+                            <Button Name="addFlowerTargetButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Click="addFlowerTargetButton_Click"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"
+                                               Text="&#xE109;"/>
+                                    <Label Content="Add _New"
+                                           Foreground="{Binding ElementName=addFlowerTargetButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Remove Selected Target from Queue -->
+                            <Button Name="removeSelectedFlowerTargetButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Command="{Binding SelectedClient.MacroEditor.RemoveSelectedFlowerCommand}"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=removeSelectedFlowerTargetButton, Path=Foreground}"
+                                               Text="&#xE10A;"/>
+                                    <Label Content="_Remove"
+                                           Foreground="{Binding ElementName=removeSelectedFlowerTargetButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Clear All Flower Targets from Queue -->
+                            <Button Name="removeAllFlowerTargetsButton"
+                                    Style="{StaticResource ObsidianCommandButton}"
+                                    Command="{Binding SelectedClient.MacroEditor.ClearFlowersCommand}"
+                                    IsEnabled="{Binding ElementName=flowerAlternateCharactersCheckBox, Path=IsEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                               Foreground="{Binding ElementName=removeAllFlowerTargetsButton, Path=Foreground}"
+                                               Text="&#xE107;"/>
+                                    <Label Content="Cle_ar All"
+                                           Foreground="{Binding ElementName=removeAllFlowerTargetsButton, Path=Foreground}"/>
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Spell Queue Placeholder -->
+        <Border Grid.Row="1"
+                Grid.Column="3"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{StaticResource ObsidianDisabled}"
+                BorderThickness="1,0,0,0"
+                HorizontalAlignment="Right"
+                Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility, Converter={StaticResource VisibilityInverter}, Mode=OneWay}">
+
+            <StackPanel Orientation="Vertical">
+
+                <!-- Show Spell Queue Button -->
+                <Button x:Name="showSpellQueueButton"
+                        Style="{StaticResource ObsidianIconButton}"
+                        IsEnabled="{Binding Path=IsEnabled, ElementName=spellsTab}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Margin="0"
+                        Padding="4,4"
+                        ToolTip="Shows the spell queue."
+                        Command="{Binding MacroPersistence.ShowSpellQueueCommand}">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   FontSize="24"
+                                   Margin="0,0"
+                                   Text="&#xE127;"/>
+
+                        <TextBlock Style="{StaticResource ObsidianText}"
+                                   Foreground="{Binding Path=Foreground, ElementName=showSpellQueueButton}"
+                                   FontSize="18"
+                                   Margin="0,8,0,8"
+                                   Text="Spell Queue">
+                            <TextBlock.LayoutTransform>
+                                <RotateTransform Angle="90"/>
+                            </TextBlock.LayoutTransform>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Grid Splitter -->
+        <GridSplitter Grid.Row="1"
+                      Grid.Column="1"
+                      Width="1"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Stretch"
+                      Style="{StaticResource ObsidianGridSplitter}"
+                      Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
+
+        <!-- Spell Queue Grid -->
+        <Grid Grid.Row="1"
+              Grid.Column="2"
+              IsEnabled="{Binding SelectedClient.IsMacroEditingEnabled}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Spell Queue Header -->
+            <Border VerticalAlignment="Top"
+                    Background="{DynamicResource ObsidianBackground}"
+                    Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
+                <Grid>
+                    <TextBlock Text="Spell Queue"
+                               Style="{StaticResource ObsidianText}"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               FontSize="18"
+                               Padding="4,2"/>
+
+                    <!-- Hide Spell Queue Button -->
+                    <Button
+                            Style="{StaticResource ObsidianIconButton}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Content="&#xE126;"
+                            Padding="2,1"
+                            ToolTip="Hides the spell queue."
+                            Command="{Binding MacroPersistence.HideSpellQueueCommand}"/>
+
+                    <Border Name="SpellQueueHeaderAccentInset"
+                            Style="{StaticResource ObsidianAccentInsetBorder}"/>
+                </Grid>
+            </Border>
+
+            <!-- Spell Rotation Mode -->
+            <DockPanel Grid.Row="1"
+                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
+                <TextBlock DockPanel.Dock="Left"
+                           Text="Rotation:"
+                           Style="{StaticResource ObsidianText}"
+                           TextAlignment="Left"
+                           FontSize="16"
+                           Margin="12,4,8,4"/>
+                <ComboBox Name="spellQueueRotationComboBox" 
+                          Style="{StaticResource ObsidianComboBox}"
+                          ItemTemplate="{StaticResource StringDataTemplate}"
+                          SelectedValuePath="Value"
+                          SelectedValue="{Binding SelectedClient.MacroConfiguration.SpellQueueRotation, Mode=TwoWay}"
+                          Margin="8">
+                    <settings:UserSetting Key="None"
+                                          DisplayText="No Rotation"
+                                          Value="{x:Static macro:SpellRotationMode.None}"/>
+                    <settings:UserSetting Key="Singular"
+                                          DisplayText="Singular Order"
+                                          Value="{x:Static macro:SpellRotationMode.Singular}"/>
+                    <settings:UserSetting Key="RoundRobin"
+                                          DisplayText="Round Robin"
+                                          Value="{x:Static macro:SpellRotationMode.RoundRobin}"/>
+                </ComboBox>
+            </DockPanel>
+
+            <Separator Grid.Row="2"
+                       Style="{StaticResource ObsidianSeparator}"
+                       Margin="0"
+                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
+
+            <!-- Spell Queue -->
+            <ListBox Name="spellQueueListBox"
+                     Grid.Row="3"
+                     Style="{StaticResource ObsidianListBox}"
+                     ItemTemplate="{StaticResource SpellQueueItemDataTemplate}"
+                     ItemsSource="{Binding SelectedClient.MacroEditor.QueuedSpells}"
+                     SelectedItem="{Binding SelectedClient.MacroEditor.SelectedSpell, Mode=TwoWay}"
+                     SelectionMode="Single"
+                     Visibility="{Binding MacroPersistence.IsSpellQueueVisible, Converter={StaticResource VisibilityConverter}, ConverterParameter=Collapse}"
+                     GiveFeedback="spellQueueListBox_GiveFeedback">
+                <ListBox.InputBindings>
+                    <KeyBinding Key="Delete"
+                                Command="{Binding SelectedClient.MacroEditor.RemoveSelectedSpellCommand}"/>
+                    <KeyBinding Key="Back"
+                                Command="{Binding SelectedClient.MacroEditor.RemoveSelectedSpellCommand}"/>
+                </ListBox.InputBindings>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                        <Setter Property="AllowDrop" Value="True"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="spellQueueListBox_ItemDoubleClick"/>
+                        <EventSetter Event="PreviewMouseMove" Handler="spellQueueListBox_PreviewMouseMove"/>
+                        <EventSetter Event="Drop" Handler="spellQueueListBox_Drop"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+
+            <TextBlock Name="EmptySpellQueuePlaceholder"
+                       Grid.Row="3"
+                       Panel.ZIndex="1"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       MaxWidth="260"
+                       Margin="24"
+                       Text="Double click a spell to add to queue"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource ObsidianInactive}"
+                       Opacity="0.65"
+                       IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock"
+                           BasedOn="{StaticResource ObsidianText}">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=Visibility}"
+                                               Value="Visible"/>
+                                    <Condition Binding="{Binding ElementName=spellQueueListBox, Path=HasItems}"
+                                               Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Separator Grid.Row="4"
+                       Style="{StaticResource ObsidianSeparator}"
+                       Margin="0"
+                       Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}"/>
+
+            <Grid Grid.Row="5" Visibility="{Binding ElementName=spellQueueListBox, Path=Visibility}">
+                <UniformGrid Rows="1"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center">
+                    <!-- Remove Selected Spell from Queue -->
+                    <Button Name="removeSelectedSpellButton"
+                            Style="{StaticResource ObsidianCommandButton}"
+                            Command="{Binding SelectedClient.MacroEditor.RemoveSelectedSpellCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=removeSelectedSpellButton, Path=Foreground}"
+                                       Text="&#xE10A;"/>
+                            <Label Content="_Remove"
+                                   Foreground="{Binding ElementName=removeSelectedSpellButton, Path=Foreground}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Clear All Spells from Queue -->
+                    <Button Name="removeAllSpellsButton"
+                            Style="{StaticResource ObsidianCommandButton}"
+                            Command="{Binding SelectedClient.MacroEditor.ClearSpellsCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
+                                       Foreground="{Binding ElementName=removeAllSpellsButton, Path=Foreground}"
+                                       Text="&#xE107;"/>
+                            <Label Content="Cle_ar All"
+                                   Foreground="{Binding ElementName=removeAllSpellsButton, Path=Foreground}"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+            </Grid>
+        </Grid>
+        
+        <!-- Runtime Status -->
+        <Border Grid.Row="2"
+                Grid.ColumnSpan="4"
+                Panel.ZIndex="8"
+                MinHeight="28"
+                Padding="10,3,20,5"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                BorderThickness="0,1,0,4">
+            <DockPanel LastChildFill="True">
+                <ToggleButton Name="runtimeDetailsButton"
+                              DockPanel.Dock="Right"
+                              Width="24"
+                              Height="22"
+                              Margin="8,0,0,0"
+                              Padding="3"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              Background="Transparent"
+                              BorderBrush="Transparent"
+                              BorderThickness="1"
+                              Focusable="False"
+                              AutomationProperties.Name="Runtime details"
+                              IsEnabled="{Binding SelectedClient.HasRuntime, FallbackValue=False, TargetNullValue=False}"
+                              IsChecked="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                              PreviewMouseLeftButtonDown="RuntimeDetailsButton_PreviewMouseLeftButtonDown"
+                              ToolTip="Runtime details">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Grid>
+                                <Border Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="2">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      Margin="{TemplateBinding Padding}"/>
+                                </Border>
+                                <Border Name="AccentInsetBorder"
+                                        Style="{StaticResource ObsidianAccentInsetBorder}"
+                                        Visibility="Collapsed"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="BorderBrush"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="Background"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                    <Setter TargetName="AccentInsetBorder"
+                                            Property="Visibility"
+                                            Value="Collapsed"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                    <Grid Width="14" Height="14">
+                        <Ellipse Stroke="{DynamicResource ObsidianForeground}"
+                                 StrokeThickness="1.5"/>
+                        <Path Data="M 7,6.5 L 7,10.5 M 7,3.5 L 7,4"
+                              Stroke="{DynamicResource ObsidianForeground}"
+                              StrokeThickness="1.7"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"/>
+                    </Grid>
+                </ToggleButton>
+
+                <Popup Name="runtimeDetailsPopup"
+                       IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                       Placement="Top"
+                       PlacementTarget="{Binding ElementName=runtimeDetailsButton}"
+                       HorizontalOffset="-556"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade"
+                       Closed="RuntimeDetailsPopup_Closed">
+                    <Border Width="580"
+                            Margin="0,0,0,4"
+                            Padding="12"
+                            Background="{DynamicResource ObsidianControlBackground}"
+                            BorderBrush="{DynamicResource ObsidianBackground}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource ObsidianText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Text="Runtime Details"/>
+                            <TextBox Grid.Row="1"
+                                     Width="554"
+                                     Height="310"
+                                     Style="{StaticResource ObsidianNonEraseTextBox}"
+                                     Padding="8"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
+                                     VerticalContentAlignment="Stretch"
+                                     Text="{Binding DataContext.SelectedClient.RuntimeDetailsSnapshot, ElementName=runtimeDetailsButton, Mode=OneWay}"/>
+                            <TextBlock Grid.Row="2"
+                                       Style="{StaticResource ObsidianText}"
+                                       Margin="0,8,0,0"
+                                       Opacity="0.7"
+                                       Text="Select the diagnostic text and press Ctrl+C to copy."/>
+                        </Grid>
+                    </Border>
+                </Popup>
+
+                <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding SelectedClient.RuntimeStatus, FallbackValue='No clients', TargetNullValue='No clients'}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock"
+                               BasedOn="{StaticResource ObsidianText}">
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedClient.IsRuntimeStatusError}"
+                                             Value="True">
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource ObsidianError}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -22,13 +22,13 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.110"
 
       - name: Restore
-        run: dotnet restore SleepHunter/SleepHunter.sln
+        run: dotnet restore SleepHunter.sln
 
       - name: Build Release configuration
-        run: dotnet build SleepHunter/SleepHunter.sln --configuration Release --no-restore
+        run: dotnet build SleepHunter.sln --configuration Release --no-restore
 
       - name: Test Release configuration
-        run: dotnet test SleepHunter.Tests/SleepHunter.Tests.csproj --configuration Release --no-build
+        run: dotnet test SleepHunter.sln --configuration Release --no-build

@@ -131,18 +131,18 @@
     <Skill Name="Instrumental 7" Class="Priest" Group="Instrumental" />
     <Skill Name="Instrumental 8" Class="Priest" Group="Instrumental" />
     <Skill Name="Instrumental 9" Class="Priest" Group="Instrumental" />
-    <Skill Name="Instrumental Attack 1" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 10" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 11" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 12" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 2" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 3" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 4" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 5" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 6" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 7" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 8" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
-    <Skill Name="Instrumental Attack 9" Class="Priest" Group="Instrumental Attack" IsAssail="true" Cooldown="12" />
+    <Skill Name="Instrumental Attack 1" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 10" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 11" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 12" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 2" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 3" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 4" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 5" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 6" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 7" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 8" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
+    <Skill Name="Instrumental Attack 9" Class="Priest" Group="Instrumental Attack" Cooldown="12" />
     <Skill Name="Intimidate" Class="Warrior" Cooldown="15" />
     <Skill Name="Kelberoth Strike" Class="Monk" Cooldown="23" />
     <Skill Name="Kick" Class="Monk" Group="Kick" Cooldown="9" RequiresDisarm="true" />

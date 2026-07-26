@@ -1,4 +1,4 @@
-# Game Client Settings
+﻿# Game Client Settings
 
 The `Game Client` settings tab contains settings for the Dark Ages game client.
 
@@ -7,11 +7,13 @@ The `Game Client` settings tab contains settings for the Dark Ages game client.
 This setting determines the path to the Dark Ages game client executable.
 It is also used to determine the path to the Dark Ages game client data files for rendering icons.
 
-## Client Version
+## Client Layout
 
-This setting determines the version of the Dark Ages game client and how any runtime patches should be applied.
-The default is `Auto-Detect` and will automatically detect the version of the Dark Ages game client based on the client signature.
+SleepHunter uses one client layout from `ClientLayout.xml` for memory
+addresses, process detection, and runtime patch metadata. It does not select
+among alternate memory maps or route behavior by a client version.
 
-You should not change this unless you are using a custom Dark Ages game client.
+Compatible custom clients can use updated addresses and patch metadata in the
+same mapping without code changes.
 
 Client launch modifications are organized separately under [Patches](./patches.md).

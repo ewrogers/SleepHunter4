@@ -1,0 +1,1256 @@
+﻿using SleepHunter.Interop.Input;
+using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
+using SleepHunter.Runtime.Intents;
+using SleepHunter.Runtime.Snapshots;
+using SleepHunter.Runtime.Time;
+
+namespace SleepHunter.Interop.Tests.Input;
+
+public sealed class ClientIntentPlannerTests
+{
+    private static readonly ClientIdentity Client = new("process:1234");
+
+    private static readonly ClientWindowTarget Target = new(
+        Client,
+        processId: 1234,
+        windowHandle: new nint(0x1234),
+        clientWidth: 640,
+        clientHeight: 480);
+
+    private readonly ClientIntentPlanner planner = new(
+        new FixedVirtualKeyMapper());
+
+    [TestCaseSource(nameof(KeystrokeCases))]
+    public void ShouldPlanGuardedKeystrokes(
+        ClientActionIntent intent,
+        VirtualKey expectedKey,
+        byte expectedScanCode)
+    {
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(
+                result.Plan?.Messages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        KeyMessage(
+                            ClientWindowMessage.KeyDown,
+                            expectedKey,
+                            expectedScanCode),
+                        KeyMessage(
+                            ClientWindowMessage.KeyUp,
+                            expectedKey,
+                            expectedScanCode)
+                    }));
+            Assert.That(
+                result.Plan?.CleanupMessages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        KeyMessage(
+                            ClientWindowMessage.KeyUp,
+                            expectedKey,
+                            expectedScanCode)
+                    }));
+        });
+    }
+
+    [Test]
+    public void ShouldShiftClickFromTemuairToMedeniaPanelAtScaledCoordinates()
+    {
+        var target = new ClientWindowTarget(
+            Client,
+            Target.ProcessId,
+            Target.WindowHandle,
+            clientWidth: 1280,
+            clientHeight: 960);
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(4),
+            ClientPanel.MedeniaSkills);
+
+        var result = planner.Plan(
+            intent,
+            target,
+            Snapshot(ClientPanel.TemuairSkills));
+
+        var point = PackPoint(x: 1090, y: 720);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(
+                result.Plan?.Messages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        KeyMessage(
+                            ClientWindowMessage.KeyDown,
+                            VirtualKey.Shift,
+                            scanCode: 0x2A),
+                        new WindowInputMessage(
+                            ClientWindowMessage.MouseMove,
+                            wParam: 0,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonDown,
+                            wParam: 1,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonUp,
+                            wParam: 0,
+                            point),
+                        KeyMessage(
+                            ClientWindowMessage.KeyUp,
+                            VirtualKey.Shift,
+                            scanCode: 0x2A)
+                    }));
+            Assert.That(
+                result.Plan?.CleanupMessages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonUp,
+                            wParam: 0,
+                            point),
+                        KeyMessage(
+                            ClientWindowMessage.KeyUp,
+                            VirtualKey.Shift,
+                            scanCode: 0x2A)
+                    }));
+        });
+    }
+
+    [Test]
+    public void ShouldClickWithoutShiftFromMedeniaToTemuairPanel()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(5),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.MedeniaSkills));
+        var plan = result.Plan!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(3));
+            Assert.That(
+                plan.Messages.Any(
+                    message =>
+                        message.Message is
+                            ClientWindowMessage.KeyDown or
+                            ClientWindowMessage.KeyUp),
+                Is.False);
+        });
+    }
+
+    [Test]
+    public void ShouldSwitchPanelsWithinTheMinimizedInterface()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(15),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 145, y: 420);
+    }
+
+    [Test]
+    public void ShouldSwitchPanelsWithinAnExpandedMinimizedAbilityPane()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(16),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 145, y: 360);
+    }
+
+    [Test]
+    public void ShouldSwitchPanelsWithinAnExpandedMinimizedInventoryPane()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(17),
+            ClientPanel.TemuairSpells);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 180, y: 290);
+    }
+
+    [Test]
+    public void ShouldScaleMinimizedCoordinatesOnceForTwoTimesMode()
+    {
+        var target = new ClientWindowTarget(
+            Client,
+            Target.ProcessId,
+            Target.WindowHandle,
+            clientWidth: 1280,
+            clientHeight: 960);
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(16),
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 290, y: 840);
+    }
+
+    [Test]
+    public void ShouldPlanInventoryExpansionAtTheDocumentedToggle()
+    {
+        var intent = new ExpandInventoryIntent(new ClientActionId(15));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        AssertPlainClick(result, x: 570, y: 320);
+    }
+
+    [Test]
+    public void ShouldPlanMinimizedInterfaceExpansionAtTheDocumentedToggle()
+    {
+        var intent = new ExpandInterfaceIntent(new ClientActionId(16));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        AssertPlainClick(result, x: 545, y: 420);
+    }
+
+    [Test]
+    public void ShouldRejectAnAlreadyExpandedInterface()
+    {
+        var result = planner.Plan(
+            new ExpandInterfaceIntent(new ClientActionId(17)),
+            Target,
+            Snapshot(ClientPanel.TemuairSkills));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+    }
+
+    [Test]
+    public void ShouldRejectAnAlreadyExpandedMinimizedPane()
+    {
+        var result = planner.Plan(
+            new ExpandInterfaceIntent(new ClientActionId(18)),
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+    }
+
+    [Test]
+    public void ShouldPlanInventoryCollapseAtTheDocumentedToggle()
+    {
+        var intent = new CollapseInventoryIntent(new ClientActionId(16));
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true));
+
+        AssertPlainClick(result, x: 570, y: 320);
+    }
+
+    [TestCase(34, false, 425, 420)]
+    [TestCase(35, true, 460, 355)]
+    [TestCase(59, true, 460, 425)]
+    public void ShouldDoubleClickTheObservedWeaponSlot(
+        int slot,
+        bool isInventoryExpanded,
+        int expectedX,
+        int expectedY)
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(20 + slot),
+            "Test Staff",
+            slot);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(slot, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isInventoryExpanded: isInventoryExpanded));
+        var plan = result.Plan!;
+
+        var point = PackPoint(expectedX, expectedY);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(point));
+        });
+    }
+
+    [Test]
+    public void ShouldDoubleClickAVisibleMinimizedInventorySlot()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(21),
+            "Test Staff",
+            inventorySlot: 1);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(1, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+    }
+
+    [Test]
+    public void ShouldRejectAHiddenMinimizedInventoryRow()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(22),
+            "Test Staff",
+            inventorySlot: 13);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(13, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.InterfaceModeMismatch));
+    }
+
+    [Test]
+    public void ShouldUseAHiddenInventoryRowAfterMinimizedPaneExpansion()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(23),
+            "Test Staff",
+            inventorySlot: 13);
+        var inventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(13, "Test Staff")
+        ]);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: inventory,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 110, y: 355)));
+    }
+
+    [Test]
+    public void ShouldRejectWeaponInputWhenInventoryEvidenceChanged()
+    {
+        var intent = new EquipWeaponIntent(
+            new ClientActionId(17),
+            "Test Staff",
+            inventorySlot: 35);
+        var matchingInventory = new InventorySnapshot(
+        [
+            new InventoryItemSnapshot(35, "Test Staff")
+        ]);
+        var wrongMode = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: matchingInventory));
+        var wrongItem = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                inventory: new InventorySnapshot(
+                [
+                    new InventoryItemSnapshot(35, "Other Staff")
+                ]),
+                isInventoryExpanded: true));
+        var wrongPanel = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.Stats,
+                inventory: matchingInventory,
+                isInventoryExpanded: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                wrongMode.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.InventoryModeMismatch));
+            Assert.That(
+                wrongItem.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.InventoryItemMismatch));
+            Assert.That(
+                wrongPanel.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.PanelMismatch));
+            Assert.That(wrongMode.Plan, Is.Null);
+            Assert.That(wrongItem.Plan, Is.Null);
+            Assert.That(wrongPanel.Plan, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectInventoryModeActionsWithoutAStateChange()
+    {
+        var alreadyExpanded = planner.Plan(
+            new ExpandInventoryIntent(new ClientActionId(18)),
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                isInventoryExpanded: true));
+        var alreadyCollapsed = planner.Plan(
+            new CollapseInventoryIntent(new ClientActionId(19)),
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                alreadyExpanded.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+            Assert.That(
+                alreadyCollapsed.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+        });
+    }
+
+    [TestCase(36, ClientPanel.TemuairSkills, 495, 420)]
+    [TestCase(37, ClientPanel.MedeniaSkills, 110, 350)]
+    [TestCase(73, ClientPanel.WorldSkills, 110, 350)]
+    [TestCase(90, ClientPanel.WorldSkills, 285, 420)]
+    public void ShouldDoubleClickTheCorrectRelativeSkillSlot(
+        int slot,
+        ClientPanel panel,
+        int expectedX,
+        int expectedY)
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(slot),
+            "Test Skill",
+            slot,
+            panel);
+
+        var result = planner.Plan(intent, Target, Snapshot(panel));
+        var plan = result.Plan!;
+
+        var point = PackPoint(expectedX, expectedY);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(point));
+            Assert.That(
+                plan.Messages.Select(message => message.Message),
+                Is.EqualTo(
+                    new[]
+                    {
+                        ClientWindowMessage.MouseMove,
+                        ClientWindowMessage.LeftButtonDown,
+                        ClientWindowMessage.LeftButtonUp,
+                        ClientWindowMessage.MouseMove,
+                        ClientWindowMessage.LeftButtonDown,
+                        ClientWindowMessage.LeftButtonUp
+                    }));
+            Assert.That(
+                plan.Messages
+                    .Where(message => message.Message == ClientWindowMessage.LeftButtonUp)
+                    .Select(message => message.WParam),
+                Is.All.EqualTo((nuint)0));
+        });
+    }
+
+    [Test]
+    public void ShouldUseAVisibleSkillWithinTheMinimizedInterface()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(36),
+            "Test Skill",
+            slot: 1,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+    }
+
+    [Test]
+    public void ShouldRejectAHiddenMinimizedSkillRow()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(37),
+            "Test Skill",
+            slot: 13,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Failure,
+            Is.EqualTo(ClientIntentPlanFailure.InterfaceModeMismatch));
+    }
+
+    [Test]
+    public void ShouldUseAHiddenSkillAfterMinimizedPaneExpansion()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(38),
+            "Test Skill",
+            slot: 13,
+            ClientPanel.TemuairSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSkills,
+                isInventoryExpanded: true,
+                isMinimizedMode: true));
+
+        Assert.That(
+            result.Plan!.Messages.Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 110, y: 420)));
+    }
+
+    [Test]
+    public void ShouldRejectARequestedSkillOnTheWrongObservedPanel()
+    {
+        var intent = new UseSkillIntent(
+            new ClientActionId(6),
+            "Test Skill",
+            slot: 37,
+            ClientPanel.MedeniaSkills);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.TemuairSkills));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(result.Failure, Is.EqualTo(ClientIntentPlanFailure.PanelMismatch));
+            Assert.That(result.Plan, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldRejectAnAlreadyActiveEquivalentPanel()
+    {
+        var intent = new SwitchPanelIntent(
+            new ClientActionId(7),
+            ClientPanel.WorldSpells);
+
+        var result = planner.Plan(
+            intent,
+            Target,
+            Snapshot(ClientPanel.WorldSkills));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(result.Failure, Is.EqualTo(ClientIntentPlanFailure.AlreadySatisfied));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectAnIncompleteSnapshot()
+    {
+        var result = planner.Plan(
+            new CancelDialogIntent(new ClientActionId(8)),
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                quality: SnapshotQuality.Partial));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(
+                result.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.SnapshotUnavailable));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectALoggedOutClient()
+    {
+        var result = planner.Plan(
+            new CancelDialogIntent(new ClientActionId(9)),
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                presence: ClientPresence.LoggedOut));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(
+                result.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.ClientNotInWorld));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectAMismatchedClient()
+    {
+        var otherTarget = new ClientWindowTarget(
+            new ClientIdentity("process:5678"),
+            processId: 5678,
+            windowHandle: new nint(0x5678),
+            clientWidth: 640,
+            clientHeight: 480);
+
+        var result = planner.Plan(
+            new CancelDialogIntent(new ClientActionId(10)),
+            otherTarget,
+            Snapshot(ClientPanel.Inventory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(result.Failure, Is.EqualTo(ClientIntentPlanFailure.ClientMismatch));
+        });
+    }
+
+    [Test]
+    public void ShouldPlanForAClientWithoutVersionMetadata()
+    {
+        var customClient = new ClientIdentity("custom-client:1234");
+        var target = new ClientWindowTarget(
+            customClient,
+            Target.ProcessId,
+            Target.WindowHandle,
+            Target.ClientWidth,
+            Target.ClientHeight);
+
+        var result = planner.Plan(
+            new CancelDialogIntent(new ClientActionId(11)),
+            target,
+            Snapshot(
+                ClientPanel.Inventory,
+                client: customClient));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(result.Failure, Is.EqualTo(ClientIntentPlanFailure.None));
+        });
+    }
+
+    [TestCase(1, ClientPanel.TemuairSpells, 110, 350)]
+    [TestCase(37, ClientPanel.MedeniaSpells, 110, 350)]
+    [TestCase(73, ClientPanel.WorldSpells, 320, 350)]
+    [TestCase(90, ClientPanel.WorldSpells, 495, 420)]
+    public void ShouldDoubleClickTheCorrectSpellSlotWithoutATarget(
+        int slot,
+        ClientPanel panel,
+        int expectedX,
+        int expectedY)
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(100 + slot),
+            "Test Spell",
+            slot,
+            panel,
+            SpellTarget.None);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                panel,
+                spellbook: Spellbook(slot)));
+        var plan = result.Plan!;
+        var point = PackPoint(expectedX, expectedY);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(point));
+        });
+    }
+
+    [TestCaseSource(nameof(ProjectedTargetCases))]
+    public void ShouldProjectSupportedSpellTargets(
+        SpellTarget spellTarget,
+        MapLocationSnapshot? location,
+        int expectedX,
+        int expectedY)
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(200),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            spellTarget);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                location: location));
+        var plan = result.Plan!;
+        var targetPoint = PackPoint(expectedX, expectedY);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(plan.Messages, Has.Length.EqualTo(9));
+            Assert.That(
+                plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(targetPoint));
+            Assert.That(
+                plan.Messages.Select(message => message.Message),
+                Is.EqualTo(
+                [
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp,
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp,
+                    ClientWindowMessage.MouseMove,
+                    ClientWindowMessage.LeftButtonDown,
+                    ClientWindowMessage.LeftButtonUp
+                ]));
+            Assert.That(plan.CleanupMessages, Has.Length.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public void ShouldUseMinimizedSpellAndTileCoordinates()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(207),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.RelativeTile(1, 0));
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                result.Plan!.Messages.Take(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 115, y: 455)));
+            Assert.That(
+                result.Plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 343, y: 208)));
+        });
+    }
+
+    [Test]
+    public void ShouldUseSecondRowSpellWithoutTargetAfterPaneExpansion()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(208),
+            "Test Spell",
+            slot: 13,
+            ClientPanel.TemuairSpells,
+            SpellTarget.None);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                spellbook: Spellbook(slot: 13),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Plan!.Messages, Has.Length.EqualTo(6));
+            Assert.That(
+                result.Plan.Messages.Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 110, y: 420)));
+        });
+    }
+
+    [Test]
+    public void ShouldUseThirdRowSpellAndTargetAfterPaneExpansion()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(209),
+            "Test Spell",
+            slot: 25,
+            ClientPanel.TemuairSpells,
+            SpellTarget.Self);
+
+        var result = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                isInventoryExpanded: true,
+                spellbook: Spellbook(slot: 25),
+                isMinimizedMode: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                result.Plan!.Messages.Take(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 110, y: 455)));
+            Assert.That(
+                result.Plan.Messages.Skip(6).Select(message => message.LParam),
+                Is.All.EqualTo(PackPoint(x: 315, y: 195)));
+        });
+    }
+
+    [Test]
+    public void ShouldScaleTargetBeforeApplyingPixelOffset()
+    {
+        var scaledTarget = new ClientWindowTarget(
+            Client,
+            Target.ProcessId,
+            Target.WindowHandle,
+            clientWidth: 1280,
+            clientHeight: 960);
+        var cast = new CastSpellIntent(
+            new ClientActionId(201),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.ScreenPoint(100, 80).WithOffset(5, -3));
+
+        var result = planner.Plan(
+            cast,
+            scaledTarget,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
+
+        Assert.That(
+            result.Plan!.Messages.Skip(6).Select(message => message.LParam),
+            Is.All.EqualTo(PackPoint(x: 205, y: 157)));
+    }
+
+    [Test]
+    public void ShouldRejectUnavailableOrOutOfRangeSpellTargets()
+    {
+        var absolute = new CastSpellIntent(
+            new ClientActionId(202),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.AbsoluteTile(61, 60));
+        var missingLocation = planner.Plan(
+            absolute,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
+        var outOfRange = planner.Plan(
+            absolute,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1),
+                location: new MapLocationSnapshot(1, "Mileth", 50, 60)));
+        var offsetOutOfBounds = planner.Plan(
+            new CastSpellIntent(
+                new ClientActionId(203),
+                "Test Spell",
+                slot: 1,
+                ClientPanel.TemuairSpells,
+                SpellTarget.ScreenPoint(100, 80).WithOffset(-101, 0)),
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                missingLocation.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetUnavailable));
+            Assert.That(
+                outOfRange.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetOutOfRange));
+            Assert.That(
+                offsetOutOfBounds.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.TargetOutOfRange));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectSpellInputWhenObservedEvidenceChanged()
+    {
+        var cast = new CastSpellIntent(
+            new ClientActionId(204),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.None);
+        var wrongPanel = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.Inventory,
+                spellbook: Spellbook(slot: 1)));
+        var wrongSpell = planner.Plan(
+            cast,
+            Target,
+            Snapshot(
+                ClientPanel.TemuairSpells,
+                spellbook: Spellbook(slot: 1, name: "Other Spell")));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                wrongPanel.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.PanelMismatch));
+            Assert.That(
+                wrongSpell.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.SpellMismatch));
+        });
+    }
+
+    [Test]
+    public void ShouldReportUnresolvedSpellTargetKindsAsUnsupported()
+    {
+        var character = new CastSpellIntent(
+            new ClientActionId(205),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.Character("Alt"));
+        var area = new CastSpellIntent(
+            new ClientActionId(206),
+            "Test Spell",
+            slot: 1,
+            ClientPanel.TemuairSpells,
+            SpellTarget.RelativeArea(0, 0, 0, 1));
+        var snapshot = Snapshot(
+            ClientPanel.TemuairSpells,
+            spellbook: Spellbook(slot: 1));
+
+        var characterResult = planner.Plan(character, Target, snapshot);
+        var areaResult = planner.Plan(area, Target, snapshot);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                characterResult.Status,
+                Is.EqualTo(ClientIntentPlanStatus.Unsupported));
+            Assert.That(
+                areaResult.Status,
+                Is.EqualTo(ClientIntentPlanStatus.Unsupported));
+            Assert.That(
+                characterResult.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.UnsupportedTarget));
+            Assert.That(
+                areaResult.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.UnsupportedTarget));
+        });
+    }
+
+    [Test]
+    public void ShouldRejectInputWhenTheRequiredScanCodeIsUnavailable()
+    {
+        var unavailablePlanner = new ClientIntentPlanner(
+            new FixedVirtualKeyMapper(unavailableKey: VirtualKey.Escape));
+
+        var result = unavailablePlanner.Plan(
+            new CancelDialogIntent(new ClientActionId(14)),
+            Target,
+            Snapshot(ClientPanel.Inventory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Rejected));
+            Assert.That(
+                result.Failure,
+                Is.EqualTo(ClientIntentPlanFailure.InputUnavailable));
+        });
+    }
+
+    private static IEnumerable<TestCaseData> KeystrokeCases()
+    {
+        yield return new TestCaseData(
+                new CancelDialogIntent(new ClientActionId(1)),
+                VirtualKey.Escape,
+                (byte)0x01)
+            .SetName("ShouldPlanEscapeForCancelDialog");
+        yield return new TestCaseData(
+                new CancelSpellIntent(new ClientActionId(14)),
+                VirtualKey.Escape,
+                (byte)0x01)
+            .SetName("ShouldPlanEscapeForCancelSpell");
+        yield return new TestCaseData(
+                new DisarmIntent(new ClientActionId(2)),
+                VirtualKey.Oem3,
+                (byte)0x29)
+            .SetName("ShouldPlanTildeForDisarm");
+        yield return new TestCaseData(
+                new AssailIntent(new ClientActionId(3), "Assail"),
+                VirtualKey.Space,
+                (byte)0x39)
+            .SetName("ShouldPlanSpaceForAssail");
+        yield return new TestCaseData(
+                new EquipWeaponIntent(
+                    new ClientActionId(13),
+                    staffName: null,
+                    inventorySlot: null),
+                VirtualKey.Oem3,
+                (byte)0x29)
+            .SetName("ShouldPlanTildeForWeaponUnequip");
+    }
+
+    private static IEnumerable<TestCaseData> ProjectedTargetCases()
+    {
+        yield return new TestCaseData(
+                SpellTarget.Self,
+                null,
+                315,
+                160)
+            .SetName("ShouldProjectSelfTarget");
+        yield return new TestCaseData(
+                SpellTarget.ScreenPoint(100, 80),
+                null,
+                100,
+                80)
+            .SetName("ShouldProjectScreenPointTarget");
+        yield return new TestCaseData(
+                SpellTarget.RelativeTile(1, 0),
+                null,
+                343,
+                173)
+            .SetName("ShouldProjectRelativeTileTarget");
+        yield return new TestCaseData(
+                SpellTarget.AbsoluteTile(51, 61),
+                new MapLocationSnapshot(1, "Mileth", 50, 60),
+                315,
+                187)
+            .SetName("ShouldProjectAbsoluteTileTarget");
+    }
+
+    private static ClientSnapshot Snapshot(
+        ClientPanel panel,
+        SnapshotQuality quality = SnapshotQuality.Complete,
+        ClientPresence presence = ClientPresence.InWorld,
+        ClientIdentity? client = null,
+        InventorySnapshot? inventory = null,
+        bool isInventoryExpanded = false,
+        SpellbookSnapshot? spellbook = null,
+        MapLocationSnapshot? location = null,
+        bool isMinimizedMode = false) =>
+        new(
+            new SnapshotSequence(1),
+            MacroTimestamp.Zero,
+            MacroTimestamp.Zero,
+            client ?? Client,
+            quality,
+            presence,
+            panel,
+            inventory: inventory,
+            spellbook: spellbook,
+            location: location,
+            isInventoryExpanded: isInventoryExpanded,
+            isMinimizedMode: isMinimizedMode);
+
+    private static SpellbookSnapshot Spellbook(
+        int slot,
+        string name = "Test Spell") =>
+        new(
+        [
+            new SpellSnapshot(
+                name,
+                slot,
+                currentLevel: 1,
+                maximumLevel: 100,
+                castLines: 1,
+                manaCost: 1,
+                cooldown: TimeSpan.Zero)
+        ]);
+
+    private static void AssertPlainClick(
+        ClientIntentPlanResult result,
+        int x,
+        int y)
+    {
+        var point = PackPoint(x, y);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Status, Is.EqualTo(ClientIntentPlanStatus.Planned));
+            Assert.That(
+                result.Plan?.Messages,
+                Is.EqualTo(
+                    new[]
+                    {
+                        new WindowInputMessage(
+                            ClientWindowMessage.MouseMove,
+                            wParam: 0,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonDown,
+                            wParam: 1,
+                            point),
+                        new WindowInputMessage(
+                            ClientWindowMessage.LeftButtonUp,
+                            wParam: 0,
+                            point)
+                    }));
+        });
+    }
+
+    private static WindowInputMessage KeyMessage(
+        ClientWindowMessage message,
+        VirtualKey key,
+        byte scanCode)
+    {
+        var lParam = 1u | ((uint)scanCode << 16);
+        if (message == ClientWindowMessage.KeyUp)
+        {
+            lParam |= (1u << 30) | (1u << 31);
+        }
+
+        return new WindowInputMessage(
+            message,
+            (nuint)key,
+            new nint(unchecked((int)lParam)));
+    }
+
+    private static nint PackPoint(int x, int y)
+    {
+        var lParam =
+            (uint)(ushort)x |
+            ((uint)(ushort)y << 16);
+        return new nint(unchecked((int)lParam));
+    }
+
+    private sealed class FixedVirtualKeyMapper : IVirtualKeyMapper
+    {
+        private readonly VirtualKey? unavailableKey;
+
+        public FixedVirtualKeyMapper(VirtualKey? unavailableKey = null)
+        {
+            this.unavailableKey = unavailableKey;
+        }
+
+        public bool TryMapScanCode(VirtualKey key, out byte scanCode)
+        {
+            if (key == unavailableKey)
+            {
+                scanCode = default;
+                return false;
+            }
+
+            scanCode = key switch
+            {
+                VirtualKey.Shift => 0x2A,
+                VirtualKey.Escape => 0x01,
+                VirtualKey.Space => 0x39,
+                VirtualKey.Oem3 => 0x29,
+                _ => default
+            };
+            return scanCode != default;
+        }
+    }
+}
