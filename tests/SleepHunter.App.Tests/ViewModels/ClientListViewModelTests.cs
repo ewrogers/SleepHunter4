@@ -318,7 +318,57 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
-    public async Task ShouldKeepObservingAfterSpellProjectionFails()
+    public async Task ShouldRefreshHealthAfterAZeroHealthObservation()
+    {
+        using var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(player, runtime);
+        var healthNotifications = 0;
+        item.PropertyChanged +=
+            (_, args) =>
+            {
+                if (args.PropertyName ==
+                    nameof(ClientListItemViewModel.CurrentHealth))
+                {
+                    healthNotifications++;
+                }
+            };
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                currentHealth: 0));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 1);
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                currentHealth: 350));
+        await WaitUntilAsync(
+            () => item.CurrentHealth == 350);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.CurrentHealth, Is.EqualTo(350));
+            Assert.That(item.MaximumHealth, Is.EqualTo(400));
+            Assert.That(
+                healthNotifications,
+                Is.GreaterThanOrEqualTo(2));
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("HP 350/400"));
+        });
+    }
+
+    [Test]
+    public async Task ShouldKeepObservingVitalsAfterSpellProjectionFails()
     {
         using var player = CreatePlayer();
         var configuration = new PlayerMacroConfiguration(player);
@@ -368,6 +418,7 @@ public sealed class ClientListViewModelTests
                 sequenceValue: 1,
                 succeeded: true,
                 spellbook: spellbook,
+                currentHealth: 0,
                 currentMana: 0));
         await WaitUntilAsync(
             () => item.LastObservationError is not null);
@@ -377,6 +428,7 @@ public sealed class ClientListViewModelTests
                 sequenceValue: 2,
                 succeeded: true,
                 spellbook: spellbook,
+                currentHealth: 350,
                 currentMana: 550));
         await WaitUntilAsync(
             () => runtime.CaptureSequence?.Value == 2 &&
@@ -384,6 +436,7 @@ public sealed class ClientListViewModelTests
 
         Assert.Multiple(() =>
         {
+            Assert.That(item.CurrentHealth, Is.EqualTo(350));
             Assert.That(item.CurrentMana, Is.EqualTo(550));
             Assert.That(queuedSpell.CurrentLevel, Is.EqualTo(20));
             Assert.That(queuedSpell.MaximumLevel, Is.EqualTo(100));
@@ -829,6 +882,7 @@ public sealed class ClientListViewModelTests
         bool succeeded,
         ClientPresence presence = ClientPresence.InWorld,
         SpellbookSnapshot? spellbook = null,
+        int currentHealth = 300,
         int currentMana = 500,
         SnapshotCaptureFailure failure =
             SnapshotCaptureFailure.MappingReadFailed,
@@ -873,7 +927,7 @@ public sealed class ClientListViewModelTests
                         : null,
                     vitals: presence == ClientPresence.InWorld
                         ? new VitalsSnapshot(
-                            currentHealth: 300,
+                            currentHealth,
                             maximumHealth: 400,
                             currentMana,
                             maximumMana: 600)

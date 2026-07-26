@@ -318,6 +318,37 @@ public sealed class ClientSnapshotCaptureTests
         });
     }
 
+    [Test]
+    public void ShouldCaptureZeroHealthAndLaterRevival()
+    {
+        var source = CreateMemoryImage();
+        source.WriteUInt32(new MemoryAddress(CurrentHealthAddress), 0);
+        var capture = CreateCapture(source);
+
+        var defeated = capture.Capture(new SnapshotSequence(1));
+        source.WriteUInt32(
+            new MemoryAddress(CurrentHealthAddress),
+            750);
+        var revived = capture.Capture(new SnapshotSequence(2));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(defeated.Succeeded, Is.True);
+            Assert.That(defeated.Snapshot?.Vitals?.CurrentHealth, Is.Zero);
+            Assert.That(defeated.Snapshot?.Vitals?.HealthPercent, Is.Zero);
+            Assert.That(revived.Succeeded, Is.True);
+            Assert.That(
+                revived.Snapshot?.Vitals?.CurrentHealth,
+                Is.EqualTo(750));
+            Assert.That(
+                revived.Snapshot?.Vitals?.MaximumHealth,
+                Is.EqualTo(1200));
+            Assert.That(
+                revived.Snapshot?.Sequence.Value,
+                Is.EqualTo(2));
+        });
+    }
+
     [TestCase(ChatInputPaneVtableAddress)]
     [TestCase(TellReceiverInputPaneVtableAddress)]
     [TestCase(TellInputPaneVtableAddress)]

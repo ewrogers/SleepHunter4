@@ -96,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid sending Escape when an expected popup never appears, while immediately dismissing an observed popup without waiting for the old fixed delay
 - Corrected global hotkey reassignment to release the active registration instead of an unregistered replacement value, while retaining the previous assignment when a native operation fails
 - Restored selected-character hotkey capture through preview input and made each registered global hotkey toggle its owning character without relying on the active window or current selection
-- Kept per-client capture observations flowing when optional spell-state projection fails, allowing mana displays to recover after a zero-mana flowering observation
+- Kept per-client capture observations flowing when optional spell-state projection fails, allowing health and mana displays to recover after zero-health revival and zero-mana flowering observations
 - Report a missing client executable as a launch failure and terminate suspended clients when patching or thread resume fails
 
 ## [4.11.2] - 2026-07-24
