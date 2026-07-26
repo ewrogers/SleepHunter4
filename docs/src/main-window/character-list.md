@@ -8,13 +8,15 @@ The selected character will be displayed with a highlighted indicator on the lef
 The main window title will also display the name of the selected character.
 
 The status bar at the bottom of the main window shows the selected character's
-current runtime snapshot state. Its right side retains the most recent capture
-or automation error so transient failures remain available for inspection.
-Expected map-transition waits appear as current status without replacing the
-retained error. Use the details button on the right to inspect the selected
-client's capture timing, memory-read totals, nested error context, and retained
-automation error. The panel holds a snapshot of these details while it is open
-so the diagnostic text remains selectable and can be copied with `Ctrl+C`.
+current runtime snapshot state and rolling average, minimum, and maximum
+snapshot-read times. The rolling timing window contains up to 256 captures.
+Its right side retains the most recent capture or automation error so transient
+failures remain available for inspection. Expected map-transition waits appear
+as current status without replacing the retained error. Use the details button
+on the right to inspect the selected client's full capture timing, memory-read
+totals, nested error context, and retained automation error. The panel holds a
+snapshot of these details while it is open so the diagnostic text remains
+selectable and can be copied with `Ctrl+C`.
 
 ## Quick Select
 

@@ -1243,14 +1243,16 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         byte rawValue,
         out CharacterClass characterClass)
     {
+        // Client memory uses sequential identifiers. PlayerClass bit flags are
+        // metadata filters and must not be used to decode this field.
         characterClass = rawValue switch
         {
             0x00 => CharacterClass.Peasant,
             0x01 => CharacterClass.Warrior,
-            0x02 => CharacterClass.Wizard,
+            0x02 => CharacterClass.Rogue,
+            0x03 => CharacterClass.Wizard,
             0x04 => CharacterClass.Priest,
-            0x08 => CharacterClass.Rogue,
-            0x10 => CharacterClass.Monk,
+            0x05 => CharacterClass.Monk,
             _ => CharacterClass.Unknown
         };
         return characterClass != CharacterClass.Unknown;

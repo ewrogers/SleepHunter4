@@ -94,7 +94,11 @@ public sealed class ClientListViewModelTests
             Assert.That(item.MapY, Is.EqualTo(80));
             Assert.That(
                 item.RuntimeStatus,
-                Does.StartWith("Runtime snapshot 1"));
+                Does.StartWith(
+                    "Runtime healthy, snapshot read avg 0.00 ms"));
+            Assert.That(item.RuntimeStatus, Does.Contain("min 0.00 ms"));
+            Assert.That(item.RuntimeStatus, Does.Contain("max 0.00 ms"));
+            Assert.That(item.RuntimeStatus, Does.Not.Contain("snapshot 1"));
         });
 
         host.PublishCapture(CreateCapture(
@@ -643,9 +647,11 @@ public sealed class ClientListViewModelTests
             failedCount: succeeded ? 0 : 1,
             new SnapshotDurationStatistics(
                 sampleCount: 1,
-                TimeSpan.Zero,
-                TimeSpan.Zero,
-                TimeSpan.Zero),
+                minimum: TimeSpan.Zero,
+                average: TimeSpan.Zero,
+                median: TimeSpan.Zero,
+                percentile95: TimeSpan.Zero,
+                maximum: TimeSpan.Zero),
             reads,
             succeeded
                 ? ImmutableDictionary<SnapshotCaptureFailure, int>.Empty

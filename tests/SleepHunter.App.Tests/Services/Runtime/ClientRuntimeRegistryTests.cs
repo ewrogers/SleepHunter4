@@ -359,9 +359,11 @@ public sealed class ClientRuntimeRegistryTests
             failedCount: 0,
             new SnapshotDurationStatistics(
                 sampleCount: 1,
-                TimeSpan.Zero,
-                TimeSpan.Zero,
-                TimeSpan.Zero),
+                minimum: TimeSpan.Zero,
+                average: TimeSpan.Zero,
+                median: TimeSpan.Zero,
+                percentile95: TimeSpan.Zero,
+                maximum: TimeSpan.Zero),
             reads,
             ImmutableDictionary<SnapshotCaptureFailure, int>.Empty,
             ImmutableArray<SnapshotSectionStatistics>.Empty);

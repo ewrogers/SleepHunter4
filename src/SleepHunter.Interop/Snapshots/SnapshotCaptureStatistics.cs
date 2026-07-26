@@ -7,6 +7,8 @@ public sealed record SnapshotDurationStatistics
 {
     public SnapshotDurationStatistics(
         int sampleCount,
+        TimeSpan minimum,
+        TimeSpan average,
         TimeSpan median,
         TimeSpan percentile95,
         TimeSpan maximum)
@@ -19,7 +21,9 @@ public sealed record SnapshotDurationStatistics
                 "The duration sample count cannot be negative.");
         }
 
-        if (median < TimeSpan.Zero ||
+        if (minimum < TimeSpan.Zero ||
+            average < TimeSpan.Zero ||
+            median < TimeSpan.Zero ||
             percentile95 < TimeSpan.Zero ||
             maximum < TimeSpan.Zero)
         {
@@ -29,7 +33,9 @@ public sealed record SnapshotDurationStatistics
         }
 
         if (sampleCount == 0 &&
-            (median != TimeSpan.Zero ||
+            (minimum != TimeSpan.Zero ||
+             average != TimeSpan.Zero ||
+             median != TimeSpan.Zero ||
              percentile95 != TimeSpan.Zero ||
              maximum != TimeSpan.Zero))
         {
@@ -37,13 +43,19 @@ public sealed record SnapshotDurationStatistics
                 "Empty duration statistics must contain zero values.");
         }
 
-        if (median > percentile95 || percentile95 > maximum)
+        if (minimum > average ||
+            average > maximum ||
+            minimum > median ||
+            median > percentile95 ||
+            percentile95 > maximum)
         {
             throw new ArgumentException(
-                "Duration statistics must be ordered from median through maximum.");
+                "Duration statistics must remain within the observed minimum and maximum, with ordered percentile values.");
         }
 
         SampleCount = sampleCount;
+        Minimum = minimum;
+        Average = average;
         Median = median;
         Percentile95 = percentile95;
         Maximum = maximum;
@@ -53,9 +65,15 @@ public sealed record SnapshotDurationStatistics
         sampleCount: 0,
         TimeSpan.Zero,
         TimeSpan.Zero,
+        TimeSpan.Zero,
+        TimeSpan.Zero,
         TimeSpan.Zero);
 
     public int SampleCount { get; }
+
+    public TimeSpan Minimum { get; }
+
+    public TimeSpan Average { get; }
 
     public TimeSpan Median { get; }
 

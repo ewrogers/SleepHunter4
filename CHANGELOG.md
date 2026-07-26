@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Labeled `.sh4x` as SleepHunter 4 Macro Files and `.sh4` as SleepHunter 4 Legacy Files in macro file dialogs
 - Added dim slot numbers to inventory, skill, and spell grids, plus abbreviated top-left slot badges to the equipment grid
 - Replaced the client-card runtime letter tooltip with a selected-client status bar that shows live runtime health, retains the most recent capture or automation error, and provides selectable detailed diagnostics
+- Replaced the ticking snapshot sequence in the status bar with rolling average, minimum, and maximum snapshot-read times from the bounded 256-capture timing window
 - Combined Start Macro and Pause Macro into one state-aware toolbar control that also becomes Resume Macro while paused
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
@@ -65,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reset the runtime-details toggle when its popup is dismissed so the details panel can be reopened immediately
 - Stretched the runtime-details text viewport so multiline error diagnostics and scrollbars are not clipped at the bottom
+- Corrected runtime character-class decoding to use the client's sequential values from `0` for Peasant through `5` for Monk, including `3` for Wizard
 - Prevented stale or unallocated supported-client character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
 - Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown

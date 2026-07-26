@@ -225,8 +225,15 @@ namespace SleepHunter.ViewModels
                 var result = Runtime.LatestCaptureResult;
                 if (result?.Succeeded == true)
                 {
+                    var duration =
+                        Runtime.CaptureStatistics.Duration;
+                    if (duration.SampleCount == 0)
+                        return "Runtime snapshot is healthy";
+
                     return
-                        $"Runtime snapshot {result.Metrics.Sequence.Value}, {result.Metrics.Duration.TotalMilliseconds:0.###} ms";
+                        $"Runtime healthy, snapshot read avg {duration.Average.TotalMilliseconds:0.00} ms, " +
+                        $"min {duration.Minimum.TotalMilliseconds:0.00} ms, " +
+                        $"max {duration.Maximum.TotalMilliseconds:0.00} ms";
                 }
 
                 var error = result?.Error;
@@ -386,6 +393,24 @@ namespace SleepHunter.ViewModels
                 details.AppendLine(
                     $"Memory bytes: {reads.BytesRead} read of " +
                     $"{reads.RequestedBytes} requested");
+                var duration = Runtime.CaptureStatistics.Duration;
+                if (duration.SampleCount > 0)
+                {
+                    details.AppendLine(
+                        $"Timing window: {duration.SampleCount} of " +
+                        $"{Runtime.CaptureStatistics.WindowCapacity} captures");
+                    details.AppendLine(
+                        $"Timing average: {duration.Average.TotalMilliseconds:0.###} ms");
+                    details.AppendLine(
+                        $"Timing minimum: {duration.Minimum.TotalMilliseconds:0.###} ms");
+                    details.AppendLine(
+                        $"Timing median: {duration.Median.TotalMilliseconds:0.###} ms");
+                    details.AppendLine(
+                        $"Timing p95: {duration.Percentile95.TotalMilliseconds:0.###} ms");
+                    details.AppendLine(
+                        $"Timing maximum: {duration.Maximum.TotalMilliseconds:0.###} ms");
+                }
+
                 AppendCaptureError(
                     details,
                     "Current capture error",

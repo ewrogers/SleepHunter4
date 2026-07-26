@@ -320,9 +320,11 @@ public sealed class ClientRuntimeViewModelTests
             failedCount: succeeded ? 0 : 1,
             new SnapshotDurationStatistics(
                 sampleCount: 1,
-                TimeSpan.Zero,
-                TimeSpan.Zero,
-                TimeSpan.Zero),
+                minimum: TimeSpan.Zero,
+                average: TimeSpan.Zero,
+                median: TimeSpan.Zero,
+                percentile95: TimeSpan.Zero,
+                maximum: TimeSpan.Zero),
             reads,
             succeeded
                 ? ImmutableDictionary<SnapshotCaptureFailure, int>.Empty

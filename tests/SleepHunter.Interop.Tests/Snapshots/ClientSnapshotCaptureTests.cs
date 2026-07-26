@@ -236,10 +236,10 @@ public sealed class ClientSnapshotCaptureTests
 
     [TestCase(0x00, CharacterClass.Peasant)]
     [TestCase(0x01, CharacterClass.Warrior)]
-    [TestCase(0x02, CharacterClass.Wizard)]
+    [TestCase(0x02, CharacterClass.Rogue)]
+    [TestCase(0x03, CharacterClass.Wizard)]
     [TestCase(0x04, CharacterClass.Priest)]
-    [TestCase(0x08, CharacterClass.Rogue)]
-    [TestCase(0x10, CharacterClass.Monk)]
+    [TestCase(0x05, CharacterClass.Monk)]
     public void ShouldTranslateDocumentedCharacterClasses(
         byte rawValue,
         CharacterClass expected)
@@ -320,7 +320,7 @@ public sealed class ClientSnapshotCaptureTests
     public void ShouldRejectInvalidDomainValueAsIncoherent()
     {
         var source = CreateMemoryImage();
-        source.Write(new MemoryAddress(CharacterClassAddress), 0x03);
+        source.Write(new MemoryAddress(CharacterClassAddress), 0x06);
         var capture = CreateCapture(source);
 
         var result = capture.Capture(new SnapshotSequence(1));
@@ -1043,7 +1043,7 @@ public sealed class ClientSnapshotCaptureTests
             length: 32);
         source.Write(new MemoryAddress(LevelAddress), 99);
         source.Write(new MemoryAddress(AbilityLevelAddress), 50);
-        source.Write(new MemoryAddress(CharacterClassAddress), 0x02);
+        source.Write(new MemoryAddress(CharacterClassAddress), 0x03);
         source.WriteUInt32(new MemoryAddress(CharacterIdAddress), 1234);
         source.WriteUInt32(new MemoryAddress(CurrentHealthAddress), 1000);
         source.WriteUInt32(new MemoryAddress(MaximumHealthAddress), 1200);

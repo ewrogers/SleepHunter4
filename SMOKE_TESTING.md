@@ -60,7 +60,8 @@ installation. Use a disposable copy.
 
 - [ ] Confirm each launched process appears once in the client list.
 - [ ] Select a client and confirm the bottom runtime status bar changes from
-  waiting to a healthy snapshot.
+  waiting to healthy rolling snapshot-read average, minimum, and maximum times
+  without displaying a ticking snapshot sequence.
 - [ ] Trigger a recoverable capture failure and confirm the status bar retains
   it as the last error after healthy capture resumes.
 - [ ] Open the runtime details button, confirm nested mapping and memory failures
