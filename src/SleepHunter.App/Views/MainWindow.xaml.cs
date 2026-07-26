@@ -706,24 +706,14 @@ namespace SleepHunter.Views
             if (hotkey == null)
                 return;
 
-            Player hotkeyPlayer = null;
-
-            foreach (var player in PlayerManager.Instance.LoggedInPlayers)
-                if (player.HasHotkey && player.Hotkey.Key == hotkey.Key && player.Hotkey.Modifiers == hotkey.Modifiers)
-                {
-                    hotkeyPlayer = player;
-                    break;
-                }
-
-            if (hotkeyPlayer == null)
+            var client = clientList.FindByHotkey(hotkey);
+            if (client is null)
                 return;
 
+            var hotkeyPlayer = client.Player;
             logger.LogInfo($"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated for character: {hotkeyPlayer.Name}");
 
-            var client = clientList.Clients.FirstOrDefault(
-                item => ReferenceEquals(item.Player, hotkeyPlayer));
-            if (client is null ||
-                !client.ToggleMacroCommand.CanExecute(null))
+            if (!client.ToggleMacroCommand.CanExecute(null))
             {
                 logger.LogWarn(
                     $"Runtime automation is unavailable for character: {hotkeyPlayer.Name} (hotkey)");
@@ -731,6 +721,7 @@ namespace SleepHunter.Views
             }
 
             var wasRunning = client.IsMacroRunning;
+            var wasPaused = client.IsMacroPaused;
             await client.ToggleMacroCommand.ExecuteAsync(null);
             if (client.LastAutomationError is { } error)
             {
@@ -742,7 +733,9 @@ namespace SleepHunter.Views
 
             var action = wasRunning
                 ? "Paused"
-                : "Started";
+                : wasPaused
+                    ? "Resumed"
+                    : "Started";
             logger.LogInfo(
                 $"{action} runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
         }
@@ -951,6 +944,7 @@ namespace SleepHunter.Views
                 var modifiers = (ModifierKeys)(lParam.ToInt32() & 0xFFFF);
 
                 ActivateHotkey(key, modifiers);
+                isHandled = true;
             }
 
             return nint.Zero;

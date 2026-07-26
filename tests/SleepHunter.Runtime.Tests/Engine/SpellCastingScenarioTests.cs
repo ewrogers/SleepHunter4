@@ -67,8 +67,9 @@ public sealed class SpellCastingScenarioTests
             Assert.That(intent.Panel, Is.EqualTo(spell.Panel));
             Assert.That(intent.Target, Is.EqualTo(target));
             Assert.That(
-                requested.State.PendingAction?.Deadline.Elapsed,
+                requested.State.SpellCast?.CompletesAt?.Elapsed,
                 Is.EqualTo(TimeSpan.FromMilliseconds(21)));
+            Assert.That(requested.State.PendingAction, Is.Null);
             Assert.That(
                 requested.State.SpellCast?.Status,
                 Is.EqualTo(SpellCastStatus.Casting));

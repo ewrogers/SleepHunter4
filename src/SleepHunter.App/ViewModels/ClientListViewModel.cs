@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
@@ -155,6 +156,18 @@ namespace SleepHunter.ViewModels
             }
 
             StopAllMacrosCommand.NotifyCanExecuteChanged();
+        }
+
+        public ClientListItemViewModel FindByHotkey(Hotkey hotkey)
+        {
+            if (hotkey is null)
+                return null;
+
+            return clients.FirstOrDefault(
+                client =>
+                    client.Player.Hotkey is { } assigned &&
+                    assigned.Key == hotkey.Key &&
+                    assigned.Modifiers == hotkey.Modifiers);
         }
 
         public void Dispose()

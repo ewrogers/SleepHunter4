@@ -17,6 +17,10 @@ public sealed partial class MacroEngine
     {
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
+            currentState.SpellCast is
+            {
+                Status: SpellCastStatus.Casting
+            } ||
             currentState.LatestSnapshot is not
             {
                 Presence: ClientPresence.InWorld

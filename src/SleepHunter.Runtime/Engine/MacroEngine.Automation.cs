@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Panels;
+using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Events;
 using SleepHunter.Runtime.Intents;
@@ -55,6 +56,10 @@ public sealed partial class MacroEngine
         MacroTimestamp currentTime)
     {
         var configuration = currentState.Automation;
+        var isSpellCasting = currentState.SpellCast is
+        {
+            Status: SpellCastStatus.Casting
+        };
         if (!configuration.IsEnabled ||
             currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
@@ -63,7 +68,8 @@ public sealed partial class MacroEngine
                 Presence: ClientPresence.InWorld
             } snapshot ||
             snapshot.IsUserChatting ||
-            IsAutomationSnapshotStale(currentState, snapshot))
+            (!isSpellCasting &&
+             IsAutomationSnapshotStale(currentState, snapshot)))
         {
             return Unchanged(currentState);
         }
@@ -102,6 +108,12 @@ public sealed partial class MacroEngine
         foreach (var category in categories)
         {
             if (!IsEnabled(configuration, category))
+            {
+                continue;
+            }
+
+            if (isSpellCasting &&
+                category != AutomationCategory.Skills)
             {
                 continue;
             }

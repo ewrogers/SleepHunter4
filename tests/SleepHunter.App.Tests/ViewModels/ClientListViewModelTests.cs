@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.Concurrent;
 using System.Threading.Channels;
+using System.Windows.Input;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Mappings;
@@ -96,6 +97,33 @@ public sealed class ClientListViewModelTests
         clients.Refresh(Array.Empty<Player>(), _ => null);
 
         Assert.That(clients.SelectedClient, Is.Null);
+    }
+
+    [Test]
+    public void ShouldFindTheHotkeyOwnerWithoutChangingSelection()
+    {
+        using var player = CreatePlayer();
+        using var clients = new ClientListViewModel();
+        player.Hotkey = new Hotkey(
+            ModifierKeys.Control | ModifierKeys.Shift,
+            Key.F8);
+        clients.Refresh([player], _ => null);
+
+        var owner = clients.FindByHotkey(
+            new Hotkey(
+                ModifierKeys.Control | ModifierKeys.Shift,
+                Key.F8));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(owner, Is.SameAs(clients.Clients.Single()));
+            Assert.That(owner?.Player, Is.SameAs(player));
+            Assert.That(clients.SelectedClient, Is.Null);
+            Assert.That(
+                clients.FindByHotkey(
+                    new Hotkey(ModifierKeys.Control, Key.F8)),
+                Is.Null);
+        });
     }
 
     [Test]
@@ -239,6 +267,128 @@ public sealed class ClientListViewModelTests
         Assert.That(
             item.RuntimeDetailsSnapshot,
             Does.Contain("Last retained capture error"));
+    }
+
+    [Test]
+    public async Task ShouldRefreshManaAfterAZeroManaObservation()
+    {
+        using var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(player, runtime);
+        var manaNotifications = 0;
+        item.PropertyChanged +=
+            (_, args) =>
+            {
+                if (args.PropertyName ==
+                    nameof(ClientListItemViewModel.CurrentMana))
+                {
+                    manaNotifications++;
+                }
+            };
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                currentMana: 0));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 1);
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                currentMana: 550));
+        await WaitUntilAsync(
+            () => item.CurrentMana == 550);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.CurrentMana, Is.EqualTo(550));
+            Assert.That(item.MaximumMana, Is.EqualTo(600));
+            Assert.That(manaNotifications, Is.GreaterThanOrEqualTo(2));
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("MP 550/600"));
+        });
+    }
+
+    [Test]
+    public async Task ShouldKeepObservingAfterSpellProjectionFails()
+    {
+        using var player = CreatePlayer();
+        var configuration = new PlayerMacroConfiguration(player);
+        var queuedSpell = new SpellQueueItem
+        {
+            Name = "projected spell"
+        };
+        configuration.AddToSpellQueue(queuedSpell);
+        var throwOnce = true;
+        queuedSpell.PropertyChanged +=
+            (_, _) =>
+            {
+                if (!throwOnce)
+                    return;
+
+                throwOnce = false;
+                throw new InvalidOperationException(
+                    "Scripted projection failure.");
+            };
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            configuration,
+            runtime,
+            configurationMapper: null,
+            setupFactory: null,
+            getSettings: null,
+            uiDispatcher: new InlineUiDispatcher());
+        var spellbook = new SpellbookSnapshot(
+            [
+                new SpellSnapshot(
+                    queuedSpell.Name,
+                    slot: 1,
+                    currentLevel: 20,
+                    maximumLevel: 100,
+                    castLines: 1,
+                    manaCost: 0,
+                    cooldown: TimeSpan.Zero)
+            ]);
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                spellbook: spellbook,
+                currentMana: 0));
+        await WaitUntilAsync(
+            () => item.LastObservationError is not null);
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                spellbook: spellbook,
+                currentMana: 550));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 2 &&
+                  item.LastObservationError is null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.CurrentMana, Is.EqualTo(550));
+            Assert.That(queuedSpell.CurrentLevel, Is.EqualTo(20));
+            Assert.That(queuedSpell.MaximumLevel, Is.EqualTo(100));
+            Assert.That(item.RuntimeStatus, Is.EqualTo("Healthy"));
+        });
     }
 
     [Test]
@@ -679,6 +829,7 @@ public sealed class ClientListViewModelTests
         bool succeeded,
         ClientPresence presence = ClientPresence.InWorld,
         SpellbookSnapshot? spellbook = null,
+        int currentMana = 500,
         SnapshotCaptureFailure failure =
             SnapshotCaptureFailure.MappingReadFailed,
         SnapshotSection failureSection = SnapshotSection.Presence,
@@ -724,7 +875,7 @@ public sealed class ClientListViewModelTests
                         ? new VitalsSnapshot(
                             currentHealth: 300,
                             maximumHealth: 400,
-                            currentMana: 500,
+                            currentMana,
                             maximumMana: 600)
                         : null,
                     spellbook: spellbook,

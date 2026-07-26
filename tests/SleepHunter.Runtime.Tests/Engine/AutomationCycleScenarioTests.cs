@@ -317,6 +317,87 @@ public sealed class AutomationCycleScenarioTests
     }
 
     [Test]
+    public void ShouldUseSkillsWhileASpellIsCasting()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var spell = new SpellSnapshot(
+            spellEntry.Name,
+            slot: 73,
+            currentLevel: 0,
+            maximumLevel: 100,
+            castLines: 2,
+            manaCost: 0,
+            cooldown: TimeSpan.Zero);
+        var skillEntry = new SkillQueueEntry(
+            new SkillQueueEntryId(1),
+            "queued skill");
+        var skill = new SkillSnapshot(
+            skillEntry.Name,
+            slot: 73,
+            currentLevel: 0,
+            maximumLevel: 100,
+            manaCost: 0,
+            cooldown: TimeSpan.Zero);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.WorldSpells,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([spell]),
+            skillbook: new SkillbookSnapshot([skill]));
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(new AddSkillQueueEntryCommand(skillEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    skillsEnabled: true,
+                    spellPolicy: TestSpellPolicy)));
+        var started = scenario.Start();
+        var cast = scenario.Dispatch(started.RaisedEvents.Single());
+        var castDeadline = cast.ScheduledEvents.Single();
+
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(1));
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.WorldSpells,
+            vitals: Vitals(),
+            spellbook: new SpellbookSnapshot([spell]),
+            skillbook: new SkillbookSnapshot([skill]));
+        var usedSkill = scenario.Dispatch(
+            observed.RaisedEvents.Single());
+
+        scenario.AdvanceBy(
+            castDeadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        var completedCast = scenario.Dispatch(castDeadline.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(cast.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(cast.State.PendingAction, Is.Null);
+            Assert.That(
+                cast.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+            Assert.That(
+                usedSkill.Intent,
+                Is.TypeOf<UseSkillIntent>());
+            Assert.That(
+                usedSkill.State.PendingAction?.Intent,
+                Is.TypeOf<UseSkillIntent>());
+            Assert.That(
+                usedSkill.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Casting));
+            Assert.That(
+                completedCast.State.SpellCast?.Status,
+                Is.EqualTo(SpellCastStatus.Succeeded));
+            Assert.That(
+                completedCast.State.PendingAction?.Intent,
+                Is.TypeOf<UseSkillIntent>());
+        });
+    }
+
+    [Test]
     public void ShouldNotPublishRepeatedNoOpAutomationState()
     {
         var scenario = new MacroScenario();

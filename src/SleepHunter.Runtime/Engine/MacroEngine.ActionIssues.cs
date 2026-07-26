@@ -35,13 +35,17 @@ public sealed partial class MacroEngine
 
         if (issue.WasIssued)
         {
+            var nextPendingAction =
+                pendingAction.Intent is CastSpellIntent
+                    ? null
+                    : pendingAction.MarkIssued(observedAt);
             return Changed(
                 currentState,
                 currentState.Lifecycle,
                 currentState.StopReason,
                 currentState.LatestSnapshot,
                 currentState.LastTransitionAt,
-                pendingAction.MarkIssued(observedAt),
+                nextPendingAction,
                 lastActionIssue: issue);
         }
 

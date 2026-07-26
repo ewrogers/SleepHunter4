@@ -43,15 +43,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added dim slot numbers to inventory, skill, and spell grids, plus abbreviated top-left slot badges to the equipment grid
 - Restored recycled row virtualization in the metadata editor and shared list styles so opening large skill, spell, and staff collections does not construct every row up front
 - Moved the shared checkbox tick down to center it within its checkbox content area
-- Replaced the client-card runtime letter tooltip with a compact bottom-right status indicator that shows `Healthy` or a concise red error and provides selectable detailed diagnostics
+- Replaced the client-card runtime letter tooltip with a full-width status bar that shows `Healthy` or a concise red error on the left and opens selectable diagnostics from the right
 - Moved rolling average, minimum, and maximum snapshot-read times from the status indicator into runtime details and removed the ticking snapshot sequence
 - Changed the combined macro toolbar button from the play icon to the pause icon while its selected macro is running
 - Combined Start Macro and Pause Macro into one state-aware toolbar control that also becomes Resume Macro while paused
+- Allowed ready skills to run during an active spell cast because skill input does not interrupt casting
 - Allowed skill toggles and spell or flower queue additions, edits, removals, clearing, and reordering while automation is running, applying each complete setup atomically through the runtime command channel
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 - Replaced the window-owned process and client `BackgroundWorker` loops with independently paced, cancellable async polling that is awaited during shutdown
 - Moved global hotkey assignment, transfer, clearing, and rollback behavior into a tested application service
+- Renamed the default Login Time character sort to Launch Order and based it on process creation timestamps from oldest to newest
 - Replaced the version collection and selector with one bounded `ClientLayout.xml` document shared by application and Interop memory readers
 - Corrected the unified `MapName` mapping to declare its final string-pointer indirection instead of relying on the legacy reader's conditional string heuristic
 - Moved suspended client launch, patch planning, verification, failure cleanup, and resume behavior into a tested application service exposed through a Community Toolkit command
@@ -84,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected compact skill and spell counts to 89 while supporting the pane model's 90th slot, clearing unused tail slots, and including the last slot in each book-panel view
 - Reset stale pane-only item, skill, spell, chat, and sense state when the corresponding live data is no longer available
 - Corrected global hotkey reassignment to release the active registration instead of an unregistered replacement value, while retaining the previous assignment when a native operation fails
+- Restored selected-character hotkey capture through preview input and made each registered global hotkey toggle its owning character without relying on the active window or current selection
+- Kept per-client capture observations flowing when optional spell-state projection fails, allowing mana displays to recover after a zero-mana flowering observation
 - Report a missing client executable as a launch failure and terminate suspended clients when patching or thread resume fails
 
 ## [4.11.2] - 2026-07-24

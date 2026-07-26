@@ -3,7 +3,8 @@ namespace SleepHunter.Models
 {
     public enum PlayerSortOrder
     {
-        LoginTime,
+        LaunchOrder,
+        LoginTime = LaunchOrder,
         Alphabetical,
         HighestHealth,
         HighestMana,

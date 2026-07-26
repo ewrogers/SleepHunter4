@@ -210,7 +210,7 @@
                                   SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientSortOrder}"
                                   Margin="4">
                             <settings:UserSetting Key="Alphabetical" DisplayText="Name" Value="Alphabetical"/>
-                            <settings:UserSetting Key="LoginTime" DisplayText="Login Time" Value="LoginTime"/>
+                            <settings:UserSetting Key="LaunchOrder" DisplayText="Launch Order" Value="LaunchOrder"/>
                             <settings:UserSetting Key="HighestHealth" DisplayText="Max Health" Value="HighestHealth"/>
                             <settings:UserSetting Key="HighestMana" DisplayText="Max Mana" Value="HighestMana"/>
                             <settings:UserSetting Key="HighestCombined" DisplayText="Max Health &amp; Mana" Value="HighestCombined"/>

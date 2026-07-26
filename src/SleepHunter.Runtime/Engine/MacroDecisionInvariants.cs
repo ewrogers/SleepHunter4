@@ -233,14 +233,23 @@ internal static class MacroDecisionInvariants
             Status: SpellCastStatus.Casting
         };
 
-        if ((pendingCastIntent is not null) != castingSpell)
+        if (pendingCastIntent is not null && !castingSpell)
         {
             throw new InvalidOperationException(
                 "Pending spell cast state must match its client action.");
         }
 
+        if (castingSpell &&
+            (decision.State.SpellCast!.ActionId is null ||
+             decision.State.SpellCast.CompletesAt is null))
+        {
+            throw new InvalidOperationException(
+                "Casting spell state requires bounded completion metadata.");
+        }
+
         if (pendingCastIntent is not null &&
-            (decision.State.SpellCast!.ActionId != pendingCastIntent.ActionId ||
+            (decision.State.SpellCast!.ActionId !=
+             pendingCastIntent.ActionId ||
              decision.State.SpellCast.CompletesAt !=
              decision.State.PendingAction!.Deadline ||
              decision.State.PendingAction.Attempt != 1 ||

@@ -22,6 +22,10 @@ public sealed partial class MacroEngine
     {
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not null ||
+            currentState.SpellCast is
+            {
+                Status: SpellCastStatus.Casting
+            } ||
             currentState.LatestSnapshot is not
             {
                 Presence: ClientPresence.InWorld
@@ -543,22 +547,21 @@ public sealed partial class MacroEngine
 
     private static MacroDecision HandleSpellCastDeadline(
         MacroState currentState,
-        PendingAction pendingAction,
-        CastSpellIntent intent,
+        SpellCastState spellCast,
         MacroTimestamp currentTime)
     {
-        if (currentState.SpellCast is not
+        if (spellCast is not
             {
                 Status: SpellCastStatus.Casting,
-                Plan.SelectedSpell: { } spell
-            } spellCast ||
-            spellCast.ActionId != intent.ActionId)
+                Plan.SelectedSpell: { } spell,
+                CompletesAt: { } completesAt
+            })
         {
             return Unchanged(currentState);
         }
 
         var cooldowns = currentState.SpellCooldowns.Prune(currentTime);
-        var readyAt = pendingAction.Deadline.Add(spell.Cooldown);
+        var readyAt = completesAt.Add(spell.Cooldown);
         if (readyAt > currentTime)
         {
             cooldowns = cooldowns.WithCooldown(spell.Name, readyAt);
@@ -571,7 +574,7 @@ public sealed partial class MacroEngine
         {
             flower = flower.Succeeded(
                 flower.Action == FlowerActionKind.Plant
-                    ? pendingAction.Deadline
+                    ? completesAt
                     : null);
         }
 
@@ -581,7 +584,7 @@ public sealed partial class MacroEngine
             currentState.StopReason,
             currentState.LatestSnapshot,
             currentState.LastTransitionAt,
-            pendingAction: null,
+            currentState.PendingAction,
             spellCooldowns: cooldowns,
             spellCast: succeeded,
             flower: flower);

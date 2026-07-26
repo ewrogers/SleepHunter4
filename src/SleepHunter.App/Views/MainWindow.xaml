@@ -232,7 +232,7 @@
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                         <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
-                        <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
+                        <EventSetter Event="PreviewKeyDown" Handler="clientListBox_KeyDown"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
@@ -704,18 +704,14 @@
         </Grid>
         
         <!-- Runtime Status -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Grid.ColumnSpan="4"
                 Panel.ZIndex="8"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
                 MinHeight="28"
-                MaxWidth="620"
-                Margin="0,0,20,8"
-                Padding="10,3,5,3"
+                Padding="10,3,20,5"
                 Background="{StaticResource ObsidianControlBackground}"
-                BorderBrush="{DynamicResource ObsidianBackground}"
-                BorderThickness="1">
+                BorderBrush="{StaticResource ObsidianSeparatorColor}"
+                BorderThickness="0,1,0,4">
             <DockPanel LastChildFill="True">
                 <ToggleButton Name="runtimeDetailsButton"
                               DockPanel.Dock="Right"
@@ -777,6 +773,7 @@
                        IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
                        Placement="Top"
                        PlacementTarget="{Binding ElementName=runtimeDetailsButton}"
+                       HorizontalOffset="-556"
                        StaysOpen="False"
                        AllowsTransparency="True"
                        PopupAnimation="Fade"
@@ -823,6 +820,7 @@
                 </Popup>
 
                 <TextBlock Text="{Binding SelectedClient.RuntimeStatus, FallbackValue=Unavailable, TargetNullValue=Unavailable}"
+                           VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"
                            ToolTip="{Binding SelectedClient.RuntimeStatus}">
                     <TextBlock.Style>

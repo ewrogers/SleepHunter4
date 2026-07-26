@@ -674,6 +674,23 @@ public sealed partial class MacroEngine : IMacroEngine
         ClientActionDeadlineElapsed deadlineElapsed,
         MacroTimestamp currentTime)
     {
+        if (currentState.Lifecycle == MacroLifecycle.Running &&
+            currentState.SpellCast is
+            {
+                Status: SpellCastStatus.Casting,
+                ActionId: { } spellActionId,
+                CompletesAt: { } completesAt
+            } spellCast &&
+            spellActionId == deadlineElapsed.ActionId &&
+            currentTime >= completesAt &&
+            currentState.PendingAction?.Intent.ActionId != spellActionId)
+        {
+            return HandleSpellCastDeadline(
+                currentState,
+                spellCast,
+                currentTime);
+        }
+
         if (currentState.Lifecycle != MacroLifecycle.Running ||
             currentState.PendingAction is not { } pendingAction ||
             pendingAction.Intent.ActionId != deadlineElapsed.ActionId ||
@@ -710,10 +727,9 @@ public sealed partial class MacroEngine : IMacroEngine
             CollapseInventoryIntent => HandleInventoryModeDeadline(
                 currentState,
                 pendingAction),
-            CastSpellIntent castSpellIntent => HandleSpellCastDeadline(
+            CastSpellIntent => HandleSpellCastDeadline(
                 currentState,
-                pendingAction,
-                castSpellIntent,
+                currentState.SpellCast!,
                 currentTime),
             DisarmIntent disarmIntent => HandleDisarmDeadline(
                 currentState,

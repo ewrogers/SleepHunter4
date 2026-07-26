@@ -104,6 +104,12 @@ namespace SleepHunter.ViewModels
         public partial Exception LastAutomationError { get; private set; }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsRuntimeStatusError))]
+        [NotifyPropertyChangedFor(nameof(RuntimeStatus))]
+        [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
+        public partial Exception LastObservationError { get; private set; }
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasLastErrorStatus))]
         [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
         public partial string LastErrorStatus { get; private set; }
@@ -232,6 +238,9 @@ namespace SleepHunter.ViewModels
                 if (LastAutomationError is not null)
                     return true;
 
+                if (LastObservationError is not null)
+                    return true;
+
                 var result = Runtime?.LatestCaptureResult;
                 return result is { Succeeded: false } &&
                        result.Error?.Failure !=
@@ -245,6 +254,9 @@ namespace SleepHunter.ViewModels
             {
                 if (LastAutomationError is { } automationError)
                     return $"Automation error: {automationError.Message}";
+
+                if (LastObservationError is { } observationError)
+                    return $"Observation error: {observationError.Message}";
 
                 if (Runtime is null)
                     return "Unavailable";
@@ -393,8 +405,21 @@ namespace SleepHunter.ViewModels
                     StringComparison.Ordinal))
             {
                 RecordRuntimeError();
-                UpdateMacroSpellObservations();
-                NotifyObservedState();
+                try
+                {
+                    UpdateMacroSpellObservations();
+                    LastObservationError = null;
+                }
+                catch (Exception exception)
+                {
+                    LastObservationError = exception;
+                    LastErrorStatus =
+                        $"Observation: {exception.Message}";
+                }
+                finally
+                {
+                    NotifyObservedState();
+                }
             }
         }
 
@@ -456,6 +481,14 @@ namespace SleepHunter.ViewModels
                 details.AppendLine(
                     $"Memory bytes: {reads.BytesRead} read of " +
                     $"{reads.RequestedBytes} requested");
+                if (capture.Snapshot?.Vitals is { } vitals)
+                {
+                    details.AppendLine(
+                        $"Vitals: HP {vitals.CurrentHealth}/" +
+                        $"{vitals.MaximumHealth}, MP " +
+                        $"{vitals.CurrentMana}/{vitals.MaximumMana}");
+                }
+
                 var duration = Runtime.CaptureStatistics.Duration;
                 if (duration.SampleCount > 0)
                 {
@@ -503,6 +536,16 @@ namespace SleepHunter.ViewModels
                     $"Exception: {LastAutomationError.GetType().FullName}");
                 details.AppendLine(
                     $"Message: {LastAutomationError.Message}");
+            }
+
+            if (LastObservationError is not null)
+            {
+                details.AppendLine();
+                details.AppendLine("Last observation error");
+                details.AppendLine(
+                    $"Exception: {LastObservationError.GetType().FullName}");
+                details.AppendLine(
+                    $"Message: {LastObservationError.Message}");
             }
 
             return details.ToString().TrimEnd();
@@ -558,7 +601,8 @@ namespace SleepHunter.ViewModels
 
             var readiness =
                 Runtime.Current?.SpellCast?.Plan.Readiness;
-            foreach (var queuedSpell in MacroConfiguration.QueuedSpells)
+            foreach (var queuedSpell in
+                     MacroConfiguration.QueuedSpells.ToArray())
             {
                 var observed = spellbook.Find(queuedSpell.Name);
                 if (observed is null)
