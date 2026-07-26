@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -90,11 +91,27 @@ namespace SleepHunter.ViewModels
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
         public partial Exception LastAutomationError { get; private set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasLastErrorStatus))]
+        [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
         public partial string LastErrorStatus { get; private set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RuntimeDetailsText))]
+        public partial SnapshotCaptureError LastCaptureError
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        public partial bool IsRuntimeDetailsOpen { get; set; }
+
+        [ObservableProperty]
+        public partial string RuntimeDetailsSnapshot { get; private set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsMacroEditingEnabled))]
@@ -226,6 +243,8 @@ namespace SleepHunter.ViewModels
             }
         }
 
+        public string RuntimeDetailsText => BuildRuntimeDetailsText();
+
         private ClientSnapshot ObservedSnapshot =>
             Runtime?.PresentationSnapshot;
 
@@ -263,11 +282,20 @@ namespace SleepHunter.ViewModels
 
         partial void OnRuntimeChanged(ClientRuntimeViewModel value)
         {
+            if (value is null)
+                IsRuntimeDetailsOpen = false;
+
             if (value is not null)
                 value.PropertyChanged += OnRuntimePropertyChanged;
 
             RecordRuntimeError();
             NotifyObservedState();
+        }
+
+        partial void OnIsRuntimeDetailsOpenChanged(bool value)
+        {
+            if (value)
+                RuntimeDetailsSnapshot = BuildRuntimeDetailsText();
         }
 
         partial void OnLastAutomationErrorChanged(Exception value)
@@ -310,8 +338,128 @@ namespace SleepHunter.ViewModels
                 return;
             }
 
+            LastCaptureError = error;
             LastErrorStatus =
                 $"Capture {error.Failure}: {error.Message}";
+        }
+
+        private string BuildRuntimeDetailsText()
+        {
+            var details = new StringBuilder();
+            details.AppendLine("SleepHunter Runtime Diagnostics");
+            details.AppendLine($"Character: {Name ?? "Unknown"}");
+            details.AppendLine($"Process ID: {Process.ProcessId}");
+            details.AppendLine($"Window: {Process.WindowTitle ?? "Unknown"}");
+            details.AppendLine($"Status: {RuntimeStatus}");
+
+            if (Runtime is null)
+            {
+                details.AppendLine("Runtime attached: No");
+                return details.ToString().TrimEnd();
+            }
+
+            details.AppendLine("Runtime attached: Yes");
+            details.AppendLine($"Client: {Runtime.Client}");
+            if (Runtime.Current is { } current)
+            {
+                details.AppendLine($"Macro lifecycle: {current.Lifecycle}");
+                details.AppendLine($"Macro revision: {current.Revision}");
+                details.AppendLine($"Macro stop reason: {current.StopReason}");
+            }
+            else
+            {
+                details.AppendLine("Macro lifecycle: Waiting");
+            }
+
+            if (Runtime.LatestCaptureResult is { } capture)
+            {
+                var metrics = capture.Metrics;
+                var reads = metrics.Reads;
+                details.AppendLine($"Capture sequence: {metrics.Sequence.Value}");
+                details.AppendLine($"Capture quality: {capture.Quality}");
+                details.AppendLine(
+                    $"Capture duration: {metrics.Duration.TotalMilliseconds:0.###} ms");
+                details.AppendLine(
+                    $"Memory reads: {reads.RequestCount} requests, " +
+                    $"{reads.TransportReadCount} transport reads, " +
+                    $"{reads.FailedReadCount} failed");
+                details.AppendLine(
+                    $"Memory bytes: {reads.BytesRead} read of " +
+                    $"{reads.RequestedBytes} requested");
+                AppendCaptureError(
+                    details,
+                    "Current capture error",
+                    capture.Error);
+            }
+            else
+            {
+                details.AppendLine("Capture: Waiting");
+            }
+
+            if (LastCaptureError is not null &&
+                !Equals(
+                    Runtime.LatestCaptureResult?.Error,
+                    LastCaptureError))
+            {
+                AppendCaptureError(
+                    details,
+                    "Last retained capture error",
+                    LastCaptureError);
+            }
+
+            if (LastAutomationError is not null)
+            {
+                details.AppendLine();
+                details.AppendLine("Last automation error");
+                details.AppendLine(
+                    $"Exception: {LastAutomationError.GetType().FullName}");
+                details.AppendLine(
+                    $"Message: {LastAutomationError.Message}");
+            }
+
+            return details.ToString().TrimEnd();
+        }
+
+        private static void AppendCaptureError(
+            StringBuilder details,
+            string heading,
+            SnapshotCaptureError error)
+        {
+            if (error is null)
+                return;
+
+            details.AppendLine();
+            details.AppendLine(heading);
+            details.AppendLine($"Section: {error.Section}");
+            details.AppendLine($"Failure: {error.Failure}");
+            details.AppendLine($"Message: {error.Message}");
+            if (error.VariableKey is not null)
+                details.AppendLine($"Variable: {error.VariableKey}");
+
+            var mappedError = error.ReadError;
+            if (mappedError is null)
+                return;
+
+            details.AppendLine(
+                $"Mapped read failure: {mappedError.Failure}");
+            details.AppendLine(
+                $"Mapped variable: {mappedError.VariableKey}");
+            if (mappedError.ExpectedKind is { } expectedKind)
+                details.AppendLine($"Expected kind: {expectedKind}");
+            if (mappedError.ActualKind is { } actualKind)
+                details.AppendLine($"Actual kind: {actualKind}");
+
+            var memoryError = mappedError.MemoryError;
+            if (memoryError is null)
+                return;
+
+            details.AppendLine($"Memory failure: {memoryError.Failure}");
+            details.AppendLine($"Address: {memoryError.Address}");
+            details.AppendLine(
+                $"Requested bytes: {memoryError.RequestedBytes}");
+            details.AppendLine($"Bytes read: {memoryError.BytesRead}");
+            details.AppendLine(
+                $"Native error code: {memoryError.NativeErrorCode}");
         }
 
         private void UpdateMacroSpellObservations()
@@ -531,6 +679,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(MaximumMana));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(RuntimeStatus));
+            OnPropertyChanged(nameof(RuntimeDetailsText));
             OnPropertyChanged(nameof(MacroToggleLabel));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(UsesRuntimeSnapshot));

@@ -42,13 +42,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed current macro saves and autosaves to bounded, versioned `.sh4x` JSON while retaining XML `.sh4` files as import-only legacy configurations
 - Labeled `.sh4x` as SleepHunter 4 Macro Files and `.sh4` as SleepHunter 4 Legacy Files in macro file dialogs
 - Added dim slot numbers to inventory, skill, and spell grids, plus abbreviated top-left slot badges to the equipment grid
-- Replaced the client-card runtime letter tooltip with a selected-client status bar that shows live runtime health and retains the most recent capture or automation error
+- Replaced the client-card runtime letter tooltip with a selected-client status bar that shows live runtime health, retains the most recent capture or automation error, and provides selectable detailed diagnostics
 - Combined Start Macro and Pause Macro into one state-aware toolbar control that also becomes Resume Macro while paused
 - Moved spell and flower queue selection, removal, clearing, rotation, and flowering options into observable bindings and Community Toolkit commands
 - Moved macro load, save, autosave, legacy autosave migration, and spell-queue visibility into tested application services and Community Toolkit commands
 - Replaced the window-owned process and client `BackgroundWorker` loops with independently paced, cancellable async polling that is awaited during shutdown
 - Moved global hotkey assignment, transfer, clearing, and rollback behavior into a tested application service
 - Replaced the version collection and selector with one bounded `ClientLayout.xml` document shared by application and Interop memory readers
+- Corrected the unified `MapName` mapping to declare its final string-pointer indirection instead of relying on the legacy reader's conditional string heuristic
 - Moved suspended client launch, patch planning, verification, failure cleanup, and resume behavior into a tested application service exposed through a Community Toolkit command
 
 ### Removed

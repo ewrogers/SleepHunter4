@@ -226,9 +226,17 @@
         <Offset Value="15C88" />
       </Offsets>
     </Dynamic>
+    <!--
+      DarkAges.exe 7.4.1.0, SHA-256
+      054A5D6ADC56099C6BFD9D2A58675AFF62DC788B63209A3D906492F5B89E96C6:
+      the GUI object field at 4CAC contains a 32-bit pointer to the ASCII text
+      buffer. The legacy reader detected this conditionally from the field
+      bytes. The explicit zero offset makes the final dereference deterministic.
+    -->
     <Dynamic Key="MapName" Address="82B768" MaxLength="32">
       <Offsets>
         <Offset Value="4CAC" />
+        <Offset Value="0" />
       </Offsets>
     </Dynamic>
     <Dynamic Key="MapNumber" Address="73D964" Type="UInt32">

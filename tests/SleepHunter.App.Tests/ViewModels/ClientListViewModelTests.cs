@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Input;
+using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
@@ -115,10 +116,23 @@ public sealed class ClientListViewModelTests
         host.PublishCapture(CreateCapture(
             host.Client,
             sequenceValue: 3,
-            succeeded: false));
+            succeeded: false,
+            failureSection: SnapshotSection.Location,
+            variableKey: "MapName",
+            readError: new MappedMemoryReadError(
+                MappedMemoryReadFailure.ValueReadFailed,
+                "MapName",
+                ActualKind: MemoryValueKind.Text,
+                MemoryError: new MemoryReadError(
+                    MemoryReadFailure.InvalidEncoding,
+                    new MemoryAddress(0x2FF6925C),
+                    RequestedBytes: 32,
+                    BytesRead: 32))));
         await WaitUntilAsync(
             () => !item.UsesRuntimeSnapshot &&
                   item.HasLastErrorStatus);
+        item.IsRuntimeDetailsOpen = true;
+        var frozenDetails = item.RuntimeDetailsSnapshot;
 
         Assert.Multiple(() =>
         {
@@ -134,6 +148,24 @@ public sealed class ClientListViewModelTests
             Assert.That(
                 item.RuntimeStatus,
                 Does.StartWith("Runtime capture failed"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Variable: MapName"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Mapped read failure: ValueReadFailed"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Memory failure: InvalidEncoding"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Address: 0x2FF6925C"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Requested bytes: 32"));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Bytes read: 32"));
         });
 
         host.PublishCapture(CreateCapture(
@@ -148,6 +180,12 @@ public sealed class ClientListViewModelTests
             Is.EqualTo(
                 "Capture MappingReadFailed: " +
                 "The scripted capture failed."));
+        Assert.That(item.RuntimeDetailsSnapshot, Is.EqualTo(frozenDetails));
+        item.IsRuntimeDetailsOpen = false;
+        item.IsRuntimeDetailsOpen = true;
+        Assert.That(
+            item.RuntimeDetailsSnapshot,
+            Does.Contain("Last retained capture error"));
     }
 
     [Test]
@@ -420,6 +458,7 @@ public sealed class ClientListViewModelTests
             () => item.ToggleMacroCommand.CanExecute(null));
 
         await item.ToggleMacroCommand.ExecuteAsync(null);
+        item.IsRuntimeDetailsOpen = true;
 
         Assert.Multiple(() =>
         {
@@ -431,6 +470,13 @@ public sealed class ClientListViewModelTests
                 item.LastErrorStatus,
                 Is.EqualTo(
                     "Automation: The scripted setup failed."));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain(
+                    "Exception: System.InvalidOperationException"));
+            Assert.That(
+                item.RuntimeDetailsSnapshot,
+                Does.Contain("Message: The scripted setup failed."));
         });
     }
 
@@ -520,7 +566,10 @@ public sealed class ClientListViewModelTests
         ClientPresence presence = ClientPresence.InWorld,
         SpellbookSnapshot? spellbook = null,
         SnapshotCaptureFailure failure =
-            SnapshotCaptureFailure.MappingReadFailed)
+            SnapshotCaptureFailure.MappingReadFailed,
+        SnapshotSection failureSection = SnapshotSection.Presence,
+        string? variableKey = null,
+        MappedMemoryReadError? readError = null)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -582,9 +631,11 @@ public sealed class ClientListViewModelTests
                     failure ==
                         SnapshotCaptureFailure.LocationTransition
                             ? SnapshotSection.Coherence
-                            : SnapshotSection.Presence,
+                            : failureSection,
                     failure,
-                    "The scripted capture failed."),
+                    "The scripted capture failed.",
+                    variableKey,
+                    readError),
                 metrics);
         var statistics = new SnapshotCaptureStatistics(
             windowCapacity: 1,

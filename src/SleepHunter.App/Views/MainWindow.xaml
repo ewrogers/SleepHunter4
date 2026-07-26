@@ -701,6 +701,107 @@
                 BorderBrush="{DynamicResource ObsidianBackground}"
                 BorderThickness="0,1,0,4">
             <DockPanel LastChildFill="True">
+                <ToggleButton Name="runtimeDetailsButton"
+                              DockPanel.Dock="Right"
+                              Width="24"
+                              Height="22"
+                              Margin="8,0,0,0"
+                              Padding="3"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              Background="Transparent"
+                              BorderBrush="Transparent"
+                              BorderThickness="1"
+                              Focusable="False"
+                              IsEnabled="{Binding SelectedClient.HasRuntime, FallbackValue=False, TargetNullValue=False}"
+                              IsChecked="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                              ToolTip="Runtime details">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="2">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="BorderBrush"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Border"
+                                            Property="Background"
+                                            Value="{DynamicResource ObsidianBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                    <Grid Width="14" Height="14">
+                        <Ellipse Stroke="{DynamicResource ObsidianForeground}"
+                                 StrokeThickness="1.5"/>
+                        <Path Data="M 7,6.5 L 7,10.5 M 7,3.5 L 7,4"
+                              Stroke="{DynamicResource ObsidianForeground}"
+                              StrokeThickness="1.7"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"/>
+                    </Grid>
+                </ToggleButton>
+
+                <Popup IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                       Placement="Top"
+                       PlacementTarget="{Binding ElementName=runtimeDetailsButton}"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade">
+                    <Border Width="580"
+                            Margin="0,0,0,4"
+                            Padding="12"
+                            Background="{DynamicResource ObsidianControlBackground}"
+                            BorderBrush="{DynamicResource ObsidianBackground}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource ObsidianText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Text="Runtime Details"/>
+                            <TextBox Grid.Row="1"
+                                     Width="554"
+                                     Height="310"
+                                     Style="{StaticResource ObsidianNonEraseTextBox}"
+                                     Padding="8"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     VerticalScrollBarVisibility="Auto"
+                                     VerticalContentAlignment="Top"
+                                     Text="{Binding DataContext.SelectedClient.RuntimeDetailsSnapshot, ElementName=runtimeDetailsButton, Mode=OneWay}"/>
+                            <TextBlock Grid.Row="2"
+                                       Style="{StaticResource ObsidianText}"
+                                       Margin="0,8,0,0"
+                                       Opacity="0.7"
+                                       Text="Select the diagnostic text and press Ctrl+C to copy."/>
+                        </Grid>
+                    </Border>
+                </Popup>
+
                 <Grid DockPanel.Dock="Right"
                       MaxWidth="520"
                       Margin="16,0,0,0">

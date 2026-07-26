@@ -231,6 +231,9 @@ namespace SleepHunter.ViewModels
         partial void OnSelectedClientChanged(
             ClientListItemViewModel value)
         {
+            foreach (var client in clients)
+                client.IsRuntimeDetailsOpen = false;
+
             MacroPersistence?.NotifyStateChanged();
         }
     }

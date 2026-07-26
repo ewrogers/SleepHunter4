@@ -63,6 +63,9 @@ installation. Use a disposable copy.
   waiting to a healthy snapshot.
 - [ ] Trigger a recoverable capture failure and confirm the status bar retains
   it as the last error after healthy capture resumes.
+- [ ] Open the runtime details button, confirm nested mapping and memory failures
+  include the variable, address, byte counts, and native error code, then select
+  and copy the diagnostic text with `Ctrl+C`.
 - [ ] Log in and confirm name, class, map, coordinates, health, and mana update.
 - [ ] Change maps and confirm the old map name and coordinates remain together
   until the new map name and coordinates appear together, without a persistent
