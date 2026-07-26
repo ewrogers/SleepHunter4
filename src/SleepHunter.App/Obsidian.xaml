@@ -394,7 +394,7 @@
 
                             <ScrollViewer Style="{StaticResource ObsidianScrollViewer}"
                                           Name="PART_ContentHost"
-                                          VerticalAlignment="Center"/>
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
                             <Button Name="ClearButton" 
                                     Grid.Column="1"

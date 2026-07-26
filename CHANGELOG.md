@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reset the runtime-details toggle when its popup is dismissed so the details panel can be reopened immediately
+- Stretched the runtime-details text viewport so multiline error diagnostics and scrollbars are not clipped at the bottom
 - Prevented stale or unallocated supported-client character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
 - Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown

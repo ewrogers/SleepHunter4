@@ -226,6 +226,27 @@ namespace SleepHunter.Views
             SpellMetadataManager.Instance.SpellRemoved += OnSpellManagerUpdated;
         }
 
+        private void RuntimeDetailsPopup_Closed(
+            object sender,
+            EventArgs e)
+        {
+            if (clientList.SelectedClient is { } selectedClient)
+                selectedClient.IsRuntimeDetailsOpen = false;
+        }
+
+        private void RuntimeDetailsButton_PreviewMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            if (!runtimeDetailsPopup.IsOpen)
+                return;
+
+            if (clientList.SelectedClient is { } selectedClient)
+                selectedClient.IsRuntimeDetailsOpen = false;
+
+            e.Handled = true;
+        }
+
         private void OnSpellManagerUpdated(object sender, SpellMetadataEventArgs e)
         {
             if (selectedMacro == null)

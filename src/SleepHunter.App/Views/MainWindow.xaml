@@ -713,8 +713,10 @@
                               BorderBrush="Transparent"
                               BorderThickness="1"
                               Focusable="False"
+                              AutomationProperties.Name="Runtime details"
                               IsEnabled="{Binding SelectedClient.HasRuntime, FallbackValue=False, TargetNullValue=False}"
                               IsChecked="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                              PreviewMouseLeftButtonDown="RuntimeDetailsButton_PreviewMouseLeftButtonDown"
                               ToolTip="Runtime details">
                     <ToggleButton.Template>
                         <ControlTemplate TargetType="ToggleButton">
@@ -755,12 +757,14 @@
                     </Grid>
                 </ToggleButton>
 
-                <Popup IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
+                <Popup Name="runtimeDetailsPopup"
+                       IsOpen="{Binding SelectedClient.IsRuntimeDetailsOpen, Mode=TwoWay, FallbackValue=False, TargetNullValue=False}"
                        Placement="Top"
                        PlacementTarget="{Binding ElementName=runtimeDetailsButton}"
                        StaysOpen="False"
                        AllowsTransparency="True"
-                       PopupAnimation="Fade">
+                       PopupAnimation="Fade"
+                       Closed="RuntimeDetailsPopup_Closed">
                     <Border Width="580"
                             Margin="0,0,0,4"
                             Padding="12"
@@ -791,7 +795,7 @@
                                      TextWrapping="NoWrap"
                                      HorizontalScrollBarVisibility="Auto"
                                      VerticalScrollBarVisibility="Auto"
-                                     VerticalContentAlignment="Top"
+                                     VerticalContentAlignment="Stretch"
                                      Text="{Binding DataContext.SelectedClient.RuntimeDetailsSnapshot, ElementName=runtimeDetailsButton, Mode=OneWay}"/>
                             <TextBlock Grid.Row="2"
                                        Style="{StaticResource ObsidianText}"

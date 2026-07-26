@@ -66,6 +66,9 @@ installation. Use a disposable copy.
 - [ ] Open the runtime details button, confirm nested mapping and memory failures
   include the variable, address, byte counts, and native error code, then select
   and copy the diagnostic text with `Ctrl+C`.
+- [ ] Dismiss runtime details by clicking outside it, reopen it immediately,
+  close it with the details button, and confirm the text and scrollbars remain
+  visible through the bottom of a multiline error.
 - [ ] Log in and confirm name, class, map, coordinates, health, and mana update.
 - [ ] Change maps and confirm the old map name and coordinates remain together
   until the new map name and coordinates appear together, without a persistent
