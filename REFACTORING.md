@@ -716,9 +716,8 @@ and the newest failed capture fall back to the corresponding legacy
 observation, while a small runtime badge exposes capture status. The client
 list owns the selected item through a generated observable property and a
 two-way XAML binding, clearing selection when its client is removed. Inventory,
-equipment, ability panes, hotkey editing, process launch, and secondary window
-operations continue to unwrap the legacy `Player` until their own slices are
-cut over.
+equipment, ability panes, and secondary window operations continue to unwrap
+the legacy `Player` until their own slices are cut over.
 
 The spell and flower queue editor is now a separate vertical slice.
 `MacroEditorViewModel` exposes source-generated Toolkit commands for selected
@@ -772,6 +771,14 @@ gesture and reports errors, while a tested application service owns uniqueness,
 native registration transfer, model updates, and rollback. A failed assignment
 retains the previous character binding, and a failed transfer attempts to
 restore the displaced registration before returning control to the view.
+
+Client launch now follows a matching boundary. `ClientLaunchViewModel` exposes
+the launch button through a generated Community Toolkit command and enables it
+only after the shared client layout loads successfully. `ClientLaunchService`
+snapshots mutable settings, selects only requested and supported patches, owns
+the suspended process and native handles, verifies executable and patch bytes,
+and either resumes a fully patched client or terminates a failed launch. WPF
+owns only the error presentation adapter.
 
 The pre-runtime `PlayerInterfaceExtender` and `WindowAutomator` have no remaining
 callers and are removed instead of being converted to async polling. Semantic

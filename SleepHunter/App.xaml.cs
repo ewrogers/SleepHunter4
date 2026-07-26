@@ -2,6 +2,7 @@
 using System.Windows.Threading;
 using SleepHunter.Macro;
 using SleepHunter.Services;
+using SleepHunter.Services.Clients;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
@@ -61,6 +62,9 @@ namespace SleepHunter
             // Services
             services.AddSingleton<ILogger, Logger>();
             services.AddSingleton<IReleaseService, ReleaseService>();
+            services.AddSingleton<
+                IClientLaunchService,
+                ClientLaunchService>();
             services.AddSingleton<PlayerMacroConfigurationManager>();
             services.AddSingleton<
                 IMacroConfigurationReader,
