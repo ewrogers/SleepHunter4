@@ -411,13 +411,6 @@ namespace SleepHunter.Views
             }
         }
 
-        private async void RefreshInventory()
-        {
-            await Dispatcher.SwitchToUIThread();
-
-            // Do some stuff with inventory on UI thread
-        }
-
         private void LoadClientLayout()
         {
             var layoutFile = Path.Combine(
@@ -1297,18 +1290,10 @@ namespace SleepHunter.Views
             ToggleSpells(player.IsLoggedIn);
             ToggleFlower(supportsFlowering, player.HasLyliacPlant, player.HasLyliacVineyard);
 
-            if (selectedMacro != null)
-            {
-                RefreshInventory();
-
-                if (selectedMacro.QueuedSpells.Count > 0)
-                    clientList.MacroPersistence.IsSpellQueueVisible =
-                        true;
-            }
-            else
+            if (selectedMacro.QueuedSpells.Count > 0)
             {
                 clientList.MacroPersistence.IsSpellQueueVisible =
-                    false;
+                    true;
             }
         }
 
@@ -1396,26 +1381,13 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            TabItem oldTab = null;
             TabItem newTab = null;
-
-            if (e.RemovedItems.Count > 0)
-                oldTab = e.RemovedItems[0] as TabItem;
 
             if (e.AddedItems.Count > 0)
                 newTab = e.AddedItems[0] as TabItem;
 
-            if (oldTab != null)
-                TabDeselected(oldTab);
-
             if (newTab != null)
                 TabSelected(newTab);
-        }
-
-        private void TabDeselected(TabItem tab)
-        {
-            if (selectedMacro == null)
-                return;
         }
 
         private void TabSelected(TabItem tab)
@@ -1429,15 +1401,6 @@ namespace SleepHunter.Views
                 selectedMacro.Client.Layout?.SupportsFlowering ??
                 false;
             ToggleFlower(supportsFlowering, selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
-        }
-
-        private void inventoryListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            // Only handle left-click
-            if (e.ChangedButton != MouseButton.Left)
-                return;
-
-            // Do nothing for now
         }
 
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)

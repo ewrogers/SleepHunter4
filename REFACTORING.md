@@ -11,6 +11,14 @@ planned interim release containing repairs to the legacy macro engine. Every
 pull request must still build successfully and include automated validation for
 the behavior it introduces.
 
+The deterministic runtime is now the only macro execution path, client runtime
+hosts are attached through Interop, and the main toolbar, queues, persistence,
+hotkeys, polling, and client launch are connected through tested application
+services and Community Toolkit commands. The branch is ready for the live
+Windows and client validation in [SMOKE_TESTING.md](SMOKE_TESTING.md).
+Remaining MainWindow code-behind is limited to view gestures, native window
+integration, secondary dialogs, and application-shell coordination.
+
 ## Executive Decision
 
 SleepHunter will receive a new unit-tested runtime built beside the legacy
