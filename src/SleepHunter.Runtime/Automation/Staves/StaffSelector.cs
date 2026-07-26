@@ -16,7 +16,12 @@ public static class StaffSelector
             .Where(candidate => candidate is not null)
             .Select(candidate => candidate!)
             .OrderBy(candidate => candidate.Staff.CastLines)
-            .ThenBy(candidate => candidate.IsEquipped ? 0 : 1)
+            .ThenByDescending(
+                candidate =>
+                    candidate.Staff.UsesAbilityLevelRequirement)
+            .ThenByDescending(
+                candidate =>
+                    candidate.Staff.RequiredProgressionLevel)
             .ThenBy(candidate => candidate.InventorySlot ?? int.MaxValue)
             .ThenBy(
                 candidate => candidate.Staff.Name,
@@ -36,20 +41,23 @@ public static class StaffSelector
 
         var best = available[0];
         var equipped = available.FirstOrDefault(candidate => candidate.IsEquipped);
+        var optimalCastLines = Math.Min(
+            request.BaseCastLines,
+            best.Staff.CastLines);
+
+        if (equipped is not null &&
+            equipped.Staff.CastLines <= optimalCastLines)
+        {
+            return new StaffSelection(
+                StaffSelectionAction.None,
+                StaffSelectionReason.AlreadyEquipped,
+                equipped.Staff.CastLines,
+                equipped.Staff,
+                inventorySlot: null);
+        }
 
         if (best.Staff.CastLines >= request.BaseCastLines)
         {
-            if (equipped is not null &&
-                equipped.Staff.CastLines <= request.BaseCastLines)
-            {
-                return new StaffSelection(
-                    StaffSelectionAction.None,
-                    StaffSelectionReason.AlreadyEquipped,
-                    equipped.Staff.CastLines,
-                    equipped.Staff,
-                    inventorySlot: null);
-            }
-
             return new StaffSelection(
                 equipped is null
                     ? StaffSelectionAction.None

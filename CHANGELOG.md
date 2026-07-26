@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reconciled the supported client memory roots and offsets with the documented `WorldPane`, `WorldUserFunc`, `GUIBackPane`, `EquipPane`, and event-dispatcher layouts
 - Collapsed Runtime and Interop onto one configurable client layout, removed version routing from client identities, and renamed client parsers, capture, and input planning types to generic names
 - Kept compact inventory, skillbook, spellbook, and legacy cooldown paths as compatibility fallbacks when richer pane snapshots are unavailable or change during a read
-- Made automatic staff selection aware of the character's base class
+- Made automatic staff selection enforce class and normal or ability-level requirements, prefer the highest progression staff among equal casting improvements, and avoid switching when casting lines would not improve
 - Updated the test SDK, NUnit framework, NUnit analyzers, and NUnit adapter to their latest .NET 10-compatible stable releases
 - Upgraded the application, updater, runtime, interop, persistence, and test projects to .NET 10 LTS
 - Changed chat typing detection to use the globally focused, visible, live chat or tell input pane and renamed the snapshot projection to `IsChatOpen`
@@ -80,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reset the runtime-details toggle when its popup is dismissed so the details panel can be reopened immediately
 - Stretched the runtime-details text viewport so multiline error diagnostics and scrollbars are not clipped at the bottom
 - Corrected runtime character-class decoding to use the client's sequential values from `0` for Peasant through `5` for Monk, including `3` for Wizard
+- Corrected the early priest and wizard staff requirements from level 19 to level 11
+- Corrected every Instrumental Attack rank to use normal skill-slot activation instead of assail input
 - Prevented stale or unallocated supported-client character-name buffer contents from appearing as a gibberish player name by requiring a live session generation, a bounded NUL-terminated read, and a structurally valid name
 - Kept the executable-verified `EquipPane` singleton at `0x006FC914` for equipment and self-look profile fields; the nearby `0x006FC8EC` global documented by the newer reference is null in the signed `7D4E--1K` client
 - Clear pane-backed skill cooldown state when the client's `cooldown_visual_active` flag clears instead of treating the retained nonzero progress counter as an active cooldown

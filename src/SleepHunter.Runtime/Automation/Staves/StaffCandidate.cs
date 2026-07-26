@@ -66,6 +66,13 @@ public sealed record StaffCandidate
 
     public bool IsClassNeutral => RequiredClass is null;
 
+    public bool UsesAbilityLevelRequirement => RequiredAbilityLevel > 0;
+
+    public int RequiredProgressionLevel =>
+        UsesAbilityLevelRequirement
+            ? RequiredAbilityLevel
+            : RequiredLevel;
+
     public bool IsEligibleFor(CharacterSnapshot character)
     {
         ArgumentNullException.ThrowIfNull(character);
@@ -73,9 +80,10 @@ public sealed record StaffCandidate
         var classCompatible = RequiredClass is null ||
                               (character.Class != CharacterClass.Unknown &&
                                RequiredClass == character.Class);
+        var progressionCompatible = UsesAbilityLevelRequirement
+            ? RequiredAbilityLevel <= character.AbilityLevel
+            : RequiredLevel <= character.Level;
 
-        return classCompatible &&
-               RequiredLevel <= character.Level &&
-               RequiredAbilityLevel <= character.AbilityLevel;
+        return classCompatible && progressionCompatible;
     }
 }

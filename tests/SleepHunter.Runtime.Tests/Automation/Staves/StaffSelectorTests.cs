@@ -157,6 +157,100 @@ public sealed class StaffSelectorTests
     }
 
     [Test]
+    public void ShouldUseAbilityRequirementInsteadOfNormalLevelForAbStaff()
+    {
+        var abilityStaff = Candidate(
+            "ability-staff",
+            CharacterClass.Wizard,
+            castLines: 1,
+            requiredLevel: 99,
+            requiredAbilityLevel: 10);
+        var request = Request(
+            CharacterClass.Wizard,
+            baseCastLines: 4,
+            inventory:
+            [
+                new InventoryItemSnapshot(1, abilityStaff.Name)
+            ],
+            candidates: [abilityStaff],
+            level: 50,
+            abilityLevel: 10);
+
+        var selection = StaffSelector.Select(request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(selection.Action, Is.EqualTo(StaffSelectionAction.Equip));
+            Assert.That(selection.Staff, Is.EqualTo(abilityStaff));
+        });
+    }
+
+    [Test]
+    public void ShouldChooseHighestLevelStaffForEqualImprovement()
+    {
+        var lower = Candidate(
+            "lower",
+            CharacterClass.Wizard,
+            castLines: 1,
+            requiredLevel: 30);
+        var higher = Candidate(
+            "higher",
+            CharacterClass.Wizard,
+            castLines: 1,
+            requiredLevel: 50);
+        var request = Request(
+            CharacterClass.Wizard,
+            baseCastLines: 4,
+            inventory:
+            [
+                new InventoryItemSnapshot(1, lower.Name),
+                new InventoryItemSnapshot(2, higher.Name)
+            ],
+            candidates: [lower, higher],
+            level: 50);
+
+        var selection = StaffSelector.Select(request);
+
+        Assert.That(selection.Staff, Is.EqualTo(higher));
+    }
+
+    [Test]
+    public void ShouldChooseHighestAbilityStaffForEqualImprovement()
+    {
+        var regular = Candidate(
+            "regular",
+            CharacterClass.Priest,
+            castLines: 1,
+            requiredLevel: 99);
+        var lowerAbility = Candidate(
+            "lower-ability",
+            CharacterClass.Priest,
+            castLines: 1,
+            requiredAbilityLevel: 10);
+        var higherAbility = Candidate(
+            "higher-ability",
+            CharacterClass.Priest,
+            castLines: 1,
+            requiredAbilityLevel: 50);
+        var request = Request(
+            CharacterClass.Priest,
+            baseCastLines: 4,
+            inventory:
+            [
+                new InventoryItemSnapshot(1, regular.Name),
+                new InventoryItemSnapshot(2, lowerAbility.Name),
+                new InventoryItemSnapshot(3, higherAbility.Name)
+            ],
+            candidates: [regular, lowerAbility, higherAbility],
+            level: 99,
+            abilityLevel: 50);
+
+        var selection = StaffSelector.Select(request);
+
+        Assert.That(selection.Staff, Is.EqualTo(higherAbility));
+    }
+
+    [Test]
     public void ShouldConsiderOnlyAvailableStaff()
     {
         var unavailable = Candidate(
@@ -187,11 +281,13 @@ public sealed class StaffSelectorTests
         var equipped = Candidate(
             "equipped",
             CharacterClass.Priest,
-            castLines: 1);
+            castLines: 1,
+            requiredLevel: 11);
         var inventory = Candidate(
             "inventory",
             CharacterClass.Priest,
-            castLines: 1);
+            castLines: 1,
+            requiredLevel: 99);
         var request = Request(
             CharacterClass.Priest,
             baseCastLines: 4,
@@ -212,6 +308,39 @@ public sealed class StaffSelectorTests
                 Is.EqualTo(StaffSelectionReason.AlreadyEquipped));
             Assert.That(selection.Staff, Is.EqualTo(equipped));
             Assert.That(selection.InventorySlot, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldPreferBetterLinesOverHigherStaffRequirement()
+    {
+        var equipped = Candidate(
+            "equipped",
+            CharacterClass.Wizard,
+            castLines: 2,
+            requiredAbilityLevel: 50);
+        var better = Candidate(
+            "better",
+            CharacterClass.Wizard,
+            castLines: 1,
+            requiredAbilityLevel: 10);
+        var request = Request(
+            CharacterClass.Wizard,
+            baseCastLines: 4,
+            inventory:
+            [
+                new InventoryItemSnapshot(1, better.Name)
+            ],
+            candidates: [equipped, better],
+            abilityLevel: 50,
+            equippedWeapon: equipped.Name);
+
+        var selection = StaffSelector.Select(request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(selection.Action, Is.EqualTo(StaffSelectionAction.Equip));
+            Assert.That(selection.Staff, Is.EqualTo(better));
         });
     }
 
