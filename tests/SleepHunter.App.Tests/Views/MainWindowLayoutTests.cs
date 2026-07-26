@@ -101,7 +101,7 @@ public sealed class MainWindowLayoutTests
     }
 
     [Test]
-    public void ShouldCaptureHotkeysForTheSelectedClient()
+    public void ShouldCaptureHotkeysFromFocusableClientRows()
     {
         var document = XDocument.Load(FindMainWindowFile());
         var window = document.Root!;
@@ -110,6 +110,16 @@ public sealed class MainWindowLayoutTests
             .Single(element =>
                 (string?)element.Attribute("Name") ==
                 "clientListBox");
+        var clientItemStyle = clientList
+            .Descendants(Presentation + "Style")
+            .Single(element =>
+                (string?)element.Attribute("TargetType") ==
+                "ListBoxItem");
+        var keyHandler = clientItemStyle
+            .Elements(Presentation + "EventSetter")
+            .Single(element =>
+                (string?)element.Attribute("Event") ==
+                "KeyDown");
 
         Assert.Multiple(() =>
         {
@@ -119,10 +129,32 @@ public sealed class MainWindowLayoutTests
                 Is.EqualTo(
                     "Window_SourceInitialized"));
             Assert.That(
-                (string?)clientList.Attribute(
-                    "PreviewKeyDown"),
+                (string?)keyHandler.Attribute(
+                    "Handler"),
                 Is.EqualTo(
                     "clientListBox_KeyDown"));
+            Assert.That(
+                clientItemStyle
+                    .Elements(Presentation + "Setter")
+                    .Any(element =>
+                        (string?)element.Attribute(
+                            "Property") ==
+                        "Focusable" &&
+                        (string?)element.Attribute(
+                            "Value") ==
+                        "True"),
+                Is.True);
+            Assert.That(
+                clientItemStyle
+                    .Elements(Presentation + "Setter")
+                    .Any(element =>
+                        (string?)element.Attribute(
+                            "Property") ==
+                        "IsTabStop" &&
+                        (string?)element.Attribute(
+                            "Value") ==
+                        "True"),
+                Is.True);
         });
     }
 

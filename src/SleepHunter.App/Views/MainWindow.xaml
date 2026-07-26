@@ -228,12 +228,14 @@
                      SelectedItem="{Binding SelectedClient, Mode=TwoWay}"
                      Style="{StaticResource ObsidianListBox}"
                      Margin="0"
-                     PreviewKeyDown="clientListBox_KeyDown"
                      SelectionChanged="clientListBox_SelectionChanged"
                      SelectionMode="Single">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
+                        <Setter Property="Focusable" Value="True"/>
+                        <Setter Property="IsTabStop" Value="True"/>
                         <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
+                        <EventSetter Event="KeyDown" Handler="clientListBox_KeyDown"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>

@@ -1340,10 +1340,15 @@ namespace SleepHunter.Views
             if (input.Kind == HotkeyInputKind.Ignore)
                 return;
 
-            if (clientList.SelectedClient is not { } item)
+            if (sender is not ListBoxItem
+                {
+                    Content: ClientListItemViewModel item
+                })
                 return;
 
             var player = item.Player;
+            logger.LogInfo(
+                $"Captured hotkey input {input.Kind} for character: {player.Name}");
             e.Handled = true;
             if (input.Kind == HotkeyInputKind.Clear)
             {
