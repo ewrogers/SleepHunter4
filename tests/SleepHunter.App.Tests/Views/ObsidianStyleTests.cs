@@ -2,11 +2,13 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
+using ShapePath = System.Windows.Shapes.Path;
 
 namespace SleepHunter.Tests.Views;
 
 [Apartment(ApartmentState.STA)]
-public sealed class ListVirtualizationStyleTests
+public sealed class ObsidianStyleTests
 {
     private ResourceDictionary resources = null!;
 
@@ -97,6 +99,32 @@ public sealed class ListVirtualizationStyleTests
                 listView.ItemContainerGenerator
                     .ContainerFromIndex(999),
                 Is.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldCenterTheCheckboxTickVertically()
+    {
+        var checkBox = new CheckBox
+        {
+            IsChecked = true,
+            Style = (Style)resources["ObsidianCheckBox"]
+        };
+
+        checkBox.ApplyTemplate();
+        var checkMark = checkBox.Template.FindName(
+            "CheckMark",
+            checkBox) as ShapePath;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(checkMark, Is.Not.Null);
+            Assert.That(
+                checkMark!.RenderTransform,
+                Is.TypeOf<TranslateTransform>());
+            Assert.That(
+                ((TranslateTransform)checkMark.RenderTransform).Y,
+                Is.EqualTo(2));
         });
     }
 }

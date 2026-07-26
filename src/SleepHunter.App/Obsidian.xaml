@@ -491,7 +491,11 @@
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       Margin="-1,0,0,0"
-                                      Data="M 2,5 l 4,4 l 8,-10"/>
+                                      Data="M 2,5 l 4,4 l 8,-10">
+                                    <Path.RenderTransform>
+                                        <TranslateTransform Y="2"/>
+                                    </Path.RenderTransform>
+                                </Path>
                             </Border>
                         </BulletDecorator.Bullet>
                         <ContentPresenter Name="ContentSite" 

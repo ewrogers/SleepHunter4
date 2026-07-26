@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Labeled `.sh4x` as SleepHunter 4 Macro Files and `.sh4` as SleepHunter 4 Legacy Files in macro file dialogs
 - Added dim slot numbers to inventory, skill, and spell grids, plus abbreviated top-left slot badges to the equipment grid
 - Restored recycled row virtualization in the metadata editor and shared list styles so opening large skill, spell, and staff collections does not construct every row up front
+- Moved the shared checkbox tick down to center it within its checkbox content area
 - Replaced the client-card runtime letter tooltip with a compact bottom-right status indicator that shows `Healthy` or a concise red error and provides selectable detailed diagnostics
 - Moved rolling average, minimum, and maximum snapshot-read times from the status indicator into runtime details and removed the ticking snapshot sequence
 - Changed the combined macro toolbar button from the play icon to the pause icon while its selected macro is running
