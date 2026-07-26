@@ -6,6 +6,7 @@ using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.Persistence.Configuration;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Skills;
@@ -115,16 +116,81 @@ public sealed class ClientListViewModelTests
             host.Client,
             sequenceValue: 3,
             succeeded: false));
-        await WaitUntilAsync(() => !item.UsesRuntimeSnapshot);
+        await WaitUntilAsync(
+            () => !item.UsesRuntimeSnapshot &&
+                  item.HasLastErrorStatus);
 
         Assert.Multiple(() =>
         {
             Assert.That(item.Name, Is.EqualTo("Legacy"));
             Assert.That(item.CurrentHealth, Is.EqualTo(100));
             Assert.That(item.MapName, Is.EqualTo("Legacy Map"));
+            Assert.That(item.HasLastErrorStatus, Is.True);
+            Assert.That(
+                item.LastErrorStatus,
+                Is.EqualTo(
+                    "Capture MappingReadFailed: " +
+                    "The scripted capture failed."));
             Assert.That(
                 item.RuntimeStatus,
                 Does.StartWith("Runtime capture failed"));
+        });
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 4,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 4);
+
+        Assert.That(
+            item.LastErrorStatus,
+            Is.EqualTo(
+                "Capture MappingReadFailed: " +
+                "The scripted capture failed."));
+    }
+
+    [Test]
+    public async Task ShouldKeepLastCoherentLocationDuringMapTransition()
+    {
+        using var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            runtime);
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true));
+        await WaitUntilAsync(() => item.UsesRuntimeSnapshot);
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 2,
+            succeeded: false,
+            failure: SnapshotCaptureFailure.LocationTransition));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(runtime.IsCaptureHealthy, Is.False);
+            Assert.That(runtime.LatestSnapshot, Is.Null);
+            Assert.That(item.UsesRuntimeSnapshot, Is.True);
+            Assert.That(item.HasLastErrorStatus, Is.False);
+            Assert.That(item.LastErrorStatus, Is.Null);
+            Assert.That(item.Name, Is.EqualTo("Runtime"));
+            Assert.That(item.MapName, Is.EqualTo("Runtime Map"));
+            Assert.That(item.MapX, Is.EqualTo(70));
+            Assert.That(item.MapY, Is.EqualTo(80));
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Runtime is waiting for a coherent map location"));
         });
     }
 
@@ -226,10 +292,11 @@ public sealed class ClientListViewModelTests
                     isActionDelayed: true)
             ])));
         await WaitUntilAsync(
-            () => item.StartOrResumeMacroCommand.CanExecute(null));
+            () => item.ToggleMacroCommand.CanExecute(null));
 
         Assert.Multiple(() =>
         {
+            Assert.That(item.MacroToggleLabel, Is.EqualTo("Start Macro"));
             Assert.That(item.MacroEditor, Is.Not.Null);
             Assert.That(
                 item.MacroEditor.ClearSpellsCommand.CanExecute(null),
@@ -244,7 +311,7 @@ public sealed class ClientListViewModelTests
                 macroConfiguration.QueuedSpells.Single().IsOnCooldown,
                 Is.True);
         });
-        await item.StartOrResumeMacroCommand.ExecuteAsync(null);
+        await item.ToggleMacroCommand.ExecuteAsync(null);
 
         var replace = await host.ReadCommandAsync();
         var configure = await host.ReadCommandAsync();
@@ -275,6 +342,7 @@ public sealed class ClientListViewModelTests
         await WaitUntilAsync(() => item.IsMacroRunning);
         Assert.Multiple(() =>
         {
+            Assert.That(item.MacroToggleLabel, Is.EqualTo("Pause Macro"));
             Assert.That(item.IsMacroEditingEnabled, Is.False);
             Assert.That(
                 item.ToggleMacroCommand.CanExecute(null),
@@ -292,17 +360,18 @@ public sealed class ClientListViewModelTests
         host.PublishView(CreateView(
             revision: 2,
             MacroLifecycle.Paused));
-        await WaitUntilAsync(
-            () => item.StartOrResumeMacroCommand.CanExecute(null));
+        await WaitUntilAsync(() => item.IsMacroPaused);
         Assert.Multiple(() =>
         {
-            Assert.That(item.StartMacroLabel, Is.EqualTo("Resume Macro"));
+            Assert.That(
+                item.MacroToggleLabel,
+                Is.EqualTo("Resume Macro"));
             Assert.That(
                 item.MacroEditor.ClearSpellsCommand.CanExecute(null),
                 Is.True);
         });
 
-        await item.StartOrResumeMacroCommand.ExecuteAsync(null);
+        await item.ToggleMacroCommand.ExecuteAsync(null);
 
         var resumeReplace = await host.ReadCommandAsync();
         var resumeConfigure = await host.ReadCommandAsync();
@@ -318,6 +387,50 @@ public sealed class ClientListViewModelTests
             Assert.That(
                 resume,
                 Is.TypeOf<ResumeMacroCommand>());
+        });
+    }
+
+    [Test]
+    public async Task ShouldRetainAutomationErrorsForTheStatusBar()
+    {
+        using var player = CreatePlayer();
+        var macroConfiguration =
+            new PlayerMacroConfiguration(player);
+        var host = new RecordingRuntimeHost(
+            player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            macroConfiguration,
+            runtime,
+            new PlayerMacroConfigurationMapper(),
+            new ThrowingAutomationSetupFactory(),
+            () => new UserSettings());
+
+        host.PublishView(CreateView(
+            revision: 0,
+            MacroLifecycle.Stopped));
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => item.ToggleMacroCommand.CanExecute(null));
+
+        await item.ToggleMacroCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.LastAutomationError,
+                Is.TypeOf<InvalidOperationException>());
+            Assert.That(item.HasLastErrorStatus, Is.True);
+            Assert.That(
+                item.LastErrorStatus,
+                Is.EqualTo(
+                    "Automation: The scripted setup failed."));
         });
     }
 
@@ -405,7 +518,9 @@ public sealed class ClientListViewModelTests
         long sequenceValue,
         bool succeeded,
         ClientPresence presence = ClientPresence.InWorld,
-        SpellbookSnapshot? spellbook = null)
+        SpellbookSnapshot? spellbook = null,
+        SnapshotCaptureFailure failure =
+            SnapshotCaptureFailure.MappingReadFailed)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -422,7 +537,10 @@ public sealed class ClientListViewModelTests
             timestamp,
             ImmutableArray<SnapshotSectionMetrics>.Empty,
             reads);
-        var failure = SnapshotCaptureFailure.MappingReadFailed;
+        var quality = failure ==
+            SnapshotCaptureFailure.LocationTransition
+                ? SnapshotQuality.Incoherent
+                : SnapshotQuality.Partial;
         var result = succeeded
             ? new SnapshotCaptureResult(
                 new ClientSnapshot(
@@ -459,9 +577,12 @@ public sealed class ClientListViewModelTests
                 metrics)
             : new SnapshotCaptureResult(
                 snapshot: null,
-                SnapshotQuality.Partial,
+                quality,
                 new SnapshotCaptureError(
-                    SnapshotSection.Presence,
+                    failure ==
+                        SnapshotCaptureFailure.LocationTransition
+                            ? SnapshotSection.Coherence
+                            : SnapshotSection.Presence,
                     failure,
                     "The scripted capture failed."),
                 metrics);
@@ -598,6 +719,17 @@ public sealed class ClientListViewModelTests
             string spellName,
             CharacterClass characterClass) =>
             ImmutableArray<StaffCandidate>.Empty;
+    }
+
+    private sealed class ThrowingAutomationSetupFactory :
+        IRuntimeAutomationSetupFactory
+    {
+        public RuntimeAutomationSetup Create(
+            MacroConfiguration configuration,
+            UserSettings settings,
+            CharacterClass characterClass) =>
+            throw new InvalidOperationException(
+                "The scripted setup failed.");
     }
 
     private sealed class InlineUiDispatcher : IUiDispatcher

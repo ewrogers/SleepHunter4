@@ -6,6 +6,7 @@ The client path in [Game Client Settings](../settings/game-client.md) must point
 ## Inventory Grid
 
 Inventory items are shown in their client slots with centered, native-size icons.
+Each slot keeps its dim client slot number visible, including empty slots.
 Stackable items display an `x` quantity in the slot when more than one is present, while gold displays its comma-separated amount.
 
 By default, items are arranged with 12 items per row.
@@ -17,8 +18,9 @@ The character's gold will be displayed in the last slot.
 
 Equipped items appear in a dedicated icon-based tab arranged to resemble the game client's equipment pane.
 Every equipment position has its own slot, including armor and overcoat, helmet and overhelm, weapon and shield, the three accessory positions, jewelry, gauntlets, greaves, boots, and belt.
+Dim abbreviated badges identify each position in the top-left corner.
 
 ## Item Tooltips
 
-Mouse over an inventory or equipment icon to see its item name, sprite number, and slot details.
+Mouse over an occupied inventory or equipment slot to see its item name, sprite number, and slot details.
 Inventory tooltips also show stack quantity and durability when available; equipment tooltips show the equipped slot and durability.

@@ -59,7 +59,16 @@ namespace SleepHunter.ViewModels
         [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
         [NotifyPropertyChangedFor(nameof(LatestCaptureResult))]
         [NotifyPropertyChangedFor(nameof(LatestSnapshot))]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
         public partial SnapshotCaptureObservation LatestCapture
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PresentationSnapshot))]
+        public partial ClientSnapshot LastSuccessfulSnapshot
         {
             get;
             private set;
@@ -85,6 +94,13 @@ namespace SleepHunter.ViewModels
 
         public ClientSnapshot LatestSnapshot =>
             LatestCapture?.Result.Snapshot;
+
+        public ClientSnapshot PresentationSnapshot =>
+            LatestSnapshot ??
+            (CaptureError?.Failure ==
+                SnapshotCaptureFailure.LocationTransition
+                    ? LastSuccessfulSnapshot
+                    : null);
 
         public AutomationConfiguration Automation =>
             Current?.Automation ?? AutomationConfiguration.Disabled;
@@ -244,6 +260,13 @@ namespace SleepHunter.ViewModels
             PauseCommand.NotifyCanExecuteChanged();
             ResumeCommand.NotifyCanExecuteChanged();
             StopCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnLatestCaptureChanged(
+            SnapshotCaptureObservation value)
+        {
+            if (value?.Result.Snapshot is { } snapshot)
+                LastSuccessfulSnapshot = snapshot;
         }
 
         private Task SendAsync(

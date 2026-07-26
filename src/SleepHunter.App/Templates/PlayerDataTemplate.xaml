@@ -94,16 +94,6 @@
                                    FontSize="20"
                                    VerticalAlignment="Center"
                                    Margin="4,0"/>
-                        <TextBlock Name="RuntimeObservationText"
-                                   Style="{StaticResource ObsidianText}"
-                                   Text="R"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"
-                                   Margin="2,0,0,0"
-                                   Opacity="0.4"
-                                   ToolTip="{Binding RuntimeStatus}"
-                                   Visibility="Collapsed"/>
                     </StackPanel>
 
                     <!-- Hotkey Information -->
@@ -267,12 +257,6 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding HasHotkey}" Value="True">
                 <Setter TargetName="HotkeyBorder" Property="Visibility" Value="Visible"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding HasRuntime}" Value="True">
-                <Setter TargetName="RuntimeObservationText" Property="Visibility" Value="Visible"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding UsesRuntimeSnapshot}" Value="True">
-                <Setter TargetName="RuntimeObservationText" Property="Opacity" Value="1"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                 <Setter TargetName="SelectionBorder" Property="Visibility" Value="Visible"/>

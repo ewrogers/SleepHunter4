@@ -79,6 +79,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
     private readonly MemoryReadLimits limits;
     private readonly MacroClock clock;
     private readonly AbilitySnapshotCatalog abilityCatalog;
+    private LocationIdentity? acceptedLocationIdentity;
+    private LocationIdentity? pendingLocationIdentity;
     private int captureInProgress;
 
     public ClientSnapshotCapture(
@@ -158,12 +160,126 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
 
         try
         {
-            return CaptureCore(sequence, sections, startedAt);
+            return ApplyLocationCoherence(
+                CaptureCore(sequence, sections, startedAt));
         }
         finally
         {
             Volatile.Write(ref captureInProgress, 0);
         }
+    }
+
+    private SnapshotCaptureResult ApplyLocationCoherence(
+        SnapshotCaptureResult result)
+    {
+        if (!result.Succeeded)
+        {
+            pendingLocationIdentity = null;
+            if (acceptedLocationIdentity is not null &&
+                result.Error is
+                {
+                    Failure: SnapshotCaptureFailure.MappingReadFailed,
+                    VariableKey: MapNameKey
+                } mapNameError)
+            {
+                return LocationTransition(
+                    result,
+                    MapNameKey,
+                    "The client map name is changing during a map transition.",
+                    mapNameError.ReadError,
+                    markCoherenceFailed: false);
+            }
+
+            return result;
+        }
+
+        var snapshot = result.Snapshot!;
+        if (snapshot.Presence != ClientPresence.InWorld ||
+            snapshot.Location is not { } location)
+        {
+            acceptedLocationIdentity = null;
+            pendingLocationIdentity = null;
+            return result;
+        }
+
+        var candidate = new LocationIdentity(
+            location.MapNumber,
+            location.MapName);
+        if (acceptedLocationIdentity is not { } accepted)
+        {
+            acceptedLocationIdentity = candidate;
+            return result;
+        }
+
+        if (candidate == accepted)
+        {
+            pendingLocationIdentity = null;
+            return result;
+        }
+
+        if (pendingLocationIdentity is { } pending &&
+            pending.MapNumber == candidate.MapNumber &&
+            (pending == candidate ||
+             !string.Equals(
+                 candidate.MapName,
+                 accepted.MapName,
+                 StringComparison.Ordinal)))
+        {
+            acceptedLocationIdentity = candidate;
+            pendingLocationIdentity = null;
+            return result;
+        }
+
+        pendingLocationIdentity = candidate;
+        return LocationTransition(
+            result,
+            MapNumberKey,
+            "The client map identity is changing and requires another coherent observation.",
+            readError: null,
+            markCoherenceFailed: true);
+    }
+
+    private static SnapshotCaptureResult LocationTransition(
+        SnapshotCaptureResult result,
+        string variableKey,
+        string message,
+        MappedMemoryReadError? readError,
+        bool markCoherenceFailed)
+    {
+        var metrics = markCoherenceFailed
+            ? MarkCoherenceFailed(result.Metrics)
+            : result.Metrics;
+        return new SnapshotCaptureResult(
+            snapshot: null,
+            SnapshotQuality.Incoherent,
+            new SnapshotCaptureError(
+                SnapshotSection.Coherence,
+                SnapshotCaptureFailure.LocationTransition,
+                message,
+                variableKey,
+                readError),
+            metrics);
+    }
+
+    private static SnapshotCaptureMetrics MarkCoherenceFailed(
+        SnapshotCaptureMetrics metrics)
+    {
+        var sections = metrics.Sections
+            .Select(
+                section => section.Section == SnapshotSection.Coherence
+                    ? new SnapshotSectionMetrics(
+                        section.Section,
+                        section.Duration,
+                        succeeded: false,
+                        section.Reads)
+                    : section)
+            .ToImmutableArray();
+        return new SnapshotCaptureMetrics(
+            metrics.Sequence,
+            metrics.CaptureStartedAt,
+            metrics.CaptureCompletedAt,
+            sections,
+            metrics.Reads);
     }
 
     private SnapshotCaptureResult CaptureCore(
@@ -1359,4 +1475,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
             string.Empty,
             Level: 0);
     }
+
+    private readonly record struct LocationIdentity(
+        int MapNumber,
+        string MapName);
 }

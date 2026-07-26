@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 
 using SleepHunter.Models;
@@ -72,6 +72,23 @@ namespace SleepHunter.Tests.Models
                 Assert.That(record.NameSuffixRight, Is.EqualTo(8));
                 Assert.That(record.BaseNameLength, Is.EqualTo(9));
             });
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(36, 36)]
+        [TestCase(37, 1)]
+        [TestCase(72, 36)]
+        [TestCase(73, 1)]
+        [TestCase(90, 18)]
+        public void ShouldDisplayOneBasedSlotsWithinEachAbilityPane(
+            int slot,
+            int expectedRelativeSlot)
+        {
+            var ability = new Skill { Slot = slot };
+
+            Assert.That(
+                ability.RelativeSlot,
+                Is.EqualTo(expectedRelativeSlot));
         }
 
         [Test]

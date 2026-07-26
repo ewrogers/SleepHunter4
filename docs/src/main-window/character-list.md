@@ -7,6 +7,12 @@ The selected character will be displayed with a highlighted indicator on the lef
 
 The main window title will also display the name of the selected character.
 
+The status bar at the bottom of the main window shows the selected character's
+current runtime snapshot state. Its right side retains the most recent capture
+or automation error so transient failures remain available for inspection.
+Expected map-transition waits appear as current status without replacing the
+retained error.
+
 ## Quick Select
 
 Double-clicking on a character will bring that Dark Ages game client window to the foreground.

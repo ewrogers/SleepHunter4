@@ -167,6 +167,26 @@ public sealed class ClientRuntimeViewModelTests
                 Is.EqualTo(1));
             Assert.That(dispatcher.InvocationCount, Is.EqualTo(2));
         });
+
+        var successfulSnapshot = viewModel.LatestSnapshot;
+        host.PublishCapture(CreateCapture(
+            sequenceValue: 3,
+            succeeded: false,
+            failure: SnapshotCaptureFailure.LocationTransition));
+        await WaitUntilAsync(
+            () => viewModel.CaptureSequence?.Value == 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsCaptureHealthy, Is.False);
+            Assert.That(viewModel.LatestSnapshot, Is.Null);
+            Assert.That(
+                viewModel.LastSuccessfulSnapshot,
+                Is.SameAs(successfulSnapshot));
+            Assert.That(
+                viewModel.PresentationSnapshot,
+                Is.SameAs(successfulSnapshot));
+        });
     }
 
     [Test]
@@ -248,7 +268,9 @@ public sealed class ClientRuntimeViewModelTests
 
     private static SnapshotCaptureObservation CreateCapture(
         long sequenceValue,
-        bool succeeded)
+        bool succeeded,
+        SnapshotCaptureFailure failure =
+            SnapshotCaptureFailure.MappingReadFailed)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -265,7 +287,10 @@ public sealed class ClientRuntimeViewModelTests
             timestamp,
             ImmutableArray<SnapshotSectionMetrics>.Empty,
             reads);
-        var failure = SnapshotCaptureFailure.MappingReadFailed;
+        var quality = failure ==
+            SnapshotCaptureFailure.LocationTransition
+                ? SnapshotQuality.Incoherent
+                : SnapshotQuality.Partial;
         var result = succeeded
             ? new SnapshotCaptureResult(
                 new ClientSnapshot(
@@ -280,9 +305,12 @@ public sealed class ClientRuntimeViewModelTests
                 metrics)
             : new SnapshotCaptureResult(
                 snapshot: null,
-                SnapshotQuality.Partial,
+                quality,
                 new SnapshotCaptureError(
-                    SnapshotSection.Presence,
+                    failure ==
+                        SnapshotCaptureFailure.LocationTransition
+                            ? SnapshotSection.Coherence
+                            : SnapshotSection.Presence,
                     failure,
                     "The scripted capture failed."),
                 metrics);

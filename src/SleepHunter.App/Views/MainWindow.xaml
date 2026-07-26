@@ -102,13 +102,13 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!-- Start Macro Button -->
+                    <!-- Macro Toggle Button -->
                     <Button Style="{StaticResource ObsidianToolBarButton}"
-                            Command="{Binding SelectedClient.StartOrResumeMacroCommand}"
+                            Command="{Binding SelectedClient.ToggleMacroCommand}"
                             Padding="4,8,4,2">
                         <DockPanel>
                             <Label DockPanel.Dock="Bottom"
-                                   Content="{Binding SelectedClient.StartMacroLabel}"
+                                   Content="{Binding SelectedClient.MacroToggleLabel, FallbackValue=_Start Macro, TargetNullValue=_Start Macro}"
                                    Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                    Margin="0"
                                    Padding="4,0,4,4"/>
@@ -119,25 +119,6 @@
                                        FontSize="20"
                                        Margin="0,2,0,0"
                                        Text="&#xE102;"/>
-                        </DockPanel>
-                    </Button>
-                    <!-- Pause Macro Button -->
-                    <Button Style="{StaticResource ObsidianToolBarButton}"
-                            Command="{Binding SelectedClient.PauseMacroCommand}"
-                            Padding="4,8,4,2">
-                        <DockPanel>
-                            <Label DockPanel.Dock="Bottom"
-                                   Content="_Pause Macro"
-                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                   Margin="0"
-                                   Padding="4,0,4,4"/>
-                            <TextBlock Style="{StaticResource ObsidianSymbolText}"
-                                       Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Bottom"
-                                       FontSize="20"
-                                       Margin="0,2,0,0"
-                                       Text="&#xE103;"/>
                         </DockPanel>
                     </Button>
                     <!-- Stop Macro Button -->
@@ -711,11 +692,61 @@
             </Grid>
         </Grid>
         
-        <!-- Bottom Decorator -->
+        <!-- Runtime Status Bar -->
         <Border Grid.Row="2"
                 Grid.ColumnSpan="4"
-                Height="4"
-                Background="{DynamicResource ObsidianBackground}"/>
+                MinHeight="28"
+                Padding="8,3,22,5"
+                Background="{StaticResource ObsidianControlBackground}"
+                BorderBrush="{DynamicResource ObsidianBackground}"
+                BorderThickness="0,1,0,4">
+            <DockPanel LastChildFill="True">
+                <Grid DockPanel.Dock="Right"
+                      MaxWidth="520"
+                      Margin="16,0,0,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedClient.HasLastErrorStatus}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource ObsidianText}"
+                               Foreground="{DynamicResource ObsidianError}"
+                               FontWeight="SemiBold"
+                               Text="Last error: "/>
+                    <TextBlock Grid.Column="1"
+                               Style="{StaticResource ObsidianText}"
+                               Foreground="{DynamicResource ObsidianError}"
+                               Text="{Binding SelectedClient.LastErrorStatus}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding SelectedClient.LastErrorStatus}"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource ObsidianText}"
+                               FontWeight="SemiBold"
+                               Opacity="0.7"
+                               Text="Runtime: "/>
+                    <TextBlock Grid.Column="1"
+                               Style="{StaticResource ObsidianText}"
+                               Text="{Binding SelectedClient.RuntimeStatus, FallbackValue=Select a client to view runtime status, TargetNullValue=Select a client to view runtime status}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding SelectedClient.RuntimeStatus}"/>
+                </Grid>
+            </DockPanel>
+        </Border>
 
         <Path Name="WindowResizeGrip" 
               Grid.RowSpan="3"

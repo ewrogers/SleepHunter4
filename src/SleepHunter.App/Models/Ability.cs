@@ -11,7 +11,7 @@ namespace SleepHunter.Models
     public abstract class Ability : ObservableObject
     {
         private static readonly Regex AbilityWithoutLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex AbilityWithLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)\s*\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.IgnoreCase| RegexOptions.Compiled);
+        private static readonly Regex AbilityWithLevelRegex = new(@"^(?<name>[ a-z0-9'_-]+)\s*\(Lev:(?<current>[0-9]{1,})/(?<max>[0-9]{1,})\)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private bool isEmpty;
         private int slot;
@@ -46,7 +46,10 @@ namespace SleepHunter.Models
             set => SetProperty(ref slot, value, onChanged: (s) => { RaisePropertyChanged(nameof(RelativeSlot)); });
         }
 
-        public int RelativeSlot => slot % 36;
+        public int RelativeSlot =>
+            slot <= 0
+                ? slot
+                : ((slot - 1) % 36) + 1;
 
         public InterfacePanel Panel
         {

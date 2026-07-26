@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SleepHunter.Interop.Snapshots;
 using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Automation.Spells;
@@ -92,9 +93,11 @@ namespace SleepHunter.ViewModels
         public partial Exception LastAutomationError { get; private set; }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasLastErrorStatus))]
+        public partial string LastErrorStatus { get; private set; }
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsMacroEditingEnabled))]
-        [NotifyCanExecuteChangedFor(nameof(StartOrResumeMacroCommand))]
-        [NotifyCanExecuteChangedFor(nameof(PauseMacroCommand))]
         [NotifyCanExecuteChangedFor(nameof(StopMacroCommand))]
         [NotifyCanExecuteChangedFor(nameof(ToggleMacroCommand))]
         public partial bool IsAutomationCommandRunning
@@ -132,10 +135,12 @@ namespace SleepHunter.ViewModels
         public bool IsMacroPaused =>
             Runtime?.Current?.Lifecycle == MacroLifecycle.Paused;
 
-        public string StartMacroLabel =>
-            IsMacroPaused
-                ? "Resume Macro"
-                : "Start Macro";
+        public string MacroToggleLabel =>
+            IsMacroRunning
+                ? "Pause Macro"
+                : IsMacroPaused
+                    ? "Resume Macro"
+                    : "Start Macro";
 
         public bool IsMacroEditingEnabled =>
             IsLoggedIn &&
@@ -184,9 +189,11 @@ namespace SleepHunter.ViewModels
 
         public bool HasRuntime => Runtime is not null;
 
+        public bool HasLastErrorStatus =>
+            !string.IsNullOrWhiteSpace(LastErrorStatus);
+
         public bool UsesRuntimeSnapshot =>
-            Runtime?.IsCaptureHealthy == true &&
-            Runtime.LatestSnapshot is not null;
+            Runtime?.PresentationSnapshot is not null;
 
         public string RuntimeStatus
         {
@@ -206,6 +213,13 @@ namespace SleepHunter.ViewModels
                 }
 
                 var error = result?.Error;
+                if (error?.Failure ==
+                    SnapshotCaptureFailure.LocationTransition)
+                {
+                    return
+                        "Runtime is waiting for a coherent map location";
+                }
+
                 return error is null
                     ? "Runtime capture is unavailable"
                     : $"Runtime capture failed: {error.Failure} ({error.Message})";
@@ -213,17 +227,13 @@ namespace SleepHunter.ViewModels
         }
 
         private ClientSnapshot ObservedSnapshot =>
-            UsesRuntimeSnapshot
-                ? Runtime.LatestSnapshot
-                : null;
+            Runtime?.PresentationSnapshot;
 
         public void Dispose()
         {
             if (isDisposed)
                 return;
 
-            StartOrResumeMacroCommand.Cancel();
-            PauseMacroCommand.Cancel();
             StopMacroCommand.Cancel();
             ToggleMacroCommand.Cancel();
             SetRuntime(null);
@@ -256,7 +266,14 @@ namespace SleepHunter.ViewModels
             if (value is not null)
                 value.PropertyChanged += OnRuntimePropertyChanged;
 
+            RecordRuntimeError();
             NotifyObservedState();
+        }
+
+        partial void OnLastAutomationErrorChanged(Exception value)
+        {
+            if (value is not null)
+                LastErrorStatus = $"Automation: {value.Message}";
         }
 
         private void OnObservedPropertyChanged(
@@ -277,9 +294,24 @@ namespace SleepHunter.ViewModels
                     nameof(ClientRuntimeViewModel.Current),
                     StringComparison.Ordinal))
             {
+                RecordRuntimeError();
                 UpdateMacroSpellObservations();
                 NotifyObservedState();
             }
+        }
+
+        private void RecordRuntimeError()
+        {
+            var error = Runtime?.CaptureError;
+            if (error is null ||
+                error.Failure ==
+                    SnapshotCaptureFailure.LocationTransition)
+            {
+                return;
+            }
+
+            LastErrorStatus =
+                $"Capture {error.Failure}: {error.Message}";
         }
 
         private void UpdateMacroSpellObservations()
@@ -312,20 +344,6 @@ namespace SleepHunter.ViewModels
                         SpellReadinessStatus.WaitingForHealth;
             }
         }
-
-        [RelayCommand(CanExecute = nameof(CanStartOrResumeMacro))]
-        private Task StartOrResumeMacroAsync(
-            CancellationToken cancellationToken) =>
-            ExecuteAutomationAsync(
-                StartOrResumeMacroCoreAsync,
-                cancellationToken);
-
-        [RelayCommand(CanExecute = nameof(CanPauseMacro))]
-        private Task PauseMacroAsync(
-            CancellationToken cancellationToken) =>
-            ExecuteAutomationAsync(
-                PauseMacroCoreAsync,
-                cancellationToken);
 
         [RelayCommand(CanExecute = nameof(CanStopMacro))]
         private Task StopMacroAsync(
@@ -513,11 +531,9 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(MaximumMana));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(RuntimeStatus));
-            OnPropertyChanged(nameof(StartMacroLabel));
+            OnPropertyChanged(nameof(MacroToggleLabel));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(UsesRuntimeSnapshot));
-            StartOrResumeMacroCommand.NotifyCanExecuteChanged();
-            PauseMacroCommand.NotifyCanExecuteChanged();
             StopMacroCommand.NotifyCanExecuteChanged();
             ToggleMacroCommand.NotifyCanExecuteChanged();
             MacroEditor?.NotifyEditingStateChanged();

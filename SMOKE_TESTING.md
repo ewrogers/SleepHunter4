@@ -33,6 +33,8 @@ application.
 - [ ] Confirm Launch Client is enabled after `ClientLayout.xml` loads.
 - [ ] Confirm Start, Pause, Stop, and Stop All are disabled with no selected
   in-world client.
+- [ ] Confirm the disabled Start Macro button still shows its caption before a
+  client is selected.
 - [ ] Open Settings and each metadata editor, then close them normally.
 - [ ] Change the theme and each icon-grid width, then confirm the main view
   updates.
@@ -57,11 +59,23 @@ installation. Use a disposable copy.
 ## 3. Discovery, Attach, and Snapshots
 
 - [ ] Confirm each launched process appears once in the client list.
-- [ ] Confirm the runtime indicator changes from waiting to a healthy snapshot.
+- [ ] Select a client and confirm the bottom runtime status bar changes from
+  waiting to a healthy snapshot.
+- [ ] Trigger a recoverable capture failure and confirm the status bar retains
+  it as the last error after healthy capture resumes.
 - [ ] Log in and confirm name, class, map, coordinates, health, and mana update.
+- [ ] Change maps and confirm the old map name and coordinates remain together
+  until the new map name and coordinates appear together, without a persistent
+  `MappingReadFailed` status for `MapName`.
 - [ ] Confirm inventory, equipment, skill, and spell panes populate correctly.
 - [ ] Confirm item quantities, durability, learned levels, and cooldown overlays
   update without stale entries.
+- [ ] Confirm inventory, skill, and spell slots show dim slot numbers, and
+  equipment slots show the expected abbreviated top-left badges.
+- [ ] Confirm current and maximum durability are in the correct order for both
+  inventory and equipment, with cool blue durability text.
+- [ ] Confirm an occupied inventory slot shows its tooltip from the full slot
+  surface, including transparent space around the sprite.
 - [ ] Open and close chat, dialogs, sense, inventory expansion, and minimized
   mode, then confirm their observed state clears correctly.
 - [ ] Log out and back in without restarting SleepHunter.
@@ -75,7 +89,8 @@ Use a harmless queue in a safe map for the first pass.
 - [ ] Select a logged-in client and confirm Start becomes available after the
   first healthy in-world snapshot.
 - [ ] Start automation and confirm the card shows a running state.
-- [ ] Pause and resume from the toolbar.
+- [ ] Confirm the same toolbar control changes from Start Macro to Pause Macro
+  while running, then to Resume Macro while paused.
 - [ ] Stop from the toolbar and confirm no further actions are issued.
 - [ ] Run two clients, then use Stop All.
 - [ ] Assign, transfer, invoke, and clear a global hotkey.
@@ -129,6 +144,8 @@ Use a harmless queue in a safe map for the first pass.
 ## 8. Persistence
 
 - [ ] Save a current macro and confirm the file extension is `.sh4x`.
+- [ ] Confirm file dialogs label `.sh4x` as SleepHunter 4 Macro Files and
+  `.sh4` as SleepHunter 4 Legacy Files.
 - [ ] Confirm the saved `.sh4x` file is JSON and can be loaded again.
 - [ ] Import a legacy `.sh4` XML macro, then save it and confirm the new output
   is `.sh4x` JSON.

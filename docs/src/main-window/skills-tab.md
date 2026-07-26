@@ -3,6 +3,7 @@
 ![image](../screenshots/skills-tab.png)
 
 Skills are arranged as a grid of icon buttons similar to the game client, displaying the current level of the skill and the cooldown status (if on cooldown).
+Each position keeps its dim one-based client slot number visible, including empty positions.
 
 ## Skill Organization
 

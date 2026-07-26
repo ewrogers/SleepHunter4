@@ -285,8 +285,8 @@ namespace SleepHunter.Models
             string DisplayName,
             byte DyeColor,
             byte Slot,
-            uint MaximumDurability,
             uint Durability,
+            uint MaximumDurability,
             uint Quantity,
             bool CanStack);
 

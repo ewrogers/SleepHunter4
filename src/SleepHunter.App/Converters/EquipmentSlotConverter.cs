@@ -12,7 +12,42 @@ namespace SleepHunter.Converters
             var intValue = System.Convert.ToInt32(value);
             var slot = (EquipmentSlot)(intValue - 1);
 
-            return slot switch
+            return string.Equals(
+                parameter?.ToString(),
+                "Abbreviation",
+                StringComparison.OrdinalIgnoreCase)
+                ? GetAbbreviation(slot)
+                : GetDisplayName(slot);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+
+        internal static string GetAbbreviation(EquipmentSlot slot) =>
+            slot switch
+            {
+                EquipmentSlot.Weapon => "WEAP",
+                EquipmentSlot.Shield => "SHLD",
+                EquipmentSlot.Earring => "EAR",
+                EquipmentSlot.Necklace => "NECK",
+                EquipmentSlot.Belt => "BELT",
+                EquipmentSlot.LeftRing => "LRNG",
+                EquipmentSlot.RightRing => "RRNG",
+                EquipmentSlot.LeftGauntlet => "LARM",
+                EquipmentSlot.RightGauntlet => "RARM",
+                EquipmentSlot.Boots => "FEET",
+                EquipmentSlot.Greaves => "LEGS",
+                EquipmentSlot.Armor => "ARMR",
+                EquipmentSlot.Helmet => "HEAD",
+                EquipmentSlot.Overcoat => "COAT",
+                EquipmentSlot.Accessory1 => "ACC1",
+                EquipmentSlot.Accessory2 => "ACC2",
+                EquipmentSlot.Accessory3 => "ACC3",
+                EquipmentSlot.Hat => "OVER",
+                _ => string.Empty
+            };
+
+        private static string GetDisplayName(EquipmentSlot slot) =>
+            slot switch
             {
                 EquipmentSlot.Weapon => "Main Hand",
                 EquipmentSlot.Shield => "Off-Hand",
@@ -34,8 +69,5 @@ namespace SleepHunter.Converters
                 EquipmentSlot.Accessory3 => "Accessory 3",
                 _ => "Unknown"
             };
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
     }
 }

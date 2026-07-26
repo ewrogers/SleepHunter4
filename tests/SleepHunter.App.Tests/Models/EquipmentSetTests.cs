@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 using SleepHunter.Converters;
 using SleepHunter.Models;
@@ -16,8 +16,8 @@ namespace SleepHunter.Tests.Models
             BinaryPrimitives.WriteUInt16LittleEndian(snapshot.AsSpan(slotIndex * 2), 0x8D24);
             snapshot[0x24 + slotIndex] = 1;
             Encoding.ASCII.GetBytes("Winter Scarf 2").CopyTo(snapshot.AsSpan(0x36 + slotIndex * 128));
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x938 + slotIndex * 8), 30000);
-            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x93C + slotIndex * 8), 29976);
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x938 + slotIndex * 8), 29976);
+            BinaryPrimitives.WriteUInt32LittleEndian(snapshot.AsSpan(0x93C + slotIndex * 8), 30000);
 
             var records = EquipmentSet.ParseEquipmentSnapshot(snapshot, EquipmentSet.EquipmentCount);
             var record = records[slotIndex];

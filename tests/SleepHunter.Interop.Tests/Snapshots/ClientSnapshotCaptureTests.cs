@@ -464,6 +464,140 @@ public sealed class ClientSnapshotCaptureTests
     }
 
     [Test]
+    public void ShouldPublishMapTransitionOnlyAfterNameAndNumberAgree()
+    {
+        var source = CreateMemoryImage();
+        var capture = CreateCapture(source);
+
+        var initial = capture.Capture(new SnapshotSequence(1));
+        source.WriteUInt32(new MemoryAddress(MapNumberAddress), 2);
+        source.WriteInt32(new MemoryAddress(MapXAddress), 10);
+        source.WriteInt32(new MemoryAddress(MapYAddress), 20);
+        var coordinateFirst = capture.Capture(
+            new SnapshotSequence(2));
+        WriteFixedAscii(
+            source,
+            new MemoryAddress(MapNameAddress),
+            "Abel",
+            length: 32);
+        var completeTransition = capture.Capture(
+            new SnapshotSequence(3));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(initial.Succeeded, Is.True);
+            Assert.That(coordinateFirst.Succeeded, Is.False);
+            Assert.That(
+                coordinateFirst.Quality,
+                Is.EqualTo(SnapshotQuality.Incoherent));
+            Assert.That(
+                coordinateFirst.Error?.Failure,
+                Is.EqualTo(
+                    SnapshotCaptureFailure.LocationTransition));
+            Assert.That(
+                coordinateFirst.Error?.VariableKey,
+                Is.EqualTo("MapNumber"));
+            Assert.That(
+                coordinateFirst.Metrics.Sections.Single(
+                    section =>
+                        section.Section ==
+                        SnapshotSection.Coherence).Succeeded,
+                Is.False);
+            Assert.That(completeTransition.Succeeded, Is.True);
+            Assert.That(
+                completeTransition.Snapshot?.Location,
+                Is.EqualTo(
+                    new MapLocationSnapshot(2, "Abel", 10, 20)));
+        });
+    }
+
+    [Test]
+    public void ShouldAllowTwoMapsWithTheSameDisplayName()
+    {
+        var source = CreateMemoryImage();
+        var capture = CreateCapture(source);
+
+        var initial = capture.Capture(new SnapshotSequence(1));
+        source.WriteUInt32(new MemoryAddress(MapNumberAddress), 2);
+        source.WriteInt32(new MemoryAddress(MapXAddress), 10);
+        source.WriteInt32(new MemoryAddress(MapYAddress), 20);
+        var firstObservation = capture.Capture(
+            new SnapshotSequence(2));
+        var confirmedObservation = capture.Capture(
+            new SnapshotSequence(3));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(initial.Succeeded, Is.True);
+            Assert.That(firstObservation.Succeeded, Is.False);
+            Assert.That(
+                firstObservation.Error?.Failure,
+                Is.EqualTo(
+                    SnapshotCaptureFailure.LocationTransition));
+            Assert.That(confirmedObservation.Succeeded, Is.True);
+            Assert.That(
+                confirmedObservation.Snapshot?.Location,
+                Is.EqualTo(
+                    new MapLocationSnapshot(
+                        2,
+                        "Mileth",
+                        10,
+                        20)));
+        });
+    }
+
+    [Test]
+    public void ShouldTreatMissingMapNameAsTransitionAfterStableMap()
+    {
+        var source = CreateMemoryImage();
+        var capture = CreateCapture(source);
+
+        var initial = capture.Capture(new SnapshotSequence(1));
+        source.Clear(new MemoryAddress(MapNameAddress), 32);
+        var transition = capture.Capture(
+            new SnapshotSequence(2));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(initial.Succeeded, Is.True);
+            Assert.That(transition.Succeeded, Is.False);
+            Assert.That(
+                transition.Quality,
+                Is.EqualTo(SnapshotQuality.Incoherent));
+            Assert.That(
+                transition.Error?.Failure,
+                Is.EqualTo(
+                    SnapshotCaptureFailure.LocationTransition));
+            Assert.That(
+                transition.Error?.VariableKey,
+                Is.EqualTo("MapName"));
+            Assert.That(transition.Error?.ReadError, Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public void ShouldReportMissingMapNameBeforeAnyStableMap()
+    {
+        var source = CreateMemoryImage();
+        source.Clear(new MemoryAddress(MapNameAddress), 32);
+        var capture = CreateCapture(source);
+
+        var result = capture.Capture(new SnapshotSequence(1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(
+                result.Error?.Failure,
+                Is.EqualTo(
+                    SnapshotCaptureFailure.MappingReadFailed));
+            Assert.That(
+                result.Error?.VariableKey,
+                Is.EqualTo("MapName"));
+        });
+    }
+
+    [Test]
     public void ShouldRejectChangedInventoryDisplayMode()
     {
         var source = CreateMemoryImage();

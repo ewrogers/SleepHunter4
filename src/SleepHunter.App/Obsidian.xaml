@@ -14,6 +14,12 @@
     <SolidColorBrush x:Key="ObsidianControlBoxForeground" Color="#eff6ff"/>
     <SolidColorBrush x:Key="ObsidianActive" Color="#eff6ff"/>
 
+    <!-- Blue 400 -->
+    <SolidColorBrush x:Key="ObsidianDurability" Color="#60A5FA"/>
+
+    <!-- Red 400 -->
+    <SolidColorBrush x:Key="ObsidianError" Color="#F87171"/>
+
     <!-- Neutral 200 -->
     <SolidColorBrush x:Key="ObsidianMouseOver" Color="#E5E5E5"/>
 

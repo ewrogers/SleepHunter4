@@ -6,9 +6,48 @@
         <Border Name="Border" Margin="2">
             <Grid>
                 <Border Name="SlotBorder"
+                        Background="Transparent"
                         BorderBrush="{StaticResource ObsidianSeparatorColor}"
                         BorderThickness="1"
                         Padding="2">
+                    <Border.ToolTip>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Name="ToolTipNameText"
+                                       Text="{Binding DisplayName}"
+                                       Style="{StaticResource ObsidianText}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       Margin="4,2"/>
+                            <Separator Style="{StaticResource ObsidianSeparator}"
+                                       Background="{DynamicResource ObsidianForeground}"
+                                       Margin="1,4"/>
+                            <TextBlock Name="ToolTipSpriteText"
+                                       Style="{StaticResource ObsidianText}"
+                                       Text="{Binding SpriteNumber, StringFormat=Sprite: {0}}"
+                                       FontSize="14"
+                                       FontWeight="Normal"
+                                       TextAlignment="Center"
+                                       Margin="4,2"/>
+                            <TextBlock Name="ToolTipQuantityText"
+                                       Style="{StaticResource ObsidianText}"
+                                       Text="{Binding FormattedQuantity, StringFormat=Quantity: {0}}"
+                                       FontSize="14"
+                                       FontWeight="Normal"
+                                       TextAlignment="Center"
+                                       Margin="4,2">
+                            </TextBlock>
+                            <TextBlock Name="ToolTipDurabilityText"
+                                       Style="{StaticResource ObsidianText}"
+                                       Text="{Binding FormattedDurability, StringFormat=Durability: {0}}"
+                                       FontSize="14"
+                                       FontWeight="Normal"
+                                       Foreground="{DynamicResource ObsidianDurability}"
+                                       TextAlignment="Center"
+                                       Visibility="Collapsed"
+                                       Margin="4,2"/>
+                        </StackPanel>
+                    </Border.ToolTip>
                     <Grid>
                         <Rectangle Name="EmptyRectangle"
                                    Stroke="{StaticResource ObsidianSeparatorColor}"
@@ -25,7 +64,7 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Margin="-2"
-                                Opacity="0.7"
+                                Opacity="0.45"
                                 Panel.ZIndex="1">
                             <TextBlock Name="SlotText"
                                        Style="{StaticResource ObsidianText}"
@@ -63,66 +102,30 @@
                                Source="{Binding Icon}"
                                Panel.ZIndex="0"
                                Opacity="1.0"
-                               Margin="1,1,-1,-1">
-                            <Image.ToolTip>
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Name="ToolTipNameText"
-                                               Text="{Binding DisplayName}"
-                                               Style="{StaticResource ObsidianText}"
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               TextAlignment="Center"
-                                               Margin="4,2"/>
-                                    <Separator Style="{StaticResource ObsidianSeparator}"
-                                               Background="{DynamicResource ObsidianForeground}"
-                                               Margin="1,4"/>
-                                    <TextBlock Name="ToolTipSpriteText"
-                                               Style="{StaticResource ObsidianText}"
-                                               Text="{Binding SpriteNumber, StringFormat=Sprite: {0}}"
-                                               FontSize="14"
-                                               FontWeight="Normal"
-                                               TextAlignment="Center"
-                                               Margin="4,2"/>
-                                    <TextBlock Name="ToolTipQuantityText"
-                                               Style="{StaticResource ObsidianText}"
-                                               Text="{Binding FormattedQuantity, StringFormat=Quantity: {0}}"
-                                               FontSize="14"
-                                               FontWeight="Normal"
-                                               TextAlignment="Center"
-                                               Margin="4,2">
-                                    </TextBlock>
-                                    <TextBlock Name="ToolTipDurabilityText"
-                                               Style="{StaticResource ObsidianText}"
-                                               Text="{Binding FormattedDurability, StringFormat=Durability: {0}}"
-                                               FontSize="14"
-                                               FontWeight="Normal"
-                                               Foreground="LightBlue"
-                                               TextAlignment="Center"
-                                               Visibility="Collapsed"
-                                               Margin="4,2"/>
-                                </StackPanel>
-                            </Image.ToolTip>
-                        </Image>
+                               Margin="1,1,-1,-1"/>
                     </Grid>
                 </Border>
 
             </Grid>
         </Border>
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsEmpty}" Value="False"/>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True"/>
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="SlotBorder" Property="BorderBrush" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="SlotNumberBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="QuantityBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
-                <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.8"/>
+                <Setter TargetName="SlotNumberBorder" Property="Opacity" Value="0.65"/>
                 <Setter TargetName="QuantityBorder" Property="Background" Value="{DynamicResource ObsidianBackground}"/>
                 <Setter TargetName="QuantityBorder" Property="Opacity" Value="1.0"/>
-            </DataTrigger>
+            </MultiDataTrigger>
 
             <DataTrigger Binding="{Binding IsEmpty}" Value="True">
-                <Setter TargetName="Icon" Property="ToolTip" Value="{x:Null}"/>
+                <Setter TargetName="SlotBorder" Property="ToolTip" Value="{x:Null}"/>
                 <Setter TargetName="Icon" Property="Visibility" Value="Hidden"/>
                 <Setter TargetName="SlotBorder" Property="BorderBrush" Value="Transparent"/>
-                <Setter TargetName="SlotNumberBorder" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="EmptyRectangle" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="QuantityBorder" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
