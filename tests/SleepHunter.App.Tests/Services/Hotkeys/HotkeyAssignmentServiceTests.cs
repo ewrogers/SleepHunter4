@@ -9,6 +9,48 @@ namespace SleepHunter.Tests.Services.Hotkeys;
 public sealed class HotkeyAssignmentServiceTests
 {
     [Test]
+    public void ShouldAssignTheFirstGesture()
+    {
+        using var player = CreatePlayer("Target");
+        var registrations =
+            new StubRegistrationService();
+        var requested = new Hotkey(
+            ModifierKeys.Control,
+            Key.D1);
+        var service = new HotkeyAssignmentService(
+            registrations,
+            new TestLogger());
+
+        var result = service.Assign(
+            player,
+            requested,
+            [player]);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                result.Status,
+                Is.EqualTo(
+                    HotkeyAssignmentStatus.Assigned));
+            Assert.That(
+                player.Hotkey,
+                Is.SameAs(requested));
+            Assert.That(
+                registrations.Find(
+                    Key.D1,
+                    ModifierKeys.Control),
+                Is.SameAs(requested));
+            Assert.That(
+                registrations.Operations,
+                Is.EqualTo(
+                    new[]
+                    {
+                        "register:Control+1"
+                    }));
+        });
+    }
+
+    [Test]
     public void ShouldRegisterNewGestureBeforeReleasingPreviousOne()
     {
         using var player = CreatePlayer("Target");

@@ -43,7 +43,8 @@ namespace SleepHunter.Services.Hotkeys
             var registered = hotkeys.Find(
                 requested.Key,
                 requested.Modifiers);
-            if (ReferenceEquals(previous, registered))
+            if (previous is not null &&
+                ReferenceEquals(previous, registered))
             {
                 return new HotkeyAssignmentResult(
                     HotkeyAssignmentStatus.Unchanged);
@@ -55,6 +56,7 @@ namespace SleepHunter.Services.Hotkeys
                     previous.Key,
                     previous.Modifiers);
             var previousIsRegistered =
+                previous is not null &&
                 ReferenceEquals(previous, registeredPrevious);
 
             if (registered is not null &&
