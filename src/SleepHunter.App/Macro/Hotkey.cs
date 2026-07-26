@@ -5,16 +5,9 @@ namespace SleepHunter.Macro
 {
     public sealed class Hotkey
     {
-        private string atomName;
         private ModifierKeys modifiers;
         private Key key;
         private int id = -1;
-
-        public string AtomName
-        {
-            get => atomName;
-            set => atomName = value;
-        }
 
         public ModifierKeys Modifiers
         {
@@ -34,7 +27,7 @@ namespace SleepHunter.Macro
             set => id = value;
         }
 
-        public bool IsActive => id >= 0;
+        public bool IsActive => id > 0;
 
         public Hotkey(ModifierKeys modifiers, Key key)
         {

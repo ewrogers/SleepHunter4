@@ -29,7 +29,10 @@ character even when SleepHunter is not the active window. It acts on the
 character that owns the hotkey, regardless of the current selection.
 
 If a hotkey is bound to a character, the hotkey combination will be displayed in the character window.
-You can unbind a hotkey by selecting the character and pressing the `Delete` or `Backspace` key.
+When macro autosave is enabled, a new or cleared assignment is saved
+immediately and restored the next time that character is detected.
+You can unbind a hotkey by selecting the character and pressing `Escape`,
+`Delete`, or `Backspace`.
 
 ## Character Sorting
 

@@ -166,8 +166,6 @@ namespace SleepHunter.Views
             ToggleSkills(false);
             ToggleSpells(false);
             clientList.MacroPersistence.IsSpellQueueVisible = false;
-
-            StartClientPolling();
         }
 
         public void Dispose()
@@ -208,11 +206,22 @@ namespace SleepHunter.Views
 
         private void InitializeHotkeyHook()
         {
+            if (windowSource is not null)
+                return;
+
             var helper = new WindowInteropHelper(this);
             windowSource = HwndSource.FromHwnd(helper.Handle);
 
             windowSource?.AddHook(WindowMessageHook);
             logger.LogInfo("Hotkey hook initialized");
+        }
+
+        private void Window_SourceInitialized(
+            object sender,
+            EventArgs e)
+        {
+            InitializeHotkeyHook();
+            StartClientPolling();
         }
 
         private void InitializeViews()
@@ -943,8 +952,12 @@ namespace SleepHunter.Views
         {
             if (message == WM_HOTKEY)
             {
-                var key = KeyInterop.KeyFromVirtualKey(lParam.ToInt32() >> 16);
-                var modifiers = (ModifierKeys)(lParam.ToInt32() & 0xFFFF);
+                var hotkeyData =
+                    unchecked((uint)lParam.ToInt64());
+                var key = KeyInterop.KeyFromVirtualKey(
+                    (int)(hotkeyData >> 16));
+                var modifiers =
+                    (ModifierKeys)(hotkeyData & 0xFFFF);
 
                 ActivateHotkey(key, modifiers);
                 isHandled = true;
@@ -955,8 +968,6 @@ namespace SleepHunter.Views
 
         private void Window_Shown(object sender, EventArgs e)
         {
-            InitializeHotkeyHook();
-
             if (isFirstRun)
             {
                 logger.LogInfo("Is first launch, prompting user to view the manual...");
@@ -1318,71 +1329,59 @@ namespace SleepHunter.Views
             }
         }
 
-        private void clientListBox_KeyDown(object sender, KeyEventArgs e)
+        private async void clientListBox_KeyDown(
+            object sender,
+            KeyEventArgs e)
         {
-            if (e.Key == Key.None)
+            var input = HotkeyInputParser.Parse(
+                e.Key,
+                e.SystemKey,
+                Keyboard.Modifiers);
+            if (input.Kind == HotkeyInputKind.Ignore)
                 return;
 
-            if (sender is not ListBoxItem
-                {
-                    Content: ClientListItemViewModel item
-                })
+            if (clientList.SelectedClient is not { } item)
                 return;
 
             var player = item.Player;
-            var key = ((e.Key == Key.System) ? e.SystemKey : e.Key);
-            var hasControl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || (e.SystemKey == Key.LeftCtrl || e.SystemKey == Key.RightCtrl);
-            var hasAlt = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
-            var hasShift = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) || (e.SystemKey == Key.LeftShift || e.SystemKey == Key.RightShift);
-            var hasWindows = Keyboard.Modifiers.HasFlag(ModifierKeys.Windows);
-            var isFunctionKey = Hotkey.IsFunctionKey(key);
-
-            if (key is Key.LeftCtrl or Key.RightCtrl)
-                return;
-
-            if (key == Key.LeftAlt || e.Key == Key.RightAlt)
-                return;
-
-            if (key == Key.LeftShift || e.Key == Key.RightShift)
-                return;
-
-            if (!hasControl && !hasAlt && !hasShift && !isFunctionKey)
+            e.Handled = true;
+            if (input.Kind == HotkeyInputKind.Clear)
             {
-                if (e.Key is Key.Delete or Key.Back or Key.Escape)
+                var clearResult =
+                    hotkeyAssignments.Clear(player);
+                if (!clearResult.Succeeded)
                 {
-                    var clearResult =
-                        hotkeyAssignments.Clear(player);
-                    if (!clearResult.Succeeded)
-                    {
-                        this.ShowMessageBox("Clear Hotkey Error",
-                            "There was an error clearing the hotkey, please try again.",
-                            "If this continues, try restarting the application.",
-                            MessageBoxButton.OK,
-                            420, 240);
-                    }
+                    this.ShowMessageBox("Clear Hotkey Error",
+                        "There was an error clearing the hotkey, please try again.",
+                        "If this continues, try restarting the application.",
+                        MessageBoxButton.OK,
+                        420, 240);
+                    return;
+                }
 
-                    e.Handled = true;
+                if (clearResult.Status ==
+                    HotkeyAssignmentStatus.Cleared)
+                {
+                    await PersistHotkeyAssignmentsAsync(
+                        [player]);
                 }
 
                 return;
             }
 
-            var modifiers = ModifierKeys.None;
-
-            if (hasControl)
-                modifiers |= ModifierKeys.Control;
-            if (hasAlt)
-                modifiers |= ModifierKeys.Alt;
-            if (hasShift)
-                modifiers |= ModifierKeys.Shift;
-            if (hasWindows)
-                modifiers |= ModifierKeys.Windows;
-
-            var hotkey = new Hotkey(modifiers, key);
+            var players =
+                PlayerManager.Instance.AllClients.ToArray();
+            var affectedPlayers = players
+                .Where(candidate =>
+                    ReferenceEquals(candidate, player) ||
+                    SameHotkey(
+                        candidate.Hotkey,
+                        input.Hotkey))
+                .ToArray();
             var assignmentResult = hotkeyAssignments.Assign(
                 player,
-                hotkey,
-                PlayerManager.Instance.AllClients);
+                input.Hotkey,
+                players);
             if (!assignmentResult.Succeeded)
             {
                 this.ShowMessageBox("Set Hotkey Error",
@@ -1390,9 +1389,45 @@ namespace SleepHunter.Views
                    "If this continues, try restarting the application.",
                    MessageBoxButton.OK,
                    420, 240);
+                return;
             }
-            e.Handled = true;
+
+            if (assignmentResult.Status ==
+                HotkeyAssignmentStatus.Assigned)
+            {
+                await PersistHotkeyAssignmentsAsync(
+                    affectedPlayers);
+            }
         }
+
+        private async Task PersistHotkeyAssignmentsAsync(
+            Player[] players)
+        {
+            if (!UserSettingsManager.Instance.Settings
+                    .SaveMacroStates)
+            {
+                return;
+            }
+
+            foreach (var player in players.Distinct())
+            {
+                if (string.IsNullOrWhiteSpace(player.Name))
+                    continue;
+
+                await clientList.MacroPersistence
+                    .AutoSaveMacroAsync(
+                        macroConfigurations.GetOrCreate(
+                            player));
+            }
+        }
+
+        private static bool SameHotkey(
+            Hotkey left,
+            Hotkey right) =>
+            left is not null &&
+            right is not null &&
+            left.Key == right.Key &&
+            left.Modifiers == right.Modifiers;
 
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

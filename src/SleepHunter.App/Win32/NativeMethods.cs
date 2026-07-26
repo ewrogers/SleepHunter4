@@ -61,12 +61,6 @@ namespace SleepHunter.Win32
            ref StartupInfo startupInfo,
            out ProcessInformation processInformation);
 
-        [DllImport("kernel32", EntryPoint = "GlobalAddAtom", CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern ushort GlobalAddAtom(string atomName);
-
-        [DllImport("kernel32", EntryPoint = "GlobalDeleteAtom", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern ushort GlobalDeleteAtom(ushort atom);
-
         [DllImport("kernel32", EntryPoint = "OpenProcess", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern nint OpenProcess(ProcessAccessFlags desiredAccess, bool inheritHandle, int processId);
 

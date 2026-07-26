@@ -7,43 +7,99 @@ using SleepHunter.Win32;
 
 namespace SleepHunter.Macro
 {
+    internal interface IWindowHotkeyApi
+    {
+        bool Register(
+            nint windowHandle,
+            int hotkeyId,
+            ModifierKeys modifiers,
+            int virtualKey);
+
+        bool Unregister(
+            nint windowHandle,
+            int hotkeyId);
+    }
+
+    internal sealed class WindowHotkeyApi :
+        IWindowHotkeyApi
+    {
+        public bool Register(
+            nint windowHandle,
+            int hotkeyId,
+            ModifierKeys modifiers,
+            int virtualKey) =>
+            NativeMethods.RegisterHotKey(
+                windowHandle,
+                hotkeyId,
+                modifiers,
+                virtualKey);
+
+        public bool Unregister(
+            nint windowHandle,
+            int hotkeyId) =>
+            NativeMethods.UnregisterHotKey(
+                windowHandle,
+                hotkeyId);
+    }
+
     public sealed class HotkeyManager
     {
+        internal const int MaximumApplicationHotkeyId = 0xBFFF;
+
         private static readonly HotkeyManager instance = new();
         public static HotkeyManager Instance => instance;
 
-        private HotkeyManager() { }
-
-
         private readonly ConcurrentDictionary<int, Hotkey> hotkeys = new();
+        private readonly IWindowHotkeyApi windowHotkeys;
+        private readonly object syncRoot = new();
+        private int lastHotkeyId;
 
-        public IEnumerable<Hotkey> Hotkeys => from h in hotkeys.Values select h;
+        private HotkeyManager()
+            : this(new WindowHotkeyApi())
+        {
+        }
+
+        internal HotkeyManager(
+            IWindowHotkeyApi windowHotkeys)
+        {
+            this.windowHotkeys = windowHotkeys ??
+                throw new ArgumentNullException(
+                    nameof(windowHotkeys));
+        }
+
+        public IEnumerable<Hotkey> Hotkeys =>
+            from hotkey in hotkeys.Values
+            select hotkey;
 
         public bool RegisterHotkey(nint windowHandle, Hotkey hotkey)
         {
             if (hotkey == null)
                 throw new ArgumentNullException(nameof(hotkey));
 
-            hotkey.AtomName = GetHotkeyUniqueName(hotkey);
-            hotkey.Id = NativeMethods.GlobalAddAtom(hotkey.AtomName);
-
-            if (hotkey.Id <= 0)
-                return false;
-
-            var vkey = KeyInterop.VirtualKeyFromKey(hotkey.Key);
-            var success = NativeMethods.RegisterHotKey(windowHandle, hotkey.Id, hotkey.Modifiers, vkey);
-
-            if (success)
+            lock (syncRoot)
             {
-                hotkeys[hotkey.Id] = hotkey;
-            }
-            else
-            {
-                NativeMethods.GlobalDeleteAtom((ushort)hotkey.Id);
-                hotkey.Id = -1;
-            }
+                if (hotkey.IsActive)
+                    return false;
 
-            return success;
+                var hotkeyId = AllocateHotkeyId();
+                if (hotkeyId <= 0)
+                    return false;
+
+                var virtualKey =
+                    KeyInterop.VirtualKeyFromKey(hotkey.Key);
+                if (!windowHotkeys.Register(
+                        windowHandle,
+                        hotkeyId,
+                        hotkey.Modifiers,
+                        virtualKey))
+                {
+                    return false;
+                }
+
+                hotkey.Id = hotkeyId;
+                hotkeys[hotkeyId] = hotkey;
+                return true;
+            }
         }
 
         public Hotkey GetHotkey(Key key, ModifierKeys modifiers)
@@ -60,32 +116,61 @@ namespace SleepHunter.Macro
             if (hotkey == null)
                 throw new ArgumentNullException(nameof(hotkey));
 
-            NativeMethods.UnregisterHotKey(windowHandle, hotkey.Id);
+            lock (syncRoot)
+            {
+                if (!hotkey.IsActive ||
+                    !hotkeys.TryGetValue(
+                        hotkey.Id,
+                        out var registeredHotkey) ||
+                    !ReferenceEquals(
+                        hotkey,
+                        registeredHotkey))
+                {
+                    return false;
+                }
 
-            var wasRemoved = hotkeys.TryRemove(hotkey.Id, out var removedHotkey);
+                if (!windowHotkeys.Unregister(
+                        windowHandle,
+                        hotkey.Id))
+                {
+                    return false;
+                }
 
-            if (wasRemoved && hotkey.Id > 0)
-                NativeMethods.GlobalDeleteAtom((ushort)hotkey.Id);
+                var removed =
+                    hotkeys.TryRemove(
+                        hotkey.Id,
+                        out var removedHotkey) &&
+                    ReferenceEquals(
+                        hotkey,
+                        removedHotkey);
+                if (removed)
+                    hotkey.Id = -1;
 
-            return removedHotkey != null;
+                return removed;
+            }
         }
 
         public void UnregisterAllHotkeys(nint windowHandle)
         {
             foreach (var hotkey in hotkeys.Values)
                 UnregisterHotkey(windowHandle, hotkey);
-
-            hotkeys.Clear();
         }
 
-        static string GetHotkeyUniqueName(Hotkey hotkey)
+        private int AllocateHotkeyId()
         {
-            var hotkeyName = string.Format("{0}_{1}_{2}",
-               Environment.CurrentManagedThreadId.ToString("X8"),
-               hotkey.GetType().FullName,
-               hotkey.ToString());
+            for (var attempt = 0;
+                 attempt < MaximumApplicationHotkeyId;
+                 attempt++)
+            {
+                lastHotkeyId =
+                    lastHotkeyId >= MaximumApplicationHotkeyId
+                        ? 1
+                        : lastHotkeyId + 1;
+                if (!hotkeys.ContainsKey(lastHotkeyId))
+                    return lastHotkeyId;
+            }
 
-            return hotkeyName;
+            return -1;
         }
     }
 }

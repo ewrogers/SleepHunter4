@@ -100,6 +100,32 @@ public sealed class MainWindowLayoutTests
         });
     }
 
+    [Test]
+    public void ShouldCaptureHotkeysForTheSelectedClient()
+    {
+        var document = XDocument.Load(FindMainWindowFile());
+        var window = document.Root!;
+        var clientList = document
+            .Descendants(Presentation + "ListBox")
+            .Single(element =>
+                (string?)element.Attribute("Name") ==
+                "clientListBox");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                (string?)window.Attribute(
+                    "SourceInitialized"),
+                Is.EqualTo(
+                    "Window_SourceInitialized"));
+            Assert.That(
+                (string?)clientList.Attribute(
+                    "PreviewKeyDown"),
+                Is.EqualTo(
+                    "clientListBox_KeyDown"));
+        });
+    }
+
     private static bool HasCondition(
         IEnumerable<XElement> conditions,
         string bindingFragment,

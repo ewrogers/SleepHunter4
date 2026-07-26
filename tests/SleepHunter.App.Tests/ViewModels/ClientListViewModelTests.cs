@@ -129,6 +129,45 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
+    public void ShouldProjectTheAssignedHotkeyGlyph()
+    {
+        using var player = CreatePlayer();
+        using var item =
+            new ClientListItemViewModel(
+                player,
+                runtime: null);
+        var changedProperties = new List<string?>();
+        item.PropertyChanged +=
+            (_, args) =>
+                changedProperties.Add(
+                    args.PropertyName);
+
+        player.Hotkey = new Hotkey(
+            ModifierKeys.Control,
+            Key.D1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.HasHotkey, Is.True);
+            Assert.That(
+                item.HotkeyString,
+                Is.EqualTo("Control+1"));
+            Assert.That(
+                changedProperties,
+                Does.Contain(
+                    nameof(
+                        ClientListItemViewModel
+                            .HasHotkey)));
+            Assert.That(
+                changedProperties,
+                Does.Contain(
+                    nameof(
+                        ClientListItemViewModel
+                            .HotkeyString)));
+        });
+    }
+
+    [Test]
     public async Task ShouldUseRuntimeObservationsAndRetainProjectedStateAfterFailure()
     {
         using var player = CreatePlayer();

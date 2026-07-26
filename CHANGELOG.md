@@ -75,7 +75,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Corrected skill and spell book handling so all 90 slots are supported and unused slots are cleared.
 - Cleared stale inventory, skill, spell, and chat information when its live source disappears.
 - Improved dialog cleanup so Escape is sent only when a popup is actually visible and stacked dialogs close one at a time.
-- Fixed global hotkey reassignment and restored hotkey capture for the selected character.
+- Restored reliable selected-character hotkey assignment and glyph display, global start, pause, and resume control, immediate autosave and startup restore, plus `Escape` clearing.
 - Kept client updates running when optional spell information cannot be read, allowing HP and MP displays to recover after revival or flowering.
 - Fixed missing client executables being reported incorrectly and ensured failed suspended launches are terminated safely.
 

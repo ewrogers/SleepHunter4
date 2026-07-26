@@ -9,6 +9,7 @@
         MinWidth="880" MinHeight="600"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterScreen"
+        SourceInitialized="Window_SourceInitialized"
         ContentRendered="Window_Shown"
         Closing="Window_Closing"
         Closed="Window_Closed">
@@ -227,12 +228,12 @@
                      SelectedItem="{Binding SelectedClient, Mode=TwoWay}"
                      Style="{StaticResource ObsidianListBox}"
                      Margin="0"
+                     PreviewKeyDown="clientListBox_KeyDown"
                      SelectionChanged="clientListBox_SelectionChanged"
                      SelectionMode="Single">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ObsidianListBoxItem}">
                         <EventSetter Event="MouseDoubleClick" Handler="clientListBox_ItemDoubleClick"/>
-                        <EventSetter Event="PreviewKeyDown" Handler="clientListBox_KeyDown"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
