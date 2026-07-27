@@ -7,6 +7,7 @@ using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Interop.Tests.Snapshots;
 using SleepHunter.Runtime.Actions;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
@@ -159,6 +160,64 @@ public sealed class ClientRuntimeHostTests
             Assert.That(rejected.PendingActionId, Is.Null);
             Assert.That(host.LastIntentIssueResult, Is.Null);
             Assert.That(sink.Attempts, Is.Empty);
+        });
+    }
+
+    [Test]
+    public async Task ShouldCloseTheClientWhenTheRuntimeRequestsIt()
+    {
+        var timeProvider = new ManualTimeProvider();
+        var sink = new RecordingMessageSink();
+        await using var host = CreateHost(
+            timeProvider,
+            new ScriptedCapture(
+                sequence => CreateSuccess(
+                    sequence,
+                    sequence.Value == 1
+                        ? new MapLocationSnapshot(
+                            1,
+                            "Mileth",
+                            20,
+                            30)
+                        : new MapLocationSnapshot(
+                            2,
+                            "Abel",
+                            20,
+                            30))),
+            new FixedTargetProvider(Client),
+            sink);
+        await host.Views.ReadUntilAsync(
+            current => current.LatestSnapshotSequence?.Value == 1);
+        await host.SendCommandAsync(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    observationChanges: new ObservationChangePolicy(
+                        mapChange:
+                            ObservationChangeAction.CloseClient))));
+        await host.SendCommandAsync(new StartMacroCommand());
+        await host.Views.ReadUntilAsync(
+            current => current.Lifecycle == MacroLifecycle.Running);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(100));
+        var stopped = await host.Views.ReadUntilAsync(
+            current =>
+                current.Lifecycle == MacroLifecycle.Stopped &&
+                current.StopReason == MacroStopReason.MapChanged);
+        await WaitUntilAsync(
+            () => sink.Attempts.Any(
+                message =>
+                    message.Message == ClientWindowMessage.Close));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                stopped.StopReason,
+                Is.EqualTo(MacroStopReason.MapChanged));
+            Assert.That(
+                sink.Attempts.Count(
+                    message =>
+                        message.Message == ClientWindowMessage.Close),
+                Is.EqualTo(1));
         });
     }
 
@@ -417,7 +476,12 @@ public sealed class ClientRuntimeHostTests
     }
 
     private static SnapshotCaptureResult CreateSuccess(
-        SnapshotSequence sequence)
+        SnapshotSequence sequence) =>
+        CreateSuccess(sequence, location: null);
+
+    private static SnapshotCaptureResult CreateSuccess(
+        SnapshotSequence sequence,
+        MapLocationSnapshot? location)
     {
         var timestamp = new MacroTimestamp(
             TimeSpan.FromTicks(sequence.Value - 1));
@@ -440,7 +504,8 @@ public sealed class ClientRuntimeHostTests
             Client,
             SnapshotQuality.Complete,
             ClientPresence.InWorld,
-            ClientPanel.Inventory);
+            ClientPanel.Inventory,
+            location: location);
         return new SnapshotCaptureResult(
             snapshot,
             SnapshotQuality.Complete,

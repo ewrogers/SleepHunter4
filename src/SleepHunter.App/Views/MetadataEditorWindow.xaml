@@ -1,4 +1,4 @@
-﻿<Window x:Class="SleepHunter.Views.MetadataEditorWindow"
+<Window x:Class="SleepHunter.Views.MetadataEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:metadata="clr-namespace:SleepHunter.Metadata"
@@ -29,7 +29,7 @@
                           Margin="0" 
                           Panel.ZIndex="2"
                           SelectionMode="Extended"
-                          ItemsSource="{Binding Source={x:Static metadata:SkillMetadataManager.Instance}, Path=Skills}"
+                          ItemsSource="{Binding Source={StaticResource SkillMetadataManager}, Path=Skills}"
                           SelectionChanged="skillSpellListView_SelectionChanged">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem" BasedOn="{StaticResource ObsidianListViewItem}">
@@ -57,7 +57,7 @@
                           Margin="0" 
                           Panel.ZIndex="2"
                           SelectionMode="Extended"
-                          ItemsSource="{Binding Source={x:Static metadata:SpellMetadataManager.Instance}, Path=Spells}"
+                          ItemsSource="{Binding Source={StaticResource SpellMetadataManager}, Path=Spells}"
                           SelectionChanged="skillSpellListView_SelectionChanged">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem" BasedOn="{StaticResource ObsidianListViewItem}">
@@ -93,7 +93,7 @@
                              Grid.RowSpan="2"
                              Style="{StaticResource ObsidianListBox}"
                              SelectionMode="Extended"
-                             ItemsSource="{Binding Source={x:Static metadata:StaffMetadataManager.Instance}, Path=Staves}"
+                             ItemsSource="{Binding Source={StaticResource StaffMetadataManager}, Path=Staves}"
                              ItemTemplate="{StaticResource StaffDataTemplate}"
                              SelectionChanged="stavesListBox_SelectionChanged">
                         <ListBox.ItemContainerStyle>

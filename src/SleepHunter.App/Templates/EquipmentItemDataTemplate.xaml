@@ -21,8 +21,8 @@
                            Margin="1"/>
 
                 <Image Name="Icon"
-                       Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}"
-                       Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}"
+                       Width="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryIconSize}"
+                       Height="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryIconSize}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="NearestNeighbor"

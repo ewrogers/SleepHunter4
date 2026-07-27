@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SleepHunter.Macro;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
@@ -10,6 +9,7 @@ using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Settings;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Services.Runtime
 {
@@ -95,8 +95,8 @@ namespace SleepHunter.Services.Runtime
                     settings,
                     characterClass),
                 observationChanges: new ObservationChangePolicy(
-                    ToObservationChangeAction(settings.MapChangeAction),
-                    ToObservationChangeAction(settings.CoordsChangeAction)),
+                    settings.MapChangeAction,
+                    settings.CoordsChangeAction),
                 panelPreservation: new PanelPreservationPolicy(
                     settings.PreserveUserPanel));
 
@@ -207,20 +207,6 @@ namespace SleepHunter.Services.Runtime
 
             return checked((int)Math.Ceiling(value));
         }
-
-        private static ObservationChangeAction ToObservationChangeAction(
-            MacroAction action) =>
-            action switch
-            {
-                MacroAction.None => ObservationChangeAction.Continue,
-                MacroAction.Pause => ObservationChangeAction.Pause,
-                MacroAction.Stop or MacroAction.ForceQuit =>
-                    ObservationChangeAction.Stop,
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(action),
-                    action,
-                    "The macro action cannot be applied to an observed client change.")
-            };
 
         private static SpellQueueRotation ToSpellQueueRotation(
             SpellRotationMode rotation) =>

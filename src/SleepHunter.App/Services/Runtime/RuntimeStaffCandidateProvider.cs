@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -17,11 +17,12 @@ namespace SleepHunter.Services.Runtime
             IEnumerable<StaffMetadata>> getStaves;
         private readonly Func<string, string, int?> getLines;
 
-        public RuntimeStaffCandidateProvider()
-            : this(
-                () => StaffMetadataManager.Instance.Staves,
-                StaffMetadataManager.Instance.GetLinesWithStaff)
+        public RuntimeStaffCandidateProvider(
+            StaffMetadataManager staffMetadata)
         {
+            ArgumentNullException.ThrowIfNull(staffMetadata);
+            getStaves = () => staffMetadata.Staves;
+            getLines = staffMetadata.GetLinesWithStaff;
         }
 
         internal RuntimeStaffCandidateProvider(
@@ -90,17 +91,17 @@ namespace SleepHunter.Services.Runtime
         }
 
         private static bool TryGetRequiredClass(
-            PlayerClass allowedClasses,
+            CharacterClassFlags allowedClasses,
             CharacterClass characterClass,
             out CharacterClass? requiredClass)
         {
-            if ((allowedClasses & ~PlayerClass.All) != 0)
+            if ((allowedClasses & ~CharacterClassFlags.All) != 0)
             {
                 throw new InvalidOperationException(
                     $"Staff metadata contains unsupported class flags '{allowedClasses}'.");
             }
 
-            if (allowedClasses == PlayerClass.All)
+            if (allowedClasses == CharacterClassFlags.All)
             {
                 requiredClass = null;
                 return true;
@@ -112,7 +113,7 @@ namespace SleepHunter.Services.Runtime
                 return false;
             }
 
-            var playerClass = ToPlayerClass(characterClass);
+            var playerClass = ToCharacterClassFlags(characterClass);
             if (!allowedClasses.Includes(playerClass))
             {
                 requiredClass = null;
@@ -123,16 +124,16 @@ namespace SleepHunter.Services.Runtime
             return true;
         }
 
-        private static PlayerClass ToPlayerClass(
+        private static CharacterClassFlags ToCharacterClassFlags(
             CharacterClass characterClass) =>
             characterClass switch
             {
-                CharacterClass.Peasant => PlayerClass.Peasant,
-                CharacterClass.Warrior => PlayerClass.Warrior,
-                CharacterClass.Wizard => PlayerClass.Wizard,
-                CharacterClass.Priest => PlayerClass.Priest,
-                CharacterClass.Rogue => PlayerClass.Rogue,
-                CharacterClass.Monk => PlayerClass.Monk,
+                CharacterClass.Peasant => CharacterClassFlags.Peasant,
+                CharacterClass.Warrior => CharacterClassFlags.Warrior,
+                CharacterClass.Wizard => CharacterClassFlags.Wizard,
+                CharacterClass.Priest => CharacterClassFlags.Priest,
+                CharacterClass.Rogue => CharacterClassFlags.Rogue,
+                CharacterClass.Monk => CharacterClassFlags.Monk,
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(characterClass),
                     characterClass,

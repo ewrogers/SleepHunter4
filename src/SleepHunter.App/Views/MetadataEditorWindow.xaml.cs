@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -18,6 +18,9 @@ namespace SleepHunter.Views
         public static readonly int StavesTabIndex = 2;
         public static readonly int WeaponsTabIndex = 3;
         public static readonly int ItemsTabIndex = 4;
+        private readonly SkillMetadataManager skillMetadata;
+        private readonly SpellMetadataManager spellMetadata;
+        private readonly StaffMetadataManager staffMetadata;
 
         public int SelectedTabIndex
         {
@@ -28,8 +31,20 @@ namespace SleepHunter.Views
         public static readonly DependencyProperty SelectedTabIndexProperty =
             DependencyProperty.Register(nameof(SelectedTabIndex), typeof(int), typeof(MetadataEditorWindow), new PropertyMetadata(0));
 
-        public MetadataEditorWindow()
+        public MetadataEditorWindow(
+            SkillMetadataManager skillMetadata,
+            SpellMetadataManager spellMetadata,
+            StaffMetadataManager staffMetadata)
         {
+            this.skillMetadata = skillMetadata ??
+                throw new ArgumentNullException(
+                    nameof(skillMetadata));
+            this.spellMetadata = spellMetadata ??
+                throw new ArgumentNullException(
+                    nameof(spellMetadata));
+            this.staffMetadata = staffMetadata ??
+                throw new ArgumentNullException(
+                    nameof(staffMetadata));
             InitializeComponent();
         }
 
@@ -46,17 +61,17 @@ namespace SleepHunter.Views
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SkillMetadataManager.Instance.SkillAdded += OnSkillManagerUpdated;
-            SkillMetadataManager.Instance.SkillChanged += OnSkillManagerUpdated;
-            SkillMetadataManager.Instance.SkillRemoved += OnSkillManagerUpdated;
+            skillMetadata.SkillAdded += OnSkillManagerUpdated;
+            skillMetadata.SkillChanged += OnSkillManagerUpdated;
+            skillMetadata.SkillRemoved += OnSkillManagerUpdated;
 
-            SpellMetadataManager.Instance.SpellAdded += OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellChanged += OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellRemoved += OnSpellManagerUpdated;
+            spellMetadata.SpellAdded += OnSpellManagerUpdated;
+            spellMetadata.SpellChanged += OnSpellManagerUpdated;
+            spellMetadata.SpellRemoved += OnSpellManagerUpdated;
 
-            StaffMetadataManager.Instance.StaffAdded += OnStaffManagerUpdated;
-            StaffMetadataManager.Instance.StaffUpdated += OnStaffManagerUpdated;
-            StaffMetadataManager.Instance.StaffRemoved += OnStaffManagerUpdated;
+            staffMetadata.StaffAdded += OnStaffManagerUpdated;
+            staffMetadata.StaffUpdated += OnStaffManagerUpdated;
+            staffMetadata.StaffRemoved += OnStaffManagerUpdated;
         }
 
         private void OnSkillManagerUpdated(object sender, SkillMetadataEventArgs e) =>
@@ -70,17 +85,17 @@ namespace SleepHunter.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            SkillMetadataManager.Instance.SkillAdded -= OnSkillManagerUpdated;
-            SkillMetadataManager.Instance.SkillChanged -= OnSkillManagerUpdated;
-            SkillMetadataManager.Instance.SkillRemoved -= OnSkillManagerUpdated;
+            skillMetadata.SkillAdded -= OnSkillManagerUpdated;
+            skillMetadata.SkillChanged -= OnSkillManagerUpdated;
+            skillMetadata.SkillRemoved -= OnSkillManagerUpdated;
 
-            SpellMetadataManager.Instance.SpellAdded -= OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellChanged -= OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellRemoved -= OnSpellManagerUpdated;
+            spellMetadata.SpellAdded -= OnSpellManagerUpdated;
+            spellMetadata.SpellChanged -= OnSpellManagerUpdated;
+            spellMetadata.SpellRemoved -= OnSpellManagerUpdated;
 
-            StaffMetadataManager.Instance.StaffAdded -= OnStaffManagerUpdated;
-            StaffMetadataManager.Instance.StaffUpdated -= OnStaffManagerUpdated;
-            StaffMetadataManager.Instance.StaffRemoved -= OnStaffManagerUpdated;
+            staffMetadata.StaffAdded -= OnStaffManagerUpdated;
+            staffMetadata.StaffUpdated -= OnStaffManagerUpdated;
+            staffMetadata.StaffRemoved -= OnStaffManagerUpdated;
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e)
@@ -180,7 +195,8 @@ namespace SleepHunter.Views
 
         private void AddSkill()
         {
-            var skillWindow = new SkillEditorWindow
+            var skillWindow = new SkillEditorWindow(
+                skillMetadata)
             {
                 Owner = this
             };
@@ -189,14 +205,15 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            SkillMetadataManager.Instance.AddSkill(skillWindow.Skill);
+            skillMetadata.AddSkill(skillWindow.Skill);
             skillListView.SelectedItem = skillWindow.Skill;
             skillListView.ScrollIntoView(skillWindow.Skill);
         }
 
         private void AddSpell()
         {
-            var spellWindow = new SpellEditorWindow
+            var spellWindow = new SpellEditorWindow(
+                spellMetadata)
             {
                 Owner = this
             };
@@ -205,14 +222,15 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            SpellMetadataManager.Instance.AddSpell(spellWindow.Spell);
+            spellMetadata.AddSpell(spellWindow.Spell);
             spellListView.SelectedItem = spellWindow.Spell;
             spellListView.ScrollIntoView(spellWindow.Spell);
         }
 
         private void AddStaff()
         {
-            var staffWindow = new StaffEditorWindow
+            var staffWindow = new StaffEditorWindow(
+                staffMetadata)
             {
                 Owner = this
             };
@@ -221,7 +239,7 @@ namespace SleepHunter.Views
             if (!result.HasValue || !result.Value)
                 return;
 
-            StaffMetadataManager.Instance.AddStaff(staffWindow.Staff);
+            staffMetadata.AddStaff(staffWindow.Staff);
             stavesListBox.SelectedItem = staffWindow.Staff;
             stavesListBox.ScrollIntoView(staffWindow.Staff);
         }
@@ -251,7 +269,9 @@ namespace SleepHunter.Views
         {
             var originalName = skill.Name;
 
-            var skillWindow = new SkillEditorWindow(skill)
+            var skillWindow = new SkillEditorWindow(
+                skill,
+                skillMetadata)
             {
                 Owner = this
             };
@@ -264,7 +284,7 @@ namespace SleepHunter.Views
             BindingOperations.GetBindingExpression(skillListView, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             if (!string.Equals(skill.Name, originalName, StringComparison.Ordinal))
-                SkillMetadataManager.Instance.RenameSkill(originalName, skill.Name);
+                skillMetadata.RenameSkill(originalName, skill.Name);
 
             skillListView.SelectedItem = skill;
             skillListView.ScrollIntoView(skill);
@@ -274,7 +294,9 @@ namespace SleepHunter.Views
         {
             var originalName = spell.Name;
 
-            var spellWindow = new SpellEditorWindow(spell)
+            var spellWindow = new SpellEditorWindow(
+                spell,
+                spellMetadata)
             {
                 Owner = this
             };
@@ -287,7 +309,7 @@ namespace SleepHunter.Views
             BindingOperations.GetBindingExpression(spellListView, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             if (!string.Equals(spell.Name, originalName, StringComparison.Ordinal))
-                SpellMetadataManager.Instance.RenameSpell(originalName, spell.Name);
+                spellMetadata.RenameSpell(originalName, spell.Name);
 
             skillListView.SelectedItem = spell;
             skillListView.ScrollIntoView(spell);
@@ -297,7 +319,9 @@ namespace SleepHunter.Views
         {
             var originalName = staff.Name;
 
-            var staffWindow = new StaffEditorWindow(staff)
+            var staffWindow = new StaffEditorWindow(
+                staff,
+                staffMetadata)
             {
                 Owner = this
             };
@@ -310,7 +334,7 @@ namespace SleepHunter.Views
             BindingOperations.GetBindingExpression(stavesListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
 
             if (!string.Equals(staff.Name, originalName, StringComparison.Ordinal))
-                StaffMetadataManager.Instance.RenameStaff(originalName, staff.Name);
+                staffMetadata.RenameStaff(originalName, staff.Name);
 
             stavesListBox.SelectedItem = staff;
             stavesListBox.ScrollIntoView(staff);
@@ -333,11 +357,11 @@ namespace SleepHunter.Views
             lineModifiersListBox.SelectedItem = modifiers;
             lineModifiersListBox.ScrollIntoView(modifiers);
         }
-        private bool RemoveSkill(string skillName) => SkillMetadataManager.Instance.RemoveSkill(skillName);
+        private bool RemoveSkill(string skillName) => skillMetadata.RemoveSkill(skillName);
 
-        private bool RemoveSpell(string spellName) => SpellMetadataManager.Instance.RemoveSpell(spellName);
+        private bool RemoveSpell(string spellName) => spellMetadata.RemoveSpell(spellName);
 
-        private bool RemoveStaff(string staffName) => StaffMetadataManager.Instance.RemoveStaff(staffName);
+        private bool RemoveStaff(string staffName) => staffMetadata.RemoveStaff(staffName);
 
         private bool RemoveModifiers(SpellLineModifiers modifiers)
         {
@@ -360,7 +384,7 @@ namespace SleepHunter.Views
 
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
-                SkillMetadataManager.Instance.ClearSkills();
+                skillMetadata.ClearSkills();
                 BindingOperations.GetBindingExpression(skillListView, ItemsControl.ItemsSourceProperty).UpdateTarget();
             }
         }
@@ -374,7 +398,7 @@ namespace SleepHunter.Views
 
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
-                SpellMetadataManager.Instance.ClearSpells();
+                spellMetadata.ClearSpells();
                 BindingOperations.GetBindingExpression(spellListView, ItemsControl.ItemsSourceProperty).UpdateTarget();
             }
         }
@@ -388,7 +412,7 @@ namespace SleepHunter.Views
 
             if (isOkayToClear.HasValue && isOkayToClear.Value)
             {
-                StaffMetadataManager.Instance.ClearStaves();
+                staffMetadata.ClearStaves();
                 BindingOperations.GetBindingExpression(stavesListBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
             }
         }
@@ -396,7 +420,7 @@ namespace SleepHunter.Views
         {
             try
             {
-                SkillMetadataManager.Instance.SaveToFile(SkillMetadataManager.SkillMetadataFile);
+                skillMetadata.SaveToFile(SkillMetadataManager.SkillMetadataFile);
             }
             catch (Exception ex)
             {
@@ -412,7 +436,7 @@ namespace SleepHunter.Views
         {
             try
             {
-                SpellMetadataManager.Instance.SaveToFile(SpellMetadataManager.SpellMetadataFile);
+                spellMetadata.SaveToFile(SpellMetadataManager.SpellMetadataFile);
             }
             catch (Exception ex)
             {
@@ -428,7 +452,7 @@ namespace SleepHunter.Views
         {
             try
             {
-                StaffMetadataManager.Instance.SaveToFile(StaffMetadataManager.StaffMetadataFile);
+                staffMetadata.SaveToFile(StaffMetadataManager.StaffMetadataFile);
             }
             catch (Exception ex)
             {
@@ -452,8 +476,8 @@ namespace SleepHunter.Views
                 if (!okToReload.HasValue || !okToReload.Value)
                     return;
 
-                SkillMetadataManager.Instance.ClearSkills();
-                SkillMetadataManager.Instance.LoadFromFile(SkillMetadataManager.SkillMetadataFile);
+                skillMetadata.ClearSkills();
+                skillMetadata.LoadFromFile(SkillMetadataManager.SkillMetadataFile);
             }
             catch (Exception ex)
             {
@@ -478,8 +502,8 @@ namespace SleepHunter.Views
                 if (!okToReload.HasValue || !okToReload.Value)
                     return;
 
-                SpellMetadataManager.Instance.ClearSpells();
-                SpellMetadataManager.Instance.LoadFromFile(SpellMetadataManager.SpellMetadataFile);
+                spellMetadata.ClearSpells();
+                spellMetadata.LoadFromFile(SpellMetadataManager.SpellMetadataFile);
             }
             catch (Exception ex)
             {
@@ -504,8 +528,8 @@ namespace SleepHunter.Views
                 if (!okToReload.HasValue || !okToReload.Value)
                     return;
 
-                StaffMetadataManager.Instance.ClearStaves();
-                StaffMetadataManager.Instance.LoadFromFile(StaffMetadataManager.StaffMetadataFile);
+                staffMetadata.ClearStaves();
+                staffMetadata.LoadFromFile(StaffMetadataManager.StaffMetadataFile);
             }
             catch (Exception ex)
             {

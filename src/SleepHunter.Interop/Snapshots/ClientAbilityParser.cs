@@ -309,9 +309,22 @@ internal static partial class ClientAbilityParser
             isActionDelayed,
             metadata?.OpensDialog ?? false,
             icon,
-            argumentType,
+            ToSpellArgumentType(argumentType),
             prompt);
     }
+
+    private static SpellArgumentType ToSpellArgumentType(
+        byte argumentType) =>
+        argumentType switch
+        {
+            (byte)SpellArgumentType.TextInput =>
+                SpellArgumentType.TextInput,
+            (byte)SpellArgumentType.Target =>
+                SpellArgumentType.Target,
+            (byte)SpellArgumentType.None =>
+                SpellArgumentType.None,
+            _ => SpellArgumentType.Unknown
+        };
 
     private static string ParseName(
         string rawName,

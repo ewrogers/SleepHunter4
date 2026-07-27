@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -10,18 +10,20 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
 {
-    public sealed class StaffMetadataManager
+    public sealed class StaffMetadataManager : IDisposable
     {
         public static readonly string StaffMetadataFile = "Staves.xml";
 
-        static readonly StaffMetadataManager instance = new();
+        private readonly SpellMetadataManager spellMetadata;
 
-        public static StaffMetadataManager Instance => instance;
-
-        private StaffMetadataManager()
+        public StaffMetadataManager(
+            SpellMetadataManager spellMetadata)
         {
-            SpellMetadataManager.Instance.SpellAdded += SpellManager_SpellAdded;
-            SpellMetadataManager.Instance.SpellChanged += SpellManager_SpellAdded;
+            this.spellMetadata = spellMetadata ??
+                throw new ArgumentNullException(
+                    nameof(spellMetadata));
+            spellMetadata.SpellAdded += SpellManager_SpellAdded;
+            spellMetadata.SpellChanged += SpellManager_SpellAdded;
         }
 
         private readonly ConcurrentDictionary<string, StaffMetadata> staves = new(StringComparer.OrdinalIgnoreCase);
@@ -35,6 +37,12 @@ namespace SleepHunter.Metadata
         public int Count => staves.Count;
 
         public IEnumerable<StaffMetadata> Staves => from s in staves.Values orderby s.AbilityLevel, s.Level, s.Name select s;
+
+        public void Dispose()
+        {
+            spellMetadata.SpellAdded -= SpellManager_SpellAdded;
+            spellMetadata.SpellChanged -= SpellManager_SpellAdded;
+        }
 
         public void AddStaff(StaffMetadata staff)
         {
@@ -99,7 +107,7 @@ namespace SleepHunter.Metadata
         {
             if (string.IsNullOrEmpty(staffName))
             {
-                var metadata = SpellMetadataManager.Instance.GetSpell(spellName);
+                var metadata = spellMetadata.GetSpell(spellName);
                 if (metadata == null)
                     return null;
 
@@ -112,7 +120,7 @@ namespace SleepHunter.Metadata
             if (!computedLines.TryGetValue(staffName, out var spellLines))
                 return null;
 
-            if (!SpellMetadataManager.Instance.ContainsSpell(spellName))
+            if (!spellMetadata.ContainsSpell(spellName))
                 return null;
 
             return spellLines.GetLines(spellName);
@@ -123,7 +131,7 @@ namespace SleepHunter.Metadata
             IEnumerable<string> possibleStaves = null,
             int maximumLevel = 0,
             int maximumAbilityLevel = 0,
-            PlayerClass? playerClass = null)
+            CharacterClassFlags? playerClass = null)
             => GetBestStaffForSpell(
                 spellName,
                 out var numberOfLines,
@@ -138,14 +146,14 @@ namespace SleepHunter.Metadata
             IEnumerable<string> possibleStaves = null,
             int maximumLevel = 0,
             int maximumAbilityLevel = 0,
-            PlayerClass? playerClass = null)
+            CharacterClassFlags? playerClass = null)
         {
             numberOfLines = null;
 
             StaffMetadata bestStaff = null;
             spellName = spellName.Trim();
 
-            var spell = SpellMetadataManager.Instance.GetSpell(spellName);
+            var spell = spellMetadata.GetSpell(spellName);
             int? bestLines = null;
 
             foreach (var lines in computedLines)
@@ -273,7 +281,7 @@ namespace SleepHunter.Metadata
         {
             var staffSpellLines = new ComputedSpellLines();
 
-            foreach (var spell in SpellMetadataManager.Instance.Spells)
+            foreach (var spell in spellMetadata.Spells)
             {
                 var lines = CalculateLinesForSpell(staff, spell);
                 staffSpellLines.SetLines(spell.Name, lines);

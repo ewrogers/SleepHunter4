@@ -12,13 +12,9 @@ namespace SleepHunter.Settings
 
         private const int MaximumLayoutBytes = 1_048_576;
 
-        private static readonly ClientLayoutManager instance = new();
-
-        private ClientLayoutManager()
+        public ClientLayoutManager()
         {
         }
-
-        public static ClientLayoutManager Instance => instance;
 
         public ClientLayout Layout { get; private set; }
 

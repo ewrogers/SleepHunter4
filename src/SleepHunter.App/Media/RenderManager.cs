@@ -5,13 +5,8 @@ using System.Windows.Media;
 
 namespace SleepHunter.Media
 {
-    public sealed class RenderManager
+    public static class RenderManager
     {
-        private static readonly RenderManager instance = new();
-        public static RenderManager Instance => instance;
-
-        private RenderManager() { }
-
         public static IEnumerable<RenderedBitmap> Render(EpfImage image, ColorPalette palette)
         {
             if (image == null)

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.ViewModels
 {
@@ -13,11 +13,11 @@ namespace SleepHunter.ViewModels
         IDisposable
     {
         private readonly Func<bool> canEdit;
-        private readonly PlayerMacroConfiguration configuration;
+        private readonly ClientMacroConfiguration configuration;
         private bool isDisposed;
 
         public MacroEditorViewModel(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             Func<bool> canEdit = null)
         {
             this.configuration = configuration ??
@@ -30,13 +30,13 @@ namespace SleepHunter.ViewModels
                 .CollectionChanged += OnFlowersChanged;
         }
 
-        public PlayerMacroConfiguration Configuration =>
+        public ClientMacroConfiguration Configuration =>
             configuration;
 
-        public ReadOnlyObservableCollection<SpellQueueItem>
+        public ReadOnlyObservableCollection<SpellQueueItemViewModel>
             QueuedSpells => configuration.QueuedSpells;
 
-        public ReadOnlyObservableCollection<FlowerQueueItem>
+        public ReadOnlyObservableCollection<FlowerQueueItemViewModel>
             FlowerTargets => configuration.FlowerTargets;
 
         public bool HasSpells => QueuedSpells.Count > 0;
@@ -45,11 +45,11 @@ namespace SleepHunter.ViewModels
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(RemoveSelectedSpellCommand))]
-        public partial SpellQueueItem SelectedSpell { get; set; }
+        public partial SpellQueueItemViewModel SelectedSpell { get; set; }
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(RemoveSelectedFlowerCommand))]
-        public partial FlowerQueueItem SelectedFlower { get; set; }
+        public partial FlowerQueueItemViewModel SelectedFlower { get; set; }
 
         public void Dispose()
         {
@@ -75,8 +75,8 @@ namespace SleepHunter.ViewModels
         }
 
         public bool MoveSpell(
-            SpellQueueItem spell,
-            SpellQueueItem target)
+            SpellQueueItemViewModel spell,
+            SpellQueueItemViewModel target)
         {
             ObjectDisposedException.ThrowIf(isDisposed, this);
             return canEdit() &&
@@ -84,8 +84,8 @@ namespace SleepHunter.ViewModels
         }
 
         public bool MoveFlower(
-            FlowerQueueItem flower,
-            FlowerQueueItem target)
+            FlowerQueueItemViewModel flower,
+            FlowerQueueItemViewModel target)
         {
             ObjectDisposedException.ThrowIf(isDisposed, this);
             return canEdit() &&

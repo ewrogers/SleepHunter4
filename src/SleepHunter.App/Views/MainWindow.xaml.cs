@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -13,9 +13,6 @@ using System.Windows.Interop;
 using SleepHunter.Controls;
 using SleepHunter.Extensions;
 using SleepHunter.Interop.Hosting;
-using SleepHunter.IO;
-using SleepHunter.IO.Process;
-using SleepHunter.Macro;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
@@ -28,6 +25,8 @@ using SleepHunter.Services.Releases;
 using SleepHunter.Services.Runtime;
 using SleepHunter.Settings;
 using SleepHunter.ViewModels;
+using SleepHunter.ViewModels.Editing;
+using SleepHunter.ViewModels.Presentation;
 using SleepHunter.Win32;
 using Path = System.IO.Path;
 
@@ -41,11 +40,22 @@ namespace SleepHunter.Views
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
+        private readonly IconManager iconManager;
+        private readonly SkillMetadataManager skillMetadata;
+        private readonly SpellMetadataManager spellMetadata;
+        private readonly StaffMetadataManager staffMetadata;
         private readonly HotkeyAssignmentService hotkeyAssignments;
-        private readonly IPlayerMacroConfigurationMapper
+        private readonly WindowHotkeyRegistrationService
+            hotkeyRegistration;
+        private readonly IClientMacroConfigurationMapper
             macroConfigurationMapper;
-        private readonly PlayerMacroConfigurationManager
+        private readonly ClientMacroConfigurationRegistry
             macroConfigurations;
+        private readonly IClientProcessScanner processScanner;
+        private readonly ClientLayoutManager clientLayouts;
+        private readonly ColorThemeManager colorThemes;
+        private readonly UserSettingsManager settingsManager;
+        private readonly ClientSessionRegistry clientSessions;
         private readonly ClientListViewModel clientList;
         private readonly ClientRuntimeRegistry runtimeClients;
 
@@ -59,28 +69,78 @@ namespace SleepHunter.Views
         private MetadataEditorWindow metadataWindow;
         private SettingsWindow settingsWindow;
 
-        private readonly ClientPollingCoordinator clientPolling;
-        private PlayerMacroConfiguration selectedMacro;
+        private readonly ClientDiscoveryCoordinator clientDiscovery;
+        private ClientMacroConfiguration selectedMacro;
 
-        public MainWindow()
+        public MainWindow(
+            ILogger logger,
+            IReleaseService releaseService,
+            WindowHotkeyRegistry hotkeys,
+            IconManager iconManager,
+            SkillMetadataManager skillMetadata,
+            SpellMetadataManager spellMetadata,
+            StaffMetadataManager staffMetadata,
+            IMacroConfigurationReader macroConfigurationReader,
+            IMacroConfigurationWriter macroConfigurationWriter,
+            IClientMacroConfigurationMapper macroConfigurationMapper,
+            ClientMacroConfigurationRegistry macroConfigurations,
+            ClientSessionRegistry clientSessions,
+            IClientProcessScanner processScanner,
+            ClientLayoutManager clientLayouts,
+            ColorThemeManager colorThemes,
+            UserSettingsManager settingsManager,
+            IRuntimeAutomationSetupFactory runtimeSetupFactory,
+            IClientLaunchService clientLaunchService)
         {
-            logger = App.Current.Services.GetService<ILogger>();
-            releaseService = App.Current.Services.GetService<IReleaseService>();
-            var macroConfigurationReader =
-                App.Current.Services.GetService<
-                    IMacroConfigurationReader>();
-            var macroConfigurationWriter =
-                App.Current.Services.GetService<
-                    IMacroConfigurationWriter>();
-            macroConfigurationMapper =
-                App.Current.Services.GetService<
-                    IPlayerMacroConfigurationMapper>();
-            macroConfigurations =
-                App.Current.Services.GetService<
-                    PlayerMacroConfigurationManager>();
-            var runtimeSetupFactory =
-                App.Current.Services.GetService<
-                    IRuntimeAutomationSetupFactory>();
+            this.logger = logger ??
+                throw new ArgumentNullException(nameof(logger));
+            this.releaseService = releaseService ??
+                throw new ArgumentNullException(
+                    nameof(releaseService));
+            ArgumentNullException.ThrowIfNull(hotkeys);
+            this.iconManager = iconManager ??
+                throw new ArgumentNullException(
+                    nameof(iconManager));
+            this.skillMetadata = skillMetadata ??
+                throw new ArgumentNullException(
+                    nameof(skillMetadata));
+            this.spellMetadata = spellMetadata ??
+                throw new ArgumentNullException(
+                    nameof(spellMetadata));
+            this.staffMetadata = staffMetadata ??
+                throw new ArgumentNullException(
+                    nameof(staffMetadata));
+            ArgumentNullException.ThrowIfNull(
+                macroConfigurationReader);
+            ArgumentNullException.ThrowIfNull(
+                macroConfigurationWriter);
+            this.macroConfigurationMapper =
+                macroConfigurationMapper ??
+                throw new ArgumentNullException(
+                    nameof(macroConfigurationMapper));
+            this.macroConfigurations =
+                macroConfigurations ??
+                throw new ArgumentNullException(
+                    nameof(macroConfigurations));
+            this.clientSessions = clientSessions ??
+                throw new ArgumentNullException(
+                    nameof(clientSessions));
+            this.processScanner = processScanner ??
+                throw new ArgumentNullException(
+                    nameof(processScanner));
+            this.clientLayouts = clientLayouts ??
+                throw new ArgumentNullException(
+                    nameof(clientLayouts));
+            this.colorThemes = colorThemes ??
+                throw new ArgumentNullException(
+                    nameof(colorThemes));
+            this.settingsManager = settingsManager ??
+                throw new ArgumentNullException(
+                    nameof(settingsManager));
+            ArgumentNullException.ThrowIfNull(
+                runtimeSetupFactory);
+            ArgumentNullException.ThrowIfNull(
+                clientLaunchService);
             var uiDispatcher =
                 new WpfUiDispatcher(Dispatcher);
             runtimeClients = new ClientRuntimeRegistry(
@@ -92,10 +152,11 @@ namespace SleepHunter.Views
                     ClientLayoutManager.LayoutFile),
                 TimeProvider.System,
                 () => AbilitySnapshotCatalogFactory.Create(
-                    SkillMetadataManager.Instance.Skills,
-                    SpellMetadataManager.Instance.Spells));
-            var hotkeyRegistration =
+                    skillMetadata.Skills,
+                    spellMetadata.Spells));
+            hotkeyRegistration =
                 new WindowHotkeyRegistrationService(
+                    hotkeys,
                     () => new WindowInteropHelper(this).Handle);
             hotkeyAssignments = new HotkeyAssignmentService(
                 hotkeyRegistration,
@@ -110,36 +171,34 @@ namespace SleepHunter.Views
                     Environment.CurrentDirectory);
             var clientLaunch =
                 new ClientLaunchViewModel(
-                    App.Current.Services.GetService<
-                        IClientLaunchService>(),
+                    clientLaunchService,
                     new WpfClientLaunchInteraction(this),
-                    () => UserSettingsManager.Instance
+                    () => settingsManager
                         .Settings,
-                    () => ClientLayoutManager.Instance
-                        .Layout,
+                    () => clientLayouts.Layout,
                     logger);
             clientList = new ClientListViewModel(
-                (player, runtime) =>
+                (session, runtime) =>
                     new ClientListItemViewModel(
-                        player,
-                        macroConfigurations.GetOrCreate(player),
+                        session,
+                        macroConfigurations.GetOrCreate(session),
                         runtime,
                         macroConfigurationMapper,
                         runtimeSetupFactory,
-                        () => UserSettingsManager.Instance.Settings,
-                        uiDispatcher),
+                        () => settingsManager.Settings,
+                        uiDispatcher,
+                        iconManager,
+                        skillMetadata,
+                        spellMetadata),
                 macroPersistence,
                 new WpfMacroConfigurationInteraction(this),
                 logger,
                 clientLaunch);
-            clientPolling = new ClientPollingCoordinator(
-                () => ProcessManager.Instance.ScanForProcesses(),
+            clientDiscovery = new ClientDiscoveryCoordinator(
+                processScanner.ScanForProcesses,
                 ReconcileDetectedProcesses,
-                () => PlayerManager.Instance.UpdateClients(),
-                () => UserSettingsManager.Instance.Settings
+                () => settingsManager.Settings
                     .ProcessUpdateInterval,
-                () => UserSettingsManager.Instance.Settings
-                    .ClientUpdateInterval,
                 uiDispatcher,
                 TimeProvider.System,
                 logger);
@@ -156,15 +215,11 @@ namespace SleepHunter.Views
 
             LoadClientLayout();
 
-            UpdateWindowTitle();
             LoadSkills();
             LoadSpells();
             LoadStaves();
             CalculateLines();
 
-            ToggleInventory(false);
-            ToggleSkills(false);
-            ToggleSpells(false);
             clientList.MacroPersistence.IsSpellQueueVisible = false;
         }
 
@@ -181,7 +236,7 @@ namespace SleepHunter.Views
 
             if (isDisposing)
             {
-                clientPolling.Dispose();
+                clientDiscovery.Dispose();
                 clientList.Dispose();
             }
 
@@ -192,7 +247,7 @@ namespace SleepHunter.Views
 
         private void InitializeLogger()
         {
-            if (!UserSettingsManager.Instance.Settings.LoggingEnabled)
+            if (!settingsManager.Settings.LoggingEnabled)
                 return;
 
             var logsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "logs");
@@ -226,14 +281,14 @@ namespace SleepHunter.Views
 
         private void InitializeViews()
         {
-            PlayerManager.Instance.PlayerAdded += OnPlayerCollectionAdd;
-            PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionRemove;
+            clientSessions.SessionAdded += OnClientSessionAdded;
+            clientSessions.SessionRemoved += OnClientSessionRemoved;
+            clientList.ClientLoginStateChanged +=
+                OnClientLoginStateChanged;
 
-            PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
-
-            SpellMetadataManager.Instance.SpellAdded += OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellChanged += OnSpellManagerUpdated;
-            SpellMetadataManager.Instance.SpellRemoved += OnSpellManagerUpdated;
+            spellMetadata.SpellAdded += OnSpellManagerUpdated;
+            spellMetadata.SpellChanged += OnSpellManagerUpdated;
+            spellMetadata.SpellRemoved += OnSpellManagerUpdated;
         }
 
         private void RuntimeDetailsPopup_Closed(
@@ -263,183 +318,169 @@ namespace SleepHunter.Views
                 return;
 
             foreach (var spell in selectedMacro.QueuedSpells)
-                spell.IsUndefined = !SpellMetadataManager.Instance.ContainsSpell(spell.Name);
+                spell.IsUndefined = !spellMetadata.ContainsSpell(spell.Name);
         }
 
-        private async void OnPlayerCollectionAdd(object sender, PlayerEventArgs e)
+        private async void OnClientSessionAdded(
+            object sender,
+            ClientSessionEventArgs e)
         {
-            logger.LogInfo($"Game client process detected with pid: {e.Player.Process.ProcessId}");
+            var session = e.Session;
+            logger.LogInfo(
+                $"Game client process detected with pid: " +
+                $"{session.Process.ProcessId}");
 
             await runtimeClients.AttachAsync(
                 new ClientRuntimeDescriptor(
                     new ClientIdentity(
-                        $"process:{e.Player.Process.ProcessId}"),
-                    e.Player.Process.ProcessId,
-                    e.Player.Process.WindowHandle),
-                UserSettingsManager.Instance.Settings.ClientUpdateInterval);
-            runtimeClients.BindPresentation(e.Player);
+                        $"process:{session.Process.ProcessId}"),
+                    session.Process.ProcessId,
+                    session.Process.WindowHandle),
+                 settingsManager.Settings.ClientUpdateInterval);
 
             UpdateClientList();
         }
 
-        private async void OnPlayerCollectionRemove(object sender, PlayerEventArgs e)
+        private async void OnClientSessionRemoved(
+            object sender,
+            ClientSessionEventArgs e)
         {
-            logger.LogInfo($"Game client process removed with pid: {e.Player.Process.ProcessId}");
+            var session = e.Session;
+            logger.LogInfo(
+                $"Game client process removed with pid: " +
+                $"{session.Process.ProcessId}");
 
-            runtimeClients.UnbindPresentation(
-                e.Player.Process.ProcessId);
-            await OnPlayerLoggedOutAsync(e.Player);
+            var item = clientList.FindByProcessId(
+                session.Process.ProcessId);
+            if (item is not null)
+                await OnClientLoggedOutAsync(item);
 
             UpdateClientList();
 
-            if (selectedMacro != null && selectedMacro.Name == e.Player.Name)
-                SelectNextAvailablePlayer();
+            if (selectedMacro?.Client == session)
+                SelectNextAvailableClient();
 
             macroConfigurations.Remove(
-                e.Player.Process.ProcessId);
-            await runtimeClients.DetachAsync(e.Player.Process.ProcessId);
+                session.Process.ProcessId);
+            await runtimeClients.DetachAsync(
+                session.Process.ProcessId);
         }
 
-        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void OnClientLoginStateChanged(
+            object sender,
+            ClientLoginStateChangedEventArgs e)
         {
-            if (sender is not Player player)
+            await Dispatcher.InvokeAsync(static () => { });
+
+            if (e.IsLoggedIn)
+                await OnClientLoggedInAsync(e.Client);
+            else
+                await OnClientLoggedOutAsync(e.Client);
+        }
+
+        private async Task OnClientLoggedInAsync(
+            ClientListItemViewModel client)
+        {
+            if (client == null ||
+                string.IsNullOrWhiteSpace(client.Name))
                 return;
 
             await Dispatcher.InvokeAsync(static () => { });
 
-            if (string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (!player.IsLoggedIn)
-                    await OnPlayerLoggedOutAsync(player);
-                else
-                    await OnPlayerLoggedInAsync(player);
-            }
+            var session = client.Session;
 
-            UpdateClientList();
+            logger.LogInfo(
+                $"Character logged in: {client.Name} " +
+                $"(pid {session.Process.ProcessId})");
 
-            var selectedPlayer =
-                (clientListBox.SelectedItem as ClientListItemViewModel)
-                ?.Player;
+            NativeMethods.SetWindowText(
+                session.Process.WindowHandle,
+                $"{session.Layout?.WindowTitle ?? session.Process.WindowTitle} - {client.Name}");
 
-            if (player == selectedPlayer)
-            {
-                var supportsFlowering =
-                    selectedPlayer?.Layout?.SupportsFlowering ??
-                    false;
-                var hasLyliacPlant = selectedPlayer?.HasLyliacPlant ?? false;
-                var hasLyliacVineyard = selectedPlayer?.HasLyliacVineyard ?? false;
-
-                ToggleInventory(selectedPlayer != null);
-                ToggleSkills(selectedPlayer != null);
-                ToggleSpells(selectedPlayer != null);
-                ToggleFlower(supportsFlowering, hasLyliacPlant, hasLyliacVineyard);
-            }
-        }
-
-        private async Task OnPlayerLoggedInAsync(Player player)
-        {
-            if (player == null || string.IsNullOrWhiteSpace(player.Name))
-                return;
-
-            await Dispatcher.InvokeAsync(static () => { });
-
-            player.LoginTimestamp ??= DateTime.Now;
-
-            UpdateClientList();
-
-            logger.LogInfo($"Player logged in: {player.Name} (pid {player.Process.ProcessId})");
-
-            if (!string.IsNullOrEmpty(player.Name))
-                NativeMethods.SetWindowText(
-                    player.Process.WindowHandle,
-                    $"{player.Layout?.WindowTitle ?? player.Process.WindowTitle} - {player.Name}");
-
-            var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
+            var autosaveEnabled = settingsManager.Settings.SaveMacroStates;
             var configuration =
-                macroConfigurations.GetOrCreate(player);
+                macroConfigurations.GetOrCreate(session);
 
             if (autosaveEnabled)
             {
                 logger.LogInfo(
-                    $"Auto-loading {configuration.Client.Name} macro configuration...");
+                    $"Auto-loading {configuration.Name} macro configuration...");
                 await clientList.MacroPersistence.AutoLoadMacroAsync(
                     configuration);
             }
-
-            UpdateWindowTitle();
 
             // Set default spell queue rotation mode
             if (configuration.SpellQueueRotation ==
                 SpellRotationMode.Default)
             {
                 configuration.SpellQueueRotation =
-                    UserSettingsManager.Instance.Settings
+                    settingsManager.Settings
                         .SpellRotationMode;
             }
         }
 
-        private async Task OnPlayerLoggedOutAsync(Player player)
+        private async Task OnClientLoggedOutAsync(
+            ClientListItemViewModel client)
         {
-            if (player == null || string.IsNullOrWhiteSpace(player.Name))
+            if (client == null ||
+                string.IsNullOrWhiteSpace(client.Name))
                 return;
 
             await Dispatcher.InvokeAsync(static () => { });
 
-            if (player.LoginTimestamp is null)
-                return;
+            var session = client.Session;
 
-            player.LoginTimestamp = null;
-            UpdateClientList();
-
-            logger.LogInfo($"Player logged out: {player.Name} (pid {player.Process.ProcessId})");
+            logger.LogInfo(
+                $"Character logged out: {client.Name} " +
+                $"(pid {session.Process.ProcessId})");
 
             NativeMethods.SetWindowText(
-                player.Process.WindowHandle,
-                player.Layout?.WindowTitle ??
-                player.Process.WindowTitle);
+                session.Process.WindowHandle,
+                session.Layout?.WindowTitle ??
+                session.Process.WindowTitle);
 
-            var autosaveEnabled = UserSettingsManager.Instance.Settings.SaveMacroStates;
+            var autosaveEnabled = settingsManager.Settings.SaveMacroStates;
             var configuration =
-                macroConfigurations.GetOrCreate(player);
+                macroConfigurations.GetOrCreate(session);
 
             if (autosaveEnabled)
             {
                 logger.LogInfo(
-                    $"Auto-saving {configuration.Client.Name} macro configuration...");
+                    $"Auto-saving {configuration.Name} macro configuration...");
                 await clientList.MacroPersistence.AutoSaveMacroAsync(
                     configuration);
             }
 
-            if (player.HasHotkey)
-                HotkeyManager.Instance.UnregisterHotkey(windowSource.Handle, player.Hotkey);
+            if (session.HasHotkey)
+            {
+                hotkeyRegistration.Unregister(
+                    session.Hotkey);
+            }
 
-            player.Hotkey = null;
-
-            UpdateWindowTitle();
+            session.Hotkey = null;
 
             configuration.ClearSkills();
             configuration.ClearSpellQueue();
             configuration.ClearFlowerQueue();
 
-            UpdateUIForSelectedClient(player.Name);
+            UpdateUIForSelectedClient(client.Name);
         }
 
         private void UpdateUIForSelectedClient(string lastSelectedName = "")
         {
             if (selectedMacro != null && selectedMacro.Name == lastSelectedName)
-                SelectNextAvailablePlayer();
+                SelectNextAvailableClient();
 
-            if (!PlayerManager.Instance.LoggedInPlayers.Any())
+            if (!clientList.HasLoggedInClients)
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     false;
         }
 
-        private void SelectNextAvailablePlayer()
+        private void SelectNextAvailableClient()
         {
-            if (!PlayerManager.Instance.LoggedInPlayers.Any())
+            if (!clientList.HasLoggedInClients)
             {
                 clientListBox.SelectedItem = null;
-                UpdateWindowTitle();
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     false;
             }
@@ -459,21 +500,20 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(layoutFile))
                 {
-                    ClientLayoutManager.Instance.LoadFromFile(
+                    clientLayouts.LoadFromFile(
                         layoutFile);
                     logger.LogInfo(
                         "Client layout successfully loaded");
 
                     var layout =
-                        ClientLayoutManager.Instance.Layout;
+                        clientLayouts.Layout;
                     clientList.ClientLaunch.IsLayoutAvailable =
                         true;
                     if (!string.IsNullOrWhiteSpace(
                             layout.WindowClassName))
                     {
-                        ProcessManager.Instance
-                            .RegisterWindowClassName(
-                                layout.WindowClassName);
+                        processScanner.RegisterWindowClassName(
+                            layout.WindowClassName);
                         logger.LogInfo(
                             $"Registered window class name: {layout.WindowClassName}");
                     }
@@ -511,7 +551,7 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(themesFile))
                 {
-                    ColorThemeManager.Instance.LoadFromFile(themesFile);
+                    colorThemes.LoadFromFile(themesFile);
                     logger.LogInfo("Themes loaded successfully");
                 }
                 else
@@ -535,27 +575,27 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(settingsFile))
                 {
-                    UserSettingsManager.Instance.LoadFromFile(settingsFile);
+                    settingsManager.LoadFromFile(settingsFile);
                     logger.LogInfo("User settings loaded successfully");
 
-                    if (string.IsNullOrWhiteSpace(UserSettingsManager.Instance.Settings.SelectedTheme))
+                    if (string.IsNullOrWhiteSpace(settingsManager.Settings.SelectedTheme))
                     {
                         logger.LogWarn("User settings does not have a selected theme, using default theme");
-                        UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                        settingsManager.Settings.SelectedTheme = colorThemes.DefaultTheme?.Name;
                     }
                     else
                     {
-                        var selectedTheme = UserSettingsManager.Instance.Settings.SelectedTheme;
-                        if (!ColorThemeManager.Instance.ContainsTheme(selectedTheme))
+                        var selectedTheme = settingsManager.Settings.SelectedTheme;
+                        if (!colorThemes.ContainsTheme(selectedTheme))
                         {
                             logger.LogWarn($"User settings has an invalid theme selected: {selectedTheme}");
-                            UserSettingsManager.Instance.Settings.SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name;
+                            settingsManager.Settings.SelectedTheme = colorThemes.DefaultTheme?.Name;
                         }
                     }
                 }
                 else
                 {
-                    UserSettingsManager.Instance.Settings.ResetDefaults();
+                    settingsManager.Settings.ResetDefaults();
                     logger.LogInfo("No user settings file was found, using defaults");
 
                     isFirstRun = true;
@@ -566,14 +606,12 @@ namespace SleepHunter.Views
                 logger.LogError("Failed to load user settings, resetting to defaults");
                 logger.LogException(ex);
 
-                UserSettingsManager.Instance.Settings.ResetDefaults();
+                settingsManager.Settings.ResetDefaults();
             }
             finally
             {
-                UserSettingsManager.Instance.Settings.PropertyChanged += UserSettings_PropertyChanged;
+                settingsManager.Settings.PropertyChanged += UserSettings_PropertyChanged;
 
-                PlayerManager.Instance.SortOrder = UserSettingsManager.Instance.Settings.ClientSortOrder;
-                PlayerManager.Instance.ShowAllClients = UserSettingsManager.Instance.Settings.ShowAllProcesses;
                 UpdateClientList();
             }
         }
@@ -587,7 +625,7 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(skillsFile))
                 {
-                    SkillMetadataManager.Instance.LoadFromFile(skillsFile);
+                    skillMetadata.LoadFromFile(skillsFile);
                     logger.LogInfo("Skill metadata loaded successfully");
                 }
                 else
@@ -611,7 +649,7 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(spellsFile))
                 {
-                    SpellMetadataManager.Instance.LoadFromFile(spellsFile);
+                    spellMetadata.LoadFromFile(spellsFile);
                     logger.LogInfo("Spell metadata loaded successfully");
                 }
                 else
@@ -635,7 +673,7 @@ namespace SleepHunter.Views
             {
                 if (File.Exists(stavesFile))
                 {
-                    StaffMetadataManager.Instance.LoadFromFile(stavesFile);
+                    staffMetadata.LoadFromFile(stavesFile);
                     logger.LogInfo("Staves metadata loaded successfully");
                 }
                 else
@@ -653,33 +691,26 @@ namespace SleepHunter.Views
         private void CalculateLines()
         {
             logger.LogInfo("Reculating all staff lines");
-            StaffMetadataManager.Instance.RecalculateAllStaves();
+            staffMetadata.RecalculateAllStaves();
         }
 
         private void StartClientPolling()
         {
-            clientPolling.Start();
+            clientDiscovery.Start();
         }
 
         private void ReconcileDetectedProcesses()
         {
-            while (ProcessManager.Instance.DeadClientCount > 0)
+            while (processScanner.TryDequeueRemoved(
+                       out var deadClient))
             {
-                var deadClient =
-                    ProcessManager.Instance.DequeueDeadClient();
-                if (deadClient is not null)
-                {
-                    PlayerManager.Instance.RemovePlayer(
-                        deadClient.ProcessId);
-                }
+                clientSessions.Remove(deadClient.ProcessId);
             }
 
-            while (ProcessManager.Instance.NewClientCount > 0)
+            while (processScanner.TryDequeueAdded(
+                       out var newClient))
             {
-                var newClient =
-                    ProcessManager.Instance.DequeueNewClient();
-                if (newClient is not null)
-                    PlayerManager.Instance.AddNewClient(newClient);
+                clientSessions.AddDetectedClient(newClient);
             }
 
             if (clientListBox.SelectedIndex == -1 &&
@@ -691,29 +722,31 @@ namespace SleepHunter.Views
 
         private void ApplyTheme()
         {
-            var themeName = UserSettingsManager.Instance.Settings.SelectedTheme;
+            var themeName = settingsManager.Settings.SelectedTheme;
             if (string.IsNullOrWhiteSpace(themeName))
             {
                 logger.LogWarn("Selected theme is not defined, using default theme");
-                themeName = ColorThemeManager.Instance.DefaultTheme?.Name;
+                themeName = colorThemes.DefaultTheme?.Name;
             }
 
-            if (themeName == null || !ColorThemeManager.Instance.ContainsTheme(themeName))
+            if (themeName == null || !colorThemes.ContainsTheme(themeName))
             {
                 logger.LogWarn("Theme name is null or invalid, using default theme instead");
-                ColorThemeManager.Instance.ApplyDefaultTheme();
+                colorThemes.ApplyDefaultTheme();
                 return;
             }
 
             logger.LogInfo($"Applying UI theme: {themeName}");
-            ColorThemeManager.Instance.ApplyTheme(themeName);
+            colorThemes.ApplyTheme(themeName);
         }
 
         private async void ActivateHotkey(
             Key key,
             ModifierKeys modifiers)
         {
-            var hotkey = HotkeyManager.Instance.GetHotkey(key, modifiers);
+            var hotkey = hotkeyRegistration.Find(
+                key,
+                modifiers);
 
             if (hotkey == null)
                 return;
@@ -722,13 +755,15 @@ namespace SleepHunter.Views
             if (client is null)
                 return;
 
-            var hotkeyPlayer = client.Player;
-            logger.LogInfo($"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated for character: {hotkeyPlayer.Name}");
+            logger.LogInfo(
+                $"Hotkey {hotkey.Modifiers}+{hotkey.Key} activated " +
+                $"for character: {client.Name}");
 
             if (!client.ToggleMacroCommand.CanExecute(null))
             {
                 logger.LogWarn(
-                    $"Runtime automation is unavailable for character: {hotkeyPlayer.Name} (hotkey)");
+                    $"Runtime automation is unavailable for " +
+                    $"character: {client.Name} (hotkey)");
                 return;
             }
 
@@ -738,7 +773,8 @@ namespace SleepHunter.Views
             if (client.LastAutomationError is { } error)
             {
                 logger.LogError(
-                    $"Unable to change runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
+                    $"Unable to change runtime automation for " +
+                    $"character: {client.Name} (hotkey)");
                 logger.LogException(error);
                 return;
             }
@@ -749,12 +785,13 @@ namespace SleepHunter.Views
                     ? "Resumed"
                     : "Started";
             logger.LogInfo(
-                $"{action} runtime automation for character: {hotkeyPlayer.Name} (hotkey)");
+                $"{action} runtime automation for character: " +
+                $"{client.Name} (hotkey)");
         }
 
         private void UpdateListBoxGridWidths()
         {
-            var settings = UserSettingsManager.Instance.Settings;
+            var settings = settingsManager.Settings;
 
             SetInventoryGridWidth(settings.InventoryGridWidth);
             SetSkillGridWidth(settings.SkillGridWidth);
@@ -771,7 +808,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var iconSize = UserSettingsManager.Instance.Settings.InventoryIconSize;
+            var iconSize = settingsManager.Settings.InventoryIconSize;
             inventoryListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
@@ -783,7 +820,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var iconSize = UserSettingsManager.Instance.Settings.SkillIconSize;
+            var iconSize = settingsManager.Settings.SkillIconSize;
             temuairSkillListBox.MaxWidth = medeniaSkillListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
@@ -795,7 +832,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var iconSize = UserSettingsManager.Instance.Settings.SkillIconSize;
+            var iconSize = settingsManager.Settings.SkillIconSize;
             worldSkillListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
@@ -807,7 +844,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var iconSize = UserSettingsManager.Instance.Settings.SkillIconSize;
+            var iconSize = settingsManager.Settings.SkillIconSize;
             temuairSpellListBox.MaxWidth = medeniaSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
@@ -819,7 +856,7 @@ namespace SleepHunter.Views
                 return;
             }
 
-            var iconSize = UserSettingsManager.Instance.Settings.SkillIconSize;
+            var iconSize = settingsManager.Settings.SkillIconSize;
             worldSpellListBox.MaxWidth = ((iconSize + IconPadding) * units) + 6;
         }
 
@@ -829,7 +866,10 @@ namespace SleepHunter.Views
         {
             if (metadataWindow == null || !metadataWindow.IsLoaded)
             {
-                metadataWindow = new MetadataEditorWindow
+                metadataWindow = new MetadataEditorWindow(
+                    skillMetadata,
+                    spellMetadata,
+                    staffMetadata)
                 {
                     Owner = this
                 };
@@ -845,7 +885,14 @@ namespace SleepHunter.Views
         public void ShowSettingsWindow(int selectedTabIndex = -1)
         {
             if (settingsWindow == null || !settingsWindow.IsLoaded)
-                settingsWindow = new SettingsWindow() { Owner = this };
+                settingsWindow =
+                    new SettingsWindow(
+                        logger,
+                        releaseService,
+                        settingsManager)
+                    {
+                        Owner = this
+                    };
 
             if (selectedTabIndex >= 0)
                 settingsWindow.SelectedTabIndex = selectedTabIndex;
@@ -872,7 +919,11 @@ namespace SleepHunter.Views
             {
                 logger.LogInfo("Attempting to download latest update");
 
-                var updateProgressWindow = new UpdateProgressWindow() { Owner = this };
+                var updateProgressWindow =
+                    new UpdateProgressWindow(releaseService)
+                    {
+                        Owner = this
+                    };
                 updateProgressWindow.ShowDialog();
 
                 if (!updateProgressWindow.ShouldInstall)
@@ -974,7 +1025,7 @@ namespace SleepHunter.Views
                 PromptUserToOpenUserManual();
             }
 
-            if (UserSettingsManager.Instance.Settings.AutoUpdateEnabled)
+            if (settingsManager.Settings.AutoUpdateEnabled)
                 CheckForNewVersion();
         }
 
@@ -995,7 +1046,7 @@ namespace SleepHunter.Views
 
             try
             {
-                await clientPolling.DisposeAsync();
+                await clientDiscovery.DisposeAsync();
             }
             catch (Exception ex)
             {
@@ -1004,12 +1055,12 @@ namespace SleepHunter.Views
                 logger.LogException(ex);
             }
 
-            UserSettingsManager.Instance.Settings.PropertyChanged -= UserSettings_PropertyChanged;
+            settingsManager.Settings.PropertyChanged -= UserSettings_PropertyChanged;
 
             try
             {
                 logger.LogInfo("Unregistering all hotkeys...");
-                HotkeyManager.Instance.UnregisterAllHotkeys(windowSource.Handle);
+                hotkeyRegistration.UnregisterAll();
                 logger.LogInfo("Unregistered all hotkeys successfully");
             }
             catch (Exception ex)
@@ -1023,20 +1074,11 @@ namespace SleepHunter.Views
                 var settingsFile = UserSettingsManager.SettingsFile;
 
                 logger.LogInfo($"Saving user settings to file: {settingsFile}");
-                UserSettingsManager.Instance.SaveToFile(settingsFile);
+                settingsManager.SaveToFile(settingsFile);
             }
             catch (Exception ex)
             {
                 logger.LogError("Unable to save user settings file");
-                logger.LogException(ex);
-            }
-
-            try
-            {
-                FileArchiveManager.Instance.ClearArchives();
-            }
-            catch (Exception ex)
-            {
                 logger.LogException(ex);
             }
 
@@ -1045,13 +1087,15 @@ namespace SleepHunter.Views
 
             foreach (var configuration in configurations)
             {
-                if (configuration.Client is not { IsLoggedIn: true })
+                if (clientList.FindByProcessId(
+                        configuration.Client.Process.ProcessId) is not
+                    { IsLoggedIn: true })
                     continue;
 
-                if (UserSettingsManager.Instance.Settings.SaveMacroStates)
+                if (settingsManager.Settings.SaveMacroStates)
                 {
                     logger.LogInfo(
-                        $"Auto-saving {configuration.Client.Name} macro configuration...");
+                        $"Auto-saving {configuration.Name} macro configuration...");
                     await clientList.MacroPersistence
                         .AutoSaveMacroAsync(
                         configuration,
@@ -1061,9 +1105,10 @@ namespace SleepHunter.Views
 
             macroConfigurations.Clear();
 
-            PlayerManager.Instance.PlayerAdded -= OnPlayerCollectionAdd;
-            PlayerManager.Instance.PlayerRemoved -= OnPlayerCollectionRemove;
-            PlayerManager.Instance.PlayerPropertyChanged -= OnPlayerPropertyChanged;
+            clientSessions.SessionAdded -= OnClientSessionAdded;
+            clientSessions.SessionRemoved -= OnClientSessionRemoved;
+            clientList.ClientLoginStateChanged -=
+                OnClientLoginStateChanged;
 
             try
             {
@@ -1130,9 +1175,12 @@ namespace SleepHunter.Views
             if (listBoxItem.Content is not ClientListItemViewModel item)
                 return;
 
-            var player = item.Player;
-            NativeMethods.SetForegroundWindow(player.Process.WindowHandle);
-            logger.LogInfo($"Setting foreground window for client: {player.Name} (double-click)");
+            var session = item.Session;
+            NativeMethods.SetForegroundWindow(
+                session.Process.WindowHandle);
+            logger.LogInfo(
+                $"Setting foreground window for client: " +
+                $"{item.Name} (double-click)");
         }
 
         private void spellQueueListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1144,24 +1192,30 @@ namespace SleepHunter.Views
             if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (listBoxItem.Content is not SpellQueueItem queueItem)
+            if (listBoxItem.Content is not SpellQueueItemViewModel queueItem)
                 return;
 
             if (selectedMacro == null)
                 return;
 
-            var player = selectedMacro.Client;
-            var spell = player.Spellbook.GetSpell(queueItem.Name);
+            var spell = clientList.SelectedClient?
+                .Spellbook
+                .GetSpell(queueItem.Name);
 
             if (spell == null)
                 return;
 
-            var dialog = new SpellTargetWindow(spell, queueItem)
+            var dialog = new SpellTargetWindow(
+                spell,
+                queueItem,
+                GetLoggedInCharacterNames())
             {
                 Owner = this
             };
 
-            logger.LogInfo($"Showing spell '{spell.Name}' target dialog for character: {player.Name}");
+            logger.LogInfo(
+                $"Showing spell '{spell.Name}' target dialog for character: " +
+                $"{selectedMacro.Name}");
             var result = dialog.ShowDialog();
 
             if (!result.HasValue || !result.Value)
@@ -1169,7 +1223,7 @@ namespace SleepHunter.Views
 
             selectedMacro.UpdateSpell(
                 queueItem,
-                dialog.SpellQueueItem);
+                dialog.SpellQueueItemViewModel);
         }
 
         private void spellQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -1188,10 +1242,10 @@ namespace SleepHunter.Views
             if (e.Effects != DragDropEffects.Move)
                 return;
 
-            if (e.Data.GetData(typeof(SpellQueueItem)) is not
-                    SpellQueueItem droppedItem ||
+            if (e.Data.GetData(typeof(SpellQueueItemViewModel)) is not
+                    SpellQueueItemViewModel droppedItem ||
                 (sender as ListBoxItem)?.DataContext is not
-                    SpellQueueItem target ||
+                    SpellQueueItemViewModel target ||
                 clientList.SelectedClient?.MacroEditor is not
                 { } editor)
             {
@@ -1220,18 +1274,22 @@ namespace SleepHunter.Views
             if (sender is not ListBoxItem listBoxItem)
                 return;
 
-            if (listBoxItem.Content is not FlowerQueueItem queueItem)
+            if (listBoxItem.Content is not FlowerQueueItemViewModel queueItem)
                 return;
 
             if (selectedMacro == null)
                 return;
 
-            var dialog = new FlowerTargetWindow(queueItem)
+            var dialog = new FlowerTargetWindow(
+                queueItem,
+                GetLoggedInCharacterNames())
             {
                 Owner = this
             };
 
-            logger.LogInfo($"Showing flower target dialog for character: {selectedMacro.Client.Name}");
+            logger.LogInfo(
+                $"Showing flower target dialog for character: " +
+                $"{selectedMacro.Name}");
             var result = dialog.ShowDialog();
 
             if (!result.HasValue || !result.Value)
@@ -1239,7 +1297,7 @@ namespace SleepHunter.Views
 
             selectedMacro.UpdateFlower(
                 queueItem,
-                dialog.FlowerQueueItem);
+                dialog.FlowerQueueItemViewModel);
         }
 
         private void flowerQueueListBox_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -1258,10 +1316,10 @@ namespace SleepHunter.Views
             if (e.Effects != DragDropEffects.Move)
                 return;
 
-            if (e.Data.GetData(typeof(FlowerQueueItem)) is not
-                    FlowerQueueItem droppedItem ||
+            if (e.Data.GetData(typeof(FlowerQueueItemViewModel)) is not
+                    FlowerQueueItemViewModel droppedItem ||
                 (sender as ListBoxItem)?.DataContext is not
-                    FlowerQueueItem target ||
+                    FlowerQueueItemViewModel target ||
                 clientList.SelectedClient?.MacroEditor is not
                 { } editor)
             {
@@ -1289,38 +1347,20 @@ namespace SleepHunter.Views
                 })
             {
                 selectedMacro = null;
-                UpdateWindowTitle();
-                ToggleInventory(false);
-                ToggleSkills(false);
-                ToggleSpells(false);
-                ToggleFlower(false);
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     false;
                 return;
             }
 
-            var player = item.Player;
             var prevSelectedMacro = selectedMacro;
             selectedMacro = item.MacroConfiguration;
-
-            UpdateWindowTitle();
 
             if (selectedMacro == null)
                 return;
 
-            tabControl.SelectedIndex = Math.Max(0, selectedMacro.Client.SelectedTabIndex);
-
             if (prevSelectedMacro == null && selectedMacro?.QueuedSpells.Count > 0)
                 clientList.MacroPersistence.IsSpellQueueVisible =
                     true;
-
-            var supportsFlowering =
-                player.Layout?.SupportsFlowering ?? false;
-
-            ToggleInventory(player.IsLoggedIn);
-            ToggleSkills(player.IsLoggedIn);
-            ToggleSpells(player.IsLoggedIn);
-            ToggleFlower(supportsFlowering, player.HasLyliacPlant, player.HasLyliacVineyard);
 
             if (selectedMacro.QueuedSpells.Count > 0)
             {
@@ -1346,14 +1386,15 @@ namespace SleepHunter.Views
                 })
                 return;
 
-            var player = item.Player;
+            var session = item.Session;
             logger.LogInfo(
-                $"Captured hotkey input {input.Kind} for character: {player.Name}");
+                $"Captured hotkey input {input.Kind} for character: " +
+                $"{item.Name}");
             e.Handled = true;
             if (input.Kind == HotkeyInputKind.Clear)
             {
                 var clearResult =
-                    hotkeyAssignments.Clear(player);
+                    hotkeyAssignments.Clear(session);
                 if (!clearResult.Succeeded)
                 {
                     this.ShowMessageBox("Clear Hotkey Error",
@@ -1368,25 +1409,25 @@ namespace SleepHunter.Views
                     HotkeyAssignmentStatus.Cleared)
                 {
                     await PersistHotkeyAssignmentsAsync(
-                        [player]);
+                        [session]);
                 }
 
                 return;
             }
 
-            var players =
-                PlayerManager.Instance.AllClients.ToArray();
-            var affectedPlayers = players
+            var sessions =
+                clientSessions.Sessions.ToArray();
+            var affectedSessions = sessions
                 .Where(candidate =>
-                    ReferenceEquals(candidate, player) ||
+                    ReferenceEquals(candidate, session) ||
                     SameHotkey(
                         candidate.Hotkey,
                         input.Hotkey))
                 .ToArray();
             var assignmentResult = hotkeyAssignments.Assign(
-                player,
+                session,
                 input.Hotkey,
-                players);
+                sessions);
             if (!assignmentResult.Succeeded)
             {
                 this.ShowMessageBox("Set Hotkey Error",
@@ -1401,28 +1442,30 @@ namespace SleepHunter.Views
                 HotkeyAssignmentStatus.Assigned)
             {
                 await PersistHotkeyAssignmentsAsync(
-                    affectedPlayers);
+                    affectedSessions);
             }
         }
 
         private async Task PersistHotkeyAssignmentsAsync(
-            Player[] players)
+            ClientSession[] sessions)
         {
-            if (!UserSettingsManager.Instance.Settings
+            if (!settingsManager.Settings
                     .SaveMacroStates)
             {
                 return;
             }
 
-            foreach (var player in players.Distinct())
+            foreach (var session in sessions.Distinct())
             {
-                if (string.IsNullOrWhiteSpace(player.Name))
+                var configuration =
+                    macroConfigurations.GetOrCreate(session);
+                if (string.IsNullOrWhiteSpace(
+                        configuration.Name))
                     continue;
 
                 await clientList.MacroPersistence
                     .AutoSaveMacroAsync(
-                        macroConfigurations.GetOrCreate(
-                            player));
+                        configuration);
             }
         }
 
@@ -1434,36 +1477,6 @@ namespace SleepHunter.Views
             left.Key == right.Key &&
             left.Modifiers == right.Modifiers;
 
-        private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is not TabControl)
-                return;
-
-            if (selectedMacro == null)
-                return;
-
-            TabItem newTab = null;
-
-            if (e.AddedItems.Count > 0)
-                newTab = e.AddedItems[0] as TabItem;
-
-            if (newTab != null)
-                TabSelected(newTab);
-        }
-
-        private void TabSelected(TabItem tab)
-        {
-            if (selectedMacro == null)
-                return;
-
-            selectedMacro.Client.SelectedTabIndex = tabControl.Items.IndexOf(tab);
-
-            var supportsFlowering =
-                selectedMacro.Client.Layout?.SupportsFlowering ??
-                false;
-            ToggleFlower(supportsFlowering, selectedMacro.Client.HasLyliacPlant, selectedMacro.Client.HasLyliacVineyard);
-        }
-
         private void skillListBox_ItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             // Only handle left-click
@@ -1473,7 +1486,7 @@ namespace SleepHunter.Views
             if (sender is not ListBoxItem item)
                 return;
 
-            if (item.Content is not Skill skill)
+            if (item.Content is not SkillViewModel skill)
                 return;
 
             if (clientListBox.SelectedItem is not
@@ -1501,18 +1514,18 @@ namespace SleepHunter.Views
             if (sender is not ListBoxItem item)
                 return;
 
-            if (item.Content is not Spell spell)
+            if (item.Content is not SpellViewModel spell)
                 return;
 
             if (clientListBox.SelectedItem is not
                 ClientListItemViewModel selectedClient)
                 return;
 
-            var player = selectedClient.Player;
             if (spell.IsEmpty || string.IsNullOrWhiteSpace(spell.Name))
                 return;
 
-            if (spell.TargetType == AbilityTargetType.TextInput)
+            if (spell.ArgumentType ==
+                SpellArgumentType.TextInput)
             {
                 this.ShowMessageBox("Not Supported",
                    "This spell requires a user text input and cannot be macroed.",
@@ -1525,24 +1538,30 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            var spellTargetWindow = new SpellTargetWindow(spell)
+            var spellTargetWindow = new SpellTargetWindow(
+                spell,
+                GetLoggedInCharacterNames())
             {
                 Owner = this
             };
 
-            logger.LogInfo($"Showing spell '{spell.Name}' target dialog for character: {player.Name}");
+            logger.LogInfo(
+                $"Showing spell '{spell.Name}' target dialog " +
+                $"for character: {selectedClient.Name}");
             var result = spellTargetWindow.ShowDialog();
 
             if (!result.HasValue || !result.Value)
                 return;
 
-            var queueItem = spellTargetWindow.SpellQueueItem;
+            var queueItem = spellTargetWindow.SpellQueueItemViewModel;
 
             var isAlreadyQueued = selectedMacro.IsSpellInQueue(queueItem.Name);
 
-            if (isAlreadyQueued && UserSettingsManager.Instance.Settings.WarnOnDuplicateSpells)
+            if (isAlreadyQueued && settingsManager.Settings.WarnOnDuplicateSpells)
             {
-                logger.LogInfo($"Spell '{spell.Name}' is already queued for character {player.Name}, asking user to override");
+                logger.LogInfo(
+                    $"Spell '{spell.Name}' is already queued for " +
+                    $"character {selectedClient.Name}, asking user to override");
 
                 var userOverride = this.ShowMessageBox("Already Queued",
                    string.Format("The spell '{0}' is already queued.\nDo you want to queue it again anyways?", spell.Name),
@@ -1557,7 +1576,9 @@ namespace SleepHunter.Views
             selectedMacro.AddToSpellQueue(queueItem);
             clientList.MacroPersistence.IsSpellQueueVisible = true;
 
-            logger.LogInfo($"Spell '{spell.Name}' added to spell queue for character: {player.Name}");
+            logger.LogInfo(
+                $"Spell '{spell.Name}' added to spell queue for " +
+                $"character: {selectedClient.Name}");
         }
 
         private void addFlowerTargetButton_Click(object sender, RoutedEventArgs e)
@@ -1565,22 +1586,27 @@ namespace SleepHunter.Views
             if (selectedMacro == null)
                 return;
 
-            var flowerTargetDialog = new FlowerTargetWindow
+            var flowerTargetDialog = new FlowerTargetWindow(
+                GetLoggedInCharacterNames())
             {
                 Owner = this
             };
 
-            logger.LogInfo($"Showing flower target dialog for character: {selectedMacro.Client.Name}");
+            logger.LogInfo(
+                $"Showing flower target dialog for character: " +
+                $"{selectedMacro.Name}");
             var result = flowerTargetDialog.ShowDialog();
             if (!result.HasValue || !result.Value)
                 return;
 
-            var queueItem = flowerTargetDialog.FlowerQueueItem;
+            var queueItem = flowerTargetDialog.FlowerQueueItemViewModel;
             queueItem.LastUsedTimestamp = DateTime.Now;
 
             selectedMacro.AddToFlowerQueue(queueItem);
 
-            logger.LogInfo($"Added '{queueItem.Target}' to flower queue for character: {selectedMacro.Client.Name}");
+            logger.LogInfo(
+                $"Added '{queueItem.Target}' to flower queue for " +
+                $"character: {selectedMacro.Name}");
         }
 
         private void UserSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1594,10 +1620,7 @@ namespace SleepHunter.Views
                 ApplyTheme();
 
             if (string.Equals(nameof(settings.ClientSortOrder), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                PlayerManager.Instance.SortOrder = settings.ClientSortOrder;
                 UpdateClientList();
-            }
 
             if (string.Equals(nameof(settings.InventoryGridWidth), e.PropertyName, StringComparison.OrdinalIgnoreCase))
                 SetInventoryGridWidth(settings.InventoryGridWidth);
@@ -1623,60 +1646,7 @@ namespace SleepHunter.Views
             // Debug settings
 
             if (string.Equals(nameof(settings.ShowAllProcesses), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                PlayerManager.Instance.ShowAllClients = settings.ShowAllProcesses;
                 UpdateClientList();
-            }
-        }
-
-        private void UpdateWindowTitle()
-        {
-            if (selectedMacro == null || !selectedMacro.Client.IsLoggedIn)
-            {
-                Title = "SleepHunter";
-                return;
-            }
-
-            Title = $"SleepHunter - {selectedMacro.Client.Name}";
-        }
-
-        private void ToggleInventory(bool show = true)
-        {
-            inventoryTab.IsEnabled = show;
-            equipmentTab.IsEnabled = show;
-        }
-
-        private void ToggleSkills(bool show = true)
-        {
-            temuairSkillListBox.Visibility = medeniaSkillListBox.Visibility = worldSkillListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
-            skillsTab.IsEnabled = show;
-
-            if (!show)
-                skillsTab.TabIndex = -1;
-        }
-
-        private void ToggleSpells(bool show = true)
-        {
-            temuairSpellListBox.Visibility = medeniaSpellListBox.Visibility = worldSpellListBox.Visibility = (show ? Visibility.Visible : Visibility.Collapsed);
-            spellsTab.IsEnabled = show;
-
-            if (!show)
-                spellsTab.TabIndex = -1;
-        }
-
-        private void ToggleFlower(bool show = false, bool hasLyliacPlant = false, bool hasLyliacVineyard = false)
-        {
-            flowerTab.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-            flowerTab.IsEnabled = hasLyliacPlant || hasLyliacVineyard;
-
-            flowerAlternateCharactersCheckBox.IsEnabled = hasLyliacPlant;
-            flowerVineyardCheckBox.IsEnabled = hasLyliacVineyard;
-
-            if (!hasLyliacPlant)
-                flowerAlternateCharactersCheckBox.IsChecked = false;
-
-            if (!hasLyliacVineyard)
-                flowerVineyardCheckBox.IsChecked = false;
         }
 
         private async void UpdateClientList()
@@ -1686,20 +1656,29 @@ namespace SleepHunter.Views
             if (isDisposed || isShutdownInProgress)
                 return;
 
-            var showAll = PlayerManager.Instance.ShowAllClients;
-            var sortOrder = PlayerManager.Instance.SortOrder;
+            var settings = settingsManager.Settings;
+            var showAll = settings.ShowAllProcesses;
+            var sortOrder = settings.ClientSortOrder;
 
             logger.LogInfo($"Updating the client list (showAll = {showAll}, sortOrder = {sortOrder})");
 
             clientList.Refresh(
-                PlayerManager.Instance.VisiblePlayers,
+                clientSessions.Sessions,
                 processId =>
                     runtimeClients.TryFind(
                         processId,
                         out var runtime)
                         ? runtime
-                        : null);
+                        : null,
+                sortOrder,
+                showAll);
         }
+
+        private string[] GetLoggedInCharacterNames() =>
+            clientList.LoggedInClients
+                .Select(client => client.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
 
         private async void CheckForNewVersion()
         {

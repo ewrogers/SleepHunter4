@@ -9,10 +9,7 @@ namespace SleepHunter.Settings
     {
         public const string SettingsFile = @"Settings.xml";
 
-        private static readonly UserSettingsManager instance = new();
-        public static UserSettingsManager Instance => instance;
-
-        private UserSettingsManager()
+        public UserSettingsManager()
         {
             Settings = new UserSettings();
         }

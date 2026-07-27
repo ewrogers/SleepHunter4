@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Media;
 
 namespace SleepHunter.Settings

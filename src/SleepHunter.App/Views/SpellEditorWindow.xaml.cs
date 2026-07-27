@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 
 using SleepHunter.Extensions;
@@ -10,6 +10,7 @@ namespace SleepHunter.Views
     public partial class SpellEditorWindow : Window
     {
         private readonly string originalName;
+        private readonly SpellMetadataManager spellMetadata;
         private SpellMetadata spell = new();
 
         public SpellMetadata Spell
@@ -28,8 +29,11 @@ namespace SleepHunter.Views
             DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(SpellEditorWindow), new PropertyMetadata(false));
 
 
-        public SpellEditorWindow(SpellMetadata spell, bool isEditMode = true)
-           : this()
+        public SpellEditorWindow(
+            SpellMetadata spell,
+            SpellMetadataManager spellMetadata,
+            bool isEditMode = true)
+           : this(spellMetadata)
         {
             nameTextBox.Text = originalName = spell.Name;
             groupNameTextBox.Text = spell.GroupName;
@@ -48,7 +52,7 @@ namespace SleepHunter.Views
             dialogCheckBox.IsChecked = spell.OpensDialog;
             improveCheckBox.IsChecked = !spell.CanImprove;
 
-            SetPlayerClass(spell.Class);
+            SetCharacterClassFlags(spell.Class);
 
             IsEditMode = isEditMode;
 
@@ -59,8 +63,12 @@ namespace SleepHunter.Views
             }
         }
 
-        public SpellEditorWindow()
+        public SpellEditorWindow(
+            SpellMetadataManager spellMetadata)
         {
+            this.spellMetadata = spellMetadata ??
+                throw new ArgumentNullException(
+                    nameof(spellMetadata));
             InitializeComponent();
             Title = "Add Spell";
         }
@@ -101,7 +109,8 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            if (nameChanged && SpellMetadataManager.Instance.ContainsSpell(spellName))
+            if (nameChanged &&
+                spellMetadata.ContainsSpell(spellName))
             {
                 this.ShowMessageBox("Duplicate Name",
                    "A spell already exists with the same name.",
@@ -133,7 +142,7 @@ namespace SleepHunter.Views
 
             spell.Name = spellName;
             spell.GroupName = string.IsNullOrWhiteSpace(groupName) ? null : groupName;
-            spell.Class = GetPlayerClass();
+            spell.Class = GetCharacterClassFlags();
             spell.ManaCost = manaCost;
             spell.NumberOfLines = numberOfLines;
             spell.Cooldown = cooldown;
@@ -146,35 +155,35 @@ namespace SleepHunter.Views
             return true;
         }
 
-        private PlayerClass GetPlayerClass()
+        private CharacterClassFlags GetCharacterClassFlags()
         {
-            var playerClass = PlayerClass.Peasant;
+            var playerClass = CharacterClassFlags.Peasant;
 
             if (warriorCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Warrior;
+                playerClass |= CharacterClassFlags.Warrior;
 
             if (wizardCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Wizard;
+                playerClass |= CharacterClassFlags.Wizard;
 
             if (priestCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Priest;
+                playerClass |= CharacterClassFlags.Priest;
 
             if (rogueCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Rogue;
+                playerClass |= CharacterClassFlags.Rogue;
 
             if (monkCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Monk;
+                playerClass |= CharacterClassFlags.Monk;
 
             return playerClass;
         }
 
-        private void SetPlayerClass(PlayerClass playerClass)
+        private void SetCharacterClassFlags(CharacterClassFlags playerClass)
         {
-            warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
-            wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
-            priestCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Priest);
-            rogueCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Rogue);
-            monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
+            warriorCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Warrior);
+            wizardCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Wizard);
+            priestCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Priest);
+            rogueCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Rogue);
+            monkCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Monk);
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)

@@ -1,9 +1,10 @@
-﻿<Window Name="Window"
+<Window Name="Window"
         x:Class="SleepHunter.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ctl="clr-namespace:SleepHunter.Controls"
+        xmlns:runtimeAutomation="clr-namespace:SleepHunter.Runtime.Automation;assembly=SleepHunter.Runtime"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Settings"
         Width="720" Height="620"
@@ -60,7 +61,7 @@
             		          Width="200"
             		          Style="{StaticResource ObsidianComboBox}"
             		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
-            		          SelectedValue="{Binding Settings.ProcessUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
+                              SelectedValue="{Binding Settings.ProcessUpdateInterval, Source={StaticResource UserSettingsManager}}"
                               Margin="4,6">
                         <sys:TimeSpan>0:0:0.500</sys:TimeSpan>
                         <sys:TimeSpan>0:0:1</sys:TimeSpan>
@@ -88,7 +89,7 @@
             		          Width="200"
             		          Style="{StaticResource ObsidianComboBox}"
             		          ItemTemplate="{StaticResource TimeSpanDataTemplate}"
-            		          SelectedValue="{Binding Settings.ClientUpdateInterval, Source={x:Static settings:UserSettingsManager.Instance}}"
+                              SelectedValue="{Binding Settings.ClientUpdateInterval, Source={StaticResource UserSettingsManager}}"
                               Margin="4,6">
                         <sys:TimeSpan>0:0:0.100</sys:TimeSpan>
                         <sys:TimeSpan>0:0:0.200</sys:TimeSpan>
@@ -118,7 +119,7 @@
                         <CheckBox Name="saveMacroStateCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
                                   Width="280"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SaveMacroStates}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SaveMacroStates}"
                                   Margin="8"
                                   ToolTip="This will automatically save character macro states on logout and reload them on login.">
                             Auto-_Save Macro States
@@ -183,9 +184,9 @@
                                   Height="36"
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource ColorThemeDataTemplate}"
-                                  ItemsSource="{Binding Source={x:Static settings:ColorThemeManager.Instance}, Path=Themes}"
+                                  ItemsSource="{Binding Source={StaticResource ColorThemeManager}, Path=Themes}"
                                   SelectedValuePath="Name"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SelectedTheme}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SelectedTheme}"
                                   Margin="4,6"/>
 
                         <Separator Grid.Row="2"
@@ -207,7 +208,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientSortOrder}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ClientSortOrder}"
                                   Margin="4">
                             <settings:UserSetting Key="Alphabetical" DisplayText="Name" Value="Alphabetical"/>
                             <settings:UserSetting Key="LaunchOrder" DisplayText="Launch Order" Value="LaunchOrder"/>
@@ -235,7 +236,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryIconSize}"
                                   Margin="4">
                             <settings:UserSetting Key="Small" Value="31"/>
                             <settings:UserSetting Key="Medium" Value="46"/>
@@ -256,7 +257,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryGridWidth}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryGridWidth}"
                                   Margin="4">
                             <settings:UserSetting Key="4 Items" Value="4"/>
                             <settings:UserSetting Key="6 Items" Value="6"/>
@@ -286,7 +287,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillIconSize}"
                                   Margin="4">
                             <settings:UserSetting Key="Small" Value="31"/>
                             <settings:UserSetting Key="Medium" Value="46"/>
@@ -307,7 +308,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillGridWidth}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillGridWidth}"
                                   Margin="4">
                             <settings:UserSetting Key="1 Skill" Value="1"/>
                             <settings:UserSetting Key="2 Skills" Value="2"/>
@@ -339,7 +340,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WorldSkillGridWidth}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.WorldSkillGridWidth}"
                                   Margin="4">
                             <settings:UserSetting Key="1 Skill" Value="1"/>
                             <settings:UserSetting Key="2 Skills" Value="2"/>
@@ -371,7 +372,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SpellGridWidth}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SpellGridWidth}"
                                   Margin="4">
                             <settings:UserSetting Key="1 Spell" Value="1"/>
                             <settings:UserSetting Key="2 Spells" Value="2"/>
@@ -403,7 +404,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WorldSpellGridWidth}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.WorldSpellGridWidth}"
                                   Margin="4">
                             <settings:UserSetting Key="1 Spell" Value="1"/>
                             <settings:UserSetting Key="2 Spells" Value="2"/>
@@ -431,7 +432,7 @@
                             <!-- Show Skill Names  -->
                             <CheckBox Name="showSkillNamesCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillNames}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowSkillNames}"
                                       Margin="8"
                                       ToolTip="This will show or hide skill names in the skillbook.">
                                 Show Skill Names
@@ -440,7 +441,7 @@
                             <!-- Show Spell Names  -->
                             <CheckBox Name="showSpellNamesCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellNames}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowSpellNames}"
                                       Margin="8"
                                       ToolTip="This will show or hide spell names in the spellbook.">
                                 Show Spell Names
@@ -453,7 +454,7 @@
                             <!-- Show Skill Levels  -->
                             <CheckBox Name="showSkillLevelsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSkillLevels}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowSkillLevels}"
                                       Margin="8"
                                       ToolTip="This will show or hide skill levels in the skillbook.">
                                 Show Skill Levels
@@ -462,7 +463,7 @@
                             <!-- Show Spell Levels  -->
                             <CheckBox Name="showSpellLevelsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowSpellLevels}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowSpellLevels}"
                                       Margin="8"
                                       ToolTip="This will show or hide spell levels in the spellbook.">
                                 Show Spell Levels
@@ -501,7 +502,7 @@
                             <TextBox Name="clientPathTextBox"
                                      Height="36"
                                      Style="{StaticResource ObsidianNonEraseTextBox}"
-                                     Text="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ClientPath}"
+                                     Text="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ClientPath}"
                                      Margin="0,4"/>
 
                             <Button Name="locateClientButton"
@@ -535,7 +536,7 @@
                             <!-- Patch Multiple Instance CheckBox -->
                             <CheckBox Name="patchMultipleInstanceCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowMultipleInstances}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.AllowMultipleInstances}"
                                       Margin="8"
                                       ToolTip="This will patch the client to allow multiple instances to be launched.">
                                 Allow _Multiple Instances
@@ -544,7 +545,7 @@
                             <!-- Patch Intro Video CheckBox -->
                             <CheckBox Name="patchIntroVideoCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipIntroVideo}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkipIntroVideo}"
                                       Margin="8"
                                       ToolTip="This will patch the client to skip the introduction video.">
                                 Skip Intro _Video
@@ -553,7 +554,7 @@
                             <!-- Suppress Login Notification CheckBox -->
                             <CheckBox Name="suppressLoginNotificationCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SuppressLoginNotification}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SuppressLoginNotification}"
                                       Margin="8"
                                       ToolTip="This will bypass the login notification and its transfer delay for supported clients.">
                                 Suppress _Login Notification
@@ -570,7 +571,7 @@
                             <!-- Apply Modifiers Key Fix CheckBox -->
                             <CheckBox Name="applyModifiersKeyFixCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ApplyModifiersKeyFix}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ApplyModifiersKeyFix}"
                                       Margin="8"
                                       ToolTip="This will clear held keys and modifiers when the client loses focus.">
                                 Apply _Modifiers Key Fix
@@ -579,7 +580,7 @@
                             <!-- Allow Alt to Show Ground Items CheckBox -->
                             <CheckBox Name="allowAltToShowGroundItemsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowAltToShowGroundItems}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.AllowAltToShowGroundItems}"
                                       Margin="8"
                                       ToolTip="Hold either Alt key to reveal up to 255 ground items through static map art. This also enables modifier cleanup on focus loss.">
                                 Show Ground Items with _Alt
@@ -588,7 +589,7 @@
                             <!-- Improved Auto-Follow CheckBox -->
                             <CheckBox Name="improvedAutoFollowCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollow}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ImprovedAutoFollow}"
                                       Margin="8"
                                       ToolTip="Shift+right-click a player or monster to follow without attacking, stopping at the selected route distance.">
                                 Improved Auto-_Follow
@@ -596,7 +597,7 @@
 
                             <!-- Improved Auto-Follow Minimum Distance -->
                             <StackPanel Orientation="Horizontal"
-                                        IsEnabled="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollow}"
+                                        IsEnabled="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ImprovedAutoFollow}"
                                         Margin="32,0,8,8">
                                 <TextBlock Text="Minimum Distance:"
                                            VerticalAlignment="Center"
@@ -621,7 +622,7 @@
                                                    SmallIncrement="1"
                                                    LargeIncrement="1"
                                                    DecimalPlaces="0"
-                                                   Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ImprovedAutoFollowMinimumDistance, Mode=TwoWay}"
+                                                   Value="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ImprovedAutoFollowMinimumDistance, Mode=TwoWay}"
                                                    ToolTip="Choose a minimum follow distance from 1 to 10 route tiles."/>
                                 <TextBlock Text="tiles"
                                            VerticalAlignment="Center"
@@ -650,7 +651,7 @@
                             <!-- Patch Walls CheckBox -->
                             <CheckBox Name="patchNoWallsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.NoWalls}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.NoWalls}"
                                       Margin="8"
                                       ToolTip="This will patch the client to not render foreground (wall) tiles.">
                                 No Foreground _Walls
@@ -667,7 +668,7 @@
                             <!-- Show Item Quantities in Dialogs CheckBox -->
                             <CheckBox Name="showItemQuantitiesInDialogsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowItemQuantitiesInDialogs}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowItemQuantitiesInDialogs}"
                                       Margin="8"
                                       ToolTip="Adds the current quantity in parentheses to stackable item names in inventory-based merchant and storage dialogs.">
                                 Show Item _Quantities in Dialogs
@@ -676,7 +677,7 @@
                             <!-- Make Exchange Dialog Draggable CheckBox -->
                             <CheckBox Name="makeExchangeDialogDraggableCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.MakeExchangeDialogDraggable}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.MakeExchangeDialogDraggable}"
                                       Margin="8"
                                       ToolTip="Allows the exchange window to be dragged to a different position.">
                                 Make Exchange Window _Draggable
@@ -685,7 +686,7 @@
                             <!-- Show Exchange Results in Message Bar CheckBox -->
                             <CheckBox Name="showExchangeResultsInMessageBarCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
-                                      IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowExchangeResultsInMessageBar}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowExchangeResultsInMessageBar}"
                                       Margin="8"
                                       ToolTip="Shows final accepted and cancelled exchange messages in the floating message bar instead of popups.">
                                 Show Exchange _Results in Message Bar
@@ -725,12 +726,20 @@
                               Style="{StaticResource ObsidianComboBox}"
                               ItemTemplate="{StaticResource StringDataTemplate}"
                               SelectedValuePath="Value"
-                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.MapChangeAction}"
+                              SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.MapChangeAction}"
                               Margin="4,6">
-                        <settings:UserSetting Key="DoNothing" DisplayText="Continue Macro" Value="None"/>
-                        <settings:UserSetting Key="PauseMacro" DisplayText="Pause Macro" Value="Pause"/>
-                        <settings:UserSetting Key="StopMacro" DisplayText="Stop Macro" Value="Stop"/>
-                        <settings:UserSetting Key="ForceQuit" DisplayText="Close Client" Value="ForceQuit"/>
+                        <settings:UserSetting Key="ContinueMacro"
+                                              DisplayText="Continue Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Continue}"/>
+                        <settings:UserSetting Key="PauseMacro"
+                                              DisplayText="Pause Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Pause}"/>
+                        <settings:UserSetting Key="StopMacro"
+                                              DisplayText="Stop Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Stop}"/>
+                        <settings:UserSetting Key="CloseClient"
+                                              DisplayText="Close Client"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.CloseClient}"/>
                     </ComboBox>
 
                     <!-- X/Y Change Text -->
@@ -748,12 +757,20 @@
                               Style="{StaticResource ObsidianComboBox}"
                               ItemTemplate="{StaticResource StringDataTemplate}"
                               SelectedValuePath="Value"
-                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.CoordsChangeAction}"
+                              SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.CoordsChangeAction}"
                               Margin="4,6">
-                        <settings:UserSetting Key="DoNothing" DisplayText="Continue Macro" Value="None"/>
-                        <settings:UserSetting Key="PauseMacro" DisplayText="Pause Macro" Value="Pause"/>
-                        <settings:UserSetting Key="StopMacro" DisplayText="Stop Macro" Value="Stop"/>
-                        <settings:UserSetting Key="ForceQuit" DisplayText="Close Client" Value="ForceQuit"/>
+                        <settings:UserSetting Key="ContinueMacro"
+                                              DisplayText="Continue Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Continue}"/>
+                        <settings:UserSetting Key="PauseMacro"
+                                              DisplayText="Pause Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Pause}"/>
+                        <settings:UserSetting Key="StopMacro"
+                                              DisplayText="Stop Macro"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.Stop}"/>
+                        <settings:UserSetting Key="CloseClient"
+                                              DisplayText="Close Client"
+                                              Value="{x:Static runtimeAutomation:ObservationChangeAction.CloseClient}"/>
                     </ComboBox>
 
                     <Separator Grid.Row="2" 
@@ -776,7 +793,7 @@
                               Style="{StaticResource ObsidianComboBox}"
                               ItemTemplate="{StaticResource StringDataTemplate}"
                               SelectedValuePath="Value"
-                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseShiftForMedeniaPane}"
+                              SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.UseShiftForMedeniaPane}"
                               Margin="4,6">
                         <settings:UserSetting Key="UseShiftKey" DisplayText="Shift-Click" Value="True"/>
                         <settings:UserSetting Key="DoNotUseShiftKey" DisplayText="Double Click" Value="False"/>
@@ -787,7 +804,7 @@
                               Grid.Row="7"
                               Grid.ColumnSpan="2"
                               Style="{StaticResource ObsidianCheckBox}"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.PreserveUserPanel}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.PreserveUserPanel}"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Top"
                               Margin="8"
@@ -823,7 +840,7 @@
                               Style="{StaticResource ObsidianComboBox}"
                               ItemTemplate="{StaticResource StringDataTemplate}"
                               SelectedValuePath="Value"
-                              SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseSpaceForAssail}"
+                              SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.UseSpaceForAssail}"
                               Margin="4,6">
                         <settings:UserSetting Key="Click" DisplayText="Click Each Skill" Value="False"/>
                         <settings:UserSetting Key="SpaceBar" DisplayText="Use Space Bar" Value="True"/>
@@ -833,7 +850,7 @@
                               Grid.Row="1"
                               Grid.ColumnSpan="2"
                               Style="{StaticResource ObsidianCheckBox}"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.DisarmForAssails}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.DisarmForAssails}"
                               Margin="4,8"
                               Content="Disarm Before Using Assail Skills"
                               ToolTip="This will disarm the character first before using assail skills."
@@ -880,7 +897,7 @@
                                   Style="{StaticResource ObsidianComboBox}"
                                   ItemTemplate="{StaticResource StringDataTemplate}"
                                   SelectedValuePath="Value"
-                                  SelectedValue="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SpellRotationMode}"
+                                  SelectedValue="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SpellRotationMode}"
                                   Margin="4,6">
                             <settings:UserSetting Key="None" DisplayText="No Rotation" Value="None"/>
                             <settings:UserSetting Key="Singular" DisplayText="Singular Order" Value="Singular"/>
@@ -907,7 +924,7 @@
             		              Style="{StaticResource ObsidianComboBox}"
             		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
                                   Margin="4,6"
-            		              SelectedValue="{Binding Settings.ZeroLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                                  SelectedValue="{Binding Settings.ZeroLineDelay, Source={StaticResource UserSettingsManager}}">
                             <sys:TimeSpan>0:0:0.1</sys:TimeSpan>
                             <sys:TimeSpan>0:0:0.2</sys:TimeSpan>
                             <sys:TimeSpan>0:0:0.3</sys:TimeSpan>
@@ -935,7 +952,7 @@
             		              Style="{StaticResource ObsidianComboBox}"
             		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
                                   Margin="4,6"
-            		              SelectedValue="{Binding Settings.SingleLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                                  SelectedValue="{Binding Settings.SingleLineDelay, Source={StaticResource UserSettingsManager}}">
                             <sys:TimeSpan>0:0:0.8</sys:TimeSpan>
                             <sys:TimeSpan>0:0:0.9</sys:TimeSpan>
                             <sys:TimeSpan>0:0:1.0</sys:TimeSpan>
@@ -961,7 +978,7 @@
             		              Style="{StaticResource ObsidianComboBox}"
             		              ItemTemplate="{StaticResource TimeSpanDataTemplate}"
                                   Margin="4,6"
-            		              SelectedValue="{Binding Settings.MultipleLineDelay, Source={x:Static settings:UserSettingsManager.Instance}}">
+                                  SelectedValue="{Binding Settings.MultipleLineDelay, Source={StaticResource UserSettingsManager}}">
                             <sys:TimeSpan>0:0:0.8</sys:TimeSpan>
                             <sys:TimeSpan>0:0:0.9</sys:TimeSpan>
                             <sys:TimeSpan>0:0:1.0</sys:TimeSpan>
@@ -984,7 +1001,7 @@
                                   Style="{StaticResource ObsidianCheckBox}"
                                   Margin="32,8,16,8"
                                   VerticalAlignment="Center"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpiorad}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.UseFasSpiorad}"
                                   ToolTip="This will cast fas spiorad any time mana is less than the specified value.">
                             _Auto Fas Spiorad when
                         </CheckBox>
@@ -1001,7 +1018,7 @@
                                            LargeIncrement="1000"
                                            FontSize="16"
                                            DecoratorText="MP &lt;"
-                                           Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
+                                           Value="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.FasSpioradThreshold, Mode=TwoWay}"
                                            IsEnabled="{Binding ElementName=fasSpioradCheckBox, Path=IsChecked}"
                                            Margin="4"/>
 
@@ -1012,7 +1029,7 @@
                                   Style="{StaticResource ObsidianCheckBox}"
                                   Margin="32,8"
                                   VerticalAlignment="Center"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.UseFasSpioradOnDemand}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.UseFasSpioradOnDemand}"
                                   ToolTip="This will cast fas spiorad when mana is less than the required amount for a spell.">
                             Use _Fas Spiorad when Insufficient Mana
                         </CheckBox>
@@ -1028,7 +1045,7 @@
                                   Grid.Row="9"
                                   Grid.ColumnSpan="2"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.RequireManaForSpells}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.RequireManaForSpells}"
                                   Margin="32,8"
                                   ToolTip="This will allow spells only to be cast when you have the required mana.">
                             _Require Mana for Casting Spells
@@ -1039,7 +1056,7 @@
                                   Grid.Row="10"
                                   Grid.ColumnSpan="2"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AllowStaffSwitching}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.AllowStaffSwitching}"
                                   Margin="32,8"
                                   ToolTip="This allows the optimal staff to be automatically equipped when casting spells.">
                             Allow Automatic _Staff Switching
@@ -1050,7 +1067,7 @@
                                   Grid.Row="11"
                                   Grid.ColumnSpan="2"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.WarnOnDuplicateSpells}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.WarnOnDuplicateSpells}"
                                   Margin="32,8"
                                   ToolTip="Show warnings when the same spell is added to the spell queue again.">
                             _Warn on Duplicate Spells in Casting Queue
@@ -1061,7 +1078,7 @@
                                   Grid.Row="12"
                                   Grid.ColumnSpan="2"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkipSpellsOnCooldown}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkipSpellsOnCooldown}"
                                   Margin="32,8"
                                   ToolTip="Show warnings when the same spell is added to the spell queue again.">
                             S_kip Spells on Cooldown
@@ -1089,7 +1106,7 @@
                         <!-- Flowering Priority CheckBox -->
                         <CheckBox Name="flowerPrioritizesAltsCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerAltsFirst}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.FlowerAltsFirst}"
                                   HorizontalAlignment="Left"
                                   Margin="32,8"
                                   ToolTip="This will prioritize flowering your own characters before other targets.">
@@ -1099,7 +1116,7 @@
                         <!-- Flowering Before Spells Macro CheckBox -->
                         <CheckBox Name="flowerBeforeSpellMacroCheckBox"
                                   Style="{StaticResource ObsidianCheckBox}"
-                                  IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerBeforeSpellMacros}"
+                                  IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.FlowerBeforeSpellMacros}"
                                   HorizontalAlignment="Left"
                                   Margin="32,8"
                                   ToolTip="This will prioritize flowering over your spell casting queue.">
@@ -1118,7 +1135,7 @@
                               Style="{StaticResource ObsidianCheckBox}"
                               Margin="32,8,8,8"
                               VerticalAlignment="Center"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerHasMinimum}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.FlowerHasMinimum}"
                               Content="_Minimum Flower Mana: "
                               ToolTip="This will set the minimum amount of mana required to flower another. Fas spiorad will be used if necessary."/>
 
@@ -1134,7 +1151,7 @@
                                        LargeIncrement="1000"
                                        FontSize="16"
                                        DecoratorText="MP &gt;="
-                                       Value="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
+                                       Value="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.FlowerMinimumMana, Mode=TwoWay}"
                                        IsEnabled="{Binding ElementName=flowerHasMinimumCheckBox, Path=IsChecked}"
                                        Margin="4"/>
                 </Grid>
@@ -1267,7 +1284,7 @@
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
                               Margin="4"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.AutoUpdateEnabled}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.AutoUpdateEnabled}"
                               Content="Check for Updates on _Startup"/>
 
                 </Grid>
@@ -1288,7 +1305,7 @@
                               Style="{StaticResource ObsidianCheckBox}"
                               HorizontalAlignment="Center"
                               Margin="8"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.ShowAllProcesses}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowAllProcesses}"
                               ToolTip="This will show non-logged in Dark Ages game clients.">
                         Show _All Game Client Processes
                     </CheckBox>
@@ -1304,7 +1321,7 @@
                               Style="{StaticResource ObsidianCheckBox}"
                               HorizontalAlignment="Center"
                               Margin="8"
-                              IsChecked="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.LoggingEnabled}"
+                              IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.LoggingEnabled}"
                               ToolTip="This will write logs to files, useful for debugging. (Requires restart)">
                         Enable Debug _Logging
                     </CheckBox>

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Threading.Channels;
 using System.Windows.Input;
@@ -7,8 +7,9 @@ using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Mappings;
 using SleepHunter.Interop.Memory;
 using SleepHunter.Interop.Snapshots;
-using SleepHunter.Macro;
 using SleepHunter.Models;
+using SleepHunter.Services.Hotkeys;
+using SleepHunter.ViewModels.Editing;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
@@ -32,9 +33,158 @@ namespace SleepHunter.Tests.ViewModels;
 public sealed class ClientListViewModelTests
 {
     [Test]
+    public async Task ShouldFilterClientsAndPublishRuntimeLoginTransitions()
+    {
+        var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(
+            player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var clients = new ClientListViewModel();
+        var transitions = new List<bool>();
+        clients.ClientLoginStateChanged +=
+            (_, args) => transitions.Add(args.IsLoggedIn);
+
+        clients.Refresh(
+            [player],
+            _ => runtime,
+            ClientSortOrder.LaunchOrder,
+            showAllClients: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(clients.Clients, Is.Empty);
+            Assert.That(clients.AllClients, Has.Count.EqualTo(1));
+            Assert.That(clients.HasLoggedInClients, Is.False);
+        });
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true));
+        await WaitUntilAsync(
+            () => clients.Clients.Count == 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                clients.Clients.Single().Name,
+                Is.EqualTo("Runtime"));
+            Assert.That(clients.HasLoggedInClients, Is.True);
+            Assert.That(transitions, Is.EqualTo(new[] { true }));
+        });
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                presence: ClientPresence.LoggedOut));
+        await WaitUntilAsync(
+            () => clients.Clients.Count == 0);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(clients.AllClients, Has.Count.EqualTo(1));
+            Assert.That(clients.HasLoggedInClients, Is.False);
+            Assert.That(
+                transitions,
+                Is.EqualTo(new[] { true, false }));
+        });
+    }
+
+    [Test]
+    public async Task ShouldDeriveWindowTitleFromTheSelectedRuntimeClient()
+    {
+        var session = CreatePlayer();
+        var host = new RecordingRuntimeHost(
+            session.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var clients = new ClientListViewModel();
+
+        clients.Refresh([session], _ => runtime);
+        clients.SelectedClient = clients.Clients.Single();
+        Assert.That(
+            clients.WindowTitle,
+            Is.EqualTo("SleepHunter"));
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true));
+        await WaitUntilAsync(
+            () => clients.WindowTitle ==
+                  "SleepHunter - Runtime");
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                presence: ClientPresence.LoggedOut));
+        await WaitUntilAsync(
+            () => clients.WindowTitle == "SleepHunter");
+    }
+
+    [Test]
+    public async Task ShouldSortClientsUsingRuntimeSnapshotVitals()
+    {
+        var firstPlayer = CreatePlayer(processId: 1001);
+        var secondPlayer = CreatePlayer(processId: 1002);
+        var firstHost = new RecordingRuntimeHost(
+            firstPlayer.Process.ProcessId);
+        var secondHost = new RecordingRuntimeHost(
+            secondPlayer.Process.ProcessId);
+        await using var firstRuntime =
+            new ClientRuntimeViewModel(
+                firstHost,
+                new InlineUiDispatcher());
+        await using var secondRuntime =
+            new ClientRuntimeViewModel(
+                secondHost,
+                new InlineUiDispatcher());
+        using var clients = new ClientListViewModel();
+
+        firstHost.PublishCapture(
+            CreateCapture(
+                firstHost.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                maximumHealth: 400));
+        secondHost.PublishCapture(
+            CreateCapture(
+                secondHost.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                maximumHealth: 800));
+        await WaitUntilAsync(
+            () => firstRuntime.CaptureSequence?.Value == 1 &&
+                  secondRuntime.CaptureSequence?.Value == 1);
+
+        clients.Refresh(
+            [firstPlayer, secondPlayer],
+            processId => processId ==
+                    firstPlayer.Process.ProcessId
+                ? firstRuntime
+                : secondRuntime,
+            ClientSortOrder.HighestHealth,
+            showAllClients: false);
+
+        Assert.That(
+            clients.Clients.Select(
+                client => client.Process.ProcessId),
+            Is.EqualTo(new[] { 1002, 1001 }));
+    }
+
+    [Test]
     public async Task ShouldMarshalPlayerPresentationObservationsToTheUiDispatcher()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var dispatcher = new QueuedUiDispatcher();
         using var item = new ClientListItemViewModel(
             player,
@@ -77,7 +227,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public void ShouldOwnSelectionAndClearItWithTheRemovedClient()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         using var clients = new ClientListViewModel();
 
         clients.Refresh([player], _ => null);
@@ -96,7 +246,7 @@ public sealed class ClientListViewModelTests
                 Is.True);
         });
 
-        clients.Refresh(Array.Empty<Player>(), _ => null);
+        clients.Refresh(Array.Empty<ClientSession>(), _ => null);
 
         Assert.That(clients.SelectedClient, Is.Null);
     }
@@ -104,7 +254,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public void ShouldFindTheHotkeyOwnerWithoutChangingSelection()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         using var clients = new ClientListViewModel();
         player.Hotkey = new Hotkey(
             ModifierKeys.Control | ModifierKeys.Shift,
@@ -119,7 +269,7 @@ public sealed class ClientListViewModelTests
         Assert.Multiple(() =>
         {
             Assert.That(owner, Is.SameAs(clients.Clients.Single()));
-            Assert.That(owner?.Player, Is.SameAs(player));
+            Assert.That(owner?.Session, Is.SameAs(player));
             Assert.That(clients.SelectedClient, Is.Null);
             Assert.That(
                 clients.FindByHotkey(
@@ -131,7 +281,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public void ShouldProjectTheAssignedHotkeyGlyph()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         using var item =
             new ClientListItemViewModel(
                 player,
@@ -170,13 +320,11 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldUseRuntimeObservationsAndRetainProjectedStateAfterFailure()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
             new InlineUiDispatcher());
-        using var projection =
-            new ClientSnapshotProjection(player, runtime);
         using var item = new ClientListItemViewModel(
             player,
             runtime);
@@ -186,8 +334,8 @@ public sealed class ClientListViewModelTests
             Assert.That(item.HasRuntime, Is.True);
             Assert.That(item.UsesRuntimeSnapshot, Is.False);
             Assert.That(item.Name, Is.EqualTo("Presentation"));
-            Assert.That(item.CurrentHealth, Is.EqualTo(100));
-            Assert.That(item.MapName, Is.EqualTo("Presentation Map"));
+            Assert.That(item.CurrentHealth, Is.Zero);
+            Assert.That(item.MapName, Is.Null);
         });
 
         host.PublishCapture(CreateCapture(
@@ -315,7 +463,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldRefreshManaAfterAZeroManaObservation()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
@@ -363,7 +511,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldRefreshHealthAfterAZeroHealthObservation()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
@@ -413,9 +561,9 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldKeepObservingVitalsAfterSpellProjectionFails()
     {
-        using var player = CreatePlayer();
-        var configuration = new PlayerMacroConfiguration(player);
-        var queuedSpell = new SpellQueueItem
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
+        var queuedSpell = new SpellQueueItemViewModel
         {
             Name = "projected spell"
         };
@@ -488,11 +636,65 @@ public sealed class ClientListViewModelTests
     }
 
     [Test]
+    public async Task ShouldProjectConfiguredSkillStateIntoTheRuntimeSkillbook()
+    {
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
+        var host = new RecordingRuntimeHost(
+            player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(
+            player,
+            configuration,
+            runtime,
+            configurationMapper: null,
+            setupFactory: null,
+            getSettings: null,
+            uiDispatcher: new InlineUiDispatcher());
+        var skillbook = new SkillbookSnapshot(
+        [
+            new SkillSnapshot(
+                "Assail",
+                slot: 1,
+                currentLevel: 10,
+                maximumLevel: 100,
+                manaCost: 0,
+                cooldown: TimeSpan.Zero,
+                isAssail: true,
+                icon: 12)
+        ]);
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true,
+            skillbook: skillbook));
+        await WaitUntilAsync(
+            () => item.Skillbook.GetSkill("Assail") is not null);
+
+        Assert.That(
+            item.Skillbook.GetSkill("Assail")!.IsActive,
+            Is.False);
+
+        configuration.ToggleSkill("Assail");
+        await WaitUntilAsync(
+            () =>
+                item.Skillbook.GetSkill("Assail")?.IsActive ==
+                true);
+
+        Assert.That(
+            configuration.Skills.Single().Name,
+            Is.EqualTo("Assail"));
+    }
+
+    [Test]
     public async Task ShouldTickAndResetFlowerDueTimeFromRuntimeSchedule()
     {
-        using var player = CreatePlayer();
-        var configuration = new PlayerMacroConfiguration(player);
-        var flower = new FlowerQueueItem
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
+        var flower = new FlowerQueueItemViewModel
         {
             Interval = TimeSpan.FromSeconds(10)
         };
@@ -567,7 +769,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldKeepLastCoherentLocationDuringMapTransition()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
@@ -611,7 +813,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldReuseRefreshAndDisposeClientListItems()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
             host,
@@ -640,7 +842,7 @@ public sealed class ClientListViewModelTests
         var notificationCount = 0;
         original.PropertyChanged += (_, _) => notificationCount++;
         clients.Refresh(
-            Array.Empty<Player>(),
+            Array.Empty<ClientSession>(),
             _ => null);
         var countAfterRemoval = notificationCount;
         player.Name = "Changed after removal";
@@ -655,16 +857,16 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldConfigureRuntimeBeforeStartingOrResuming()
     {
-        using var player = CreatePlayer();
-        var macroConfiguration = new PlayerMacroConfiguration(player)
+        var player = CreatePlayer();
+        var macroConfiguration = new ClientMacroConfiguration(player)
         {
             SpellQueueRotation = SpellRotationMode.RoundRobin
         };
         macroConfiguration.AddToSpellQueue(
-            new SpellQueueItem
+            new SpellQueueItemViewModel
             {
                 Name = "test spell",
-                Target = new SleepHunter.Models.SpellTarget
+                Target = new SleepHunter.ViewModels.Editing.SpellTargetViewModel
                 {
                     Mode = SpellTargetMode.Self
                 }
@@ -678,7 +880,7 @@ public sealed class ClientListViewModelTests
             player,
             macroConfiguration,
             runtime,
-            new PlayerMacroConfigurationMapper(),
+            new ClientMacroConfigurationMapper(),
             new RuntimeAutomationSetupFactory(
                 new EmptyStaffCandidateProvider()),
             () => new UserSettings
@@ -778,10 +980,10 @@ public sealed class ClientListViewModelTests
             Assert.That(setup.Configuration.SkillsEnabled, Is.True);
         });
 
-        var secondSpell = new SpellQueueItem
+        var secondSpell = new SpellQueueItemViewModel
         {
             Name = "second spell",
-            Target = new SleepHunter.Models.SpellTarget
+            Target = new SleepHunter.ViewModels.Editing.SpellTargetViewModel
             {
                 Mode = SpellTargetMode.Self
             }
@@ -828,11 +1030,11 @@ public sealed class ClientListViewModelTests
 
         macroConfiguration.UpdateSpell(
             secondSpell,
-            new SpellQueueItem
+            new SpellQueueItemViewModel
             {
                 Id = secondSpell.Id,
                 Name = "updated spell",
-                Target = new SleepHunter.Models.SpellTarget
+                Target = new SleepHunter.ViewModels.Editing.SpellTargetViewModel
                 {
                     Mode = SpellTargetMode.Self
                 }
@@ -856,9 +1058,9 @@ public sealed class ClientListViewModelTests
                 Is.Empty);
         });
 
-        var liveFlower = new FlowerQueueItem
+        var liveFlower = new FlowerQueueItemViewModel
         {
-            Target = new SleepHunter.Models.SpellTarget
+            Target = new SleepHunter.ViewModels.Editing.SpellTargetViewModel
             {
                 Mode = SpellTargetMode.Self
             },
@@ -923,14 +1125,14 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldProjectTheActiveRuntimeCastByQueueIdentifier()
     {
-        using var player = CreatePlayer();
-        var configuration = new PlayerMacroConfiguration(player);
-        var first = new SpellQueueItem
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
+        var first = new SpellQueueItemViewModel
         {
             Id = 41,
             Name = "duplicate spell"
         };
-        var second = new SpellQueueItem
+        var second = new SpellQueueItemViewModel
         {
             Id = 42,
             Name = first.Name
@@ -1001,9 +1203,9 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldRetainAutomationErrorsForRuntimeDetails()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var macroConfiguration =
-            new PlayerMacroConfiguration(player);
+            new ClientMacroConfiguration(player);
         var host = new RecordingRuntimeHost(
             player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
@@ -1013,7 +1215,7 @@ public sealed class ClientListViewModelTests
             player,
             macroConfiguration,
             runtime,
-            new PlayerMacroConfigurationMapper(),
+            new ClientMacroConfigurationMapper(),
             new ThrowingAutomationSetupFactory(),
             () => new UserSettings());
 
@@ -1058,7 +1260,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldReportRuntimeHostFailuresInStatusDetails()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(
             player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
@@ -1122,7 +1324,7 @@ public sealed class ClientListViewModelTests
     [Test]
     public async Task ShouldStopAllActiveRuntimesThroughToolkitCommand()
     {
-        using var player = CreatePlayer();
+        var player = CreatePlayer();
         var host = new RecordingRuntimeHost(
             player.Process.ProcessId);
         await using var runtime = new ClientRuntimeViewModel(
@@ -1143,26 +1345,19 @@ public sealed class ClientListViewModelTests
             Is.TypeOf<StopMacroCommand>());
     }
 
-    private static Player CreatePlayer()
+    private static ClientSession CreatePlayer(
+        int? processId = null)
     {
         var process = new ClientProcess
         {
-            ProcessId = Environment.ProcessId,
+            ProcessId = processId ?? Environment.ProcessId,
             WindowHandle = new nint(1),
             WindowTitle = "Presentation Window"
         };
-        var player = new Player(process)
+        var player = new ClientSession(process)
         {
-            Name = "Presentation",
-            IsLoggedIn = true
+            Name = "Presentation"
         };
-        player.Stats.CurrentHealth = 100;
-        player.Stats.MaximumHealth = 200;
-        player.Stats.CurrentMana = 150;
-        player.Stats.MaximumMana = 250;
-        player.Location.MapName = "Presentation Map";
-        player.Location.X = 10;
-        player.Location.Y = 20;
         return player;
     }
 
@@ -1201,7 +1396,7 @@ public sealed class ClientListViewModelTests
 
     private static MacroViewSnapshot CreateCastingView(
         ClientSnapshot snapshot,
-        params SpellQueueItem[] queuedSpells)
+        params SpellQueueItemViewModel[] queuedSpells)
     {
         var engine = new MacroEngine();
         var currentTime = snapshot.CaptureCompletedAt;
@@ -1244,8 +1439,11 @@ public sealed class ClientListViewModelTests
         ClientPresence presence = ClientPresence.InWorld,
         ClientPanel activePanel = ClientPanel.Unknown,
         SpellbookSnapshot? spellbook = null,
+        SkillbookSnapshot? skillbook = null,
         int currentHealth = 300,
         int currentMana = 500,
+        int maximumHealth = 400,
+        int maximumMana = 600,
         SnapshotCaptureFailure failure =
             SnapshotCaptureFailure.MappingReadFailed,
         SnapshotSection failureSection = SnapshotSection.Presence,
@@ -1292,11 +1490,12 @@ public sealed class ClientListViewModelTests
                     vitals: presence == ClientPresence.InWorld
                         ? new VitalsSnapshot(
                             currentHealth,
-                            maximumHealth: 400,
+                            maximumHealth,
                             currentMana,
-                            maximumMana: 600)
+                            maximumMana)
                         : null,
                     spellbook: spellbook,
+                    skillbook: skillbook,
                     location: presence == ClientPresence.InWorld
                         ? new MapLocationSnapshot(
                             mapNumber: 1,

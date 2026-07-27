@@ -1,4 +1,4 @@
-﻿<Application x:Class="SleepHunter.App"
+<Application x:Class="SleepHunter.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:SleepHunter.Converters">
@@ -18,7 +18,7 @@
                     <converters:NotNullConverter x:Key="NotNullConverter"/>
                     <converters:EquipmentSlotConverter x:Key="EquipmentSlotConverter"/>
                     <converters:EquipmentSlotPositionConverter x:Key="EquipmentSlotPositionConverter"/>
-                    <converters:PlayerClassConverter x:Key="PlayerClassConverter"/>
+                    <converters:CharacterClassFlagsConverter x:Key="CharacterClassFlagsConverter"/>
                     <converters:TimeSpanConverter x:Key="TimeSpanConverter"/>
                     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
                     <converters:VisibilityInverter x:Key="VisibilityInverter"/>
@@ -39,7 +39,7 @@
                 <ResourceDictionary Source="Templates\FlowerQueueDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\InventoryItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\MetadataDataTemplates.xaml"/>
-                <ResourceDictionary Source="Templates\PlayerDataTemplate.xaml"/>
+                <ResourceDictionary Source="Templates\ClientListItemDataTemplate.xaml"/>
                 <ResourceDictionary Source="Templates\SpellQueueDataTemplate.xaml"/>
                 
             </ResourceDictionary.MergedDictionaries>

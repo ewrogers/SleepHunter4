@@ -36,8 +36,12 @@ namespace SleepHunter.Media
             this.defaultDyeColors = defaultDyeColors;
         }
 
-        public static ItemIconRenderer Load(string clientExecutablePath)
+        public static ItemIconRenderer Load(
+            string clientExecutablePath,
+            FileArchiveManager archives)
         {
+            ArgumentNullException.ThrowIfNull(archives);
+
             var directory = Path.GetDirectoryName(clientExecutablePath);
             if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
                 throw new DirectoryNotFoundException("The configured client directory was not found.");
@@ -51,7 +55,7 @@ namespace SleepHunter.Media
 
             foreach (var archivePath in archivePaths)
             {
-                var archive = FileArchiveManager.Instance.GetArchive(archivePath);
+                var archive = archives.GetArchive(archivePath);
                 if (archive == null)
                     continue;
 

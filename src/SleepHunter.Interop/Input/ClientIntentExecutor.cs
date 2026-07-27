@@ -58,4 +58,20 @@ public sealed class ClientIntentExecutor
             plan,
             dispatch);
     }
+
+    public WindowInputDispatchResult CloseClient(
+        ClientWindowTarget target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        return dispatcher.Dispatch(
+            target,
+            new WindowInputPlan(
+                [
+                    new WindowInputMessage(
+                        ClientWindowMessage.Close,
+                        wParam: 0,
+                        lParam: 0)
+                ]));
+    }
 }

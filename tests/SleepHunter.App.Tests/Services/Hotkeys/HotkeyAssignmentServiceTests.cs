@@ -1,5 +1,4 @@
 ﻿using System.Windows.Input;
-using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Services.Hotkeys;
 using SleepHunter.Tests.Support;
@@ -11,7 +10,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldAssignTheFirstGesture()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var registrations =
             new StubRegistrationService();
         var requested = new Hotkey(
@@ -53,7 +52,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldRegisterNewGestureBeforeReleasingPreviousOne()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var previous = new Hotkey(
             ModifierKeys.Control,
             Key.F5);
@@ -103,8 +102,8 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldTransferGestureFromAnotherPlayer()
     {
-        using var target = CreatePlayer("Target");
-        using var conflict = CreatePlayer("Conflict");
+        var target = CreatePlayer("Target");
+        var conflict = CreatePlayer("Conflict");
         var targetPrevious = new Hotkey(
             ModifierKeys.Alt,
             Key.F4);
@@ -158,8 +157,8 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldRestoreConflictingRegistrationWhenTransferFails()
     {
-        using var target = CreatePlayer("Target");
-        using var conflict = CreatePlayer("Conflict");
+        var target = CreatePlayer("Target");
+        var conflict = CreatePlayer("Conflict");
         var targetPrevious = new Hotkey(
             ModifierKeys.Alt,
             Key.F4);
@@ -209,7 +208,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldLeavePreviousGestureWhenExternalRegistrationFails()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var previous = new Hotkey(
             ModifierKeys.Control,
             Key.F5);
@@ -248,7 +247,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldClearAssignedGesture()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var assigned = new Hotkey(
             ModifierKeys.Shift,
             Key.F9);
@@ -278,7 +277,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldLeaveMatchingActiveGestureUnchanged()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var assigned = new Hotkey(
             ModifierKeys.Control,
             Key.F10);
@@ -310,7 +309,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldRollBackWhenPreviousGestureCannotBeReleased()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var previous = new Hotkey(
             ModifierKeys.Control,
             Key.F5);
@@ -364,7 +363,7 @@ public sealed class HotkeyAssignmentServiceTests
     [Test]
     public void ShouldKeepAssignmentWhenClearCannotReleaseRegistration()
     {
-        using var player = CreatePlayer("Target");
+        var player = CreatePlayer("Target");
         var assigned = new Hotkey(
             ModifierKeys.Shift,
             Key.F9);
@@ -394,7 +393,7 @@ public sealed class HotkeyAssignmentServiceTests
         });
     }
 
-    private static Player CreatePlayer(string name) =>
+    private static ClientSession CreatePlayer(string name) =>
         new(
             new ClientProcess
             {
@@ -403,8 +402,7 @@ public sealed class HotkeyAssignmentServiceTests
                 WindowTitle = "Test Window"
             })
         {
-            Name = name,
-            IsLoggedIn = true
+            Name = name
         };
 
     private sealed class StubRegistrationService :

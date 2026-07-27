@@ -11,10 +11,7 @@ namespace SleepHunter.Metadata
     {
         public static readonly string SpellMetadataFile = @"Spells.xml";
 
-        private static readonly SpellMetadataManager instance = new();
-        public static SpellMetadataManager Instance => instance;
-
-        private SpellMetadataManager() { }
+        public SpellMetadataManager() { }
 
         private readonly ConcurrentDictionary<string, SpellMetadata> spells = new (StringComparer.OrdinalIgnoreCase);
 

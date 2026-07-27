@@ -4,14 +4,8 @@ using System.IO;
 
 namespace SleepHunter.IO
 {
-    public sealed class FileArchiveManager
+    public sealed class FileArchiveManager : IDisposable
     {
-        private static readonly FileArchiveManager instance = new();
-
-        public static FileArchiveManager Instance => instance;
-
-        private FileArchiveManager() { }
-
         private readonly ConcurrentDictionary<string, FileArchive> archives = new(StringComparer.OrdinalIgnoreCase);
 
         public FileArchive GetArchive(string filename)
@@ -39,5 +33,7 @@ namespace SleepHunter.IO
 
             archives.Clear();
         }
+
+        public void Dispose() => ClearArchives();
     }
 }

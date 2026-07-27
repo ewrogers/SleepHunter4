@@ -1,12 +1,16 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Threading;
-using SleepHunter.Macro;
-using SleepHunter.Services;
+using Microsoft.Extensions.DependencyInjection;
+using SleepHunter.IO;
+using SleepHunter.Media;
+using SleepHunter.Metadata;
 using SleepHunter.Services.Clients;
 using SleepHunter.Services.Configuration;
+using SleepHunter.Services.Hotkeys;
 using SleepHunter.Services.Logging;
 using SleepHunter.Services.Releases;
 using SleepHunter.Services.Runtime;
+using SleepHunter.Settings;
 using SleepHunter.Views;
 
 namespace SleepHunter
@@ -15,24 +19,41 @@ namespace SleepHunter
     {
         public const string USER_MANUAL_URL = @"https://ewrogers.github.io/SleepHunter4/";
 
+        private readonly ServiceProvider serviceProvider;
         private ILogger logger;
-
-        public static new App Current => (App)Application.Current;
-
-        public IServiceProvider Services { get; }
 
         public App()
         {
-            Services = ConfigureServices();
+            serviceProvider = ConfigureServices();
+            Resources["ColorThemeManager"] =
+                serviceProvider.GetRequiredService<ColorThemeManager>();
+            Resources["SkillMetadataManager"] =
+                serviceProvider.GetRequiredService<SkillMetadataManager>();
+            Resources["SpellMetadataManager"] =
+                serviceProvider.GetRequiredService<SpellMetadataManager>();
+            Resources["StaffMetadataManager"] =
+                serviceProvider.GetRequiredService<StaffMetadataManager>();
+            Resources["UserSettingsManager"] =
+                serviceProvider.GetRequiredService<UserSettingsManager>();
             InitializeComponent();
+            Resources["ColorThemeManager"] =
+                serviceProvider.GetRequiredService<ColorThemeManager>();
+            Resources["SkillMetadataManager"] =
+                serviceProvider.GetRequiredService<SkillMetadataManager>();
+            Resources["SpellMetadataManager"] =
+                serviceProvider.GetRequiredService<SpellMetadataManager>();
+            Resources["StaffMetadataManager"] =
+                serviceProvider.GetRequiredService<StaffMetadataManager>();
+            Resources["UserSettingsManager"] =
+                serviceProvider.GetRequiredService<UserSettingsManager>();
 
-            Current.Dispatcher.UnhandledException += Dispatcher_UnhandledException;
+            Dispatcher.UnhandledException += Dispatcher_UnhandledException;
         }
 
         private void Dispatcher_UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             if (logger == null)
-                logger = Services.GetService<ILogger>();
+                logger = serviceProvider.GetRequiredService<ILogger>();
 
             logger.LogError("Unhandled exception!");
             logger.LogException(e.Exception);
@@ -45,27 +66,41 @@ namespace SleepHunter
             System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
             base.OnStartup(e);
 
-            var mainWindow = new MainWindow();
+            var mainWindow =
+                serviceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            Services.Dispose();
+            serviceProvider.Dispose();
             base.OnExit(e);
         }
 
-        private static IServiceProvider ConfigureServices()
+        private static ServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
 
             // Services
             services.AddSingleton<ILogger, Logger>();
+            services.AddSingleton<ClientLayoutManager>();
+            services.AddSingleton<ColorThemeManager>();
+            services.AddSingleton<UserSettingsManager>();
+            services.AddSingleton<FileArchiveManager>();
+            services.AddSingleton<IconManager>();
+            services.AddSingleton<SkillMetadataManager>();
+            services.AddSingleton<SpellMetadataManager>();
+            services.AddSingleton<StaffMetadataManager>();
             services.AddSingleton<IReleaseService, ReleaseService>();
             services.AddSingleton<
                 IClientLaunchService,
                 ClientLaunchService>();
-            services.AddSingleton<PlayerMacroConfigurationManager>();
+            services.AddSingleton<
+                IClientProcessScanner,
+                WindowsClientProcessScanner>();
+            services.AddSingleton<ClientSessionRegistry>();
+            services.AddSingleton<WindowHotkeyRegistry>();
+            services.AddSingleton<ClientMacroConfigurationRegistry>();
             services.AddSingleton<
                 IMacroConfigurationReader,
                 FileMacroConfigurationReader>();
@@ -73,8 +108,8 @@ namespace SleepHunter
                 IMacroConfigurationWriter,
                 FileMacroConfigurationWriter>();
             services.AddSingleton<
-                IPlayerMacroConfigurationMapper,
-                PlayerMacroConfigurationMapper>();
+                IClientMacroConfigurationMapper,
+                ClientMacroConfigurationMapper>();
             services.AddSingleton<
                 IRuntimeStaffCandidateProvider,
                 RuntimeStaffCandidateProvider>();
@@ -83,8 +118,14 @@ namespace SleepHunter
                 RuntimeAutomationSetupFactory>();
 
             // ViewModels
+            services.AddSingleton<MainWindow>();
 
-            return services.BuildServiceProvider();
+            return services.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                });
         }
     }
 }

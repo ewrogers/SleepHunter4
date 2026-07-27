@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Services.Configuration;
+using SleepHunter.Services.Hotkeys;
 using SleepHunter.Services.Logging;
 
 namespace SleepHunter.ViewModels
@@ -20,24 +20,31 @@ namespace SleepHunter.ViewModels
     {
         private readonly ObservableCollection<
             ClientListItemViewModel> clients = new();
+        private readonly Dictionary<
+            int,
+            ClientListItemViewModel> allClients = new();
         private readonly Func<
-            Player,
+            ClientSession,
             ClientRuntimeViewModel,
             ClientListItemViewModel> createItem;
+        private readonly Dictionary<int, bool> loginStates = new();
         private readonly ReadOnlyObservableCollection<
             ClientListItemViewModel> readOnlyClients;
+        private ClientSortOrder sortOrder =
+            ClientSortOrder.LaunchOrder;
+        private bool showAllClients = true;
         private bool isDisposed;
 
         public ClientListViewModel()
             : this(
-                (player, runtime) =>
-                    new ClientListItemViewModel(player, runtime))
+                (session, runtime) =>
+                    new ClientListItemViewModel(session, runtime))
         {
         }
 
         internal ClientListViewModel(
             Func<
-                Player,
+                ClientSession,
                 ClientRuntimeViewModel,
                 ClientListItemViewModel> createItem,
             IMacroConfigurationPersistenceService
@@ -72,6 +79,34 @@ namespace SleepHunter.ViewModels
 
         public ClientLaunchViewModel ClientLaunch { get; }
 
+        public event EventHandler<ClientLoginStateChangedEventArgs>
+            ClientLoginStateChanged;
+
+        public IReadOnlyList<ClientListItemViewModel> AllClients =>
+            allClients.Values
+                .OrderBy(client => client.Process.CreationTime)
+                .ThenBy(client => client.Process.ProcessId)
+                .ToArray();
+
+        public IReadOnlyList<ClientListItemViewModel> LoggedInClients =>
+            allClients.Values
+                .Where(client => client.IsLoggedIn)
+                .OrderBy(client => client.Name)
+                .ThenBy(client => client.Process.ProcessId)
+                .ToArray();
+
+        public bool HasLoggedInClients =>
+            allClients.Values.Any(client => client.IsLoggedIn);
+
+        public string WindowTitle =>
+            SelectedClient is
+            {
+                IsLoggedIn: true,
+                Name: { Length: > 0 } name
+            }
+                ? $"SleepHunter - {name}"
+                : "SleepHunter";
+
         [ObservableProperty]
         public partial ClientListItemViewModel SelectedClient
         {
@@ -80,92 +115,96 @@ namespace SleepHunter.ViewModels
         }
 
         public void Refresh(
-            IEnumerable<Player> players,
-            Func<int, ClientRuntimeViewModel> findRuntime)
+            IEnumerable<ClientSession> sessions,
+            Func<int, ClientRuntimeViewModel> findRuntime,
+            ClientSortOrder sortOrder = ClientSortOrder.LaunchOrder,
+            bool showAllClients = true)
         {
-            ArgumentNullException.ThrowIfNull(players);
+            ArgumentNullException.ThrowIfNull(sessions);
             ArgumentNullException.ThrowIfNull(findRuntime);
             ObjectDisposedException.ThrowIf(isDisposed, this);
 
-            var desiredPlayers = players.ToArray();
-            if (desiredPlayers.Any(player => player is null))
+            var desiredSessions = sessions.ToArray();
+            if (desiredSessions.Any(session => session is null))
             {
                 throw new ArgumentException(
-                    "The client list cannot contain null players.",
-                    nameof(players));
+                    "The client list cannot contain null sessions.",
+                    nameof(sessions));
             }
 
-            var processIds = desiredPlayers
-                .Select(player => player.Process.ProcessId)
+            var processIds = desiredSessions
+                .Select(session => session.Process.ProcessId)
                 .ToHashSet();
-            if (processIds.Count != desiredPlayers.Length)
+            if (processIds.Count != desiredSessions.Length)
             {
                 throw new ArgumentException(
                     "The client list cannot contain duplicate processes.",
-                    nameof(players));
+                    nameof(sessions));
             }
 
-            for (var index = clients.Count - 1; index >= 0; index--)
-            {
-                if (processIds.Contains(
-                        clients[index].Process.ProcessId))
-                {
-                    continue;
-                }
+            this.sortOrder = sortOrder;
+            this.showAllClients = showAllClients;
 
-                var removed = clients[index];
+            foreach (var processId in allClients.Keys
+                         .Where(processId =>
+                             !processIds.Contains(processId))
+                         .ToArray())
+            {
+                var removed = allClients[processId];
                 if (ReferenceEquals(SelectedClient, removed))
                     SelectedClient = null;
 
                 removed.PropertyChanged -= OnClientPropertyChanged;
-                clients.RemoveAt(index);
+                clients.Remove(removed);
+                allClients.Remove(processId);
+                loginStates.Remove(processId);
                 removed.Dispose();
             }
 
-            for (var desiredIndex = 0;
-                 desiredIndex < desiredPlayers.Length;
-                 desiredIndex++)
+            foreach (var session in desiredSessions)
             {
-                var player = desiredPlayers[desiredIndex];
-                var processId = player.Process.ProcessId;
-                var item = clients.FirstOrDefault(
-                    current =>
-                        current.Process.ProcessId == processId);
-                if (item is null)
+                var processId = session.Process.ProcessId;
+                if (!allClients.TryGetValue(
+                        processId,
+                        out var item))
                 {
                     item = createItem(
-                        player,
+                        session,
                         findRuntime(processId)) ??
                         throw new InvalidOperationException(
                             "The client-list item factory returned no item.");
                     item.PropertyChanged += OnClientPropertyChanged;
-                    clients.Insert(desiredIndex, item);
+                    allClients.Add(processId, item);
+                    loginStates.Add(processId, false);
+                    ObserveLoginState(item);
                     continue;
                 }
 
-                if (!ReferenceEquals(item.Player, player))
+                if (!ReferenceEquals(item.Session, session))
                 {
                     throw new InvalidOperationException(
-                        $"Process {processId} changed player ownership without being removed.");
+                        $"Process {processId} changed session ownership without being removed.");
                 }
 
                 item.SetRuntime(findRuntime(processId));
-                var currentIndex = clients.IndexOf(item);
-                if (currentIndex != desiredIndex)
-                    clients.Move(currentIndex, desiredIndex);
             }
 
+            RebuildVisibleClients();
             StopAllMacrosCommand.NotifyCanExecuteChanged();
         }
+
+        public ClientListItemViewModel FindByProcessId(
+            int processId) =>
+            allClients.GetValueOrDefault(processId);
 
         public ClientListItemViewModel FindByHotkey(Hotkey hotkey)
         {
             if (hotkey is null)
                 return null;
 
-            return clients.FirstOrDefault(
+            return allClients.Values.FirstOrDefault(
                 client =>
-                    client.Player.Hotkey is { } assigned &&
+                    client.Session.Hotkey is { } assigned &&
                     assigned.Key == hotkey.Key &&
                     assigned.Modifiers == hotkey.Modifiers);
         }
@@ -179,13 +218,15 @@ namespace SleepHunter.ViewModels
             MacroPersistence?.Dispose();
             SelectedClient = null;
 
-            foreach (var client in clients)
+            foreach (var client in allClients.Values)
             {
                 client.PropertyChanged -= OnClientPropertyChanged;
                 client.Dispose();
             }
 
             clients.Clear();
+            allClients.Clear();
+            loginStates.Clear();
             isDisposed = true;
         }
 
@@ -193,7 +234,7 @@ namespace SleepHunter.ViewModels
         private async Task StopAllMacrosAsync(
             CancellationToken cancellationToken)
         {
-            foreach (var client in clients.ToArray())
+            foreach (var client in allClients.Values.ToArray())
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (client.StopMacroCommand.CanExecute(null))
@@ -203,7 +244,7 @@ namespace SleepHunter.ViewModels
 
         private bool CanStopAllMacros() =>
             !isDisposed &&
-            clients.Any(
+            allClients.Values.Any(
                 client =>
                     client.StopMacroCommand.CanExecute(null));
 
@@ -212,6 +253,28 @@ namespace SleepHunter.ViewModels
             PropertyChangedEventArgs e)
         {
             MacroPersistence?.NotifyStateChanged();
+
+            if (e.PropertyName is null ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.IsLoggedIn),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.Name),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.MaximumHealth),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.MaximumMana),
+                    StringComparison.Ordinal))
+            {
+                ObserveLoginState((ClientListItemViewModel)sender);
+                RebuildVisibleClients();
+            }
 
             if (string.Equals(
                     e.PropertyName,
@@ -228,12 +291,26 @@ namespace SleepHunter.ViewModels
             {
                 StopAllMacrosCommand.NotifyCanExecuteChanged();
             }
+
+            if (e.PropertyName is null ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.IsLoggedIn),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    e.PropertyName,
+                    nameof(ClientListItemViewModel.Name),
+                    StringComparison.Ordinal))
+            {
+                OnPropertyChanged(nameof(WindowTitle));
+            }
         }
 
         partial void OnSelectedClientChanging(
             ClientListItemViewModel value)
         {
-            if (value is not null && !clients.Contains(value))
+            if (value is not null &&
+                !allClients.Values.Contains(value))
             {
                 throw new ArgumentException(
                     "The selected client must belong to the client list.",
@@ -244,10 +321,123 @@ namespace SleepHunter.ViewModels
         partial void OnSelectedClientChanged(
             ClientListItemViewModel value)
         {
-            foreach (var client in clients)
+            foreach (var client in allClients.Values)
                 client.IsRuntimeDetailsOpen = false;
 
             MacroPersistence?.NotifyStateChanged();
+            OnPropertyChanged(nameof(WindowTitle));
+        }
+
+        private void ObserveLoginState(
+            ClientListItemViewModel client)
+        {
+            var processId = client.Process.ProcessId;
+            var isLoggedIn = client.IsLoggedIn;
+            if (!loginStates.TryGetValue(
+                    processId,
+                    out var wasLoggedIn) ||
+                wasLoggedIn == isLoggedIn)
+            {
+                return;
+            }
+
+            loginStates[processId] = isLoggedIn;
+            OnPropertyChanged(nameof(HasLoggedInClients));
+            OnPropertyChanged(nameof(LoggedInClients));
+            ClientLoginStateChanged?.Invoke(
+                this,
+                new ClientLoginStateChangedEventArgs(
+                    client,
+                    isLoggedIn));
+        }
+
+        private void RebuildVisibleClients()
+        {
+            var desired = SortClients(
+                    allClients.Values.Where(client =>
+                        client.IsLoggedIn),
+                    sortOrder)
+                .ToList();
+            if (showAllClients)
+            {
+                desired.AddRange(
+                    allClients.Values
+                        .Where(client => !client.IsLoggedIn)
+                        .OrderBy(
+                            client =>
+                                client.Process.CreationTime)
+                        .ThenBy(
+                            client =>
+                                client.Process.ProcessId));
+            }
+
+            var desiredSet = desired.ToHashSet();
+            for (var index = clients.Count - 1;
+                 index >= 0;
+                 index--)
+            {
+                if (!desiredSet.Contains(clients[index]))
+                    clients.RemoveAt(index);
+            }
+
+            for (var desiredIndex = 0;
+                 desiredIndex < desired.Count;
+                 desiredIndex++)
+            {
+                var client = desired[desiredIndex];
+                var currentIndex = clients.IndexOf(client);
+                if (currentIndex < 0)
+                    clients.Insert(desiredIndex, client);
+                else if (currentIndex != desiredIndex)
+                    clients.Move(currentIndex, desiredIndex);
+            }
+
+            if (SelectedClient is not null &&
+                !clients.Contains(SelectedClient))
+            {
+                SelectedClient = null;
+            }
+        }
+
+        internal static IEnumerable<ClientListItemViewModel>
+            SortClients(
+                IEnumerable<ClientListItemViewModel> source,
+                ClientSortOrder sortOrder)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+
+            return sortOrder switch
+            {
+                ClientSortOrder.LaunchOrder =>
+                    source.OrderBy(
+                            client =>
+                                client.Process.CreationTime)
+                        .ThenBy(
+                            client =>
+                                client.Process.ProcessId),
+                ClientSortOrder.Alphabetical =>
+                    source.OrderBy(client => client.Name)
+                        .ThenBy(
+                            client =>
+                                client.Process.ProcessId),
+                ClientSortOrder.HighestHealth =>
+                    source.OrderByDescending(
+                            client =>
+                                client.MaximumHealth)
+                        .ThenBy(client => client.Name),
+                ClientSortOrder.HighestMana =>
+                    source.OrderByDescending(
+                            client =>
+                                client.MaximumMana)
+                        .ThenBy(client => client.Name),
+                ClientSortOrder.HighestCombined =>
+                    source.OrderByDescending(
+                            client =>
+                                client.MaximumHealth +
+                                (client.MaximumMana * 2))
+                        .ThenBy(client => client.Name),
+                _ => source.OrderBy(client => client.Name)
+            };
         }
     }
 }

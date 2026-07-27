@@ -1,7 +1,7 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Flower Queue Item Data Template -->
-    <DataTemplate x:Key="FlowerQueueItemDataTemplate">
+    <DataTemplate x:Key="FlowerQueueItemViewModelDataTemplate">
         <DockPanel>
             <Border Name="SelectionBorder" DockPanel.Dock="Left"
                     Width="4"

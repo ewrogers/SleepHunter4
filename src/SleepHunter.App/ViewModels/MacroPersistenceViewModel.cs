@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SleepHunter.Macro;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Logging;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.ViewModels
 {
@@ -102,9 +102,9 @@ namespace SleepHunter.ViewModels
                 async () =>
                 {
                     logger.LogInfo(
-                        $"User has requested to load the macro configuration for character: {configuration.Client.Name}");
+                        $"User has requested to load the macro configuration for character: {configuration.Name}");
                     var filePath = interaction.SelectLoadFile(
-                        configuration.Client.Name);
+                        configuration.Name);
                     if (string.IsNullOrWhiteSpace(filePath))
                     {
                         logger.LogInfo(
@@ -126,7 +126,7 @@ namespace SleepHunter.ViewModels
                     }
                 },
                 "Failed to Load Macro",
-                $"Unable to load the macro configuration for {configuration.Client.Name}.",
+                $"Unable to load the macro configuration for {configuration.Name}.",
                 cancellationToken);
         }
 
@@ -152,9 +152,9 @@ namespace SleepHunter.ViewModels
                 async () =>
                 {
                     logger.LogInfo(
-                        $"User has requested to save the macro configuration for character: {configuration.Client.Name}");
+                        $"User has requested to save the macro configuration for character: {configuration.Name}");
                     var filePath = interaction.SelectSaveFile(
-                        configuration.Client.Name);
+                        configuration.Name);
                     if (string.IsNullOrWhiteSpace(filePath))
                     {
                         logger.LogInfo(
@@ -168,7 +168,7 @@ namespace SleepHunter.ViewModels
                         cancellationToken);
                 },
                 "Failed to Save Macro",
-                $"Unable to save the macro configuration for {configuration.Client.Name}.",
+                $"Unable to save the macro configuration for {configuration.Name}.",
                 cancellationToken);
         }
 
@@ -198,7 +198,7 @@ namespace SleepHunter.ViewModels
             IsSpellQueueVisible;
 
         public async Task AutoLoadMacroAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             bool showError = true,
             CancellationToken cancellationToken = default)
         {
@@ -234,19 +234,19 @@ namespace SleepHunter.ViewModels
                 LastError = exception;
                 logger.LogException(exception);
                 logger.LogError(
-                    $"Unable to auto-load the macro configuration for {configuration.Client.Name}");
+                    $"Unable to auto-load the macro configuration for {configuration.Name}");
                 if (showError)
                 {
                     interaction.ShowMessage(
                         "Failed to Load Macro",
-                        $"Unable to load the macro configuration for {configuration.Client.Name}.",
+                        $"Unable to load the macro configuration for {configuration.Name}.",
                         exception.Message);
                 }
             }
         }
 
         public async Task AutoSaveMacroAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             bool showError = true,
             CancellationToken cancellationToken = default)
         {
@@ -270,12 +270,12 @@ namespace SleepHunter.ViewModels
                 LastError = exception;
                 logger.LogException(exception);
                 logger.LogError(
-                    $"Unable to auto-save the macro configuration for {configuration.Client.Name}");
+                    $"Unable to auto-save the macro configuration for {configuration.Name}");
                 if (showError)
                 {
                     interaction.ShowMessage(
                         "Failed to Autosave",
-                        $"Unable to save macro configuration for {configuration.Client.Name}.",
+                        $"Unable to save macro configuration for {configuration.Name}.",
                         exception.Message);
                 }
             }
@@ -316,7 +316,7 @@ namespace SleepHunter.ViewModels
         }
 
         private void UpdateSpellQueueVisibility(
-            PlayerMacroConfiguration configuration)
+            ClientMacroConfiguration configuration)
         {
             if (ReferenceEquals(
                     getSelectedClient()?.MacroConfiguration,

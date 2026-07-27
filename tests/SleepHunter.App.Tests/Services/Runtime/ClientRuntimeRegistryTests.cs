@@ -88,38 +88,44 @@ public sealed class ClientRuntimeRegistryTests
     }
 
     [Test]
-    public async Task ShouldProjectRuntimeSnapshotsIntoThePlayerModel()
+    public async Task ShouldExposeRuntimeSnapshotsWithoutMutatingTheProcessModel()
     {
         var factory = new RecordingRuntimeFactory();
         await using var registry = CreateRegistry(
             factory,
             new RecordingLogger());
         var descriptor = Descriptor(processId: 1234);
-        using var player = new Player(
-            new ClientProcess
-            {
-                ProcessId = descriptor.ProcessId,
-                WindowHandle = descriptor.WindowHandle
-            });
-
         await registry.AttachAsync(
             descriptor,
             TimeSpan.FromMilliseconds(200));
-        var wasBound = registry.BindPresentation(player);
+        Assert.That(
+            registry.TryFind(
+                descriptor.ProcessId,
+                out var runtime),
+            Is.True);
         factory.LastHost!.PublishCapture(
             CreateCapture(
                 descriptor.Client,
                 sequenceValue: 1,
                 characterName: "Projected"));
-        await WaitUntilAsync(() => player.IsLoggedIn);
+        await WaitUntilAsync(
+            () => runtime.LatestSnapshot?.Character?.Name ==
+                "Projected");
 
         Assert.Multiple(() =>
         {
-            Assert.That(wasBound, Is.True);
-            Assert.That(player.Name, Is.EqualTo("Projected"));
-            Assert.That(player.Stats.CurrentHealth, Is.EqualTo(100));
-            Assert.That(player.Location.MapName, Is.EqualTo("Test Map"));
-            Assert.That(player.LastSnapshotSequence, Is.EqualTo(1));
+            Assert.That(
+                runtime.LatestSnapshot?.Character?.Name,
+                Is.EqualTo("Projected"));
+            Assert.That(
+                runtime.LatestSnapshot?.Vitals?.CurrentHealth,
+                Is.EqualTo(100));
+            Assert.That(
+                runtime.LatestSnapshot?.Location?.MapName,
+                Is.EqualTo("Test Map"));
+            Assert.That(
+                runtime.LatestSnapshot?.Sequence.Value,
+                Is.EqualTo(1));
         });
     }
 

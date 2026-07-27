@@ -1,8 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:settings="clr-namespace:SleepHunter.Settings">
     <!-- Spell Queue Item Data Template -->
-    <DataTemplate x:Key="SpellQueueItemDataTemplate">
+    <DataTemplate x:Key="SpellQueueItemViewModelDataTemplate">
         <StackPanel>
             <Grid>
                 <Border Name="Border" Background="{StaticResource ObsidianControlBackground}"
@@ -27,8 +27,8 @@
                                 CornerRadius="2">
                             <Grid>
                                 <Image Name="Icon" 
-                                       Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
-                                       Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.SkillIconSize}" 
+                                       Width="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillIconSize}"
+                                       Height="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillIconSize}"
                                        Source="{Binding Icon}"
                                        Opacity="0.5"
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"/>

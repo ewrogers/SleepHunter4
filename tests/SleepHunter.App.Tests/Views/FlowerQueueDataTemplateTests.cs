@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -44,7 +44,7 @@ public sealed class FlowerQueueDataTemplateTests
     public void ShouldPresentFlowerConditionsAsExplicitAlternatives()
     {
         var template =
-            (DataTemplate)resources["FlowerQueueItemDataTemplate"];
+            (DataTemplate)resources["FlowerQueueItemViewModelDataTemplate"];
         var content = (FrameworkElement)template.LoadContent();
         var leadText = content.FindName(
             "ConditionLeadText") as TextBlock;

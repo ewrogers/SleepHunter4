@@ -1,6 +1,7 @@
-﻿using System.Xml.Serialization;
+using System.Xml.Serialization;
 
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Tests.Settings
@@ -24,7 +25,7 @@ namespace SleepHunter.Tests.Settings
             Assert.That(settings.ShowExchangeResultsInMessageBar, Is.False);
             Assert.That(
                 settings.ClientSortOrder,
-                Is.EqualTo(PlayerSortOrder.LaunchOrder));
+                Is.EqualTo(ClientSortOrder.LaunchOrder));
         }
 
         [Test]
@@ -37,7 +38,7 @@ namespace SleepHunter.Tests.Settings
 
             Assert.That(
                 settings.ClientSortOrder,
-                Is.EqualTo(PlayerSortOrder.LaunchOrder));
+                Is.EqualTo(ClientSortOrder.LaunchOrder));
         }
 
         [Test]
@@ -45,7 +46,7 @@ namespace SleepHunter.Tests.Settings
         {
             var settings = new UserSettings
             {
-                ClientSortOrder = PlayerSortOrder.LaunchOrder
+                ClientSortOrder = ClientSortOrder.LaunchOrder
             };
             using var writer = new StringWriter();
 
@@ -124,6 +125,59 @@ namespace SleepHunter.Tests.Settings
             {
                 Assert.That(settings.MakeExchangeDialogDraggable, Is.False);
                 Assert.That(settings.ShowExchangeResultsInMessageBar, Is.True);
+            });
+        }
+
+        [TestCase("None", ObservationChangeAction.Continue)]
+        [TestCase("Start", ObservationChangeAction.Continue)]
+        [TestCase("Resume", ObservationChangeAction.Continue)]
+        [TestCase("Restart", ObservationChangeAction.Continue)]
+        [TestCase("ForceQuit", ObservationChangeAction.CloseClient)]
+        [TestCase("Pause", ObservationChangeAction.Pause)]
+        [TestCase("Stop", ObservationChangeAction.Stop)]
+        public void ShouldNormalizeLegacyObservationChangeActions(
+            string serializedAction,
+            ObservationChangeAction expectedAction)
+        {
+            var settings = Deserialize(
+                "<UserSettings>" +
+                $"<MapChangeAction>{serializedAction}</MapChangeAction>" +
+                $"<CoordsChangeAction>{serializedAction}</CoordsChangeAction>" +
+                "</UserSettings>");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(
+                    settings.MapChangeAction,
+                    Is.EqualTo(expectedAction));
+                Assert.That(
+                    settings.CoordsChangeAction,
+                    Is.EqualTo(expectedAction));
+            });
+        }
+
+        [Test]
+        public void ShouldSaveRuntimeObservationChangeActionNames()
+        {
+            var settings = new UserSettings
+            {
+                MapChangeAction = ObservationChangeAction.CloseClient,
+                CoordsChangeAction = ObservationChangeAction.Continue
+            };
+            using var writer = new StringWriter();
+
+            Serializer.Serialize(writer, settings);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(
+                    writer.ToString(),
+                    Does.Contain(
+                        "<MapChangeAction>CloseClient</MapChangeAction>"));
+                Assert.That(
+                    writer.ToString(),
+                    Does.Contain(
+                        "<CoordsChangeAction>Continue</CoordsChangeAction>"));
             });
         }
 

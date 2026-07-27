@@ -1,12 +1,12 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Windows.Input;
-using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Persistence.Serialization;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Hotkeys;
 using SleepHunter.Tests.Support;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Tests.Services.Configuration;
 
@@ -34,12 +34,12 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public async Task ShouldApplyConfigurationAndReplaceHotkey()
     {
-        using var player = CreatePlayer("Destination");
+        var player = CreatePlayer("Destination");
         player.Hotkey = new Hotkey(
             ModifierKeys.Control,
             Key.F5);
         var previousHotkey = player.Hotkey;
-        var editable = new PlayerMacroConfiguration(player);
+        var editable = new ClientMacroConfiguration(player);
         var loaded = CreateLoadResult(
             description: "Loaded configuration",
             hotkey: new HotkeyConfiguration(
@@ -77,8 +77,8 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public async Task ShouldClearImportedHotkeyWhenRegistrationFails()
     {
-        using var player = CreatePlayer("Destination");
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer("Destination");
+        var editable = new ClientMacroConfiguration(player);
         var loaded = CreateLoadResult(
             hotkey: new HotkeyConfiguration(
                 nameof(Key.F7),
@@ -109,8 +109,8 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public async Task ShouldSaveMappedSnapshot()
     {
-        using var player = CreatePlayer("Saver");
-        var editable = new PlayerMacroConfiguration(player)
+        var player = CreatePlayer("Saver");
+        var editable = new ClientMacroConfiguration(player)
         {
             Description = "Save me"
         };
@@ -139,8 +139,8 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public async Task ShouldMigrateLegacyAutosaveToCurrentPath()
     {
-        using var player = CreatePlayer("Legacy");
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer("Legacy");
+        var editable = new ClientMacroConfiguration(player);
         var legacyPath = Path.Combine(
             testDirectory,
             "autosave",
@@ -176,8 +176,8 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public void ShouldDeleteUnreadableAutosave()
     {
-        using var player = CreatePlayer("Broken");
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer("Broken");
+        var editable = new ClientMacroConfiguration(player);
         var currentPath = Path.Combine(
             testDirectory,
             "autosave",
@@ -201,8 +201,8 @@ public sealed class MacroConfigurationPersistenceServiceTests
     [Test]
     public void ShouldKeepReadableAutosaveWhenApplyingItFails()
     {
-        using var player = CreatePlayer("Readable");
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer("Readable");
+        var editable = new ClientMacroConfiguration(player);
         var currentPath = Path.Combine(
             testDirectory,
             "autosave",
@@ -226,11 +226,11 @@ public sealed class MacroConfigurationPersistenceServiceTests
         IMacroConfigurationReader reader,
         IMacroConfigurationWriter writer,
         IHotkeyRegistrationService hotkeys,
-        IPlayerMacroConfigurationMapper? mapper = null) =>
+        IClientMacroConfigurationMapper? mapper = null) =>
         new(
             reader,
             writer,
-            mapper ?? new PlayerMacroConfigurationMapper(),
+            mapper ?? new ClientMacroConfigurationMapper(),
             hotkeys,
             new TestLogger(),
             testDirectory);
@@ -251,7 +251,7 @@ public sealed class MacroConfigurationPersistenceServiceTests
                 : "4.11",
             ImmutableArray<MacroConfigurationWarning>.Empty);
 
-    private static Player CreatePlayer(string name) =>
+    private static ClientSession CreatePlayer(string name) =>
         new(
             new ClientProcess
             {
@@ -260,8 +260,7 @@ public sealed class MacroConfigurationPersistenceServiceTests
                 WindowTitle = "Test Window"
             })
         {
-            Name = name,
-            IsLoggedIn = true
+            Name = name
         };
 
     private sealed class StubReader : IMacroConfigurationReader
@@ -333,14 +332,14 @@ public sealed class MacroConfigurationPersistenceServiceTests
     }
 
     private sealed class ThrowingMapper :
-        IPlayerMacroConfigurationMapper
+        IClientMacroConfigurationMapper
     {
         public MacroConfiguration CreateSnapshot(
-            PlayerMacroConfiguration source) =>
+            ClientMacroConfiguration source) =>
             throw new NotSupportedException();
 
         public void Apply(
-            PlayerMacroConfiguration destination,
+            ClientMacroConfiguration destination,
             MacroConfigurationLoadResult loaded) =>
             throw new InvalidOperationException("Apply failed");
     }

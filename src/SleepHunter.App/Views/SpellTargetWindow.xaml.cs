@@ -1,33 +1,34 @@
-﻿using System;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
 
 using SleepHunter.Extensions;
-using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Automation;
+using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Settings;
+using SleepHunter.ViewModels.Editing;
+using SleepHunter.ViewModels.Presentation;
 
 namespace SleepHunter.Views
 {
     public partial class SpellTargetWindow : Window
     {
-        private SpellQueueItem spellQueueItem = new();
+        private SpellQueueItemViewModel spellQueueItem = new();
 
-        public SpellQueueItem SpellQueueItem
+        public SpellQueueItemViewModel SpellQueueItemViewModel
         {
             get => spellQueueItem;
             private set => spellQueueItem = value;
         }
 
-        public Spell Spell
+        public SpellViewModel Spell
         {
-            get => (Spell)GetValue(SpellProperty);
+            get => (SpellViewModel)GetValue(SpellProperty);
             set => SetValue(SpellProperty, value);
         }
 
@@ -41,10 +42,18 @@ namespace SleepHunter.Views
             DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(SpellTargetWindow), new PropertyMetadata(false));
 
         public static readonly DependencyProperty SpellProperty =
-            DependencyProperty.Register(nameof(Spell), typeof(Spell), typeof(SpellTargetWindow), new PropertyMetadata(null));
+            DependencyProperty.Register(
+                nameof(Spell),
+                typeof(SpellViewModel),
+                typeof(SpellTargetWindow),
+                new PropertyMetadata(null));
 
-        public SpellTargetWindow(Spell spell, SpellQueueItem item, bool isEditMode = true)
-           : this(spell)
+        public SpellTargetWindow(
+            SpellViewModel spell,
+            SpellQueueItemViewModel item,
+            IEnumerable<string> characterNames,
+            bool isEditMode = true)
+           : this(spell, characterNames)
         {
             if (isEditMode)
             {
@@ -52,7 +61,7 @@ namespace SleepHunter.Views
                 okButton.Content = "_Save Changes";
             }
 
-            SpellQueueItem.Id = item.Id;
+            SpellQueueItemViewModel.Id = item.Id;
             SetTargetForMode(item.Target);
 
             maxLevelCheckBox.IsChecked = item.HasTargetLevel;
@@ -63,15 +72,17 @@ namespace SleepHunter.Views
             IsEditMode = isEditMode;
         }
 
-        public SpellTargetWindow(Spell spell)
-           : this()
+        public SpellTargetWindow(
+            SpellViewModel spell,
+            IEnumerable<string> characterNames)
+           : this(characterNames)
         {
             Spell = spell;
 
             maxLevelUpDown.Value = spell.MaximumLevel;
             maxLevelCheckBox.IsChecked = spell.CurrentLevel < spell.MaximumLevel;
 
-            if (spell.TargetType == AbilityTargetType.None)
+            if (spell.ArgumentType == SpellArgumentType.None)
             {
                 targetModeComboBox.SelectedValue = "None";
                 targetModeComboBox.IsEnabled = false;
@@ -82,48 +93,27 @@ namespace SleepHunter.Views
                 targetModeComboBox.SelectedValue = "Self";
             }
 
-            if (!SpellMetadataManager.Instance.ContainsSpell(spell.Name))
-            {
-                // Warn on missing spell?
-            }
         }
 
-        public SpellTargetWindow()
+        public SpellTargetWindow(
+            IEnumerable<string> characterNames = null)
         {
             InitializeComponent();
-            InitializeViews();
+            characterComboBox.ItemsSource =
+                NormalizeCharacterNames(characterNames);
 
             ToggleTargetMode(SpellTargetMode.None);
         }
 
-        private void InitializeViews()
-        {
-            PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
-            PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionChanged;
-
-            PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
-        }
-
-        private async void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
-        {
-            await Dispatcher.InvokeAsync(static () => { });
-            BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-        }
-
-        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is not Player player)
-                return;
-
-            await Dispatcher.InvokeAsync(static () => { });
-
-            if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-                characterComboBox.Items.Refresh();
-            }
-        }
+        private static string[] NormalizeCharacterNames(
+            IEnumerable<string> characterNames) =>
+            characterNames?
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .ToArray() ??
+            [];
 
         private bool ValidateSpellTarget()
         {
@@ -140,7 +130,8 @@ namespace SleepHunter.Views
 
             var selectedMode = GetSelectedMode();
 
-            if (Spell.TargetType == AbilityTargetType.Target && selectedMode == SpellTargetMode.None)
+            if (Spell.ArgumentType == SpellArgumentType.Target &&
+                selectedMode == SpellTargetMode.None)
             {
                 this.ShowMessageBox("Target Required",
                    "This spell requires a target.",
@@ -255,7 +246,8 @@ namespace SleepHunter.Views
             }
         }
 
-        private void SetTargetForMode(SpellTarget target)
+        private void SetTargetForMode(
+            SpellTargetViewModel target)
         {
             if (target == null)
                 return;

@@ -8,7 +8,9 @@ using SleepHunter.Models;
 
 namespace SleepHunter.Services.Releases
 {
-    public class ReleaseService : IReleaseService
+    public sealed class ReleaseService :
+        IReleaseService,
+        IDisposable
     {
         private const string RELEASES_URL = @"https://github.com/ewrogers/SleepHunter4/releases";
         private const string RELEASE_ASSETS_URL = @"https://api.github.com/repos/ewrogers/SleepHunter4/releases";
@@ -28,6 +30,8 @@ namespace SleepHunter.Services.Releases
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             client.DefaultRequestHeaders.Add("User-Agent", "SleepHunter v4 Client");
         }
+
+        public void Dispose() => client.Dispose();
 
         public Uri GetLatestReleaseNotesUri() => new Uri(RELEASE_NOTES_URL);
 

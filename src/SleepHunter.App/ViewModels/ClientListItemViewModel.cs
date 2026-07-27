@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Interop.Snapshots;
-using SleepHunter.Macro;
+using SleepHunter.Media;
+using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Spells;
@@ -18,6 +19,8 @@ using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Runtime;
 using SleepHunter.Settings;
+using SleepHunter.ViewModels.Editing;
+using SleepHunter.ViewModels.Presentation;
 
 namespace SleepHunter.ViewModels
 {
@@ -25,18 +28,23 @@ namespace SleepHunter.ViewModels
         ObservableObject,
         IDisposable
     {
-        private readonly IPlayerMacroConfigurationMapper
+        private readonly IClientMacroConfigurationMapper
             configurationMapper;
+        private readonly EquipmentViewModel equipment;
         private readonly Func<UserSettings> getSettings;
+        private readonly InventoryViewModel inventory;
         private readonly IRuntimeAutomationSetupFactory setupFactory;
+        private readonly SkillbookViewModel skillbook;
+        private readonly SpellbookViewModel spellbook;
         private readonly IUiDispatcher uiDispatcher;
+        private long lastPresentationSequence;
         private bool isDisposed;
 
         public ClientListItemViewModel(
-            Player player,
+            ClientSession session,
             ClientRuntimeViewModel runtime = null)
             : this(
-                player,
+                session,
                 macroConfiguration: null,
                 runtime,
                 configurationMapper: null,
@@ -47,16 +55,19 @@ namespace SleepHunter.ViewModels
         }
 
         internal ClientListItemViewModel(
-            Player player,
-            PlayerMacroConfiguration macroConfiguration,
+            ClientSession session,
+            ClientMacroConfiguration macroConfiguration,
             ClientRuntimeViewModel runtime,
-            IPlayerMacroConfigurationMapper configurationMapper,
+            IClientMacroConfigurationMapper configurationMapper,
             IRuntimeAutomationSetupFactory setupFactory,
             Func<UserSettings> getSettings,
-            IUiDispatcher uiDispatcher = null)
+            IUiDispatcher uiDispatcher = null,
+            IconManager iconManager = null,
+            SkillMetadataManager skillMetadata = null,
+            SpellMetadataManager spellMetadata = null)
         {
-            Player = player ??
-                throw new ArgumentNullException(nameof(player));
+            Session = session ??
+                throw new ArgumentNullException(nameof(session));
             MacroConfiguration = macroConfiguration;
             MacroEditor = macroConfiguration is null
                 ? null
@@ -67,10 +78,16 @@ namespace SleepHunter.ViewModels
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
             this.uiDispatcher = uiDispatcher;
+            equipment = new EquipmentViewModel(iconManager);
+            inventory = new InventoryViewModel(iconManager);
+            skillbook = new SkillbookViewModel(
+                iconManager,
+                skillMetadata);
+            spellbook = new SpellbookViewModel(
+                iconManager,
+                spellMetadata);
 
-            Player.PropertyChanged += OnObservedPropertyChanged;
-            Player.Location.PropertyChanged += OnObservedPropertyChanged;
-            Player.Stats.PropertyChanged += OnObservedPropertyChanged;
+            Session.PropertyChanged += OnObservedPropertyChanged;
             if (MacroConfiguration is not null)
             {
                 MacroConfiguration.PropertyChanged +=
@@ -80,9 +97,9 @@ namespace SleepHunter.ViewModels
             SetRuntime(runtime);
         }
 
-        public Player Player { get; }
+        public ClientSession Session { get; }
 
-        public PlayerMacroConfiguration MacroConfiguration { get; }
+        public ClientMacroConfiguration MacroConfiguration { get; }
 
         public MacroEditorViewModel MacroEditor { get; }
 
@@ -140,24 +157,24 @@ namespace SleepHunter.ViewModels
             private set;
         }
 
-        public ClientProcess Process => Player.Process;
+        public ClientProcess Process => Session.Process;
 
-        public Inventory Inventory => Player.Inventory;
+        public InventoryViewModel Inventory => inventory;
 
-        public EquipmentSet Equipment => Player.Equipment;
+        public EquipmentViewModel Equipment => equipment;
 
-        public Skillbook Skillbook => Player.Skillbook;
+        public SkillbookViewModel Skillbook => skillbook;
 
-        public Spellbook Spellbook => Player.Spellbook;
+        public SpellbookViewModel Spellbook => spellbook;
 
-        public string Name =>
-            ObservedSnapshot?.Character?.Name ??
-            Player.Name;
+        public string Name => Session.Name;
 
         public bool IsLoggedIn =>
-            ObservedSnapshot is { } snapshot
-                ? snapshot.Presence == ClientPresence.InWorld
-                : Player.IsLoggedIn;
+            ObservedSnapshot is
+            {
+                Presence: ClientPresence.InWorld,
+                Character: not null
+            };
 
         public bool IsMacroRunning =>
             Runtime?.Current?.Lifecycle == MacroLifecycle.Running;
@@ -180,45 +197,49 @@ namespace SleepHunter.ViewModels
             IsMacroEditingEnabled &&
             !IsMacroRunning;
 
-        public bool HasHotkey => Player.HasHotkey;
+        public bool HasHotkey => Session.HasHotkey;
 
-        public string HotkeyString => Player.HotkeyString;
+        public string HotkeyString => Session.HotkeyString;
 
         public string MapName =>
-            ObservedSnapshot?.Location?.MapName ??
-            Player.Location.MapName;
+            ObservedSnapshot?.Location?.MapName;
 
         public int MapX =>
-            ObservedSnapshot?.Location?.X ??
-            Player.Location.X;
+            ObservedSnapshot?.Location?.X ?? 0;
 
         public int MapY =>
-            ObservedSnapshot?.Location?.Y ??
-            Player.Location.Y;
+            ObservedSnapshot?.Location?.Y ?? 0;
 
         public int CurrentHealth =>
-            ObservedSnapshot?.Vitals?.CurrentHealth ??
-            Player.Stats.CurrentHealth;
+            ObservedSnapshot?.Vitals?.CurrentHealth ?? 0;
 
         public int MaximumHealth =>
-            ObservedSnapshot?.Vitals?.MaximumHealth ??
-            Player.Stats.MaximumHealth;
+            ObservedSnapshot?.Vitals?.MaximumHealth ?? 0;
 
         public double HealthPercent =>
-            ObservedSnapshot?.Vitals?.HealthPercent ??
-            Player.Stats.HealthPercent;
+            ObservedSnapshot?.Vitals?.HealthPercent ?? 0;
 
         public int CurrentMana =>
-            ObservedSnapshot?.Vitals?.CurrentMana ??
-            Player.Stats.CurrentMana;
+            ObservedSnapshot?.Vitals?.CurrentMana ?? 0;
 
         public int MaximumMana =>
-            ObservedSnapshot?.Vitals?.MaximumMana ??
-            Player.Stats.MaximumMana;
+            ObservedSnapshot?.Vitals?.MaximumMana ?? 0;
 
         public double ManaPercent =>
-            ObservedSnapshot?.Vitals?.ManaPercent ??
-            Player.Stats.ManaPercent;
+            ObservedSnapshot?.Vitals?.ManaPercent ?? 0;
+
+        public bool HasLyliacPlant =>
+            HasSpell(SpellViewModel.LyliacPlantKey);
+
+        public bool HasLyliacVineyard =>
+            HasSpell(SpellViewModel.LyliacVineyardKey);
+
+        public bool CanFlower =>
+            HasLyliacPlant ||
+            HasLyliacVineyard;
+
+        public bool SupportsFlowering =>
+            Session.Layout?.SupportsFlowering ?? false;
 
         public bool HasRuntime => Runtime is not null;
 
@@ -298,7 +319,8 @@ namespace SleepHunter.ViewModels
         public string RuntimeDetailsText => BuildRuntimeDetailsText();
 
         private ClientSnapshot ObservedSnapshot =>
-            Runtime?.PresentationSnapshot;
+            Runtime?.LatestSnapshot ??
+            Runtime?.LastSuccessfulSnapshot;
 
         public void Dispose()
         {
@@ -308,9 +330,7 @@ namespace SleepHunter.ViewModels
             StopMacroCommand.Cancel();
             ToggleMacroCommand.Cancel();
             SetRuntime(null);
-            Player.PropertyChanged -= OnObservedPropertyChanged;
-            Player.Location.PropertyChanged -= OnObservedPropertyChanged;
-            Player.Stats.PropertyChanged -= OnObservedPropertyChanged;
+            Session.PropertyChanged -= OnObservedPropertyChanged;
             if (MacroConfiguration is not null)
             {
                 MacroConfiguration.PropertyChanged -=
@@ -330,6 +350,8 @@ namespace SleepHunter.ViewModels
         {
             if (Runtime is not null)
                 Runtime.PropertyChanged -= OnRuntimePropertyChanged;
+
+            ResetPresentation();
         }
 
         partial void OnRuntimeChanged(ClientRuntimeViewModel value)
@@ -340,6 +362,7 @@ namespace SleepHunter.ViewModels
             if (value is not null)
                 value.PropertyChanged += OnRuntimePropertyChanged;
 
+            ApplyPresentationSnapshot();
             RecordRuntimeError();
             NotifyObservedState();
         }
@@ -372,8 +395,35 @@ namespace SleepHunter.ViewModels
                 await InvokeOnUiAsync(
                     () =>
                     {
-                        if (!isDisposed)
-                            NotifyObservedState();
+                        if (isDisposed)
+                            return;
+
+                        if (ReferenceEquals(
+                                sender,
+                                MacroConfiguration))
+                        {
+                            if (string.Equals(
+                                    e.PropertyName,
+                                    nameof(
+                                        ClientMacroConfiguration
+                                            .Skills),
+                                    StringComparison.Ordinal))
+                            {
+                                ApplySkillbook();
+                            }
+
+                            if (string.Equals(
+                                    e.PropertyName,
+                                    nameof(
+                                        ClientMacroConfiguration
+                                            .QueuedSpells),
+                                    StringComparison.Ordinal))
+                            {
+                                UpdateMacroSpellObservations();
+                            }
+                        }
+
+                        NotifyObservedState();
                     });
                 if (isDisposed ||
                     !ReferenceEquals(sender, MacroConfiguration) ||
@@ -429,6 +479,7 @@ namespace SleepHunter.ViewModels
                 RecordRuntimeError();
                 try
                 {
+                    ApplyPresentationSnapshot();
                     UpdateMacroFlowerObservations();
                     UpdateMacroSpellObservations();
                     LastObservationError = null;
@@ -658,6 +709,19 @@ namespace SleepHunter.ViewModels
             {
                 queuedSpell.IsActive =
                     activeEntryId?.Value == queuedSpell.Id;
+                var presented =
+                    Spellbook.GetSpell(queuedSpell.Name);
+                if (presented is not null)
+                {
+                    queuedSpell.Icon = presented.Icon;
+                    queuedSpell.CurrentLevel =
+                        presented.CurrentLevel;
+                    queuedSpell.MaximumLevel =
+                        presented.MaximumLevel;
+                    queuedSpell.IsOnCooldown =
+                        presented.IsOnCooldown;
+                }
+
                 if (spellbook is null)
                     continue;
 
@@ -680,6 +744,92 @@ namespace SleepHunter.ViewModels
                     spellReadiness?.Status ==
                         SpellReadinessStatus.WaitingForHealth;
             }
+        }
+
+        private void ApplyPresentationSnapshot()
+        {
+            var snapshot = ObservedSnapshot;
+            if (snapshot is null)
+            {
+                if (Runtime is null)
+                    ResetPresentation();
+
+                return;
+            }
+
+            if (!snapshot.IsUsable ||
+                snapshot.Sequence.Value <=
+                    lastPresentationSequence)
+            {
+                return;
+            }
+
+            if (snapshot.Presence != ClientPresence.InWorld ||
+                snapshot.Character is null)
+            {
+                ResetPresentation();
+                lastPresentationSequence = snapshot.Sequence.Value;
+                return;
+            }
+
+            UpdateCharacterIdentity(snapshot.Character.Name);
+            inventory.Apply(
+                snapshot.Inventory,
+                snapshot.Character.Gold);
+            equipment.Apply(snapshot.Equipment);
+            ApplySkillbook();
+            spellbook.Apply(snapshot.Spellbook);
+            DisableUnavailableFlowerOptions();
+            lastPresentationSequence = snapshot.Sequence.Value;
+        }
+
+        private void UpdateCharacterIdentity(string characterName)
+        {
+            if (string.IsNullOrWhiteSpace(characterName))
+                return;
+
+            var normalizedName = characterName.Trim();
+            if (MacroConfiguration is not null)
+                MacroConfiguration.UpdateCharacterName(normalizedName);
+            else
+                Session.Name = normalizedName;
+        }
+
+        private bool HasSpell(string spellName) =>
+            ObservedSnapshot?.Spellbook?.Spells.Any(
+                spell => string.Equals(
+                    spell.Name,
+                    spellName,
+                    StringComparison.OrdinalIgnoreCase)) == true;
+
+        private void ApplySkillbook()
+        {
+            skillbook.Apply(
+                ObservedSnapshot?.Skillbook,
+                MacroConfiguration?.Skills.Select(
+                    entry => entry.Name));
+        }
+
+        private void ResetPresentation()
+        {
+            inventory.Reset();
+            equipment.Reset();
+            skillbook.Reset();
+            spellbook.Reset();
+            DisableUnavailableFlowerOptions();
+            lastPresentationSequence = 0;
+        }
+
+        private void DisableUnavailableFlowerOptions()
+        {
+            if (MacroConfiguration is null)
+                return;
+
+            if (!HasLyliacPlant)
+                MacroConfiguration.FlowerAlternateCharacters = false;
+
+            if (!HasLyliacVineyard)
+                MacroConfiguration.UseLyliacVineyard = false;
         }
 
         private void UpdateMacroFlowerObservations()
@@ -857,15 +1007,15 @@ namespace SleepHunter.ViewModels
         private static bool IsRuntimeConfigurationProperty(
             string propertyName) =>
             propertyName is
-                nameof(PlayerMacroConfiguration.QueuedSpells) or
-                nameof(PlayerMacroConfiguration.FlowerTargets) or
-                nameof(PlayerMacroConfiguration.Skills) or
-                nameof(PlayerMacroConfiguration.SpellQueueRotation) or
-                nameof(PlayerMacroConfiguration.UseLyliacVineyard) or
-                nameof(PlayerMacroConfiguration.FlowerAlternateCharacters) or
-                nameof(PlayerMacroConfiguration.PrioritizeAlternateCharacters) or
-                nameof(PlayerMacroConfiguration.MaximumFlowerXDistance) or
-                nameof(PlayerMacroConfiguration.MaximumFlowerYDistance);
+                nameof(ClientMacroConfiguration.QueuedSpells) or
+                nameof(ClientMacroConfiguration.FlowerTargets) or
+                nameof(ClientMacroConfiguration.Skills) or
+                nameof(ClientMacroConfiguration.SpellQueueRotation) or
+                nameof(ClientMacroConfiguration.UseLyliacVineyard) or
+                nameof(ClientMacroConfiguration.FlowerAlternateCharacters) or
+                nameof(ClientMacroConfiguration.PrioritizeAlternateCharacters) or
+                nameof(ClientMacroConfiguration.MaximumFlowerXDistance) or
+                nameof(ClientMacroConfiguration.MaximumFlowerYDistance);
 
         private Task PauseMacroCoreAsync(
             CancellationToken cancellationToken) =>
@@ -931,6 +1081,9 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(HasHotkey));
             OnPropertyChanged(nameof(HasRuntime));
             OnPropertyChanged(nameof(HealthPercent));
+            OnPropertyChanged(nameof(HasLyliacPlant));
+            OnPropertyChanged(nameof(HasLyliacVineyard));
+            OnPropertyChanged(nameof(CanFlower));
             OnPropertyChanged(nameof(HotkeyString));
             OnPropertyChanged(nameof(IsLoggedIn));
             OnPropertyChanged(nameof(IsMacroEditingEnabled));
@@ -947,6 +1100,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(RuntimeStatus));
             OnPropertyChanged(nameof(RuntimeDetailsText));
             OnPropertyChanged(nameof(MacroToggleLabel));
+            OnPropertyChanged(nameof(SupportsFlowering));
             OnPropertyChanged(nameof(UsesRuntimeSnapshot));
             StopMacroCommand.NotifyCanExecuteChanged();
             ToggleMacroCommand.NotifyCanExecuteChanged();
