@@ -14,7 +14,7 @@
                 BorderBrush="{DynamicResource ObsidianSeparatorColor}"
                 BorderThickness="1"
                 CornerRadius="2">
-            <Grid>
+            <Grid ClipToBounds="True">
                 <Rectangle Name="EmptyRectangle"
                            Stroke="{DynamicResource ObsidianSeparatorColor}"
                            StrokeThickness="1"
@@ -28,6 +28,8 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       RenderTransformOrigin="0.5,0.5"
+                       SnapsToDevicePixels="True"
                        Stretch="None"
                        Source="{Binding Icon}"
                        Panel.ZIndex="1"/>
@@ -100,6 +102,15 @@
 
             <DataTrigger Binding="{Binding HasDurability}" Value="True">
                 <Setter TargetName="ToolTipDurabilityText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                         Value="62">
+                <Setter TargetName="Icon" Property="RenderTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="2" ScaleY="2"/>
+                    </Setter.Value>
+                </Setter>
             </DataTrigger>
 
             <MultiDataTrigger>

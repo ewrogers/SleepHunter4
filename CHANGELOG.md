@@ -16,6 +16,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- The Large inventory icon size now renders inventory and equipment sprites at a crisp 2x scale.
 - Refreshed accent styling throughout controls, tabs, queues, progress bars, and metadata headers.
 - Made theme highlights automatically use light or dark contrast based on the selected accent color.
 - Added subtle hover borders to dropdowns, numeric controls, and checkboxes, plus small pressed animations for dropdown and numeric-control arrows.
