@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [4.12.0] - 2026-07-27
+
 ### Added
 
 - Added a new per-client automation system that now powers spell, flower, and skill macros with more predictable execution.
