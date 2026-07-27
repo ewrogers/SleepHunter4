@@ -102,7 +102,7 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            var characterName = characterComboBox.SelectedValue as string;
+            var characterName = characterComboBox.SelectedItem as string;
 
             if (selectedMode == SpellTargetMode.Character && string.IsNullOrWhiteSpace(characterName))
             {
@@ -241,7 +241,7 @@ namespace SleepHunter.Views
             switch (target.Mode)
             {
                 case SpellTargetMode.Character:
-                    characterComboBox.SelectedValue = target.CharacterName;
+                    characterComboBox.SelectedItem = target.CharacterName;
                     break;
 
                 case SpellTargetMode.AbsoluteTile:

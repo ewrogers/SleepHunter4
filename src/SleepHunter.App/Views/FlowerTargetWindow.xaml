@@ -84,7 +84,6 @@
                       Margin="0,4"
                       Style="{StaticResource ObsidianComboBox}"
                       ItemTemplate="{StaticResource StringComboBoxDataTemplate}"
-                      SelectedValuePath="Name"
                       SelectedIndex="0"/>
 
             <!-- Relative Tile Target -->
