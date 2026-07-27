@@ -18,6 +18,11 @@ public sealed class ItemDataTemplateTests
             .Descendants(Presentation + "Image")
             .Single(element =>
                 (string?)element.Attribute("Name") == "Icon");
+        var emptySlot = document
+            .Descendants(Presentation + "Rectangle")
+            .Single(element =>
+                (string?)element.Attribute("Name") ==
+                "EmptyRectangle");
         var scaleTrigger = document
             .Descendants(Presentation + "DataTrigger")
             .Single(element =>
@@ -63,6 +68,13 @@ public sealed class ItemDataTemplateTests
                 (string?)icon.Parent?.Attribute(
                     "ClipToBounds"),
                 Is.EqualTo("True"));
+            Assert.That(
+                icon.Parent,
+                Is.Not.SameAs(emptySlot.Parent));
+            Assert.That(
+                emptySlot.Parent?.Attribute(
+                    "ClipToBounds"),
+                Is.Null);
         });
     }
 

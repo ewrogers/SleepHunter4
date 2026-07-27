@@ -14,7 +14,7 @@
                 BorderBrush="{DynamicResource ObsidianSeparatorColor}"
                 BorderThickness="1"
                 CornerRadius="2">
-            <Grid ClipToBounds="True">
+            <Grid>
                 <Rectangle Name="EmptyRectangle"
                            Stroke="{DynamicResource ObsidianSeparatorColor}"
                            StrokeThickness="1"
@@ -22,17 +22,19 @@
                            Opacity="0.55"
                            Margin="1"/>
 
-                <Image Name="Icon"
-                       Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
-                       Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       RenderOptions.BitmapScalingMode="NearestNeighbor"
-                       RenderTransformOrigin="0.5,0.5"
-                       SnapsToDevicePixels="True"
-                       Stretch="None"
-                       Source="{Binding Icon}"
-                       Panel.ZIndex="1"/>
+                <Grid ClipToBounds="True"
+                      Panel.ZIndex="1">
+                    <Image Name="Icon"
+                           Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                           Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           RenderTransformOrigin="0.5,0.5"
+                           SnapsToDevicePixels="True"
+                           Stretch="None"
+                           Source="{Binding Icon}"/>
+                </Grid>
 
                 <Border Name="SlotNameBorder"
                         MinWidth="30"

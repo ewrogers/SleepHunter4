@@ -50,7 +50,7 @@
                                        Margin="4,2"/>
                         </StackPanel>
                     </Border.ToolTip>
-                    <Grid ClipToBounds="True">
+                    <Grid>
                         <Rectangle Name="EmptyRectangle"
                                    Stroke="{StaticResource ObsidianSeparatorColor}"
                                    StrokeThickness="1"
@@ -96,17 +96,19 @@
                                        Margin="1,3,1,1"/>
                         </Border>
 
-                        <Image Name="Icon"
-                               Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
-                               Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
-                               RenderOptions.BitmapScalingMode="NearestNeighbor"
-                               RenderTransformOrigin="0.5,0.5"
-                               SnapsToDevicePixels="True"
-                               Stretch="None"
-                               Source="{Binding Icon}"
-                               Panel.ZIndex="0"
-                               Opacity="1.0"
-                               Margin="1,1,-1,-1"/>
+                        <Grid ClipToBounds="True"
+                              Panel.ZIndex="0">
+                            <Image Name="Icon"
+                                   Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                                   Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   RenderTransformOrigin="0.5,0.5"
+                                   SnapsToDevicePixels="True"
+                                   Stretch="None"
+                                   Source="{Binding Icon}"
+                                   Opacity="1.0"
+                                   Margin="1,1,-1,-1"/>
+                        </Grid>
                     </Grid>
                 </Border>
 
