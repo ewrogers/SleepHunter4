@@ -15,7 +15,7 @@ namespace SleepHunter.Settings
     [XmlRoot("UserSettings")]
     public class UserSettings : ObservableObject
     {
-        public static readonly string CurrentVersion = "1.6";
+        public static readonly string CurrentVersion = "1.7";
 
         private bool isDebugMode;
         private string version;
@@ -28,6 +28,7 @@ namespace SleepHunter.Settings
 
         private ClientSortOrder clientSortOrder =
             ClientSortOrder.LaunchOrder;
+        private bool showActiveEffects = true;
         private bool suppressLoginNotification = true;
         private bool applyModifiersKeyFix = true;
         private bool allowAltToShowGroundItems = true;
@@ -161,6 +162,13 @@ namespace SleepHunter.Settings
         {
             get => clientSortOrder;
             set => SetProperty(ref clientSortOrder, value);
+        }
+
+        [XmlElement("ShowActiveEffects")]
+        public bool ShowActiveEffects
+        {
+            get => showActiveEffects;
+            set => SetProperty(ref showActiveEffects, value);
         }
 
         [XmlElement("InventoryIconSize")]
@@ -641,6 +649,7 @@ namespace SleepHunter.Settings
             SelectedTheme =
                 ColorTheme.DefaultTheme?.Name ?? "Default";
             clientSortOrder = ClientSortOrder.LaunchOrder;
+            ShowActiveEffects = true;
             InventoryIconSize = 46;
             SkillIconSize = 46;
             InventoryGridWidth = 12;

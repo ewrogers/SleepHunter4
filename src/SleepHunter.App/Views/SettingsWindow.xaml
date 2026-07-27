@@ -7,7 +7,7 @@
         xmlns:runtimeAutomation="clr-namespace:SleepHunter.Runtime.Automation;assembly=SleepHunter.Runtime"
         xmlns:settings="clr-namespace:SleepHunter.Settings"
         Title="Settings"
-        Width="720" Height="620"
+        Width="720" Height="660"
         ResizeMode="NoResize"
         Style="{StaticResource ObsidianWindow}"
         WindowStartupLocation="CenterOwner">
@@ -448,9 +448,10 @@
                             </CheckBox>
                         </WrapPanel>
 
-                        <WrapPanel Grid.Row="14" Grid.Column="1"
-                                   VerticalAlignment="Top"
-                                   Margin="10,4,4,4">
+                        <StackPanel Grid.Row="14"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Top"
+                                    Margin="10,4,4,4">
                             <!-- Show Skill Levels  -->
                             <CheckBox Name="showSkillLevelsCheckBox"
                                       Style="{StaticResource ObsidianCheckBox}"
@@ -468,7 +469,18 @@
                                       ToolTip="This will show or hide spell levels in the spellbook.">
                                 Show Spell Levels
                             </CheckBox>
-                        </WrapPanel>
+
+                            <!-- Show Active Effects -->
+                            <CheckBox Name="showActiveEffectsCheckBox"
+                                      Width="200"
+                                      HorizontalAlignment="Left"
+                                      Style="{StaticResource ObsidianCheckBox}"
+                                      IsChecked="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.ShowActiveEffects}"
+                                      Margin="8"
+                                      ToolTip="Show active effects in the character list.">
+                                Show Active Effects
+                            </CheckBox>
+                        </StackPanel>
 
                     </Grid>
                 </ScrollViewer>

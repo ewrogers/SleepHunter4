@@ -16,6 +16,7 @@ public sealed class ApplicationResourceBindingTests
     private static readonly string[] TemplateFiles =
     [
         "AbilityDataTemplate.xaml",
+        "ClientListItemDataTemplate.xaml",
         "EquipmentItemDataTemplate.xaml",
         "InventoryItemDataTemplate.xaml",
         "SpellQueueDataTemplate.xaml",

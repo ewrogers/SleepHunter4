@@ -13,6 +13,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Expanded support for live 7.41 client information, including character details, group members, active effects, dialogs, nearby entities, inventory, equipment, skills, and spells.
 - Added a native-style vertical cooldown overlay to skills so remaining cooldown time is easier to see.
 - Added more complete live inventory names and stack information.
+- Added enabled-by-default active spell-effect icons with stepped duration bars beneath each client's MP bar and a User Interface setting to hide them.
 
 ### Changed
 
