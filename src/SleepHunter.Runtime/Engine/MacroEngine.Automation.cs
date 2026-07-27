@@ -29,6 +29,22 @@ public sealed partial class MacroEngine
             AutomationCategory.Skills
         ];
 
+    private static readonly ImmutableArray<AutomationCategory>
+        FlowerFirstSkillYieldCategories =
+        [
+            AutomationCategory.Flowering,
+            AutomationCategory.Skills,
+            AutomationCategory.Spells
+        ];
+
+    private static readonly ImmutableArray<AutomationCategory>
+        SpellFirstSkillYieldCategories =
+        [
+            AutomationCategory.Skills,
+            AutomationCategory.Spells,
+            AutomationCategory.Flowering
+        ];
+
     private static MacroDecision ConfigureAutomation(
         MacroState currentState,
         ConfigureAutomationCommand command)
@@ -107,9 +123,18 @@ public sealed partial class MacroEngine
             state = restoration.State;
         }
 
-        var categories = configuration.FlowerBeforeSpells
-            ? FlowerFirstCategories
-            : SpellFirstCategories;
+        var yieldToSkills = ShouldYieldToSkills(
+            state,
+            configuration);
+        var categories = (
+            configuration.FlowerBeforeSpells,
+            yieldToSkills) switch
+        {
+            (true, true) => FlowerFirstSkillYieldCategories,
+            (true, false) => FlowerFirstCategories,
+            (false, true) => SpellFirstSkillYieldCategories,
+            (false, false) => SpellFirstCategories
+        };
         foreach (var category in categories)
         {
             if (!IsEnabled(configuration, category))
@@ -238,6 +263,27 @@ public sealed partial class MacroEngine
                 configuration.FloweringEnabled,
             _ => false
         };
+
+    private static bool ShouldYieldToSkills(
+        MacroState state,
+        AutomationConfiguration configuration)
+    {
+        if (!configuration.SkillsEnabled ||
+            state.SpellCast is not
+            {
+                Origin: SpellCastOrigin.SpellQueue,
+                Status: SpellCastStatus.Succeeded,
+                CastLines: 0,
+                ActionId: { } spellActionId
+            })
+        {
+            return false;
+        }
+
+        return state.SkillUse?.ActionId is not
+            { } skillActionId ||
+            skillActionId.Value < spellActionId.Value;
+    }
 
     private static bool IsAutomationSnapshotStale(
         MacroState state,
