@@ -30,6 +30,7 @@ namespace SleepHunter.ViewModels
     {
         private readonly IClientMacroConfigurationMapper
             configurationMapper;
+        private readonly ActiveSpellEffectsViewModel activeSpellEffects;
         private readonly EquipmentViewModel equipment;
         private readonly Func<UserSettings> getSettings;
         private readonly InventoryViewModel inventory;
@@ -78,6 +79,8 @@ namespace SleepHunter.ViewModels
             this.setupFactory = setupFactory;
             this.getSettings = getSettings;
             this.uiDispatcher = uiDispatcher;
+            activeSpellEffects =
+                new ActiveSpellEffectsViewModel(iconManager);
             equipment = new EquipmentViewModel(iconManager);
             inventory = new InventoryViewModel(iconManager);
             skillbook = new SkillbookViewModel(
@@ -159,6 +162,9 @@ namespace SleepHunter.ViewModels
 
         public ClientProcess Process => Session.Process;
 
+        public ActiveSpellEffectsViewModel ActiveSpellEffects =>
+            activeSpellEffects;
+
         public InventoryViewModel Inventory => inventory;
 
         public EquipmentViewModel Equipment => equipment;
@@ -227,6 +233,9 @@ namespace SleepHunter.ViewModels
 
         public double ManaPercent =>
             ObservedSnapshot?.Vitals?.ManaPercent ?? 0;
+
+        public bool HasActiveSpellEffects =>
+            activeSpellEffects.HasEffects;
 
         public bool HasLyliacPlant =>
             HasSpell(SpellViewModel.LyliacPlantKey);
@@ -779,6 +788,7 @@ namespace SleepHunter.ViewModels
             equipment.Apply(snapshot.Equipment);
             ApplySkillbook();
             spellbook.Apply(snapshot.Spellbook);
+            activeSpellEffects.Apply(snapshot.ActiveSpellEffects);
             DisableUnavailableFlowerOptions();
             lastPresentationSequence = snapshot.Sequence.Value;
         }
@@ -812,6 +822,7 @@ namespace SleepHunter.ViewModels
 
         private void ResetPresentation()
         {
+            activeSpellEffects.Reset();
             inventory.Reset();
             equipment.Reset();
             skillbook.Reset();
@@ -1081,6 +1092,7 @@ namespace SleepHunter.ViewModels
             OnPropertyChanged(nameof(HasHotkey));
             OnPropertyChanged(nameof(HasRuntime));
             OnPropertyChanged(nameof(HealthPercent));
+            OnPropertyChanged(nameof(HasActiveSpellEffects));
             OnPropertyChanged(nameof(HasLyliacPlant));
             OnPropertyChanged(nameof(HasLyliacVineyard));
             OnPropertyChanged(nameof(CanFlower));

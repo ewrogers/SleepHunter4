@@ -27,6 +27,7 @@ using SleepHunter.Services.Configuration;
 using SleepHunter.Services.Runtime;
 using SleepHunter.Settings;
 using SleepHunter.ViewModels;
+using SleepHunter.ViewModels.Presentation;
 
 namespace SleepHunter.Tests.ViewModels;
 
@@ -506,6 +507,61 @@ public sealed class ClientListViewModelTests
                 item.RuntimeDetailsText,
                 Does.Contain("MP 550/600"));
         });
+    }
+
+    [Test]
+    public async Task ShouldRefreshActiveSpellEffectDurationSteps()
+    {
+        var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(player, runtime);
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 1,
+                succeeded: true,
+                activeSpellEffects:
+                    new ActiveSpellEffectsSnapshot(
+                    [
+                        new ActiveSpellEffectSnapshot(
+                            slot: 3,
+                            icon: 47,
+                            SpellEffectDurationStage.White)
+                    ])));
+        await WaitUntilAsync(
+            () => item.ActiveSpellEffects
+                .Effects[2]
+                .DurationStep == 6);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.HasActiveSpellEffects, Is.True);
+            Assert.That(
+                item.ActiveSpellEffects.Effects[2].IconIndex,
+                Is.EqualTo(47));
+            Assert.That(
+                item.ActiveSpellEffects.Effects[2].DurationStage,
+                Is.EqualTo(SpellEffectDurationStage.White));
+        });
+
+        host.PublishCapture(
+            CreateCapture(
+                host.Client,
+                sequenceValue: 2,
+                succeeded: true,
+                activeSpellEffects:
+                    ActiveSpellEffectsSnapshot.Empty));
+        await WaitUntilAsync(
+            () => !item.HasActiveSpellEffects);
+
+        Assert.That(
+            item.ActiveSpellEffects.Effects,
+            Has.All.Matches<ActiveSpellEffectViewModel>(
+                effect => effect.IsEmpty));
     }
 
     [Test]
@@ -1449,7 +1505,8 @@ public sealed class ClientListViewModelTests
         SnapshotSection failureSection = SnapshotSection.Presence,
         string? variableKey = null,
         MappedMemoryReadError? readError = null,
-        TimeSpan? capturedAt = null)
+        TimeSpan? capturedAt = null,
+        ActiveSpellEffectsSnapshot? activeSpellEffects = null)
     {
         var sequence = new SnapshotSequence(sequenceValue);
         var timestamp = new MacroTimestamp(
@@ -1502,7 +1559,8 @@ public sealed class ClientListViewModelTests
                             mapName: "Runtime Map",
                             x: 70,
                             y: 80)
-                        : null),
+                        : null,
+                    activeSpellEffects: activeSpellEffects),
                 SnapshotQuality.Complete,
                 error: null,
                 metrics)

@@ -18,6 +18,13 @@ process start time from oldest to newest.
 The `Max Health & Mana` option will sort characters by their maximum health and mana, similar to the in-game list.
 The total sort value is `Max HP + (Max MP * 2)`.
 
+## Show Active Effects
+
+This setting determines whether active spell-effect icons and their relative
+duration bars are displayed beneath each character's MP bar.
+
+By default, this is `Enabled`.
+
 ## Inventory Icon Size
 
 This setting determines the size of item icons in the [Inventory Tab](../main-window/items-tab.md).

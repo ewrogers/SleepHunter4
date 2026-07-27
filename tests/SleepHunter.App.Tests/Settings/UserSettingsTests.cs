@@ -23,6 +23,7 @@ namespace SleepHunter.Tests.Settings
             Assert.That(settings.ShowItemQuantitiesInDialogs, Is.True);
             Assert.That(settings.MakeExchangeDialogDraggable, Is.True);
             Assert.That(settings.ShowExchangeResultsInMessageBar, Is.False);
+            Assert.That(settings.ShowActiveEffects, Is.True);
             Assert.That(
                 settings.ClientSortOrder,
                 Is.EqualTo(ClientSortOrder.LaunchOrder));
@@ -65,6 +66,30 @@ namespace SleepHunter.Tests.Settings
                 "<UserSettings><ApplyModifiersKeyFix>false</ApplyModifiersKeyFix></UserSettings>");
 
             Assert.That(settings.ApplyModifiersKeyFix, Is.False);
+        }
+
+        [Test]
+        public void ShouldPreserveExplicitlyDisabledActiveEffects()
+        {
+            var settings = Deserialize(
+                "<UserSettings>" +
+                "<ShowActiveEffects>false</ShowActiveEffects>" +
+                "</UserSettings>");
+
+            Assert.That(settings.ShowActiveEffects, Is.False);
+        }
+
+        [Test]
+        public void ShouldEnableActiveEffectsWhenResettingDefaults()
+        {
+            var settings = new UserSettings
+            {
+                ShowActiveEffects = false
+            };
+
+            settings.ResetDefaults();
+
+            Assert.That(settings.ShowActiveEffects, Is.True);
         }
 
         [Test]

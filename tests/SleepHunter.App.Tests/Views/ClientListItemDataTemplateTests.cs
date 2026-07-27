@@ -2,9 +2,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 using SleepHunter.Converters;
+using SleepHunter.Runtime.Snapshots;
+using SleepHunter.ViewModels;
+using SleepHunter.ViewModels.Presentation;
 
 namespace SleepHunter.Tests.Views;
 
@@ -40,6 +45,184 @@ public sealed class ClientListItemDataTemplateTests
     public void TearDown()
     {
         application.Resources.MergedDictionaries.Remove(resources);
+    }
+
+    [Test]
+    public void ShouldRenderCompactWrappedSpellEffectsWithSteppedBars()
+    {
+        var durationStyle =
+            (Style)resources["SpellEffectDurationProgressBar"];
+        var effectTemplate =
+            (DataTemplate)resources["ActiveSpellEffectDataTemplate"];
+        var effectContent =
+            (FrameworkElement)effectTemplate.LoadContent();
+        var effectIcon = effectContent.FindName(
+            "EffectIcon") as Image;
+        var durationBar = effectContent.FindName(
+            "EffectDurationBar") as ProgressBar;
+        var clientTemplate =
+            (DataTemplate)resources["ClientListItemDataTemplate"];
+        var clientContent =
+            (FrameworkElement)clientTemplate.LoadContent();
+        var effectsPanel = clientContent.FindName(
+            "SpellEffectsPanel") as ItemsControl;
+        var effectsWrapPanel =
+            effectsPanel?.ItemsPanel.LoadContent() as WrapPanel;
+        var stageColors =
+            effectTemplate.Triggers
+                .OfType<DataTrigger>()
+                .Where(trigger =>
+                    trigger.Value is SpellEffectDurationStage)
+                .ToDictionary(
+                    trigger =>
+                        (SpellEffectDurationStage)trigger.Value,
+                    trigger =>
+                        ((SolidColorBrush)trigger.Setters
+                            .OfType<Setter>()
+                            .Single(setter =>
+                                setter.TargetName ==
+                                    "EffectDurationBar" &&
+                                setter.Property ==
+                                    Control.ForegroundProperty)
+                            .Value).Color);
+        durationBar?.ApplyTemplate();
+        var indicator = durationBar?.Template.FindName(
+            "PART_Indicator",
+            durationBar) as Border;
+        var durationTrack = durationBar?.Template.FindName(
+            "PART_Track",
+            durationBar) as Grid;
+        durationBar?.Measure(new Size(22, 3));
+        durationBar?.Arrange(new Rect(0, 0, 22, 3));
+        durationBar?.UpdateLayout();
+        if (durationBar is not null)
+            durationBar.Value = 6;
+        durationBar?.UpdateLayout();
+        var whiteStageWidth = indicator?.ActualWidth;
+        if (durationBar is not null)
+            durationBar.Value = 1;
+        durationBar?.UpdateLayout();
+        var blueStageWidth = indicator?.ActualWidth;
+        var pulseTrigger = effectTemplate.Triggers
+            .OfType<DataTrigger>()
+            .Single(trigger =>
+                Equals(
+                    trigger.Value,
+                    SpellEffectDurationStage.Blue));
+        var pulseBinding = pulseTrigger.Binding as Binding;
+        var beginPulse = pulseTrigger.EnterActions
+            .OfType<BeginStoryboard>()
+            .Single();
+        var pulseAnimation = beginPulse.Storyboard.Children
+            .OfType<DoubleAnimation>()
+            .Single();
+        var removePulse = pulseTrigger.ExitActions
+            .OfType<RemoveStoryboard>()
+            .Single();
+        var effectsVisibilityTrigger =
+            clientTemplate.Triggers
+                .OfType<MultiDataTrigger>()
+                .Single(trigger =>
+                    trigger.Setters
+                        .OfType<Setter>()
+                        .Any(setter =>
+                            setter.TargetName ==
+                                "SpellEffectsPanel" &&
+                            setter.Property ==
+                                UIElement.VisibilityProperty));
+        var effectsVisibilityPaths =
+            effectsVisibilityTrigger.Conditions
+                .Select(condition =>
+                    (condition.Binding as Binding)?.Path.Path)
+                .ToArray();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(effectIcon?.Width, Is.EqualTo(22));
+            Assert.That(effectIcon?.Height, Is.EqualTo(22));
+            Assert.That(
+                RenderOptions.GetBitmapScalingMode(effectIcon),
+                Is.EqualTo(BitmapScalingMode.NearestNeighbor));
+            Assert.That(durationBar?.Width, Is.EqualTo(22));
+            Assert.That(durationBar?.Height, Is.EqualTo(3));
+            Assert.That(durationBar?.Minimum, Is.EqualTo(0));
+            Assert.That(durationBar?.Maximum, Is.EqualTo(6));
+            Assert.That(
+                stageColors,
+                Is.EqualTo(
+                    new Dictionary<
+                        SpellEffectDurationStage,
+                        Color>
+                    {
+                        [SpellEffectDurationStage.Blue] =
+                            Color.FromRgb(0x66, 0x66, 0x66),
+                        [SpellEffectDurationStage.Green] =
+                            Color.FromRgb(0x85, 0x85, 0x85),
+                        [SpellEffectDurationStage.Yellow] =
+                            Color.FromRgb(0xA3, 0xA3, 0xA3),
+                        [SpellEffectDurationStage.Orange] =
+                            Color.FromRgb(0xC2, 0xC2, 0xC2),
+                        [SpellEffectDurationStage.Red] =
+                            Color.FromRgb(0xE0, 0xE0, 0xE0),
+                        [SpellEffectDurationStage.White] =
+                            Colors.White
+                    }));
+            Assert.That(durationTrack, Is.Not.Null);
+            Assert.That(indicator, Is.Not.Null);
+            Assert.That(
+                whiteStageWidth,
+                Is.EqualTo(22).Within(0.01));
+            Assert.That(
+                blueStageWidth,
+                Is.EqualTo(22.0 / 6).Within(0.01));
+            Assert.That(effectsPanel, Is.Not.Null);
+            Assert.That(
+                Grid.GetRow(effectsPanel!),
+                Is.EqualTo(5));
+            Assert.That(
+                effectsPanel!.Visibility,
+                Is.EqualTo(Visibility.Collapsed));
+            Assert.That(effectsWrapPanel, Is.Not.Null);
+            Assert.That(
+                effectsWrapPanel?.Orientation,
+                Is.EqualTo(Orientation.Horizontal));
+            Assert.That(
+                durationStyle.TargetType,
+                Is.EqualTo(typeof(ProgressBar)));
+            Assert.That(
+                pulseBinding?.Path.Path,
+                Is.EqualTo(nameof(
+                    ActiveSpellEffectViewModel.DurationStage)));
+            Assert.That(
+                beginPulse.Storyboard.AutoReverse,
+                Is.True);
+            Assert.That(
+                beginPulse.Storyboard.RepeatBehavior,
+                Is.EqualTo(RepeatBehavior.Forever));
+            Assert.That(
+                Storyboard.GetTargetName(pulseAnimation),
+                Is.EqualTo("EffectVisual"));
+            Assert.That(
+                Storyboard.GetTargetProperty(pulseAnimation)?.Path,
+                Is.EqualTo("Opacity"));
+            Assert.That(pulseAnimation.From, Is.EqualTo(1));
+            Assert.That(pulseAnimation.To, Is.EqualTo(0.3));
+            Assert.That(
+                pulseAnimation.Duration.TimeSpan,
+                Is.EqualTo(TimeSpan.FromSeconds(0.75)));
+            Assert.That(
+                removePulse.BeginStoryboardName,
+                Is.EqualTo("BlueDurationPulse"));
+            Assert.That(
+                effectsVisibilityPaths,
+                Is.EquivalentTo(
+                [
+                    nameof(
+                        ClientListItemViewModel
+                            .HasActiveSpellEffects),
+                    "Value.Settings.ShowActiveEffects"
+                ]));
+        });
     }
 
     [Test]
