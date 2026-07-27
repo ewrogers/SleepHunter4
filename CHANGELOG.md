@@ -51,6 +51,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- Fixed the application starting without a visible window after the runtime and MVVM migration.
 - Restored the Close Client action for map and coordinate changes so it closes the affected game client instead of only stopping its macro.
 - Fixed second- and third-row spell clicking and targeting while using the minimized client interface.
 - Fixed a runtime error that could occur after a flower cast completed and its next waiting interval began.

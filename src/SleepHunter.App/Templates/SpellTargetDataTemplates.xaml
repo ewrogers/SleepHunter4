@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+                    xmlns:ctl="clr-namespace:SleepHunter.Controls">
+    <ctl:BindingProxy x:Key="UserSettingsManagerProxy"/>
 
     <DataTemplate x:Key="TilesXDataTemplate">
         <Border>
@@ -71,8 +72,8 @@
                                 CornerRadius="2">
                             <Grid>
                                 <Image Name="Icon" 
-                                       Width="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillIconSize}"
-                                       Height="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.SkillIconSize}"
+                                       Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.SkillIconSize}"
+                                       Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.SkillIconSize}"
                                        Source="{Binding Icon}"
                                        Opacity="0.5"
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"/>

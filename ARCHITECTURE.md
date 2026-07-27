@@ -435,8 +435,11 @@ provider, or static manager instances.
 Application-wide catalogs, settings, registries, file archives, logging, and
 client process discovery are singletons because they have one deliberate owner
 and lifetime. The main window is also a singleton because SleepHunter has one
-application shell. XAML resources expose the same injected catalog and settings
-instances where WPF bindings cannot use constructor injection.
+application shell. Windows publish their constructor-injected catalogs and
+settings as local XAML resources. Shared data-template dictionaries use local
+binding proxies populated by the composition root because compiled merged
+dictionaries cannot resolve resources added to the parent application at
+runtime.
 
 Per-client runtime hosts are not container singletons. `ClientRuntimeRegistry`
 creates and owns one runtime per detected client, then disposes it when the

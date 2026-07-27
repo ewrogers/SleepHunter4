@@ -889,7 +889,8 @@ namespace SleepHunter.Views
                     new SettingsWindow(
                         logger,
                         releaseService,
-                        settingsManager)
+                        settingsManager,
+                        colorThemes)
                     {
                         Owner = this
                     };

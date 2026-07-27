@@ -1,6 +1,8 @@
+using System;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using SleepHunter.Controls;
 using SleepHunter.IO;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
@@ -25,27 +27,8 @@ namespace SleepHunter
         public App()
         {
             serviceProvider = ConfigureServices();
-            Resources["ColorThemeManager"] =
-                serviceProvider.GetRequiredService<ColorThemeManager>();
-            Resources["SkillMetadataManager"] =
-                serviceProvider.GetRequiredService<SkillMetadataManager>();
-            Resources["SpellMetadataManager"] =
-                serviceProvider.GetRequiredService<SpellMetadataManager>();
-            Resources["StaffMetadataManager"] =
-                serviceProvider.GetRequiredService<StaffMetadataManager>();
-            Resources["UserSettingsManager"] =
-                serviceProvider.GetRequiredService<UserSettingsManager>();
             InitializeComponent();
-            Resources["ColorThemeManager"] =
-                serviceProvider.GetRequiredService<ColorThemeManager>();
-            Resources["SkillMetadataManager"] =
-                serviceProvider.GetRequiredService<SkillMetadataManager>();
-            Resources["SpellMetadataManager"] =
-                serviceProvider.GetRequiredService<SpellMetadataManager>();
-            Resources["StaffMetadataManager"] =
-                serviceProvider.GetRequiredService<StaffMetadataManager>();
-            Resources["UserSettingsManager"] =
-                serviceProvider.GetRequiredService<UserSettingsManager>();
+            BindTemplateResources();
 
             Dispatcher.UnhandledException += Dispatcher_UnhandledException;
         }
@@ -66,15 +49,61 @@ namespace SleepHunter
             System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
             base.OnStartup(e);
 
-            var mainWindow =
-                serviceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            try
+            {
+                var mainWindow =
+                    serviceProvider.GetRequiredService<MainWindow>();
+                MainWindow = mainWindow;
+                mainWindow.Show();
+            }
+            catch (Exception exception)
+            {
+                if (logger == null)
+                    logger = serviceProvider.GetRequiredService<ILogger>();
+
+                logger.LogError("Application startup failed.");
+                logger.LogException(exception);
+
+                MessageBox.Show(
+                    $"SleepHunter could not start.\n\n" +
+                    exception.GetBaseException().Message,
+                    "SleepHunter Startup Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                Shutdown(-1);
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             serviceProvider.Dispose();
             base.OnExit(e);
+        }
+
+        private void BindTemplateResources()
+        {
+            var settingsManager =
+                serviceProvider.GetRequiredService<UserSettingsManager>();
+            BindTemplateResources(Resources, settingsManager);
+        }
+
+        internal static void BindTemplateResources(
+            ResourceDictionary resources,
+            UserSettingsManager settingsManager)
+        {
+            ArgumentNullException.ThrowIfNull(resources);
+            ArgumentNullException.ThrowIfNull(settingsManager);
+
+            foreach (var dictionary in resources.MergedDictionaries)
+            {
+                if (!dictionary.Contains("UserSettingsManagerProxy"))
+                    continue;
+
+                if (dictionary["UserSettingsManagerProxy"]
+                    is BindingProxy proxy)
+                    proxy.Value = settingsManager;
+            }
         }
 
         private static ServiceProvider ConfigureServices()

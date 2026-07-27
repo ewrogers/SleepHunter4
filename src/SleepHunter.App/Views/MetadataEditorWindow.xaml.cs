@@ -45,6 +45,10 @@ namespace SleepHunter.Views
             this.staffMetadata = staffMetadata ??
                 throw new ArgumentNullException(
                     nameof(staffMetadata));
+
+            Resources["SkillMetadataManager"] = skillMetadata;
+            Resources["SpellMetadataManager"] = spellMetadata;
+            Resources["StaffMetadataManager"] = staffMetadata;
             InitializeComponent();
         }
 

@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+                    xmlns:ctl="clr-namespace:SleepHunter.Controls">
+    <ctl:BindingProxy x:Key="UserSettingsManagerProxy"/>
+
     <!-- Equipment Item Data Template -->
     <DataTemplate x:Key="EquipmentItemDataTemplate">
         <Border Name="SlotBorder"
@@ -21,8 +23,8 @@
                            Margin="1"/>
 
                 <Image Name="Icon"
-                       Width="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryIconSize}"
-                       Height="{Binding Source={StaticResource UserSettingsManager}, Path=Settings.InventoryIconSize}"
+                       Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                       Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="NearestNeighbor"

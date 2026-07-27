@@ -50,7 +50,8 @@ namespace SleepHunter.Views
         public SettingsWindow(
             ILogger logger,
             IReleaseService releaseService,
-            UserSettingsManager settingsManager)
+            UserSettingsManager settingsManager,
+            ColorThemeManager colorThemeManager)
         {
             this.logger = logger ??
                 throw new ArgumentNullException(nameof(logger));
@@ -60,7 +61,10 @@ namespace SleepHunter.Views
             this.settingsManager = settingsManager ??
                 throw new ArgumentNullException(
                     nameof(settingsManager));
+            ArgumentNullException.ThrowIfNull(colorThemeManager);
 
+            Resources["UserSettingsManager"] = settingsManager;
+            Resources["ColorThemeManager"] = colorThemeManager;
             InitializeComponent();
 
             GetVersion();
