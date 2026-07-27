@@ -158,6 +158,78 @@ public sealed class MainWindowLayoutTests
         });
     }
 
+    [Test]
+    public void ShouldBindClientPresentationStateToRuntimeBackedViewModels()
+    {
+        var document = XDocument.Load(FindMainWindowFile());
+        var window = document.Root!;
+        var tabs = document
+            .Descendants(Presentation + "TabControl")
+            .Single(element =>
+                (string?)element.Attribute("Name") ==
+                "tabControl");
+        var inventory = FindNamedElement(
+            document,
+            "TabItem",
+            "inventoryTab");
+        var flower = FindNamedElement(
+            document,
+            "TabItem",
+            "flowerTab");
+        var alternateCharacters = FindNamedElement(
+            document,
+            "CheckBox",
+            "flowerAlternateCharactersCheckBox");
+        var vineyard = FindNamedElement(
+            document,
+            "CheckBox",
+            "flowerVineyardCheckBox");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                (string?)window.Attribute("Title"),
+                Is.EqualTo("{Binding WindowTitle}"));
+            Assert.That(
+                (string?)tabs.Attribute("SelectedIndex"),
+                Does.Contain(
+                    "SelectedClient.Session.SelectedTabIndex"));
+            Assert.That(
+                tabs.Attribute("SelectionChanged"),
+                Is.Null);
+            Assert.That(
+                (string?)inventory.Attribute("IsEnabled"),
+                Is.EqualTo(
+                    "{Binding SelectedClient.IsLoggedIn}"));
+            Assert.That(
+                (string?)flower.Attribute("IsEnabled"),
+                Is.EqualTo(
+                    "{Binding SelectedClient.CanFlower}"));
+            Assert.That(
+                (string?)flower.Attribute("Visibility"),
+                Does.Contain(
+                    "SelectedClient.SupportsFlowering"));
+            Assert.That(
+                (string?)alternateCharacters.Attribute(
+                    "IsEnabled"),
+                Is.EqualTo(
+                    "{Binding SelectedClient.HasLyliacPlant}"));
+            Assert.That(
+                (string?)vineyard.Attribute("IsEnabled"),
+                Is.EqualTo(
+                    "{Binding SelectedClient.HasLyliacVineyard}"));
+        });
+    }
+
+    private static XElement FindNamedElement(
+        XDocument document,
+        string elementName,
+        string name) =>
+        document
+            .Descendants(Presentation + elementName)
+            .Single(element =>
+                (string?)element.Attribute("Name") == name);
+
     private static bool HasCondition(
         IEnumerable<XElement> conditions,
         string bindingFragment,

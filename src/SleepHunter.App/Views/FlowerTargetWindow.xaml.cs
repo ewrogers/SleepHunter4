@@ -1,23 +1,23 @@
-﻿using System;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
 
 using SleepHunter.Extensions;
 using SleepHunter.Models;
+using SleepHunter.ViewModels.Editing;
 using SleepHunter.Settings;
 
 namespace SleepHunter.Views
 {
     public partial class FlowerTargetWindow : Window
     {
-        private FlowerQueueItem flowerQueueItem = new FlowerQueueItem();
+        private FlowerQueueItemViewModel flowerQueueItem = new FlowerQueueItemViewModel();
 
-        public FlowerQueueItem FlowerQueueItem
+        public FlowerQueueItemViewModel FlowerQueueItemViewModel
         {
             get => flowerQueueItem;
             private set => flowerQueueItem = value;
@@ -32,8 +32,11 @@ namespace SleepHunter.Views
         public static readonly DependencyProperty IsEditModeProperty =
             DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(FlowerTargetWindow), new PropertyMetadata(false));
 
-        public FlowerTargetWindow(FlowerQueueItem item, bool isEditMode = true)
-           : this()
+        public FlowerTargetWindow(
+            FlowerQueueItemViewModel item,
+            IEnumerable<string> characterNames,
+            bool isEditMode = true)
+           : this(characterNames)
         {
             if (isEditMode)
             {
@@ -41,7 +44,7 @@ namespace SleepHunter.Views
                 okButton.Content = "_Save Changes";
             }
 
-            FlowerQueueItem.Id = item.Id;
+            FlowerQueueItemViewModel.Id = item.Id;
             SetTargetForMode(item.Target);
 
             if (item.Interval.HasValue)
@@ -62,43 +65,25 @@ namespace SleepHunter.Views
             IsEditMode = isEditMode;
         }
 
-        public FlowerTargetWindow()
+        public FlowerTargetWindow(
+            IEnumerable<string> characterNames = null)
         {
             InitializeComponent();
-            InitializeViews();
+            characterComboBox.ItemsSource =
+                NormalizeCharacterNames(characterNames);
 
             ToggleTargetMode(SpellTargetMode.Character);
         }
 
-        private void InitializeViews()
-        {
-            PlayerManager.Instance.PlayerAdded += OnPlayerCollectionChanged;
-            PlayerManager.Instance.PlayerRemoved += OnPlayerCollectionChanged;
-
-            PlayerManager.Instance.PlayerPropertyChanged += OnPlayerPropertyChanged;
-        }
-
-        private async void OnPlayerCollectionChanged(object sender, PlayerEventArgs e)
-        {
-            await Dispatcher.InvokeAsync(static () => { });
-
-            BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-        }
-
-        private async void OnPlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is not Player player)
-                return;
-
-            await Dispatcher.InvokeAsync(static () => { });
-
-            if (string.Equals(nameof(player.Name), e.PropertyName, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(nameof(player.IsLoggedIn), e.PropertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                BindingOperations.GetBindingExpression(characterComboBox, ItemsControl.ItemsSourceProperty).UpdateTarget();
-                characterComboBox.Items.Refresh();
-            }
-        }
+        private static string[] NormalizeCharacterNames(
+            IEnumerable<string> characterNames) =>
+            characterNames?
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .ToArray() ??
+            [];
 
         private bool ValidateFlowerTarget()
         {
@@ -117,7 +102,7 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            var characterName = characterComboBox.SelectedValue as string;
+            var characterName = characterComboBox.SelectedItem as string;
 
             if (selectedMode == SpellTargetMode.Character && string.IsNullOrWhiteSpace(characterName))
             {
@@ -245,7 +230,8 @@ namespace SleepHunter.Views
             }
         }
 
-        private void SetTargetForMode(SpellTarget target)
+        private void SetTargetForMode(
+            SpellTargetViewModel target)
         {
             if (target == null)
                 return;
@@ -255,7 +241,7 @@ namespace SleepHunter.Views
             switch (target.Mode)
             {
                 case SpellTargetMode.Character:
-                    characterComboBox.SelectedValue = target.CharacterName;
+                    characterComboBox.SelectedItem = target.CharacterName;
                     break;
 
                 case SpellTargetMode.AbsoluteTile:

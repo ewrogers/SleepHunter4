@@ -32,6 +32,7 @@ namespace SleepHunter.Views
 
         private readonly ILogger logger;
         private readonly IReleaseService releaseService;
+        private readonly UserSettingsManager settingsManager;
 
         private Version currentVersion;
         private ReleaseVersion latestRelease;
@@ -46,11 +47,24 @@ namespace SleepHunter.Views
         public static readonly DependencyProperty SelectedTabIndexProperty =
             DependencyProperty.Register(nameof(SelectedTabIndex), typeof(int), typeof(SettingsWindow), new PropertyMetadata(0));
 
-        public SettingsWindow()
+        public SettingsWindow(
+            ILogger logger,
+            IReleaseService releaseService,
+            UserSettingsManager settingsManager,
+            ColorThemeManager colorThemeManager)
         {
-            logger = App.Current.Services.GetService<ILogger>();
-            releaseService = App.Current.Services.GetService<IReleaseService>();
+            this.logger = logger ??
+                throw new ArgumentNullException(nameof(logger));
+            this.releaseService = releaseService ??
+                throw new ArgumentNullException(
+                    nameof(releaseService));
+            this.settingsManager = settingsManager ??
+                throw new ArgumentNullException(
+                    nameof(settingsManager));
+            ArgumentNullException.ThrowIfNull(colorThemeManager);
 
+            Resources["UserSettingsManager"] = settingsManager;
+            Resources["ColorThemeManager"] = colorThemeManager;
             InitializeComponent();
 
             GetVersion();
@@ -161,7 +175,7 @@ namespace SleepHunter.Views
                460, 240);
 
             if (isOkToReset.Value)
-                UserSettingsManager.Instance.Settings.ResetDefaults();
+                settingsManager.Settings.ResetDefaults();
         }
 
         private async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -230,7 +244,7 @@ namespace SleepHunter.Views
                 CheckPathExists = true
             };
 
-            var currentPath = UserSettingsManager.Instance.Settings.ClientPath;
+            var currentPath = settingsManager.Settings.ClientPath;
             if (!string.IsNullOrWhiteSpace(currentPath))
             {
                 dialog.InitialDirectory = currentPath;
@@ -239,7 +253,7 @@ namespace SleepHunter.Views
             if (!dialog.ShowDialog(this).GetValueOrDefault())
                 return;
 
-            UserSettingsManager.Instance.Settings.ClientPath = dialog.FileName;
+            settingsManager.Settings.ClientPath = dialog.FileName;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using SleepHunter.Macro;
+using System.Collections.Immutable;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
 using SleepHunter.Persistence.Configuration;
@@ -12,6 +11,7 @@ using SleepHunter.Runtime.Automation.Staves;
 using SleepHunter.Runtime.Characters;
 using SleepHunter.Services.Runtime;
 using SleepHunter.Settings;
+using SleepHunter.ViewModels.Editing;
 using RuntimeSpellTarget =
     SleepHunter.Runtime.Automation.Spells.SpellTarget;
 
@@ -107,7 +107,7 @@ public sealed class RuntimeAutomationSetupFactoryTests
                 Is.EqualTo(500));
             Assert.That(
                 automation.ObservationChanges.MapChange,
-                Is.EqualTo(ObservationChangeAction.Stop));
+                Is.EqualTo(ObservationChangeAction.CloseClient));
             Assert.That(
                 automation.ObservationChanges.CoordinateChange,
                 Is.EqualTo(ObservationChangeAction.Pause));
@@ -197,14 +197,6 @@ public sealed class RuntimeAutomationSetupFactoryTests
 
         Assert.Multiple(() =>
         {
-            settings.MapChangeAction = MacroAction.Start;
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => factory.Create(
-                    MacroConfiguration.Empty,
-                    settings,
-                    CharacterClass.Wizard));
-
-            settings.MapChangeAction = MacroAction.Stop;
             settings.FasSpioradThreshold = double.PositiveInfinity;
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => factory.Create(
@@ -224,12 +216,12 @@ public sealed class RuntimeAutomationSetupFactoryTests
     [Test]
     public void ShouldFilterStaffMetadataForObservedCharacterClass()
     {
-        var neutral = Staff("neutral", PlayerClass.All, level: 1);
-        var wizard = Staff("wizard", PlayerClass.Wizard, level: 2);
-        var priest = Staff("priest", PlayerClass.Priest, level: 3);
+        var neutral = Staff("neutral", CharacterClassFlags.All, level: 1);
+        var wizard = Staff("wizard", CharacterClassFlags.Wizard, level: 2);
+        var priest = Staff("priest", CharacterClassFlags.Priest, level: 3);
         var hybrid = Staff(
             "hybrid",
-            PlayerClass.Wizard | PlayerClass.Priest,
+            CharacterClassFlags.Wizard | CharacterClassFlags.Priest,
             level: 4);
         var lines = new Dictionary<string, int>(
             StringComparer.OrdinalIgnoreCase)
@@ -278,7 +270,7 @@ public sealed class RuntimeAutomationSetupFactoryTests
     {
         var invalid = Staff(
             "invalid",
-            (PlayerClass)0x40,
+            (CharacterClassFlags)0x40,
             level: 1);
         var provider = new RuntimeStaffCandidateProvider(
             () => [invalid],
@@ -339,14 +331,14 @@ public sealed class RuntimeAutomationSetupFactoryTests
             FlowerMinimumMana = 500,
             FlowerAltsFirst = false,
             FlowerBeforeSpellMacros = false,
-            MapChangeAction = MacroAction.ForceQuit,
-            CoordsChangeAction = MacroAction.Pause,
+            MapChangeAction = ObservationChangeAction.CloseClient,
+            CoordsChangeAction = ObservationChangeAction.Pause,
             PreserveUserPanel = true
         };
 
     private static StaffMetadata Staff(
         string name,
-        PlayerClass playerClass,
+        CharacterClassFlags playerClass,
         int level) =>
         new()
         {

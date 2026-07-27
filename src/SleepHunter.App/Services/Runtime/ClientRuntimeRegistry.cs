@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SleepHunter.Interop.Hosting;
 using SleepHunter.Interop.Snapshots;
-using SleepHunter.Models;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Skills;
 using SleepHunter.Runtime.Automation.Spells;
@@ -26,9 +25,6 @@ namespace SleepHunter.Services.Runtime
         private readonly ConcurrentDictionary<
             int,
             ClientRuntimeViewModel> clients = new();
-        private readonly ConcurrentDictionary<
-            int,
-            ClientSnapshotProjection> projections = new();
         private readonly Func<AbilitySnapshotCatalog> abilityCatalog;
         private readonly MacroClock clock;
         private readonly IClientRuntimeFactory factory;
@@ -156,43 +152,10 @@ namespace SleepHunter.Services.Runtime
             out ClientRuntimeViewModel viewModel) =>
             TryFindRuntime(processId, out viewModel);
 
-        public bool BindPresentation(Player player)
-        {
-            ArgumentNullException.ThrowIfNull(player);
-            ThrowIfDisposing();
-
-            var processId = player.Process.ProcessId;
-            if (!clients.TryGetValue(processId, out var runtime))
-                return false;
-
-            var projection =
-                new ClientSnapshotProjection(player, runtime);
-            if (projections.TryAdd(processId, projection))
-                return true;
-
-            projection.Dispose();
-            return false;
-        }
-
-        public bool UnbindPresentation(int processId)
-        {
-            if (!projections.TryRemove(
-                    processId,
-                    out var projection))
-            {
-                return false;
-            }
-
-            projection.Dispose();
-            return true;
-        }
-
         public async ValueTask<bool> DetachAsync(int processId)
         {
             if (!clients.TryRemove(processId, out var runtime))
                 return false;
-
-            UnbindPresentation(processId);
 
             runtime.PropertyChanged -= OnRuntimePropertyChanged;
             try

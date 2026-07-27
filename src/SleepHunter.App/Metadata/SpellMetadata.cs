@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
@@ -11,7 +11,7 @@ namespace SleepHunter.Metadata
     public sealed class SpellMetadata : ObservableObject
     {
         private string name;
-        private PlayerClass playerClass;
+        private CharacterClassFlags playerClass;
         private string groupName;
         private int manaCost;
         private bool opensDialog;
@@ -29,8 +29,8 @@ namespace SleepHunter.Metadata
         }
 
         [XmlAttribute("Class")]
-        [DefaultValue(PlayerClass.Peasant)]
-        public PlayerClass Class
+        [DefaultValue(CharacterClassFlags.Peasant)]
+        public CharacterClassFlags Class
         {
             get => playerClass;
             set => SetProperty(ref playerClass, value);

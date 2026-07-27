@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
@@ -11,7 +11,7 @@ namespace SleepHunter.Metadata
     public sealed class SkillMetadata : ObservableObject
     {
         private string name;
-        private PlayerClass playerClass;
+        private CharacterClassFlags playerClass;
         private string groupName;
         private int manaCost;
         private bool isAssail;
@@ -30,8 +30,8 @@ namespace SleepHunter.Metadata
         }
 
         [XmlAttribute("Class")]
-        [DefaultValue(PlayerClass.Peasant)]
-        public PlayerClass Class
+        [DefaultValue(CharacterClassFlags.Peasant)]
+        public CharacterClassFlags Class
         {
             get => playerClass;
             set => SetProperty(ref playerClass, value);
@@ -81,7 +81,11 @@ namespace SleepHunter.Metadata
         public TimeSpan Cooldown
         {
             get => cooldown;
-            set => SetProperty(ref cooldown, value, onChanged: (s) => { RaisePropertyChanged(nameof(CooldownSeconds)); });
+            set
+            {
+                if (SetProperty(ref cooldown, value))
+                    OnPropertyChanged(nameof(CooldownSeconds));
+            }
         }
 
         [XmlAttribute("Cooldown")]

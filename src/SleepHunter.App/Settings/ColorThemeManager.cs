@@ -13,10 +13,7 @@ namespace SleepHunter.Settings
     {
         public const string ThemesFile = @"Themes.xml";
 
-        private static readonly ColorThemeManager instance = new();
-        public static ColorThemeManager Instance => instance;
-
-        private ColorThemeManager() { }
+        public ColorThemeManager() { }
 
         private readonly ConcurrentDictionary<string, ColorTheme> colorThemes = new(StringComparer.OrdinalIgnoreCase);
 

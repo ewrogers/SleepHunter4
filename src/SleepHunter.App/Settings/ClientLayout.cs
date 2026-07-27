@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SleepHunter.Settings
 {
@@ -115,7 +115,11 @@ namespace SleepHunter.Settings
         public long MultipleInstanceAddress
         {
             get => multipleInstanceAddress;
-            set => SetProperty(ref multipleInstanceAddress, value, onChanged: (s) => { RaisePropertyChanged(nameof(MultipleInstanceAddressHex)); });
+            set
+            {
+                if (SetProperty(ref multipleInstanceAddress, value))
+                    OnPropertyChanged(nameof(MultipleInstanceAddressHex));
+            }
         }
 
         [XmlElement("MultipleInstanceAddress")]
@@ -134,7 +138,11 @@ namespace SleepHunter.Settings
         public long IntroVideoAddress
         {
             get => introVideoAddress;
-            set => SetProperty(ref introVideoAddress, value, onChanged: (s) => { RaisePropertyChanged(nameof(IntroVideoAddressHex)); });
+            set
+            {
+                if (SetProperty(ref introVideoAddress, value))
+                    OnPropertyChanged(nameof(IntroVideoAddressHex));
+            }
         }
 
         [XmlElement("IntroVideoAddress")]
@@ -153,7 +161,11 @@ namespace SleepHunter.Settings
         public long NoWallAddress
         {
             get => noWallAddress;
-            set => SetProperty(ref noWallAddress, value, onChanged: (s) => { RaisePropertyChanged(nameof(NoWallAddressHex)); });
+            set
+            {
+                if (SetProperty(ref noWallAddress, value))
+                    OnPropertyChanged(nameof(NoWallAddressHex));
+            }
         }
 
         [XmlElement("NoWallAddress")]

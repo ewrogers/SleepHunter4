@@ -2009,8 +2009,8 @@ public sealed partial class ClientSnapshotCapture : IClientSnapshotCapture
         byte rawValue,
         out CharacterClass characterClass)
     {
-        // Client memory uses sequential identifiers. PlayerClass bit flags are
-        // metadata filters and must not be used to decode this field.
+        // Client memory uses sequential identifiers. App metadata class flags
+        // are filters and must not be used to decode this field.
         characterClass = rawValue switch
         {
             0x00 => CharacterClass.Peasant,

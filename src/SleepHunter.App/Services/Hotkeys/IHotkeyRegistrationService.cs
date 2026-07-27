@@ -1,6 +1,4 @@
 ﻿using System.Windows.Input;
-using SleepHunter.Macro;
-
 namespace SleepHunter.Services.Hotkeys
 {
     public interface IHotkeyRegistrationService

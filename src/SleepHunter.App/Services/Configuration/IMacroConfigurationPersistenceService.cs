@@ -1,27 +1,27 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
-using SleepHunter.Macro;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Services.Configuration
 {
     public interface IMacroConfigurationPersistenceService
     {
         Task<MacroConfigurationApplyResult> LoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default);
 
         Task SaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default);
 
         Task<MacroConfigurationAutoLoadResult> AutoLoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default);
 
         Task AutoSaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default);
     }
 }

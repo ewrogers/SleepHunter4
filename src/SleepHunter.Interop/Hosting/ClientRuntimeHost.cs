@@ -208,6 +208,12 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
                                .ReadAllAsync(cancellationToken)
                                .ConfigureAwait(false))
             {
+                if (intent is CloseClientIntent)
+                {
+                    CloseClient();
+                    continue;
+                }
+
                 if (intent is not ClientActionIntent clientAction)
                 {
                     throw new InvalidOperationException(
@@ -228,6 +234,29 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
         {
             disposeCancellation.Cancel();
             throw;
+        }
+    }
+
+    private void CloseClient()
+    {
+        if (!targetProvider.TryGetTarget(out var target) ||
+            target is null)
+        {
+            throw new InvalidOperationException(
+                "The client window is unavailable and could not be closed.");
+        }
+
+        if (target.Client != Client)
+        {
+            throw new InvalidOperationException(
+                "The window target provider returned a different client.");
+        }
+
+        var result = intentExecutor.CloseClient(target);
+        if (result.Status != WindowInputDispatchStatus.Issued)
+        {
+            throw new InvalidOperationException(
+                $"The client close request was not issued: {result.Status}.");
         }
     }
 

@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
-using SleepHunter.Macro;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Automation;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Settings
 {
@@ -25,8 +26,8 @@ namespace SleepHunter.Settings
         private bool saveMacroStates;
         private string selectedTheme;
 
-        private PlayerSortOrder clientSortOrder =
-            PlayerSortOrder.LaunchOrder;
+        private ClientSortOrder clientSortOrder =
+            ClientSortOrder.LaunchOrder;
         private bool suppressLoginNotification = true;
         private bool applyModifiersKeyFix = true;
         private bool allowAltToShowGroundItems = true;
@@ -59,8 +60,8 @@ namespace SleepHunter.Settings
         private bool skipintroVideo = true;
         private bool noWalls = false;
 
-        private MacroAction mapChangeAction;
-        private MacroAction coordsChangeAction;
+        private ObservationChangeAction mapChangeAction;
+        private ObservationChangeAction coordsChangeAction;
 
         private bool useShiftForMedeniaPane;
         private bool preserveUserPanel;
@@ -107,7 +108,12 @@ namespace SleepHunter.Settings
         public TimeSpan ProcessUpdateInterval
         {
             get => processUpdateInterval;
-            set => SetProperty(ref processUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ProcessUpdateIntervalSeconds)); });
+            set
+            {
+                if (SetProperty(ref processUpdateInterval, value))
+                    OnPropertyChanged(
+                        nameof(ProcessUpdateIntervalSeconds));
+            }
         }
 
         [XmlElement("ProcessUpdateInterval")]
@@ -121,7 +127,12 @@ namespace SleepHunter.Settings
         public TimeSpan ClientUpdateInterval
         {
             get => clientUpdateInterval;
-            set => SetProperty(ref clientUpdateInterval, value, onChanged: (s) => { RaisePropertyChanged(nameof(ClientUpdateIntervalSeconds)); });
+            set
+            {
+                if (SetProperty(ref clientUpdateInterval, value))
+                    OnPropertyChanged(
+                        nameof(ClientUpdateIntervalSeconds));
+            }
         }
 
         [XmlElement("ClientUpdateInterval")]
@@ -146,7 +157,7 @@ namespace SleepHunter.Settings
         }
 
         [XmlElement("ClientSortOrder")]
-        public PlayerSortOrder ClientSortOrder
+        public ClientSortOrder ClientSortOrder
         {
             get => clientSortOrder;
             set => SetProperty(ref clientSortOrder, value);
@@ -255,7 +266,11 @@ namespace SleepHunter.Settings
         public string IconDataFile
         {
             get => iconDataFile;
-            set => SetProperty(ref iconDataFile, value, onChanged: (s) => { RaisePropertyChanged(nameof(IconDataFilePath)); });
+            set
+            {
+                if (SetProperty(ref iconDataFile, value))
+                    OnPropertyChanged(nameof(IconDataFilePath));
+            }
         }
 
         [XmlIgnore]
@@ -277,7 +292,11 @@ namespace SleepHunter.Settings
         public string PaletteDataFile
         {
             get => paletteDataFile;
-            set => SetProperty(ref paletteDataFile, value, onChanged: (s) => { RaisePropertyChanged(nameof(PaletteDataFilePath)); });
+            set
+            {
+                if (SetProperty(ref paletteDataFile, value))
+                    OnPropertyChanged(nameof(PaletteDataFilePath));
+            }
         }
 
         [XmlElement("SkillIconFile")]
@@ -385,18 +404,40 @@ namespace SleepHunter.Settings
             set => SetProperty(ref noWalls, value);
         }
 
-        [XmlElement("MapChangeAction")]
-        public MacroAction MapChangeAction
+        [XmlIgnore]
+        public ObservationChangeAction MapChangeAction
         {
             get => mapChangeAction;
             set => SetProperty(ref mapChangeAction, value);
         }
 
-        [XmlElement("CoordsChangeAction")]
-        public MacroAction CoordsChangeAction
+        [XmlIgnore]
+        public ObservationChangeAction CoordsChangeAction
         {
             get => coordsChangeAction;
             set => SetProperty(ref coordsChangeAction, value);
+        }
+
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [XmlElement("MapChangeAction")]
+        public string SerializedMapChangeAction
+        {
+            get => MapChangeAction.ToString();
+            set => MapChangeAction = ParseObservationChangeAction(
+                value,
+                mapChangeAction);
+        }
+
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [XmlElement("CoordsChangeAction")]
+        public string SerializedCoordsChangeAction
+        {
+            get => CoordsChangeAction.ToString();
+            set => CoordsChangeAction = ParseObservationChangeAction(
+                value,
+                coordsChangeAction);
         }
 
         [XmlElement("UseShiftForMedeniaPane")]
@@ -438,7 +479,11 @@ namespace SleepHunter.Settings
         public TimeSpan ZeroLineDelay
         {
             get => zeroLineDelay;
-            set => SetProperty(ref zeroLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(ZeroLineDelaySeconds)); });
+            set
+            {
+                if (SetProperty(ref zeroLineDelay, value))
+                    OnPropertyChanged(nameof(ZeroLineDelaySeconds));
+            }
         }
 
         [XmlElement("ZeroLineDelay")]
@@ -452,7 +497,11 @@ namespace SleepHunter.Settings
         public TimeSpan SingleLineDelay
         {
             get => singleLineDelay;
-            set => SetProperty(ref singleLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(SingleLineDelaySeconds)); });
+            set
+            {
+                if (SetProperty(ref singleLineDelay, value))
+                    OnPropertyChanged(nameof(SingleLineDelaySeconds));
+            }
         }
 
         [XmlElement("SingleLineDelay")]
@@ -466,7 +515,12 @@ namespace SleepHunter.Settings
         public TimeSpan MultipleLineDelay
         {
             get => multipleLineDelay;
-            set => SetProperty(ref multipleLineDelay, value, onChanged: (s) => { RaisePropertyChanged(nameof(MultipleLineDelaySeconds)); });
+            set
+            {
+                if (SetProperty(ref multipleLineDelay, value))
+                    OnPropertyChanged(
+                        nameof(MultipleLineDelaySeconds));
+            }
         }
 
         [XmlElement("MultipleLineDelay")]
@@ -584,8 +638,9 @@ namespace SleepHunter.Settings
             ClientUpdateInterval = TimeSpan.FromSeconds(0.2);
             SaveMacroStates = true;
 
-            SelectedTheme = ColorThemeManager.Instance.DefaultTheme?.Name ?? "Default";
-            clientSortOrder = PlayerSortOrder.LaunchOrder;
+            SelectedTheme =
+                ColorTheme.DefaultTheme?.Name ?? "Default";
+            clientSortOrder = ClientSortOrder.LaunchOrder;
             InventoryIconSize = 46;
             SkillIconSize = 46;
             InventoryGridWidth = 12;
@@ -618,8 +673,8 @@ namespace SleepHunter.Settings
             ShowExchangeResultsInMessageBar = false;
             NoWalls = false;
 
-            MapChangeAction = MacroAction.Stop;
-            CoordsChangeAction = MacroAction.None;
+            MapChangeAction = ObservationChangeAction.Stop;
+            CoordsChangeAction = ObservationChangeAction.Continue;
             UseShiftForMedeniaPane = true;
             PreserveUserPanel = true;
 
@@ -665,6 +720,50 @@ namespace SleepHunter.Settings
             }
 
             return possiblePaths.Last();
+        }
+
+        private static ObservationChangeAction ParseObservationChangeAction(
+            string value,
+            ObservationChangeAction fallback)
+        {
+            if (Enum.TryParse(
+                    value,
+                    ignoreCase: true,
+                    out ObservationChangeAction action) &&
+                Enum.IsDefined(action))
+            {
+                return action;
+            }
+
+            if (string.Equals(
+                    value,
+                    "ForceQuit",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return ObservationChangeAction.CloseClient;
+            }
+
+            if (string.Equals(
+                    value,
+                    "None",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    value,
+                    "Start",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    value,
+                    "Resume",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    value,
+                    "Restart",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return ObservationChangeAction.Continue;
+            }
+
+            return fallback;
         }
     }
 }

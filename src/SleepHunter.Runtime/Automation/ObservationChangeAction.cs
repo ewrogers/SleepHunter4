@@ -4,5 +4,6 @@ public enum ObservationChangeAction
 {
     Continue,
     Pause,
-    Stop
+    Stop,
+    CloseClient
 }

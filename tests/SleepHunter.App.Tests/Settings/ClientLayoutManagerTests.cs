@@ -4,17 +4,17 @@ using SleepHunter.Settings;
 
 namespace SleepHunter.Tests.Settings
 {
-    [NonParallelizable]
     public sealed class ClientLayoutManagerTests
     {
         [Test]
         public void ShouldLoadSingleLayoutAndLeaveStreamOpen()
         {
             using var stream = Stream(ValidLayout);
+            var manager = new ClientLayoutManager();
 
-            ClientLayoutManager.Instance.LoadFromStream(stream);
+            manager.LoadFromStream(stream);
 
-            var layout = ClientLayoutManager.Instance.Layout;
+            var layout = manager.Layout;
             Assert.Multiple(() =>
             {
                 Assert.That(layout, Is.Not.Null);
@@ -32,8 +32,9 @@ namespace SleepHunter.Tests.Settings
         public void ShouldRetainAcceptedLayoutWhenReplacementIsInvalid()
         {
             using var valid = Stream(ValidLayout);
-            ClientLayoutManager.Instance.LoadFromStream(valid);
-            var accepted = ClientLayoutManager.Instance.Layout;
+            var manager = new ClientLayoutManager();
+            manager.LoadFromStream(valid);
+            var accepted = manager.Layout;
             using var invalid = Stream(
                 ValidLayout.Replace(
                     "PointerWidth=\"Bit32\"",
@@ -41,11 +42,10 @@ namespace SleepHunter.Tests.Settings
                     StringComparison.Ordinal));
 
             Assert.That(
-                () => ClientLayoutManager.Instance
-                    .LoadFromStream(invalid),
+                () => manager.LoadFromStream(invalid),
                 Throws.TypeOf<InvalidDataException>());
             Assert.That(
-                ClientLayoutManager.Instance.Layout,
+                manager.Layout,
                 Is.SameAs(accepted));
         }
 
@@ -60,10 +60,10 @@ namespace SleepHunter.Tests.Settings
                 </ClientLayout>
                 """;
             using var stream = Stream(xml);
+            var manager = new ClientLayoutManager();
 
             Assert.That(
-                () => ClientLayoutManager.Instance
-                    .LoadFromStream(stream),
+                () => manager.LoadFromStream(stream),
                 Throws.TypeOf<InvalidDataException>());
         }
 
@@ -71,8 +71,9 @@ namespace SleepHunter.Tests.Settings
         public void ShouldRejectInvalidMemoryMappingBeforeReplacingLayout()
         {
             using var valid = Stream(ValidLayout);
-            ClientLayoutManager.Instance.LoadFromStream(valid);
-            var accepted = ClientLayoutManager.Instance.Layout;
+            var manager = new ClientLayoutManager();
+            manager.LoadFromStream(valid);
+            var accepted = manager.Layout;
             using var invalid = Stream(
                 ValidLayout.Replace(
                     "Address=\"1000\"",
@@ -80,11 +81,10 @@ namespace SleepHunter.Tests.Settings
                     StringComparison.Ordinal));
 
             Assert.That(
-                () => ClientLayoutManager.Instance
-                    .LoadFromStream(invalid),
+                () => manager.LoadFromStream(invalid),
                 Throws.TypeOf<InvalidDataException>());
             Assert.That(
-                ClientLayoutManager.Instance.Layout,
+                manager.Layout,
                 Is.SameAs(accepted));
         }
 
@@ -93,10 +93,10 @@ namespace SleepHunter.Tests.Settings
         {
             using var stream = new MemoryStream(
                 new byte[1_048_577]);
+            var manager = new ClientLayoutManager();
 
             Assert.That(
-                () => ClientLayoutManager.Instance
-                    .LoadFromStream(stream),
+                () => manager.LoadFromStream(stream),
                 Throws.TypeOf<InvalidDataException>());
         }
 
@@ -115,10 +115,10 @@ namespace SleepHunter.Tests.Settings
                 </ClientLayout>
                 """;
             using var stream = Stream(xml);
+            var manager = new ClientLayoutManager();
 
             Assert.That(
-                () => ClientLayoutManager.Instance
-                    .LoadFromStream(stream),
+                () => manager.LoadFromStream(stream),
                 Throws.TypeOf<XmlException>());
         }
 

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Models;
 
 namespace SleepHunter.Metadata
@@ -11,12 +11,12 @@ namespace SleepHunter.Metadata
     [Serializable]
     public sealed class StaffMetadata : ObservableObject
     {
-        public static readonly StaffMetadata NoStaff = new() { Name = "No Staff", Class = PlayerClass.All };
+        public static readonly StaffMetadata NoStaff = new() { Name = "No Staff", Class = CharacterClassFlags.All };
 
         private string name;
         private int level;
         private int abilityLevel;
-        private PlayerClass playerClass;
+        private CharacterClassFlags playerClass;
         private List<SpellLineModifiers> lineModifiers = new();
 
         public event SpellLineModifiersEventHandler ModifiersAdded;
@@ -47,7 +47,7 @@ namespace SleepHunter.Metadata
         }
 
         [XmlAttribute("Class")]
-        public PlayerClass Class
+        public CharacterClassFlags Class
         {
             get => playerClass;
             set => SetProperty(ref playerClass, value);

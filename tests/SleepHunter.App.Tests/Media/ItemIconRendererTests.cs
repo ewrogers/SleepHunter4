@@ -9,11 +9,13 @@ namespace SleepHunter.Tests.Media
     [TestFixture]
     public sealed class ItemIconRendererTests
     {
+        private FileArchiveManager archives = null!;
         private string directory;
 
         [SetUp]
         public void SetUp()
         {
+            archives = new FileArchiveManager();
             directory = Path.Combine(Path.GetTempPath(), "SleepHunter.Tests", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
         }
@@ -21,7 +23,7 @@ namespace SleepHunter.Tests.Media
         [TearDown]
         public void TearDown()
         {
-            FileArchiveManager.Instance.ClearArchives();
+            archives.Dispose();
 
             if (Directory.Exists(directory))
                 Directory.Delete(directory, recursive: true);
@@ -45,7 +47,9 @@ namespace SleepHunter.Tests.Media
                 "setoa.dat",
                 ("item001.epf", Epf(2, 1, new byte[] { 2, 1 })));
 
-            var renderer = ItemIconRenderer.Load(Path.Combine(directory, "Darkages.exe"));
+            var renderer = ItemIconRenderer.Load(
+                Path.Combine(directory, "Darkages.exe"),
+                archives);
             var first = renderer.Render(1);
             var secondGroup = renderer.Render(267);
 
@@ -100,7 +104,9 @@ namespace SleepHunter.Tests.Media
                 ("itempal.tbl", Text("1 1 0\n")),
                 ("color0.tbl", Text(dyeTable)));
 
-            var renderer = ItemIconRenderer.Load(Path.Combine(directory, "Darkages.exe"));
+            var renderer = ItemIconRenderer.Load(
+                Path.Combine(directory, "Darkages.exe"),
+                archives);
 
             Assert.Multiple(() =>
             {

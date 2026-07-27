@@ -73,6 +73,15 @@ internal static class MacroDecisionInvariants
             }
         }
 
+        if (decision.Intent is CloseClientIntent &&
+            (previousState.Lifecycle != MacroLifecycle.Running ||
+             decision.State.Lifecycle != MacroLifecycle.Stopped ||
+             decision.State.PendingAction is not null))
+        {
+            throw new InvalidOperationException(
+                "Close-client intents must stop a running macro and clear pending client actions.");
+        }
+
         if (decision.State.PendingAction is { } observedPendingAction)
         {
             var matchingIssue =

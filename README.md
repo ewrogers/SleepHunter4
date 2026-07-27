@@ -112,6 +112,7 @@ Live-client verification guidance is maintained in
 ## Documentation
 
 - [User Manual](https://ewrogers.github.io/SleepHunter4/)
+- [Architecture](./ARCHITECTURE.md)
 - [Documentation Source](./docs)
 - [Release Notes](./CHANGELOG.md)
 - [Release Process](./RELEASING.md)

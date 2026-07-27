@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.Services.Logging;
 
@@ -23,23 +22,23 @@ namespace SleepHunter.Services.Hotkeys
         }
 
         public HotkeyAssignmentResult Assign(
-            Player player,
+            ClientSession session,
             Hotkey requested,
-            IEnumerable<Player> players)
+            IEnumerable<ClientSession> sessions)
         {
-            ArgumentNullException.ThrowIfNull(player);
+            ArgumentNullException.ThrowIfNull(session);
             ArgumentNullException.ThrowIfNull(requested);
-            ArgumentNullException.ThrowIfNull(players);
+            ArgumentNullException.ThrowIfNull(sessions);
 
-            var allPlayers = players.ToArray();
-            if (allPlayers.Any(candidate => candidate is null))
+            var allSessions = sessions.ToArray();
+            if (allSessions.Any(candidate => candidate is null))
             {
                 throw new ArgumentException(
-                    "The hotkey player set cannot contain null values.",
-                    nameof(players));
+                    "The hotkey session set cannot contain null values.",
+                    nameof(sessions));
             }
 
-            var previous = player.Hotkey;
+            var previous = session.Hotkey;
             var registered = hotkeys.Find(
                 requested.Key,
                 requested.Modifiers);
@@ -63,7 +62,7 @@ namespace SleepHunter.Services.Hotkeys
                 !hotkeys.Unregister(registered))
             {
                 logger.LogError(
-                    $"Unable to release hotkey {requested} before assigning it to {player.Name}");
+                    $"Unable to release hotkey {requested} before assigning it to process {session.Process.ProcessId}");
                 return new HotkeyAssignmentResult(
                     HotkeyAssignmentStatus.RegistrationFailed);
             }
@@ -71,7 +70,7 @@ namespace SleepHunter.Services.Hotkeys
             if (!hotkeys.Register(requested))
             {
                 logger.LogError(
-                    $"Unable to set hotkey {requested} for character: {player.Name}");
+                    $"Unable to set hotkey {requested} for process {session.Process.ProcessId}");
                 Restore(registered);
 
                 return new HotkeyAssignmentResult(
@@ -83,33 +82,33 @@ namespace SleepHunter.Services.Hotkeys
                 !hotkeys.Unregister(previous))
             {
                 logger.LogError(
-                    $"Unable to release previous hotkey {previous} for character: {player.Name}");
+                    $"Unable to release previous hotkey {previous} for process {session.Process.ProcessId}");
                 RollBack(requested, registered);
                 return new HotkeyAssignmentResult(
                     HotkeyAssignmentStatus.RegistrationFailed);
             }
 
-            foreach (var candidate in allPlayers)
+            foreach (var candidate in allSessions)
             {
-                if (!ReferenceEquals(candidate, player) &&
+                if (!ReferenceEquals(candidate, session) &&
                     SameGesture(candidate.Hotkey, requested))
                 {
                     candidate.Hotkey = null;
                 }
             }
 
-            player.Hotkey = requested;
+            session.Hotkey = requested;
             logger.LogInfo(
-                $"Set hotkey {requested} for character: {player.Name}");
+                $"Set hotkey {requested} for process {session.Process.ProcessId}");
             return new HotkeyAssignmentResult(
                 HotkeyAssignmentStatus.Assigned);
         }
 
-        public HotkeyAssignmentResult Clear(Player player)
+        public HotkeyAssignmentResult Clear(ClientSession session)
         {
-            ArgumentNullException.ThrowIfNull(player);
+            ArgumentNullException.ThrowIfNull(session);
 
-            if (player.Hotkey is not { } assigned)
+            if (session.Hotkey is not { } assigned)
             {
                 return new HotkeyAssignmentResult(
                     HotkeyAssignmentStatus.Unchanged);
@@ -122,14 +121,14 @@ namespace SleepHunter.Services.Hotkeys
                 !hotkeys.Unregister(assigned))
             {
                 logger.LogError(
-                    $"Unable to clear hotkey {assigned} for character: {player.Name}");
+                    $"Unable to clear hotkey {assigned} for process {session.Process.ProcessId}");
                 return new HotkeyAssignmentResult(
                     HotkeyAssignmentStatus.RegistrationFailed);
             }
 
             logger.LogInfo(
-                $"Clearing hotkey for character: {player.Name}");
-            player.Hotkey = null;
+                $"Clearing hotkey for process {session.Process.ProcessId}");
+            session.Hotkey = null;
             return new HotkeyAssignmentResult(
                 HotkeyAssignmentStatus.Cleared);
         }

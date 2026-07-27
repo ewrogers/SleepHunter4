@@ -11,10 +11,7 @@ namespace SleepHunter.Metadata
     {
         public const string SkillMetadataFile = @"Skills.xml";
 
-        private static readonly SkillMetadataManager instance = new();
-        public static SkillMetadataManager Instance => instance;
-
-        private SkillMetadataManager() { }
+        public SkillMetadataManager() { }
 
         private readonly ConcurrentDictionary<string, SkillMetadata> skills = new(StringComparer.OrdinalIgnoreCase);
 

@@ -1,6 +1,6 @@
-﻿using SleepHunter.Macro;
 using SleepHunter.Models;
 using SleepHunter.ViewModels;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Tests.ViewModels;
 
@@ -9,11 +9,11 @@ public sealed class MacroEditorViewModelTests
     [Test]
     public void ShouldExposeObservableQueuesAndToolkitCommands()
     {
-        using var player = CreatePlayer();
-        var configuration = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
         using var viewModel =
             new MacroEditorViewModel(configuration);
-        var spell = new SpellQueueItem { Name = "Spell" };
+        var spell = new SpellQueueItemViewModel { Name = "Spell" };
         var flower = Flower();
         var changedProperties = new List<string?>();
         viewModel.PropertyChanged +=
@@ -75,15 +75,15 @@ public sealed class MacroEditorViewModelTests
     [Test]
     public void ShouldHonorEditingStateForClearAndMoveCommands()
     {
-        using var player = CreatePlayer();
-        var configuration = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer();
+        var configuration = new ClientMacroConfiguration(player);
         var canEdit = false;
         using var viewModel =
             new MacroEditorViewModel(
                 configuration,
                 () => canEdit);
-        var firstSpell = new SpellQueueItem { Name = "First" };
-        var secondSpell = new SpellQueueItem { Name = "Second" };
+        var firstSpell = new SpellQueueItemViewModel { Name = "First" };
+        var secondSpell = new SpellQueueItemViewModel { Name = "Second" };
         var firstFlower = Flower();
         var secondFlower = Flower();
         configuration.AddToSpellQueue(firstSpell);
@@ -138,16 +138,16 @@ public sealed class MacroEditorViewModelTests
         });
     }
 
-    private static FlowerQueueItem Flower() =>
+    private static FlowerQueueItemViewModel Flower() =>
         new()
         {
-            Target = new SpellTarget
+            Target = new SpellTargetViewModel
             {
                 Mode = SpellTargetMode.Self
             }
         };
 
-    private static Player CreatePlayer() =>
+    private static ClientSession CreatePlayer() =>
         new(
             new ClientProcess
             {
@@ -156,7 +156,6 @@ public sealed class MacroEditorViewModelTests
                 WindowTitle = "Test Window"
             })
         {
-            Name = "Test",
-            IsLoggedIn = true
+            Name = "Test"
         };
 }

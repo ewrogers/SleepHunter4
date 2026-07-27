@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using SleepHunter.Macro;
 using SleepHunter.Persistence.Serialization;
 using SleepHunter.Services.Hotkeys;
 using SleepHunter.Services.Logging;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Services.Configuration
 {
@@ -15,14 +15,14 @@ namespace SleepHunter.Services.Configuration
         private readonly string autosaveDirectory;
         private readonly IHotkeyRegistrationService hotkeys;
         private readonly ILogger logger;
-        private readonly IPlayerMacroConfigurationMapper mapper;
+        private readonly IClientMacroConfigurationMapper mapper;
         private readonly IMacroConfigurationReader reader;
         private readonly IMacroConfigurationWriter writer;
 
         public MacroConfigurationPersistenceService(
             IMacroConfigurationReader reader,
             IMacroConfigurationWriter writer,
-            IPlayerMacroConfigurationMapper mapper,
+            IClientMacroConfigurationMapper mapper,
             IHotkeyRegistrationService hotkeys,
             ILogger logger,
             string applicationDirectory)
@@ -45,7 +45,7 @@ namespace SleepHunter.Services.Configuration
         }
 
         public async Task<MacroConfigurationApplyResult> LoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default)
         {
@@ -61,12 +61,12 @@ namespace SleepHunter.Services.Configuration
         }
 
         private async Task<MacroConfigurationLoadResult> ReadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string fullPath,
             CancellationToken cancellationToken)
         {
             logger.LogInfo(
-                $"Loading {configuration.Client.Name} macro configuration from {fullPath}...");
+                $"Loading {configuration.Name} macro configuration from {fullPath}...");
             var loaded = await reader
                 .LoadAsync(fullPath, cancellationToken);
             logger.LogInfo("Deserialized successfully");
@@ -74,7 +74,7 @@ namespace SleepHunter.Services.Configuration
         }
 
         private MacroConfigurationApplyResult Apply(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             MacroConfigurationLoadResult loaded)
         {
             var previousHotkey = configuration.Client.Hotkey;
@@ -88,7 +88,7 @@ namespace SleepHunter.Services.Configuration
                 !hotkeys.Register(importedHotkey))
             {
                 logger.LogWarn(
-                    $"Unable to register the imported macro hotkey for {configuration.Client.Name}.");
+                    $"Unable to register the imported macro hotkey for {configuration.Name}.");
                 configuration.Client.Hotkey = null;
                 registrationFailed = true;
             }
@@ -100,14 +100,14 @@ namespace SleepHunter.Services.Configuration
             }
 
             logger.LogInfo(
-                $"Updated {configuration.Client.Name} macro configuration from {loaded.Format} data");
+                $"Updated {configuration.Name} macro configuration from {loaded.Format} data");
             return new MacroConfigurationApplyResult(
                 loaded,
                 registrationFailed);
         }
 
         public async Task SaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default)
         {
@@ -116,7 +116,7 @@ namespace SleepHunter.Services.Configuration
 
             var fullPath = Path.GetFullPath(filePath);
             logger.LogInfo(
-                $"Saving {configuration.Client.Name} macro configuration into {fullPath}...");
+                $"Saving {configuration.Name} macro configuration into {fullPath}...");
             var snapshot = mapper.CreateSnapshot(configuration);
             await writer.SaveAsync(
                 snapshot,
@@ -127,7 +127,7 @@ namespace SleepHunter.Services.Configuration
 
         public async Task<MacroConfigurationAutoLoadResult>
             AutoLoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(configuration);
@@ -200,7 +200,7 @@ namespace SleepHunter.Services.Configuration
         }
 
         public Task AutoSaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(configuration);
@@ -214,11 +214,11 @@ namespace SleepHunter.Services.Configuration
         }
 
         private string GetAutosavePath(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string extension) =>
             Path.Combine(
                 autosaveDirectory,
-                $"{configuration.Client.Name}-Autosave{extension}");
+                $"{configuration.Name}-Autosave{extension}");
 
         private void DeleteBrokenAutosave(string filePath)
         {

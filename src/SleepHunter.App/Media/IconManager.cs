@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System;
 using System.IO;
 using System.Windows.Media.Imaging;
 using SleepHunter.IO;
@@ -8,11 +9,7 @@ namespace SleepHunter.Media
 {
     public sealed class IconManager
     {
-        private static readonly IconManager instance = new();
-        public static IconManager Instance => instance;
-
-        private IconManager() { }
-
+        private readonly FileArchiveManager archives;
         private readonly object itemIconLock = new();
         private readonly ConcurrentDictionary<(int Index, byte Color), BitmapSource> itemIcons = new();
         private readonly ConcurrentDictionary<int, BitmapSource> skillIcons = new();
@@ -23,6 +20,18 @@ namespace SleepHunter.Media
         private ColorPalette spellIconPalette;
         private EpfImage skillIconImage;
         private EpfImage spellIconImage;
+        private readonly UserSettingsManager settingsManager;
+
+        public IconManager(
+            UserSettingsManager settingsManager,
+            FileArchiveManager archives)
+        {
+            this.settingsManager = settingsManager ??
+                throw new ArgumentNullException(
+                    nameof(settingsManager));
+            this.archives = archives ??
+                throw new ArgumentNullException(nameof(archives));
+        }
 
         public BitmapSource GetItemIcon(int index, byte color = 0)
         {
@@ -106,7 +115,7 @@ namespace SleepHunter.Media
 
         RenderedBitmap RenderSkillIcon(int index)
         {
-            var settings = UserSettingsManager.Instance.Settings;
+            var settings = settingsManager.Settings;
 
             skillIconPalette ??= GetColorPalette(settings.IconDataFile, settings.SkillPaletteFile);
             skillIconImage ??= GetEpfImage(settings.IconDataFile, settings.SkillIconFile);
@@ -125,7 +134,7 @@ namespace SleepHunter.Media
 
         RenderedBitmap RenderSpellIcon(int index)
         {
-            var settings = UserSettingsManager.Instance.Settings;
+            var settings = settingsManager.Settings;
 
             spellIconPalette ??= GetColorPalette(settings.IconDataFile, settings.SpellPaletteFile);
             spellIconImage ??= GetEpfImage(settings.IconDataFile, settings.SpellIconFile);
@@ -144,7 +153,7 @@ namespace SleepHunter.Media
 
         private ItemIconRenderer GetItemIconRenderer()
         {
-            var clientPath = UserSettingsManager.Instance.Settings.ClientPath;
+            var clientPath = settingsManager.Settings.ClientPath;
 
             lock (itemIconLock)
             {
@@ -156,7 +165,10 @@ namespace SleepHunter.Media
 
                 try
                 {
-                    itemIconRenderer = ItemIconRenderer.Load(clientPath);
+                    itemIconRenderer =
+                        ItemIconRenderer.Load(
+                            clientPath,
+                            archives);
                 }
                 catch
                 {
@@ -178,10 +190,14 @@ namespace SleepHunter.Media
             return path;
         }
 
-        static ColorPalette GetColorPalette(string archiveFile, string paletteFile)
+        ColorPalette GetColorPalette(
+            string archiveFile,
+            string paletteFile)
         {
-            var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
-            var archive = FileArchiveManager.Instance.GetArchive(archivePath);
+            var archivePath = GetRelativePath(
+                settingsManager.Settings.ClientPath,
+                archiveFile);
+            var archive = archives.GetArchive(archivePath);
 
             if (archive == null || !archive.ContainsFile(paletteFile))
                 return null;
@@ -194,10 +210,14 @@ namespace SleepHunter.Media
             catch { return null; }
         }
 
-        static EpfImage GetEpfImage(string archiveFile, string epfFile)
+        EpfImage GetEpfImage(
+            string archiveFile,
+            string epfFile)
         {
-            var archivePath = GetRelativePath(UserSettingsManager.Instance.Settings.ClientPath, archiveFile);
-            var archive = FileArchiveManager.Instance.GetArchive(archivePath);
+            var archivePath = GetRelativePath(
+                settingsManager.Settings.ClientPath,
+                archiveFile);
+            var archive = archives.GetArchive(archivePath);
 
             if (archive == null || !archive.ContainsFile(epfFile))
                 return null;

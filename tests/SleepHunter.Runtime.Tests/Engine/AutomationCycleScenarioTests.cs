@@ -926,6 +926,147 @@ public sealed class AutomationCycleScenarioTests
         });
     }
 
+    [Test]
+    public void ShouldYieldToAReadySkillBetweenZeroLineSpells()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var spell = Spell(
+            spellEntry.Name,
+            slot: 73,
+            castLines: 0);
+        var skillEntry = new SkillQueueEntry(
+            new SkillQueueEntryId(1),
+            "queued skill");
+        var skill = new SkillSnapshot(
+            skillEntry.Name,
+            slot: 73,
+            currentLevel: 0,
+            maximumLevel: 100,
+            manaCost: 0,
+            cooldown: TimeSpan.Zero);
+        var spellbook = new SpellbookSnapshot([spell]);
+        var skillbook = new SkillbookSnapshot([skill]);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.WorldSpells,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            skillbook: skillbook);
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(new AddSkillQueueEntryCommand(skillEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    skillsEnabled: true,
+                    spellPolicy: TestSpellPolicy)));
+        var started = scenario.Start();
+        var firstCast = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        var firstCastDeadline =
+            firstCast.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            firstCastDeadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(firstCastDeadline.Input);
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var afterFirstCast = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.WorldSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            skillbook: skillbook);
+        var yieldedSkill = scenario.Dispatch(
+            afterFirstCast.RaisedEvents.Single());
+        var skillDeadline =
+            yieldedSkill.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            skillDeadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(skillDeadline.Input);
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var afterSkill = scenario.Observe(
+            sequence: 3,
+            activePanel: ClientPanel.WorldSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            skillbook: skillbook);
+        var secondCast = scenario.Dispatch(
+            afterSkill.RaisedEvents.Single());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                firstCast.Intent,
+                Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                yieldedSkill.Intent,
+                Is.TypeOf<UseSkillIntent>());
+            Assert.That(
+                secondCast.Intent,
+                Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)secondCast.Intent!).SpellName,
+                Is.EqualTo(spell.Name));
+        });
+    }
+
+    [Test]
+    public void ShouldContinueZeroLineSpellsWhenNoSkillIsReady()
+    {
+        var scenario = new MacroScenario();
+        var spellEntry = SpellEntry();
+        var spell = Spell(
+            spellEntry.Name,
+            slot: 73,
+            castLines: 0);
+        var spellbook = new SpellbookSnapshot([spell]);
+        scenario.Observe(
+            sequence: 1,
+            activePanel: ClientPanel.WorldSpells,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            skillbook: SkillbookSnapshot.Empty);
+        scenario.Send(new AddSpellQueueEntryCommand(spellEntry));
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    skillsEnabled: true,
+                    spellPolicy: TestSpellPolicy)));
+        var started = scenario.Start();
+        var firstCast = scenario.Dispatch(
+            started.RaisedEvents.Single());
+        var deadline = firstCast.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            deadline.DueAt.Elapsed -
+            scenario.CurrentTime.Elapsed);
+        scenario.Dispatch(deadline.Input);
+
+        scenario.AdvanceBy(TimeSpan.FromTicks(1));
+        var observed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.WorldSpells,
+            captureStartedAt: scenario.CurrentTime,
+            captureCompletedAt: scenario.CurrentTime,
+            vitals: Vitals(),
+            spellbook: spellbook,
+            skillbook: SkillbookSnapshot.Empty);
+        var nextCast = scenario.Dispatch(
+            observed.RaisedEvents.Single());
+
+        Assert.That(
+            nextCast.Intent,
+            Is.TypeOf<CastSpellIntent>());
+    }
+
     [TestCase(
         SpellQueueRotation.RoundRobin,
         SpellQueueRotation.Priority,
@@ -1085,13 +1226,14 @@ public sealed class AutomationCycleScenarioTests
     private static SpellSnapshot Spell(
         string name,
         int slot,
-        int manaCost = 0) =>
+        int manaCost = 0,
+        int castLines = 1) =>
         new(
             name,
             slot,
             currentLevel: 0,
             maximumLevel: 100,
-            castLines: 1,
+            castLines,
             manaCost,
             cooldown: TimeSpan.Zero);
 

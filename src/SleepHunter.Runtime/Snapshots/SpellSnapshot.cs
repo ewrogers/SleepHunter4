@@ -17,7 +17,8 @@ public sealed record SpellSnapshot
         bool isActionDelayed = false,
         bool opensDialog = false,
         ushort icon = 0,
-        byte argumentType = 0,
+        SpellArgumentType argumentType =
+            SpellArgumentType.Unknown,
         string? prompt = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -126,7 +127,7 @@ public sealed record SpellSnapshot
 
     public ushort Icon { get; }
 
-    public byte ArgumentType { get; }
+    public SpellArgumentType ArgumentType { get; }
 
     public string? Prompt { get; }
 }

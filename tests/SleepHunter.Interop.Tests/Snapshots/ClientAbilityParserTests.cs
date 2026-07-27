@@ -142,7 +142,8 @@ public sealed class ClientAbilityParserTests
                     TimeSpan.FromSeconds(4),
                     isActionDelayed: true,
                     icon: 222,
-                    argumentType: 1,
+                    argumentType:
+                        SpellArgumentType.TextInput,
                     prompt: "Which target?")));
     }
 

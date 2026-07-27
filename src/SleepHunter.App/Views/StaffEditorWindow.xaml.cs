@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 
 using SleepHunter.Extensions;
@@ -10,6 +10,7 @@ namespace SleepHunter.Views
     public partial class StaffEditorWindow : Window
     {
         private readonly string originalName;
+        private readonly StaffMetadataManager staffMetadata;
         private StaffMetadata staff = new();
 
         public StaffMetadata Staff
@@ -27,8 +28,11 @@ namespace SleepHunter.Views
         public static readonly DependencyProperty IsEditModeProperty =
             DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(StaffEditorWindow), new PropertyMetadata(false));
 
-        public StaffEditorWindow(StaffMetadata staff, bool isEditMode = true)
-           : this()
+        public StaffEditorWindow(
+            StaffMetadata staff,
+            StaffMetadataManager staffMetadata,
+            bool isEditMode = true)
+           : this(staffMetadata)
         {
             nameTextBox.Text = originalName = staff.Name;
 
@@ -43,7 +47,7 @@ namespace SleepHunter.Views
                 isAbilityLevelCheckBox.IsChecked = false;
             }
 
-            SetPlayerClass(staff.Class);
+            SetCharacterClassFlags(staff.Class);
 
             IsEditMode = isEditMode;
 
@@ -51,8 +55,12 @@ namespace SleepHunter.Views
                 Title = "Edit Staff";
         }
 
-        public StaffEditorWindow()
+        public StaffEditorWindow(
+            StaffMetadataManager staffMetadata)
         {
+            this.staffMetadata = staffMetadata ??
+                throw new ArgumentNullException(
+                    nameof(staffMetadata));
             InitializeComponent();
 
             Title = "Add Staff";
@@ -84,7 +92,8 @@ namespace SleepHunter.Views
                 return false;
             }
 
-            if (nameChanged && StaffMetadataManager.Instance.ContainsStaff(staffName))
+            if (nameChanged &&
+                staffMetadata.ContainsStaff(staffName))
             {
                 this.ShowMessageBox("Duplicate Name",
                    "A staff already exists with the same name.",
@@ -100,39 +109,39 @@ namespace SleepHunter.Views
             staff.Name = staffName;
             staff.Level = isMedenia ? 0 : level;
             staff.AbilityLevel = isMedenia ? level : 0;
-            staff.Class = GetPlayerClass();
+            staff.Class = GetCharacterClassFlags();
             return true;
         }
 
-        private PlayerClass GetPlayerClass()
+        private CharacterClassFlags GetCharacterClassFlags()
         {
-            var playerClass = PlayerClass.Peasant;
+            var playerClass = CharacterClassFlags.Peasant;
 
             if (warriorCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Warrior;
+                playerClass |= CharacterClassFlags.Warrior;
 
             if (wizardCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Wizard;
+                playerClass |= CharacterClassFlags.Wizard;
 
             if (priestCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Priest;
+                playerClass |= CharacterClassFlags.Priest;
 
             if (rogueCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Rogue;
+                playerClass |= CharacterClassFlags.Rogue;
 
             if (monkCheckBox.IsChecked.Value)
-                playerClass |= PlayerClass.Monk;
+                playerClass |= CharacterClassFlags.Monk;
 
             return playerClass;
         }
 
-        private void SetPlayerClass(PlayerClass playerClass)
+        private void SetCharacterClassFlags(CharacterClassFlags playerClass)
         {
-            warriorCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Warrior);
-            wizardCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Wizard);
-            priestCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Priest);
-            rogueCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Rogue);
-            monkCheckBox.IsChecked = playerClass.HasFlag(PlayerClass.Monk);
+            warriorCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Warrior);
+            wizardCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Wizard);
+            priestCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Priest);
+            rogueCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Rogue);
+            monkCheckBox.IsChecked = playerClass.HasFlag(CharacterClassFlags.Monk);
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)

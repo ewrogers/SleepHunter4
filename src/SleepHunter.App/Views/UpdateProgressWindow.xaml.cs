@@ -13,9 +13,12 @@ namespace SleepHunter.Views
         public ReleaseAsset ReleaseInfo { get; private set; }
         public string DownloadPath { get; private set; }
 
-        public UpdateProgressWindow()
+        public UpdateProgressWindow(
+            IReleaseService releaseService)
         {
-            releaseService = App.Current.Services.GetService<IReleaseService>();
+            this.releaseService = releaseService ??
+                throw new ArgumentNullException(
+                    nameof(releaseService));
 
             InitializeComponent();
         }

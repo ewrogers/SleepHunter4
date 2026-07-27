@@ -2,6 +2,7 @@ namespace SleepHunter.Interop.Input;
 
 public enum ClientWindowMessage : uint
 {
+    Close = 0x0010,
     KeyDown = 0x0100,
     KeyUp = 0x0101,
     MouseMove = 0x0200,

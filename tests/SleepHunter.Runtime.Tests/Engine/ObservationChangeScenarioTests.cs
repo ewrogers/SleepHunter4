@@ -2,6 +2,7 @@
 using SleepHunter.Runtime.Automation.Panels;
 using SleepHunter.Runtime.Commands;
 using SleepHunter.Runtime.Engine;
+using SleepHunter.Runtime.Intents;
 using SleepHunter.Runtime.Snapshots;
 using SleepHunter.Runtime.Tests.Scenarios;
 
@@ -109,6 +110,30 @@ public sealed class ObservationChangeScenarioTests
             Assert.That(
                 changed.State.StopReason,
                 Is.EqualTo(MacroStopReason.None));
+        });
+    }
+
+    [Test]
+    public void ShouldRequestClientCloseAndStopOnConfiguredMapChange()
+    {
+        var scenario = CreateRunningScenario(
+            new ObservationChangePolicy(
+                mapChange: ObservationChangeAction.CloseClient));
+
+        var changed = scenario.Observe(
+            sequence: 2,
+            location: new MapLocationSnapshot(2, "Abel", 20, 30));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                changed.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Stopped));
+            Assert.That(
+                changed.State.StopReason,
+                Is.EqualTo(MacroStopReason.MapChanged));
+            Assert.That(changed.State.PendingAction, Is.Null);
+            Assert.That(changed.Intent, Is.TypeOf<CloseClientIntent>());
         });
     }
 

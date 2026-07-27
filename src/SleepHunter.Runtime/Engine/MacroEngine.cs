@@ -375,6 +375,9 @@ public sealed partial class MacroEngine : IMacroEngine
             var nextLifecycle = changeAction == ObservationChangeAction.Pause
                 ? MacroLifecycle.Paused
                 : MacroLifecycle.Stopped;
+            var intent = changeAction == ObservationChangeAction.CloseClient
+                ? new CloseClientIntent()
+                : null;
 
             return Changed(
                 currentState,
@@ -393,7 +396,8 @@ public sealed partial class MacroEngine : IMacroEngine
                 dialog: CancelPendingDialog(currentState),
                 flower: CancelPendingFlower(currentState),
                 panelPreservation:
-                    CancelPendingPanelPreservation(currentState));
+                    CancelPendingPanelPreservation(currentState),
+                intent: intent);
         }
 
         if (!clientLoggedOut)

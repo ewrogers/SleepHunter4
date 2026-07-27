@@ -16,6 +16,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- The Large inventory icon size now renders inventory and equipment sprites at a crisp 2x scale.
 - Refreshed accent styling throughout controls, tabs, queues, progress bars, and metadata headers.
 - Made theme highlights automatically use light or dark contrast based on the selected accent color.
 - Added subtle hover borders to dropdowns, numeric controls, and checkboxes, plus small pressed animations for dropdown and numeric-control arrows.
@@ -51,6 +52,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- Fixed spell and flower target dialogs rejecting a visibly selected alternate character.
+- Allowed ready skills to run between back-to-back zero-line spells instead of being blocked indefinitely.
+- Fixed the application starting without a visible window after the runtime and MVVM migration.
+- Restored the Close Client action for map and coordinate changes so it closes the affected game client instead of only stopping its macro.
 - Fixed second- and third-row spell clicking and targeting while using the minimized client interface.
 - Fixed a runtime error that could occur after a flower cast completed and its next waiting interval began.
 - Fixed normal spell casting and flowering failing to interleave when a prioritized flower target was temporarily unavailable.

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Xml.Serialization;
 
-using SleepHunter.Common;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SleepHunter.Extensions;
 
 namespace SleepHunter.Metadata

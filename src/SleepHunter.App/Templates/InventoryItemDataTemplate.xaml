@@ -1,6 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:settings="clr-namespace:SleepHunter.Settings">
+                    xmlns:ctl="clr-namespace:SleepHunter.Controls">
+    <ctl:BindingProxy x:Key="UserSettingsManagerProxy"/>
+
     <!-- Inventory Item Data Template-->
     <DataTemplate x:Key="InventoryItemDataTemplate">
         <Border Name="Border" Margin="2">
@@ -94,15 +96,19 @@
                                        Margin="1,3,1,1"/>
                         </Border>
 
-                        <Image Name="Icon" 
-                               Width="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}" 
-                               Height="{Binding Source={x:Static settings:UserSettingsManager.Instance}, Path=Settings.InventoryIconSize}" 
-                               RenderOptions.BitmapScalingMode="NearestNeighbor"
-                               Stretch="None"
-                               Source="{Binding Icon}"
-                               Panel.ZIndex="0"
-                               Opacity="1.0"
-                               Margin="1,1,-1,-1"/>
+                        <Grid ClipToBounds="True"
+                              Panel.ZIndex="0">
+                            <Image Name="Icon"
+                                   Width="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                                   Height="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                   RenderTransformOrigin="0.5,0.5"
+                                   SnapsToDevicePixels="True"
+                                   Stretch="None"
+                                   Source="{Binding Icon}"
+                                   Opacity="1.0"
+                                   Margin="1,1,-1,-1"/>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -136,6 +142,15 @@
 
             <DataTrigger Binding="{Binding HasDurability}" Value="True">
                 <Setter TargetName="ToolTipDurabilityText" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding Source={StaticResource UserSettingsManagerProxy}, Path=Value.Settings.InventoryIconSize}"
+                         Value="62">
+                <Setter TargetName="Icon" Property="RenderTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="2" ScaleY="2"/>
+                    </Setter.Value>
+                </Setter>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

@@ -1,11 +1,11 @@
-﻿using System.Collections.Immutable;
-using SleepHunter.Macro;
+using System.Collections.Immutable;
 using SleepHunter.Models;
 using SleepHunter.Persistence.Configuration;
 using SleepHunter.Persistence.Serialization;
 using SleepHunter.Services.Configuration;
 using SleepHunter.Tests.Support;
 using SleepHunter.ViewModels;
+using SleepHunter.ViewModels.Editing;
 
 namespace SleepHunter.Tests.ViewModels;
 
@@ -14,14 +14,14 @@ public sealed class ClientListPersistenceTests
     [Test]
     public async Task ShouldLoadThroughToolkitCommandAndShowImportedQueue()
     {
-        using var player = CreatePlayer();
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer();
+        var editable = new ClientMacroConfiguration(player);
         var persistence = new StubPersistenceService
         {
             OnLoad = configuration =>
             {
                 configuration.AddToSpellQueue(
-                    new SpellQueueItem
+                    new SpellQueueItemViewModel
                     {
                         Name = "Loaded Spell"
                     });
@@ -64,8 +64,8 @@ public sealed class ClientListPersistenceTests
     [Test]
     public async Task ShouldSaveThroughToolkitCommand()
     {
-        using var player = CreatePlayer();
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer();
+        var editable = new ClientMacroConfiguration(player);
         var persistence = new StubPersistenceService();
         var interaction = new StubInteraction
         {
@@ -98,8 +98,8 @@ public sealed class ClientListPersistenceTests
     [Test]
     public async Task ShouldReportPersistenceFailureWithoutEscapingCommand()
     {
-        using var player = CreatePlayer();
-        var editable = new PlayerMacroConfiguration(player);
+        var player = CreatePlayer();
+        var editable = new ClientMacroConfiguration(player);
         var failure = new IOException("Failed");
         var persistence = new StubPersistenceService
         {
@@ -135,7 +135,7 @@ public sealed class ClientListPersistenceTests
     }
 
     private static ClientListViewModel CreateViewModel(
-        PlayerMacroConfiguration configuration,
+        ClientMacroConfiguration configuration,
         IMacroConfigurationPersistenceService persistence,
         IMacroConfigurationInteraction interaction) =>
         new(
@@ -151,7 +151,7 @@ public sealed class ClientListPersistenceTests
             interaction,
             new TestLogger());
 
-    private static Player CreatePlayer() =>
+    private static ClientSession CreatePlayer() =>
         new(
             new ClientProcess
             {
@@ -160,31 +160,30 @@ public sealed class ClientListPersistenceTests
                 WindowTitle = "Test Window"
             })
         {
-            Name = "Test",
-            IsLoggedIn = true
+            Name = "Test"
         };
 
     private sealed class StubPersistenceService :
         IMacroConfigurationPersistenceService
     {
-        public Action<PlayerMacroConfiguration>? OnLoad { get; init; }
+        public Action<ClientMacroConfiguration>? OnLoad { get; init; }
 
         public Exception? LoadException { get; init; }
 
-        public List<PlayerMacroConfiguration>
+        public List<ClientMacroConfiguration>
             LoadConfigurations
         { get; } = [];
 
         public List<string> LoadPaths { get; } = [];
 
-        public List<PlayerMacroConfiguration>
+        public List<ClientMacroConfiguration>
             SaveConfigurations
         { get; } = [];
 
         public List<string> SavePaths { get; } = [];
 
         public Task<MacroConfigurationApplyResult> LoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default)
         {
@@ -205,7 +204,7 @@ public sealed class ClientListPersistenceTests
         }
 
         public Task SaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             string filePath,
             CancellationToken cancellationToken = default)
         {
@@ -215,12 +214,12 @@ public sealed class ClientListPersistenceTests
         }
 
         public Task<MacroConfigurationAutoLoadResult> AutoLoadAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<MacroConfigurationAutoLoadResult>(null!);
 
         public Task AutoSaveAsync(
-            PlayerMacroConfiguration configuration,
+            ClientMacroConfiguration configuration,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
