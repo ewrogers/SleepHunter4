@@ -90,8 +90,9 @@ internal static partial class ClientAbilityParser
 
             var rawName = ClientText.ReadNullTerminatedAscii(
                 record.Slice(5, NameLength));
-            var prompt = ClientText.ReadNullTerminatedAscii(
-                record.Slice(0x105, NameLength));
+            var prompt =
+                ClientText.ReadNullTerminatedAsciiIgnoringNonAscii(
+                    record.Slice(0x105, NameLength));
             var name = ParseName(
                 rawName,
                 suffixLeft: 0,
@@ -156,7 +157,7 @@ internal static partial class ClientAbilityParser
                 snapshot.Slice(0x02, sizeof(ushort))),
             ClientText.ReadNullTerminatedAscii(
                 snapshot.Slice(0x05, PaneNameLength)),
-            ClientText.ReadNullTerminatedAscii(
+            ClientText.ReadNullTerminatedAsciiIgnoringNonAscii(
                 snapshot.Slice(0x85, PaneNameLength)),
             snapshot[0x00],
             snapshot[0x04],

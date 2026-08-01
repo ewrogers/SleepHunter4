@@ -148,6 +148,37 @@ public sealed class ClientAbilityParserTests
     }
 
     [Test]
+    public void ShouldIgnoreNonAsciiBytesInSpellPrompts()
+    {
+        var compact = new byte[
+            ClientAbilityParser.CompactSpellRecordSize];
+        WriteCompactSpell(
+            compact,
+            slot: 1,
+            "ard cradh",
+            SpellArgumentType.TextInput);
+        WritePromptWithNonAsciiBytes(compact.AsSpan(0x105));
+
+        var pane = new byte[ClientAbilityParser.SpellPaneSnapshotSize];
+        pane[0] = 1;
+        pane[0x04] = (byte)SpellArgumentType.TextInput;
+        Encoding.ASCII.GetBytes("ard cradh").CopyTo(pane.AsSpan(0x05));
+        WritePromptWithNonAsciiBytes(pane.AsSpan(0x85));
+
+        var compactSpell = ClientAbilityParser.ParseCompactSpells(
+            compact,
+            recordCount: 1,
+            AbilitySnapshotCatalog.Empty).Spells.Single();
+        var paneRecord = ClientAbilityParser.ParseSpellPane(pane);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(compactSpell.Prompt, Is.EqualTo("Which target?"));
+            Assert.That(paneRecord.Prompt, Is.EqualTo("Which target?"));
+        });
+    }
+
+    [Test]
     public void ShouldParsePaneSuffixLevel()
     {
         var snapshot = new byte[
@@ -207,6 +238,10 @@ public sealed class ClientAbilityParserTests
             ClientAbilityParser.CompactSkillRecordSize];
         BinaryPrimitives.WriteInt16LittleEndian(invalidEncoding, 1);
         invalidEncoding[4] = 0xFF;
+        var invalidSpellName = new byte[
+            ClientAbilityParser.CompactSpellRecordSize];
+        WriteCompactSpell(invalidSpellName, slot: 1, "ard cradh");
+        invalidSpellName[5] = 0xFF;
 
         Assert.Multiple(() =>
         {
@@ -223,6 +258,11 @@ public sealed class ClientAbilityParserTests
             Assert.Throws<InvalidDataException>(
                 () => ClientAbilityParser.ParseCompactSkills(
                     invalidEncoding,
+                    recordCount: 1,
+                    AbilitySnapshotCatalog.Empty));
+            Assert.Throws<InvalidDataException>(
+                () => ClientAbilityParser.ParseCompactSpells(
+                    invalidSpellName,
                     recordCount: 1,
                     AbilitySnapshotCatalog.Empty));
         });
@@ -261,12 +301,23 @@ public sealed class ClientAbilityParserTests
     private static void WriteCompactSpell(
         Span<byte> snapshot,
         int slot,
-        string name)
+        string name,
+        SpellArgumentType argumentType = SpellArgumentType.Unknown)
     {
         var record = snapshot.Slice(
             (slot - 1) * ClientAbilityParser.CompactSpellRecordSize,
             ClientAbilityParser.CompactSpellRecordSize);
         BinaryPrimitives.WriteInt16LittleEndian(record, 1);
+        record[4] = (byte)argumentType;
         Encoding.ASCII.GetBytes(name).CopyTo(record[5..]);
+    }
+
+    private static void WritePromptWithNonAsciiBytes(Span<byte> prompt)
+    {
+        Encoding.ASCII.GetBytes("Which ").CopyTo(prompt);
+        prompt[6] = 0x80;
+        Encoding.ASCII.GetBytes("target").CopyTo(prompt[7..]);
+        prompt[13] = 0xFF;
+        prompt[14] = (byte)'?';
     }
 }

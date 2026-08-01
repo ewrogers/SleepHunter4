@@ -28,4 +28,28 @@ internal static class ClientText
                 exception);
         }
     }
+
+    public static string ReadNullTerminatedAsciiIgnoringNonAscii(
+        ReadOnlySpan<byte> bytes)
+    {
+        var terminator = bytes.IndexOf((byte)0);
+        if (terminator >= 0)
+        {
+            bytes = bytes[..terminator];
+        }
+
+        Span<byte> asciiBytes = bytes.Length <= 256
+            ? stackalloc byte[bytes.Length]
+            : new byte[bytes.Length];
+        var asciiLength = 0;
+        foreach (var value in bytes)
+        {
+            if (value <= 0x7F)
+            {
+                asciiBytes[asciiLength++] = value;
+            }
+        }
+
+        return Encoding.ASCII.GetString(asciiBytes[..asciiLength]);
+    }
 }
