@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [4.12.1] - 2026-08-01
+
+### Fixed
+
+- Prevented non-ASCII bytes in client spell prompts from invalidating character snapshots.
+
 ## [4.12.0] - 2026-07-27
 
 ### Added
