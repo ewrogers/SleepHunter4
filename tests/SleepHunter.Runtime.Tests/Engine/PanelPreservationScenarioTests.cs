@@ -279,7 +279,7 @@ public sealed class PanelPreservationScenarioTests
     }
 
     [Test]
-    public void ShouldPauseWhenRestoreIntentCannotBeIssued()
+    public void ShouldRetryRestoreAfterSafeIssuanceFailure()
     {
         var scenario = CreateSpellScenario(
             ClientPanel.Stats,
@@ -306,19 +306,30 @@ public sealed class PanelPreservationScenarioTests
                 new ClientActionIssue(
                     restoreIntent.ActionId,
                     ClientActionIssueStatus.Failed)));
+        var retryRequested = ObserveAndRunCycle(
+            scenario,
+            sequence: 4,
+            ClientPanel.TemuairSpells,
+            Spellbook());
 
         Assert.Multiple(() =>
         {
             Assert.That(
                 failed.State.Lifecycle,
-                Is.EqualTo(MacroLifecycle.Paused));
+                Is.EqualTo(MacroLifecycle.Running));
             Assert.That(failed.State.PendingAction, Is.Null);
             Assert.That(
                 failed.State.PanelPreservation?.Status,
-                Is.EqualTo(PanelPreservationStatus.IssueFailed));
+                Is.EqualTo(PanelPreservationStatus.Tracking));
             Assert.That(
                 failed.State.PanelTransition?.Status,
                 Is.EqualTo(PanelTransitionStatus.IssueFailed));
+            Assert.That(
+                retryRequested.Intent,
+                Is.TypeOf<SwitchPanelIntent>());
+            Assert.That(
+                ((SwitchPanelIntent)retryRequested.Intent!).TargetPanel,
+                Is.EqualTo(ClientPanel.Stats));
         });
     }
 

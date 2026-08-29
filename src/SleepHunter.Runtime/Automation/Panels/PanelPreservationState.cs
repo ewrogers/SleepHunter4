@@ -48,6 +48,9 @@ public sealed record PanelPreservationState
     internal PanelPreservationState Succeeded() =>
         this with { Status = PanelPreservationStatus.Succeeded };
 
+    internal PanelPreservationState Retrying() =>
+        this with { Status = PanelPreservationStatus.Tracking };
+
     internal PanelPreservationState TimedOut() =>
         this with { Status = PanelPreservationStatus.TimedOut };
 

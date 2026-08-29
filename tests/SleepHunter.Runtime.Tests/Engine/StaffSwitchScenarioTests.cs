@@ -140,7 +140,7 @@ public sealed class StaffSwitchScenarioTests
     }
 
     [Test]
-    public void ShouldPauseWhenInventoryModeIssuanceIsRejected()
+    public void ShouldRecoverWhenInventoryModeIssuanceIsRejected()
     {
         var staff = Candidate(
             "staff",
@@ -165,7 +165,10 @@ public sealed class StaffSwitchScenarioTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(
                 failed.State.StaffSwitch?.Status,
                 Is.EqualTo(StaffSwitchStatus.IssueFailed));

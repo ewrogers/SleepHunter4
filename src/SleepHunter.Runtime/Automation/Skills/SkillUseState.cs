@@ -107,8 +107,17 @@ public sealed record SkillUseState
     internal SkillUseState PanelUnavailable() =>
         this with { Status = SkillUseStatus.PanelUnavailable };
 
-    internal SkillUseState IssueFailed() =>
-        this with { Status = SkillUseStatus.IssueFailed };
+    internal SkillUseState IssueFailed(
+        bool clearSnapshotRequirement = false) =>
+        clearSnapshotRequirement
+            ? this with
+            {
+                Status = SkillUseStatus.IssueFailed,
+                ActionId = null,
+                CompletesAt = null,
+                SnapshotRequiredAfter = null
+            }
+            : this with { Status = SkillUseStatus.IssueFailed };
 
     internal SkillUseState Cancelled() =>
         this with { Status = SkillUseStatus.Cancelled };

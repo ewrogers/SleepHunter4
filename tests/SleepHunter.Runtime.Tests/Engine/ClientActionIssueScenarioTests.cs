@@ -74,11 +74,10 @@ public sealed class ClientActionIssueScenarioTests
         });
     }
 
-    [TestCase(ClientActionIssueStatus.Rejected)]
     [TestCase(ClientActionIssueStatus.Unsupported)]
-    [TestCase(ClientActionIssueStatus.Failed)]
     [TestCase(ClientActionIssueStatus.PartiallyIssued)]
-    public void ShouldPauseAndClearActionWhenIssuanceDoesNotSucceed(
+    [TestCase(ClientActionIssueStatus.TimedOut)]
+    public void ShouldPauseWhenIssuanceCannotBeRetriedSafely(
         ClientActionIssueStatus status)
     {
         var scenario = CreateScenario();
@@ -90,6 +89,9 @@ public sealed class ClientActionIssueScenarioTests
         Assert.Multiple(() =>
         {
             Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.ClientActionFailed));
             Assert.That(failed.State.PendingAction, Is.Null);
             Assert.That(
                 failed.State.PanelTransition?.Status,
@@ -99,21 +101,111 @@ public sealed class ClientActionIssueScenarioTests
         });
     }
 
+    [TestCase(ClientActionIssueStatus.Rejected)]
+    [TestCase(ClientActionIssueStatus.Failed)]
+    public void ShouldRecoverWhenNoClientInputWasIssued(
+        ClientActionIssueStatus status)
+    {
+        var scenario = CreateScenario();
+        var requested = RequestPanel(scenario);
+        var actionId = requested.State.PendingAction!.Intent.ActionId;
+
+        var failed = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    actionId,
+                    status,
+                    "The client was temporarily unavailable.")));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                failed.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                failed.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.None));
+            Assert.That(failed.State.PendingAction, Is.Null);
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(1));
+            Assert.That(
+                failed.State.PanelTransition?.Status,
+                Is.EqualTo(PanelTransitionStatus.IssueFailed));
+            Assert.That(failed.RaisedEvents, Is.Empty);
+            Assert.That(
+                failed.State.LastActionIssue?.Message,
+                Is.EqualTo("The client was temporarily unavailable."));
+        });
+    }
+
+    [TestCase(ClientActionIssueStatus.Rejected)]
+    [TestCase(ClientActionIssueStatus.Failed)]
+    public void ShouldPauseAfterThreeConsecutiveRecoverableFailures(
+        ClientActionIssueStatus status)
+    {
+        var scenario = CreateScenario();
+
+        MacroDecision? failed = null;
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            var requested = RequestPanel(scenario);
+            failed = scenario.Dispatch(
+                Issue(
+                    requested.State.PendingAction!.Intent.ActionId,
+                    status));
+
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(attempt));
+            if (attempt < 3)
+            {
+                Assert.That(
+                    failed.State.Lifecycle,
+                    Is.EqualTo(MacroLifecycle.Running));
+            }
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                failed!.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                failed.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.ClientActionFailed));
+            Assert.That(failed.State.PendingAction, Is.Null);
+        });
+    }
+
     [Test]
-    public void ShouldPauseWhenIssuanceFeedbackMissesActionDeadline()
+    public void ShouldWaitBrieflyThenPauseWhenIssuanceFeedbackIsMissing()
     {
         var scenario = CreateScenario();
         var requested = RequestPanel(scenario);
         scenario.AdvanceBy(TestPolicy.AttemptTimeout);
 
-        var timedOut = scenario.Dispatch(
+        var waiting = scenario.Dispatch(
             requested.ScheduledEvents.Single().Input);
+        var feedbackDeadline = waiting.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            feedbackDeadline.DueAt.Elapsed - scenario.CurrentTime.Elapsed);
+        var timedOut = scenario.Dispatch(feedbackDeadline.Input);
 
         Assert.Multiple(() =>
         {
             Assert.That(
+                waiting.State.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                waiting.State.PendingAction?.IsAwaitingFeedback,
+                Is.True);
+            Assert.That(
                 timedOut.State.Lifecycle,
                 Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                timedOut.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.ClientActionFailed));
             Assert.That(timedOut.State.PendingAction, Is.Null);
             Assert.That(
                 timedOut.State.LastActionIssue?.Status,
@@ -125,12 +217,49 @@ public sealed class ClientActionIssueScenarioTests
     }
 
     [Test]
-    public void ShouldTreatLateIssuedFeedbackAsTimedOut()
+    public void ShouldAcceptLateIssuedFeedbackWithinGracePeriod()
     {
         var scenario = CreateScenario();
         var requested = RequestPanel(scenario);
         var actionId = requested.State.PendingAction!.Intent.ActionId;
         scenario.AdvanceBy(TestPolicy.AttemptTimeout);
+        var waiting = scenario.Dispatch(
+            requested.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(1));
+
+        var issued = scenario.Dispatch(
+            Issue(actionId, ClientActionIssueStatus.Issued));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(waiting.State.PendingAction?.IsAwaitingFeedback, Is.True);
+            Assert.That(issued.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                issued.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.None));
+            Assert.That(issued.State.PendingAction?.IsIssued, Is.True);
+            Assert.That(
+                issued.State.LastActionIssue?.Status,
+                Is.EqualTo(ClientActionIssueStatus.Issued));
+            Assert.That(
+                issued.State.PanelTransition?.Status,
+                Is.EqualTo(PanelTransitionStatus.Pending));
+        });
+    }
+
+    [Test]
+    public void ShouldTreatFeedbackAfterGracePeriodAsTimedOut()
+    {
+        var scenario = CreateScenario();
+        var requested = RequestPanel(scenario);
+        var actionId = requested.State.PendingAction!.Intent.ActionId;
+        scenario.AdvanceBy(TestPolicy.AttemptTimeout);
+        var waiting = scenario.Dispatch(
+            requested.ScheduledEvents.Single().Input);
+        var feedbackDeadline = waiting.ScheduledEvents.Single().DueAt;
+        scenario.AdvanceBy(
+            feedbackDeadline.Elapsed - scenario.CurrentTime.Elapsed +
+            TimeSpan.FromTicks(1));
 
         var timedOut = scenario.Dispatch(
             Issue(actionId, ClientActionIssueStatus.Issued));
@@ -138,13 +267,13 @@ public sealed class ClientActionIssueScenarioTests
         Assert.Multiple(() =>
         {
             Assert.That(timedOut.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                timedOut.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.ClientActionFailed));
             Assert.That(timedOut.State.PendingAction, Is.Null);
             Assert.That(
                 timedOut.State.LastActionIssue?.Status,
                 Is.EqualTo(ClientActionIssueStatus.TimedOut));
-            Assert.That(
-                timedOut.State.PanelTransition?.Status,
-                Is.EqualTo(PanelTransitionStatus.IssueFailed));
         });
     }
 

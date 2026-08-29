@@ -92,7 +92,7 @@ public sealed class ClientRuntimeHostTests
     }
 
     [Test]
-    public async Task ShouldPauseWhenNativeInputFailsBeforeIssuance()
+    public async Task ShouldRecoverWhenNativeInputFailsBeforeIssuance()
     {
         var timeProvider = new ManualTimeProvider();
         var sink = new RecordingMessageSink(failedAttemptIndex: 0);
@@ -113,7 +113,10 @@ public sealed class ClientRuntimeHostTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                failed.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(failed.PendingActionId, Is.Null);
             Assert.That(
                 failed.PanelTransition?.Status,
@@ -156,8 +159,14 @@ public sealed class ClientRuntimeHostTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(rejected.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(rejected.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                rejected.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(rejected.PendingActionId, Is.Null);
+            Assert.That(
+                rejected.LastActionIssue?.Message,
+                Is.EqualTo("The client window was temporarily unavailable."));
             Assert.That(host.LastIntentIssueResult, Is.Null);
             Assert.That(sink.Attempts, Is.Empty);
         });
@@ -317,7 +326,14 @@ public sealed class ClientRuntimeHostTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(rejected.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(rejected.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                rejected.RecoverableActionFailureCount,
+                Is.EqualTo(1));
+            Assert.That(
+                rejected.LastActionIssue?.Message,
+                Is.EqualTo(
+                    "No current client snapshot was available for input planning."));
             Assert.That(host.LatestCaptureResult?.Succeeded, Is.False);
             Assert.That(host.LastIntentIssueResult, Is.Null);
             Assert.That(sink.Attempts, Is.Empty);

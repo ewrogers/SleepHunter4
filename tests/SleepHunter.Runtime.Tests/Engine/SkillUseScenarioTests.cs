@@ -81,7 +81,7 @@ public sealed class SkillUseScenarioTests
     }
 
     [Test]
-    public void ShouldPauseWhenSkillIssuanceFails()
+    public void ShouldRecoverWhenSkillIssuanceFailsBeforeInput()
     {
         var scenario = CreateRunningScenario(
             ClientPanel.TemuairSkills,
@@ -99,7 +99,10 @@ public sealed class SkillUseScenarioTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(
                 failed.State.SkillUse?.Status,
                 Is.EqualTo(SkillUseStatus.IssueFailed));
@@ -107,7 +110,80 @@ public sealed class SkillUseScenarioTests
     }
 
     [Test]
-    public void ShouldPauseWhenDisarmIssuanceFails()
+    public void ShouldRecoverWhenSkillConfirmationArrivesLate()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSkills,
+            Entry(1, "skill"),
+            Skill("skill"),
+            issueActions: false);
+        var requested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+        var actionId = ((UseSkillIntent)requested.Intent!).ActionId;
+        scenario.AdvanceBy(TestPolicy.ActionDuration);
+        var waiting = scenario.Dispatch(
+            requested.ScheduledEvents.Single().Input);
+        scenario.AdvanceBy(TimeSpan.FromMilliseconds(1));
+
+        var issued = scenario.Dispatch(
+            new ClientActionIssueObserved(
+                new ClientActionIssue(
+                    actionId,
+                    ClientActionIssueStatus.Issued)));
+        var feedbackDeadline = waiting.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            feedbackDeadline.DueAt.Elapsed - scenario.CurrentTime.Elapsed);
+        var completed = scenario.Dispatch(feedbackDeadline.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(waiting.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                waiting.State.PendingAction?.IsAwaitingFeedback,
+                Is.True);
+            Assert.That(issued.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(issued.State.PendingAction?.IsIssued, Is.True);
+            Assert.That(
+                completed.State.SkillUse?.Status,
+                Is.EqualTo(SkillUseStatus.Succeeded));
+        });
+    }
+
+    [Test]
+    public void ShouldIdentifySkillWhenConfirmationNeverArrives()
+    {
+        var scenario = CreateRunningScenario(
+            ClientPanel.TemuairSkills,
+            Entry(1, "skill"),
+            Skill("skill"),
+            issueActions: false);
+        var requested = scenario.Send(
+            new UseNextSkillCommand(TestPolicy));
+        scenario.AdvanceBy(TestPolicy.ActionDuration);
+        var waiting = scenario.Dispatch(
+            requested.ScheduledEvents.Single().Input);
+        var feedbackDeadline = waiting.ScheduledEvents.Single();
+        scenario.AdvanceBy(
+            feedbackDeadline.DueAt.Elapsed - scenario.CurrentTime.Elapsed);
+
+        var timedOut = scenario.Dispatch(feedbackDeadline.Input);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(timedOut.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(
+                timedOut.State.LastActionIssue?.Status,
+                Is.EqualTo(ClientActionIssueStatus.TimedOut));
+            Assert.That(
+                timedOut.State.LastActionIssue?.Message,
+                Is.EqualTo(
+                    "Skill 'skill' input confirmation was not received " +
+                    "within the recovery window."));
+        });
+    }
+
+    [Test]
+    public void ShouldRecoverWhenDisarmIssuanceFailsBeforeInput()
     {
         var scenario = CreateRunningScenario(
             ClientPanel.TemuairSkills,
@@ -126,7 +202,10 @@ public sealed class SkillUseScenarioTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(
                 failed.State.Disarm?.Status,
                 Is.EqualTo(DisarmStatus.IssueFailed));

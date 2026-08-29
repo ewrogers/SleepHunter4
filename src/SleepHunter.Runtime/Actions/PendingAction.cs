@@ -72,6 +72,11 @@ public sealed record PendingAction
 
     public bool IsIssued => IssuedAt.HasValue;
 
+    public MacroTimestamp? FeedbackDeadline { get; private init; }
+
+    public bool IsAwaitingFeedback =>
+        !IsIssued && FeedbackDeadline.HasValue;
+
     public TimeSpan AttemptTimeout =>
         Deadline.Elapsed - RequestedAt.Elapsed;
 
@@ -86,5 +91,25 @@ public sealed record PendingAction
         }
 
         return this with { IssuedAt = issuedAt };
+    }
+
+    internal PendingAction AwaitFeedbackUntil(
+        MacroTimestamp feedbackDeadline)
+    {
+        if (IsIssued)
+        {
+            throw new InvalidOperationException(
+                "Issued actions cannot wait for issuance feedback.");
+        }
+
+        if (feedbackDeadline <= Deadline)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(feedbackDeadline),
+                feedbackDeadline,
+                "The feedback deadline must follow the action deadline.");
+        }
+
+        return this with { FeedbackDeadline = feedbackDeadline };
     }
 }

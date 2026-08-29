@@ -11,6 +11,7 @@ using SleepHunter.Models;
 using SleepHunter.Services.Hotkeys;
 using SleepHunter.ViewModels.Editing;
 using SleepHunter.Persistence.Configuration;
+using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Panels;
@@ -329,6 +330,22 @@ public sealed class ClientListViewModelTests
         using var item = new ClientListItemViewModel(
             player,
             runtime);
+        SnapshotCaptureObservation DetailedFailure(long sequence) =>
+            CreateCapture(
+                host.Client,
+                sequenceValue: sequence,
+                succeeded: false,
+                failureSection: SnapshotSection.Location,
+                variableKey: "MapName",
+                readError: new MappedMemoryReadError(
+                    MappedMemoryReadFailure.ValueReadFailed,
+                    "MapName",
+                    ActualKind: MemoryValueKind.Text,
+                    MemoryError: new MemoryReadError(
+                        MemoryReadFailure.InvalidEncoding,
+                        new MemoryAddress(0x2FF6925C),
+                        RequestedBytes: 32,
+                        BytesRead: 32)));
 
         Assert.Multiple(() =>
         {
@@ -385,23 +402,25 @@ public sealed class ClientListViewModelTests
             Assert.That(item.CurrentHealth, Is.Zero);
         });
 
-        host.PublishCapture(CreateCapture(
-            host.Client,
-            sequenceValue: 3,
-            succeeded: false,
-            failureSection: SnapshotSection.Location,
-            variableKey: "MapName",
-            readError: new MappedMemoryReadError(
-                MappedMemoryReadFailure.ValueReadFailed,
-                "MapName",
-                ActualKind: MemoryValueKind.Text,
-                MemoryError: new MemoryReadError(
-                    MemoryReadFailure.InvalidEncoding,
-                    new MemoryAddress(0x2FF6925C),
-                    RequestedBytes: 32,
-                    BytesRead: 32))));
+        host.PublishCapture(DetailedFailure(3));
         await WaitUntilAsync(
-            () => !item.UsesRuntimeSnapshot &&
+            () => runtime.CaptureSequence?.Value == 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo("Recovering: The scripted capture failed."));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
+            Assert.That(
+                runtime.ConsecutiveCaptureFailureCount,
+                Is.EqualTo(1));
+        });
+
+        host.PublishCapture(DetailedFailure(4));
+        host.PublishCapture(DetailedFailure(5));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 5 &&
                   item.HasLastErrorStatus);
         item.IsRuntimeDetailsOpen = true;
         var frozenDetails = item.RuntimeDetailsSnapshot;
@@ -421,6 +440,12 @@ public sealed class ClientListViewModelTests
                 item.RuntimeStatus,
                 Does.StartWith("MappingReadFailed:"));
             Assert.That(item.IsRuntimeStatusError, Is.True);
+            Assert.That(
+                runtime.ConsecutiveCaptureFailureCount,
+                Is.EqualTo(3));
+            Assert.That(
+                frozenDetails,
+                Does.Contain("Consecutive capture failures: 3"));
             Assert.That(
                 frozenDetails,
                 Does.Contain("Variable: MapName"));
@@ -443,10 +468,10 @@ public sealed class ClientListViewModelTests
 
         host.PublishCapture(CreateCapture(
             host.Client,
-            sequenceValue: 4,
+            sequenceValue: 6,
             succeeded: true));
         await WaitUntilAsync(
-            () => runtime.CaptureSequence?.Value == 4);
+            () => runtime.CaptureSequence?.Value == 6);
 
         Assert.That(
             item.LastErrorStatus,
@@ -459,6 +484,116 @@ public sealed class ClientListViewModelTests
         Assert.That(
             item.RuntimeDetailsSnapshot,
             Does.Contain("Last retained capture error"));
+    }
+
+    [Test]
+    public async Task ShouldExposeInputRecoveryAndAutomaticPauseReasons()
+    {
+        var player = CreatePlayer();
+        var host = new RecordingRuntimeHost(player.Process.ProcessId);
+        await using var runtime = new ClientRuntimeViewModel(
+            host,
+            new InlineUiDispatcher());
+        using var item = new ClientListItemViewModel(player, runtime);
+        var issue = new ClientActionIssue(
+            new ClientActionId(7),
+            ClientActionIssueStatus.Failed,
+            "The client window was temporarily unavailable.");
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 1,
+            succeeded: true));
+        host.PublishView(CreateView(
+            revision: 1,
+            MacroLifecycle.Running,
+            lastActionIssue: issue,
+            recoverableActionFailureCount: 1));
+        await WaitUntilAsync(
+            () => runtime.Current?.Revision == 1 &&
+                  runtime.IsCaptureHealthy);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Recovering: The client window was temporarily unavailable."));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("Recoverable input failures: 1"));
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain(
+                    "Last action message: " +
+                    "The client window was temporarily unavailable."));
+        });
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 2,
+            succeeded: false));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Recovering: The client window was temporarily unavailable."));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
+            Assert.That(
+                runtime.ConsecutiveCaptureFailureCount,
+                Is.EqualTo(1));
+        });
+
+        host.PublishCapture(CreateCapture(
+            host.Client,
+            sequenceValue: 3,
+            succeeded: true));
+        await WaitUntilAsync(
+            () => runtime.CaptureSequence?.Value == 3);
+
+        host.PublishView(CreateView(
+            revision: 2,
+            MacroLifecycle.Running,
+            isAwaitingClientActionFeedback: true));
+        await WaitUntilAsync(() => runtime.Current?.Revision == 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Recovering: waiting for client input confirmation"));
+            Assert.That(item.IsRuntimeStatusError, Is.False);
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("Waiting for input confirmation: Yes"));
+        });
+
+        host.PublishView(CreateView(
+            revision: 3,
+            MacroLifecycle.Paused,
+            pauseReason: MacroPauseReason.ClientActionFailed,
+            lastActionIssue: issue,
+            recoverableActionFailureCount: 3));
+        await WaitUntilAsync(() => runtime.Current?.Revision == 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                item.RuntimeStatus,
+                Is.EqualTo(
+                    "Paused: client input repeatedly failed. " +
+                    "The client window was temporarily unavailable."));
+            Assert.That(item.IsRuntimeStatusError, Is.True);
+            Assert.That(
+                item.RuntimeDetailsText,
+                Does.Contain("Macro pause reason: ClientActionFailed"));
+        });
     }
 
     [Test]
@@ -1421,7 +1556,11 @@ public sealed class ClientListViewModelTests
         long revision,
         MacroLifecycle lifecycle,
         FlowerQueueState? flowerQueue = null,
-        FlowerScheduleState? flowerSchedules = null) =>
+        FlowerScheduleState? flowerSchedules = null,
+        MacroPauseReason pauseReason = MacroPauseReason.None,
+        ClientActionIssue? lastActionIssue = null,
+        int recoverableActionFailureCount = 0,
+        bool isAwaitingClientActionFeedback = false) =>
         new(
             revision,
             lifecycle,
@@ -1448,7 +1587,12 @@ public sealed class ClientListViewModelTests
             Flower: null,
             TargetRotationState.Empty,
             TargetRotationState.Empty,
-            LastActionIssue: null);
+            LastActionIssue: lastActionIssue,
+            PauseReason: pauseReason,
+            RecoverableActionFailureCount:
+                recoverableActionFailureCount,
+            IsAwaitingClientActionFeedback:
+                isAwaitingClientActionFeedback);
 
     private static MacroViewSnapshot CreateCastingView(
         ClientSnapshot snapshot,

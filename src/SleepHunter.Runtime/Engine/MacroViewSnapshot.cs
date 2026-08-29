@@ -38,7 +38,10 @@ public sealed record MacroViewSnapshot(
     FlowerState? Flower,
     TargetRotationState SpellTargetRotations,
     TargetRotationState FlowerTargetRotations,
-    ClientActionIssue? LastActionIssue)
+    ClientActionIssue? LastActionIssue,
+    MacroPauseReason PauseReason = MacroPauseReason.None,
+    int RecoverableActionFailureCount = 0,
+    bool IsAwaitingClientActionFeedback = false)
 {
     internal static MacroViewSnapshot FromState(MacroState state)
     {
@@ -70,6 +73,9 @@ public sealed record MacroViewSnapshot(
             state.Flower,
             state.SpellTargetRotations,
             state.FlowerTargetRotations,
-            state.LastActionIssue);
+            state.LastActionIssue,
+            state.PauseReason,
+            state.RecoverableActionFailureCount,
+            state.PendingAction?.IsAwaitingFeedback == true);
     }
 }

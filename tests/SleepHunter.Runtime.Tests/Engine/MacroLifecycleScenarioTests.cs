@@ -51,6 +51,16 @@ public sealed class MacroLifecycleScenarioTests
                     MacroStopReason.UserRequested
                 }));
             Assert.That(
+                publishedViews.Select(view => view.PauseReason),
+                Is.EqualTo(new[]
+                {
+                    MacroPauseReason.None,
+                    MacroPauseReason.None,
+                    MacroPauseReason.UserRequested,
+                    MacroPauseReason.None,
+                    MacroPauseReason.None
+                }));
+            Assert.That(
                 scenario.Decisions.Select(decision => decision.Intent),
                 Is.All.Null);
         });

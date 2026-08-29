@@ -107,7 +107,32 @@ public sealed record ClientIntentIssueResult
                     ClientActionIssueStatus.PartiallyIssued,
                 _ => throw new InvalidOperationException(
                     "The client intent issuance status is not supported.")
-            });
+            },
+            BuildIssueMessage());
+
+    private string? BuildIssueMessage()
+    {
+        if (Status == ClientIntentIssueStatus.Issued)
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(Plan.Message))
+            return Plan.Message;
+
+        if (Dispatch?.Validation?.Message is { Length: > 0 } validation)
+            return validation;
+
+        if (Dispatch is { } dispatch)
+        {
+            var message = Status == ClientIntentIssueStatus.PartiallyIssued
+                ? "Client input failed after one or more messages were posted."
+                : "Client input failed before any messages were posted.";
+            return dispatch.NativeErrorCode == 0
+                ? message
+                : $"{message} Native error: {dispatch.NativeErrorCode}.";
+        }
+
+        return $"Client input ended with status {Status}.";
+    }
 
     private static bool DoesDispatchStatusMatch(
         ClientIntentIssueStatus issueStatus,

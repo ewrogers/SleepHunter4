@@ -13,6 +13,8 @@ namespace SleepHunter.Runtime.Engine;
 
 public sealed partial class MacroEngine
 {
+    private const int MaximumConsecutiveRecoverableActionFailures = 3;
+
     private static MacroDecision HandleClientActionIssue(
         MacroState currentState,
         ClientActionIssue issue,
@@ -26,11 +28,15 @@ public sealed partial class MacroEngine
             return Unchanged(currentState);
         }
 
-        if (issue.WasIssued && observedAt >= pendingAction.Deadline)
+        var feedbackDeadline =
+            pendingAction.FeedbackDeadline ?? pendingAction.Deadline;
+        if (issue.WasIssued && observedAt > feedbackDeadline)
         {
             issue = new ClientActionIssue(
                 issue.ActionId,
-                ClientActionIssueStatus.TimedOut);
+                ClientActionIssueStatus.TimedOut,
+                $"{DescribeClientAction(pendingAction.Intent)} " +
+                "confirmation arrived after the recovery window.");
         }
 
         if (issue.WasIssued)
@@ -48,8 +54,22 @@ public sealed partial class MacroEngine
                 currentState.LatestSnapshot,
                 currentState.LastTransitionAt,
                 nextPendingAction,
-                lastActionIssue: issue);
+                lastActionIssue: issue,
+                pauseReason: MacroPauseReason.None,
+                recoverableActionFailureCount: 0);
         }
+
+        // Rejected and Failed guarantee that no intended input was posted.
+        // Other outcomes may have reached the client and cannot be replayed safely.
+        var isRecoverable = issue.Status is
+            ClientActionIssueStatus.Rejected or
+            ClientActionIssueStatus.Failed;
+        var recoverableFailureCount = isRecoverable
+            ? checked(currentState.RecoverableActionFailureCount + 1)
+            : currentState.RecoverableActionFailureCount;
+        var shouldRecover = isRecoverable &&
+            recoverableFailureCount <
+                MaximumConsecutiveRecoverableActionFailures;
 
         var panelTransition = currentState.PanelTransition;
         var staffSwitch = currentState.StaffSwitch;
@@ -152,7 +172,7 @@ public sealed partial class MacroEngine
                         Status: SpellCastStatus.Casting
                     })
                 {
-                    spellCast = spellCast.IssueFailed();
+                    spellCast = spellCast.IssueFailed(isRecoverable);
                 }
 
                 break;
@@ -181,7 +201,7 @@ public sealed partial class MacroEngine
                             SkillUseStatus.Assailing
                     })
                 {
-                    skillUse = skillUse.IssueFailed();
+                    skillUse = skillUse.IssueFailed(isRecoverable);
                 }
 
                 break;
@@ -203,16 +223,22 @@ public sealed partial class MacroEngine
             panelPreservation =
                 preservation.Status == PanelPreservationStatus.Restoring &&
                 pendingAction.Intent is SwitchPanelIntent
-                    ? preservation.IssueFailed()
+                    ? shouldRecover
+                        ? preservation.Retrying()
+                        : preservation.IssueFailed()
                     : preservation.Cancelled();
         }
 
         return Changed(
             currentState,
-            MacroLifecycle.Paused,
+            shouldRecover
+                ? MacroLifecycle.Running
+                : MacroLifecycle.Paused,
             currentState.StopReason,
             currentState.LatestSnapshot,
-            currentState.LastTransitionAt,
+            shouldRecover
+                ? currentState.LastTransitionAt
+                : observedAt,
             pendingAction: null,
             panelTransition: panelTransition,
             staffSwitch: staffSwitch,
@@ -222,6 +248,33 @@ public sealed partial class MacroEngine
             dialog: dialog,
             flower: flower,
             panelPreservation: panelPreservation,
-            lastActionIssue: issue);
+            lastActionIssue: issue,
+            pauseReason: shouldRecover
+                ? MacroPauseReason.None
+                : MacroPauseReason.ClientActionFailed,
+            recoverableActionFailureCount: recoverableFailureCount);
     }
+
+    private static string DescribeClientAction(ClientActionIntent intent) =>
+        intent switch
+        {
+            UseSkillIntent useSkill =>
+                $"Skill '{useSkill.SkillName}' input",
+            AssailIntent assail =>
+                $"Assail '{assail.SkillName}' input",
+            CastSpellIntent castSpell =>
+                $"Spell '{castSpell.SpellName}' input",
+            CancelSpellIntent => "Spell cancellation input",
+            SwitchPanelIntent => "Panel switch input",
+            ExpandInterfaceIntent => "Interface expansion input",
+            ExpandInventoryIntent => "Inventory expansion input",
+            CollapseInventoryIntent => "Inventory collapse input",
+            EquipWeaponIntent equipWeapon when equipWeapon.IsUnequip =>
+                "Weapon removal input",
+            EquipWeaponIntent equipWeapon =>
+                $"Staff '{equipWeapon.StaffName}' input",
+            DisarmIntent => "Disarm input",
+            CancelDialogIntent => "Dialog cancellation input",
+            _ => "Client input"
+        };
 }

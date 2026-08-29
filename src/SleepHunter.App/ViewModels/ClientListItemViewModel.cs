@@ -10,6 +10,7 @@ using SleepHunter.Interop.Snapshots;
 using SleepHunter.Media;
 using SleepHunter.Metadata;
 using SleepHunter.Models;
+using SleepHunter.Runtime.Actions;
 using SleepHunter.Runtime.Automation.Flowering;
 using SleepHunter.Runtime.Automation.Spells;
 using SleepHunter.Runtime.Characters;
@@ -28,6 +29,8 @@ namespace SleepHunter.ViewModels
         ObservableObject,
         IDisposable
     {
+        private const int PersistentCaptureFailureThreshold = 3;
+
         private readonly IClientMacroConfigurationMapper
             configurationMapper;
         private readonly ActiveSpellEffectsViewModel activeSpellEffects;
@@ -279,10 +282,23 @@ namespace SleepHunter.ViewModels
                     return true;
                 }
 
+                if (Runtime?.Current is
+                    {
+                        Lifecycle: MacroLifecycle.Paused,
+                        PauseReason: not (
+                            MacroPauseReason.None or
+                            MacroPauseReason.UserRequested)
+                    })
+                {
+                    return true;
+                }
+
                 var result = Runtime?.LatestCaptureResult;
                 return result is { Succeeded: false } &&
                        result.Error?.Failure !=
-                           SnapshotCaptureFailure.LocationTransition;
+                           SnapshotCaptureFailure.LocationTransition &&
+                       Runtime.ConsecutiveCaptureFailureCount >=
+                           PersistentCaptureFailureThreshold;
             }
         }
 
@@ -305,13 +321,18 @@ namespace SleepHunter.ViewModels
                 if (!Runtime.IsHostAvailable)
                     return "Runtime stopped unexpectedly";
 
+                if (Runtime.Current is
+                    {
+                        Lifecycle: MacroLifecycle.Paused
+                    } paused)
+                {
+                    return BuildPauseStatus(paused);
+                }
+
                 if (!Runtime.HasCapture)
                     return "Waiting";
 
                 var result = Runtime.LatestCaptureResult;
-                if (result?.Succeeded == true)
-                    return "Healthy";
-
                 var error = result?.Error;
                 if (error?.Failure ==
                     SnapshotCaptureFailure.LocationTransition)
@@ -319,13 +340,88 @@ namespace SleepHunter.ViewModels
                     return "Waiting for coherent map location";
                 }
 
+                if (result is { Succeeded: false } &&
+                    Runtime.ConsecutiveCaptureFailureCount >=
+                        PersistentCaptureFailureThreshold)
+                {
+                    return error is null
+                        ? "Unavailable"
+                        : $"{error.Failure}: {error.Message}";
+                }
+
+                if (Runtime.Current is
+                    {
+                        Lifecycle: MacroLifecycle.Running,
+                        IsAwaitingClientActionFeedback: true
+                    })
+                {
+                    return "Recovering: waiting for client input confirmation";
+                }
+
+                if (Runtime.Current is
+                    {
+                        Lifecycle: MacroLifecycle.Running,
+                        RecoverableActionFailureCount: > 0
+                    } recovering)
+                {
+                    return BuildRecoveryStatus(recovering);
+                }
+
+                if (result?.Succeeded == true)
+                    return "Healthy";
+
                 return error is null
                     ? "Unavailable"
-                    : $"{error.Failure}: {error.Message}";
+                    : $"Recovering: {error.Message}";
             }
         }
 
         public string RuntimeDetailsText => BuildRuntimeDetailsText();
+
+        private static string BuildPauseStatus(MacroViewSnapshot current)
+        {
+            return current.PauseReason switch
+            {
+                MacroPauseReason.UserRequested => "Paused",
+                MacroPauseReason.MapChanged => "Paused: map changed",
+                MacroPauseReason.CoordinatesChanged =>
+                    "Paused: coordinates changed",
+                MacroPauseReason.ClientActionFailed =>
+                    BuildClientActionPauseStatus(current),
+                _ => "Paused"
+            };
+        }
+
+        private static string BuildClientActionPauseStatus(
+            MacroViewSnapshot current)
+        {
+            var issue = current.LastActionIssue;
+            var summary = issue?.Status switch
+            {
+                ClientActionIssueStatus.Rejected =>
+                    "client input was repeatedly rejected",
+                ClientActionIssueStatus.Unsupported =>
+                    "client input is unsupported",
+                ClientActionIssueStatus.Failed =>
+                    "client input repeatedly failed",
+                ClientActionIssueStatus.PartiallyIssued =>
+                    "client input was partially issued",
+                ClientActionIssueStatus.TimedOut =>
+                    "client input outcome timed out",
+                _ => "client input failed"
+            };
+            return string.IsNullOrWhiteSpace(issue?.Message)
+                ? $"Paused: {summary}"
+                : $"Paused: {summary}. {issue.Message}";
+        }
+
+        private static string BuildRecoveryStatus(MacroViewSnapshot current)
+        {
+            var message = current.LastActionIssue?.Message;
+            return string.IsNullOrWhiteSpace(message)
+                ? "Recovering from a client input failure"
+                : $"Recovering: {message}";
+        }
 
         private ClientSnapshot ObservedSnapshot =>
             Runtime?.LatestSnapshot ??
@@ -541,11 +637,61 @@ namespace SleepHunter.ViewModels
                 $"Runtime available: " +
                 $"{(Runtime.IsHostAvailable ? "Yes" : "No")}");
             details.AppendLine($"Client: {Runtime.Client}");
+            details.AppendLine(
+                $"Consecutive capture failures: " +
+                $"{Runtime.ConsecutiveCaptureFailureCount}");
             if (Runtime.Current is { } current)
             {
                 details.AppendLine($"Macro lifecycle: {current.Lifecycle}");
                 details.AppendLine($"Macro revision: {current.Revision}");
                 details.AppendLine($"Macro stop reason: {current.StopReason}");
+                details.AppendLine($"Macro pause reason: {current.PauseReason}");
+                details.AppendLine(
+                    $"Pending action: " +
+                    $"{current.PendingActionId?.Value.ToString() ?? "None"}");
+                details.AppendLine(
+                    $"Waiting for input confirmation: " +
+                    $"{(current.IsAwaitingClientActionFeedback ? "Yes" : "No")}");
+                details.AppendLine(
+                    $"Recoverable input failures: " +
+                    $"{current.RecoverableActionFailureCount}");
+                details.AppendLine(
+                    $"Spell queue state: " +
+                    $"{current.SpellCast?.Status.ToString() ?? "Idle"}");
+                if (current.LastActionIssue is { } issue)
+                {
+                    details.AppendLine(
+                        $"Last client action: {issue.ActionId.Value}, " +
+                        $"{issue.Status}");
+                    if (!string.IsNullOrWhiteSpace(issue.Message))
+                        details.AppendLine($"Last action message: {issue.Message}");
+                }
+
+                if (Runtime.LastIntentIssueResult is { } intentIssue &&
+                    (current.LastActionIssue is null ||
+                     intentIssue.ActionId ==
+                        current.LastActionIssue.ActionId))
+                {
+                    details.AppendLine(
+                        $"Last input issuance: {intentIssue.Status}");
+                    details.AppendLine(
+                        $"Last input plan: {intentIssue.Plan.Status}, " +
+                        $"{intentIssue.Plan.Failure}");
+                    if (!string.IsNullOrWhiteSpace(intentIssue.Plan.Message))
+                    {
+                        details.AppendLine(
+                            $"Last input plan message: " +
+                            $"{intentIssue.Plan.Message}");
+                    }
+
+                    if (intentIssue.Dispatch is { } dispatch)
+                    {
+                        details.AppendLine(
+                            $"Last input dispatch: {dispatch.Status}, " +
+                            $"{dispatch.PostedMessageCount} posted, " +
+                            $"native error {dispatch.NativeErrorCode}");
+                    }
+                }
             }
             else
             {
