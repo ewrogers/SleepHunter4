@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [4.12.2] - 2026-08-29
+
+### Fixed
+
+- Recovered automatically from transient client input failures when no input was posted, while keeping retries bounded and pausing safely for ambiguous outcomes.
+- Prevented the spell queue from remaining stuck after a safe cast-input failure by clearing stale execution state and replanning from a fresh snapshot.
+- Allowed brief late input confirmations during startup to recover automatically instead of immediately pausing the macro.
+- Kept brief snapshot incoherence during client input in a neutral recovery state, while still highlighting persistent capture failures in red.
+- Made automatic pause reasons, input failures, recovery attempts, and spell queue state visible in the runtime status and diagnostics.
+
 ## [4.12.1] - 2026-08-01
 
 ### Fixed

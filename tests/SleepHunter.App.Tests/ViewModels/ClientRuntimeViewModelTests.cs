@@ -147,6 +147,9 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(
                 viewModel.CaptureStatistics.FailedCount,
                 Is.EqualTo(1));
+            Assert.That(
+                viewModel.ConsecutiveCaptureFailureCount,
+                Is.EqualTo(1));
         });
 
         host.PublishCapture(CreateCapture(
@@ -165,6 +168,7 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(
                 viewModel.CaptureStatistics.SucceededCount,
                 Is.EqualTo(1));
+            Assert.That(viewModel.ConsecutiveCaptureFailureCount, Is.Zero);
             Assert.That(dispatcher.InvocationCount, Is.EqualTo(2));
         });
 
@@ -186,6 +190,9 @@ public sealed class ClientRuntimeViewModelTests
             Assert.That(
                 viewModel.PresentationSnapshot,
                 Is.SameAs(successfulSnapshot));
+            Assert.That(
+                viewModel.ConsecutiveCaptureFailureCount,
+                Is.EqualTo(1));
         });
     }
 

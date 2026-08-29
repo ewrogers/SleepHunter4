@@ -48,7 +48,9 @@ public sealed record MacroState
         TargetRotationState? flowerTargetRotations = null,
         ClientActionIssue? lastActionIssue = null,
         AutomationConfiguration? automation = null,
-        PanelPreservationState? panelPreservation = null)
+        PanelPreservationState? panelPreservation = null,
+        MacroPauseReason pauseReason = MacroPauseReason.None,
+        int recoverableActionFailureCount = 0)
     {
         if (revision < 0)
         {
@@ -64,6 +66,22 @@ public sealed record MacroState
             throw new ArgumentException(
                 "Only stopped macro state can have a stop reason.",
                 nameof(stopReason));
+        }
+
+        if (lifecycle != MacroLifecycle.Paused &&
+            pauseReason != MacroPauseReason.None)
+        {
+            throw new ArgumentException(
+                "Only paused macro state can have a pause reason.",
+                nameof(pauseReason));
+        }
+
+        if (recoverableActionFailureCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(recoverableActionFailureCount),
+                recoverableActionFailureCount,
+                "Recoverable action failure counts cannot be negative.");
         }
 
         if (lifecycle != MacroLifecycle.Running && pendingAction is not null)
@@ -117,6 +135,8 @@ public sealed record MacroState
         LastActionIssue = lastActionIssue;
         Automation = automation ?? AutomationConfiguration.Disabled;
         PanelPreservation = panelPreservation;
+        PauseReason = pauseReason;
+        RecoverableActionFailureCount = recoverableActionFailureCount;
     }
 
     public long Revision { get; }
@@ -124,6 +144,8 @@ public sealed record MacroState
     public MacroLifecycle Lifecycle { get; }
 
     public MacroStopReason StopReason { get; }
+
+    public MacroPauseReason PauseReason { get; }
 
     public ClientSnapshot? LatestSnapshot { get; }
 
@@ -169,6 +191,8 @@ public sealed record MacroState
 
     public PanelPreservationState? PanelPreservation { get; }
 
+    public int RecoverableActionFailureCount { get; }
+
     internal long NextClientActionId { get; }
 
     internal bool HasSameContent(MacroState other)
@@ -205,7 +229,9 @@ public sealed record MacroState
             FlowerTargetRotations,
             LastActionIssue,
             Automation,
-            PanelPreservation);
+            PanelPreservation,
+            PauseReason,
+            RecoverableActionFailureCount);
 
     internal MacroState WithPanelPreservation(
         PanelPreservationState panelPreservation)
@@ -238,6 +264,8 @@ public sealed record MacroState
             FlowerTargetRotations,
             LastActionIssue,
             Automation,
-            panelPreservation);
+            panelPreservation,
+            PauseReason,
+            RecoverableActionFailureCount);
     }
 }

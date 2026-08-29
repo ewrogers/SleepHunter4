@@ -263,13 +263,21 @@ public sealed class ClientRuntimeHost : IClientRuntimeHost
     private ClientActionIssue Execute(ClientActionIntent intent)
     {
         var snapshot = Volatile.Read(ref latestSnapshot);
-        if (snapshot is null ||
-            !targetProvider.TryGetTarget(out var target) ||
+        if (snapshot is null)
+        {
+            return new ClientActionIssue(
+                intent.ActionId,
+                ClientActionIssueStatus.Rejected,
+                "No current client snapshot was available for input planning.");
+        }
+
+        if (!targetProvider.TryGetTarget(out var target) ||
             target is null)
         {
             return new ClientActionIssue(
                 intent.ActionId,
-                ClientActionIssueStatus.Rejected);
+                ClientActionIssueStatus.Rejected,
+                "The client window was temporarily unavailable.");
         }
 
         if (target.Client != Client)

@@ -69,20 +69,25 @@ public sealed class MacroSessionTests
             new ClientActionIssue(
                 intent.ActionId,
                 ClientActionIssueStatus.Rejected));
-        var paused = await session.Views.ReadUntilAsync(
+        var recovering = await session.Views.ReadUntilAsync(
             view =>
                 view.LastActionIssue?.ActionId == intent.ActionId);
 
         Assert.Multiple(() =>
         {
-            Assert.That(paused.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
-            Assert.That(paused.PendingActionId, Is.Null);
             Assert.That(
-                paused.PanelTransition?.Status,
+                recovering.Lifecycle,
+                Is.EqualTo(MacroLifecycle.Running));
+            Assert.That(recovering.PendingActionId, Is.Null);
+            Assert.That(
+                recovering.PanelTransition?.Status,
                 Is.EqualTo(PanelTransitionStatus.IssueFailed));
             Assert.That(
-                paused.LastActionIssue?.Status,
+                recovering.LastActionIssue?.Status,
                 Is.EqualTo(ClientActionIssueStatus.Rejected));
+            Assert.That(
+                recovering.RecoverableActionFailureCount,
+                Is.EqualTo(1));
         });
     }
 

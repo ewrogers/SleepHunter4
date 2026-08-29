@@ -90,6 +90,34 @@ public sealed class PendingActionTests
     }
 
     [Test]
+    public void ShouldBoundAWaitForLateIssuanceFeedback()
+    {
+        var pendingAction = new PendingAction(
+            new TestClientActionIntent(new ClientActionId(1)),
+            MacroTimestamp.Zero,
+            new MacroTimestamp(TimeSpan.FromMilliseconds(100)),
+            attempt: 1);
+        var feedbackDeadline =
+            new MacroTimestamp(TimeSpan.FromSeconds(2));
+
+        var waiting = pendingAction.AwaitFeedbackUntil(feedbackDeadline);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(pendingAction.IsAwaitingFeedback, Is.False);
+            Assert.That(waiting.IsAwaitingFeedback, Is.True);
+            Assert.That(waiting.FeedbackDeadline, Is.EqualTo(feedbackDeadline));
+            Assert.That(
+                () => waiting.AwaitFeedbackUntil(pendingAction.Deadline),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(
+                () => waiting.MarkIssued(MacroTimestamp.Zero)
+                    .AwaitFeedbackUntil(feedbackDeadline),
+                Throws.TypeOf<InvalidOperationException>());
+        });
+    }
+
+    [Test]
     public void ShouldClearPendingActionWhenPaused()
     {
         var engine = new MacroEngine();

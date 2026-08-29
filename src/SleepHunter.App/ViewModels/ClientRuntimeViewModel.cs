@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SleepHunter.Interop.Hosting;
+using SleepHunter.Interop.Input;
 using SleepHunter.Interop.Snapshots;
 using SleepHunter.Runtime.Automation;
 using SleepHunter.Runtime.Automation.Panels;
@@ -77,6 +78,13 @@ namespace SleepHunter.ViewModels
         }
 
         [ObservableProperty]
+        public partial int ConsecutiveCaptureFailureCount
+        {
+            get;
+            private set;
+        }
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCaptureHealthy))]
         public partial Exception RuntimeFailure { get; private set; }
 
@@ -102,6 +110,9 @@ namespace SleepHunter.ViewModels
 
         public SnapshotCaptureResult LatestCaptureResult =>
             LatestCapture?.Result;
+
+        public ClientIntentIssueResult LastIntentIssueResult =>
+            host.LastIntentIssueResult;
 
         public ClientSnapshot LatestSnapshot =>
             LatestCapture?.Result.Snapshot;
@@ -198,7 +209,16 @@ namespace SleepHunter.ViewModels
                 {
                     await uiDispatcher
                         .InvokeAsync(
-                            () => LatestCapture = capture,
+                            () =>
+                            {
+                                ConsecutiveCaptureFailureCount =
+                                    capture.Result.Succeeded
+                                        ? 0
+                                        : checked(
+                                            ConsecutiveCaptureFailureCount +
+                                            1);
+                                LatestCapture = capture;
+                            },
                             cancellationToken)
                         .ConfigureAwait(false);
                 }
@@ -317,6 +337,8 @@ namespace SleepHunter.ViewModels
                             {
                                 Lifecycle = MacroLifecycle.Stopped,
                                 StopReason = MacroStopReason.RuntimeFailure,
+                                PauseReason = MacroPauseReason.None,
+                                RecoverableActionFailureCount = 0,
                                 PendingActionId = null
                             };
                         }

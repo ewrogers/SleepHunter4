@@ -18,6 +18,9 @@ namespace SleepHunter.Runtime.Engine;
 
 public sealed partial class MacroEngine : IMacroEngine
 {
+    private static readonly TimeSpan ClientActionFeedbackGracePeriod =
+        TimeSpan.FromSeconds(2);
+
     public MacroDecision Decide(
         MacroState currentState,
         MacroEvent input,
@@ -83,12 +86,14 @@ public sealed partial class MacroEngine : IMacroEngine
                 MacroLifecycle.Running,
                 MacroLifecycle.Paused,
                 MacroStopReason.None,
+                MacroPauseReason.UserRequested,
                 currentTime),
             ResumeMacroCommand => ChangeLifecycle(
                 currentState,
                 MacroLifecycle.Paused,
                 MacroLifecycle.Running,
                 MacroStopReason.None,
+                MacroPauseReason.None,
                 currentTime),
             StopMacroCommand => Stop(currentState, currentTime),
             ApplyAutomationSetupCommand applyAutomation =>
@@ -227,7 +232,9 @@ public sealed partial class MacroEngine : IMacroEngine
             MacroStopReason.None,
             currentState.LatestSnapshot,
             currentTime,
-            pendingAction: null);
+            pendingAction: null,
+            pauseReason: MacroPauseReason.None,
+            recoverableActionFailureCount: 0);
     }
 
     private static MacroDecision Stop(
@@ -254,7 +261,9 @@ public sealed partial class MacroEngine : IMacroEngine
             dialog: CancelPendingDialog(currentState),
             flower: CancelPendingFlower(currentState),
             panelPreservation:
-                CancelPendingPanelPreservation(currentState));
+                CancelPendingPanelPreservation(currentState),
+            pauseReason: MacroPauseReason.None,
+            recoverableActionFailureCount: 0);
     }
 
     private static MacroDecision ChangeLifecycle(
@@ -262,6 +271,7 @@ public sealed partial class MacroEngine : IMacroEngine
         MacroLifecycle requiredLifecycle,
         MacroLifecycle nextLifecycle,
         MacroStopReason stopReason,
+        MacroPauseReason pauseReason,
         MacroTimestamp currentTime)
     {
         if (currentState.Lifecycle != requiredLifecycle)
@@ -301,7 +311,9 @@ public sealed partial class MacroEngine : IMacroEngine
                 : CancelPendingFlower(currentState),
             panelPreservation: nextLifecycle == MacroLifecycle.Running
                 ? currentState.PanelPreservation
-                : CancelPendingPanelPreservation(currentState));
+                : CancelPendingPanelPreservation(currentState),
+            pauseReason: pauseReason,
+            recoverableActionFailureCount: 0);
     }
 
     private static MacroDecision HandleSnapshot(
@@ -397,7 +409,18 @@ public sealed partial class MacroEngine : IMacroEngine
                 flower: CancelPendingFlower(currentState),
                 panelPreservation:
                     CancelPendingPanelPreservation(currentState),
-                intent: intent);
+                intent: intent,
+                pauseReason: nextLifecycle == MacroLifecycle.Paused
+                    ? changeReason switch
+                    {
+                        MacroStopReason.MapChanged =>
+                            MacroPauseReason.MapChanged,
+                        MacroStopReason.CoordinatesChanged =>
+                            MacroPauseReason.CoordinatesChanged,
+                        _ => MacroPauseReason.None
+                    }
+                    : MacroPauseReason.None,
+                recoverableActionFailureCount: 0);
         }
 
         if (!clientLoggedOut)
@@ -628,7 +651,13 @@ public sealed partial class MacroEngine : IMacroEngine
             disarm: disarm,
             dialog: dialog,
             flower: flower,
-            panelPreservation: panelPreservation);
+            panelPreservation: panelPreservation,
+            pauseReason: clientLoggedOut
+                ? MacroPauseReason.None
+                : currentState.PauseReason,
+            recoverableActionFailureCount: clientLoggedOut
+                ? 0
+                : currentState.RecoverableActionFailureCount);
     }
 
     private static bool TryGetObservationChange(
@@ -779,11 +808,33 @@ public sealed partial class MacroEngine : IMacroEngine
 
         if (!pendingAction.IsIssued)
         {
+            if (!pendingAction.IsAwaitingFeedback)
+            {
+                var feedbackDeadline = currentTime.Add(
+                    ClientActionFeedbackGracePeriod);
+                return Changed(
+                    currentState,
+                    currentState.Lifecycle,
+                    currentState.StopReason,
+                    currentState.LatestSnapshot,
+                    currentState.LastTransitionAt,
+                    pendingAction.AwaitFeedbackUntil(feedbackDeadline),
+                    scheduledEvents:
+                    [
+                        new ScheduledMacroEvent(
+                            new ClientActionDeadlineElapsed(
+                                pendingAction.Intent.ActionId),
+                            feedbackDeadline)
+                    ]);
+            }
+
             return HandleClientActionIssue(
                 currentState,
                 new ClientActionIssue(
                     pendingAction.Intent.ActionId,
-                    ClientActionIssueStatus.TimedOut),
+                    ClientActionIssueStatus.TimedOut,
+                    $"{DescribeClientAction(pendingAction.Intent)} " +
+                    "confirmation was not received within the recovery window."),
                 currentTime);
         }
 
@@ -1226,7 +1277,9 @@ public sealed partial class MacroEngine : IMacroEngine
         TargetRotationState? flowerTargetRotations = null,
         ClientActionIssue? lastActionIssue = null,
         AutomationConfiguration? automation = null,
-        PanelPreservationState? panelPreservation = null)
+        PanelPreservationState? panelPreservation = null,
+        MacroPauseReason? pauseReason = null,
+        int? recoverableActionFailureCount = null)
     {
         if (scheduledEvents.IsDefault)
         {
@@ -1267,7 +1320,10 @@ public sealed partial class MacroEngine : IMacroEngine
             flowerTargetRotations ?? currentState.FlowerTargetRotations,
             lastActionIssue ?? currentState.LastActionIssue,
             automation ?? currentState.Automation,
-            panelPreservation ?? currentState.PanelPreservation);
+            panelPreservation ?? currentState.PanelPreservation,
+            pauseReason ?? currentState.PauseReason,
+            recoverableActionFailureCount ??
+                currentState.RecoverableActionFailureCount);
 
         return new MacroDecision(
             nextState,

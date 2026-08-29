@@ -100,11 +100,19 @@ internal static class MacroDecisionInvariants
         if (decision.State.LastActionIssue is { WasIssued: false } failedIssue &&
             previousState.LastActionIssue != decision.State.LastActionIssue)
         {
-            if (decision.State.Lifecycle != MacroLifecycle.Paused ||
+            var isRecovering =
+                decision.State.Lifecycle == MacroLifecycle.Running &&
+                (failedIssue.Status is
+                    ClientActionIssueStatus.Rejected or
+                    ClientActionIssueStatus.Failed) &&
+                decision.State.RecoverableActionFailureCount ==
+                    previousState.RecoverableActionFailureCount + 1;
+            if ((!isRecovering &&
+                 decision.State.Lifecycle != MacroLifecycle.Paused) ||
                 decision.State.PendingAction is not null)
             {
                 throw new InvalidOperationException(
-                    "Failed client action issuance must pause and clear pending work.");
+                    "Failed client action issuance must recover or pause and clear pending work.");
             }
 
             if (previousState.PendingAction?.Intent.ActionId !=

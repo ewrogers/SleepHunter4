@@ -190,8 +190,19 @@ public sealed record SpellCastState
     internal SpellCastState PanelUnavailable() =>
         this with { Status = SpellCastStatus.PanelUnavailable };
 
-    internal SpellCastState IssueFailed() =>
-        this with { Status = SpellCastStatus.IssueFailed };
+    internal SpellCastState IssueFailed(
+        bool clearSnapshotRequirement = false) =>
+        clearSnapshotRequirement
+            ? this with
+            {
+                Status = SpellCastStatus.IssueFailed,
+                ActionId = null,
+                CompletesAt = null,
+                SnapshotRequiredAfter = null,
+                ResolvedTarget = null,
+                TargetStatus = null
+            }
+            : this with { Status = SpellCastStatus.IssueFailed };
 
     internal SpellCastState Cancelled() =>
         this with { Status = SpellCastStatus.Cancelled };

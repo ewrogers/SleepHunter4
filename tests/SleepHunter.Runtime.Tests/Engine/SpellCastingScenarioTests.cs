@@ -152,13 +152,19 @@ public sealed class SpellCastingScenarioTests
     }
 
     [Test]
-    public void ShouldPauseWhenSpellIssuanceFails()
+    public void ShouldRetrySpellAfterSafeIssuanceFailureAndFreshSnapshot()
     {
+        var spell = Spell("spell", slot: 1);
         var scenario = CreateRunningScenario(
             ClientPanel.TemuairSpells,
             Entry("spell", SpellTarget.Self),
-            Spell("spell", slot: 1),
+            spell,
             issueActions: false);
+        scenario.Send(
+            new ConfigureAutomationCommand(
+                new AutomationConfiguration(
+                    spellsEnabled: true,
+                    spellPolicy: TestPolicy)));
         var requested = scenario.Send(
             new CastNextSpellCommand(TestPolicy));
 
@@ -167,17 +173,35 @@ public sealed class SpellCastingScenarioTests
                 new ClientActionIssue(
                     ((CastSpellIntent)requested.Intent!).ActionId,
                     ClientActionIssueStatus.Failed)));
+        var refreshed = scenario.Observe(
+            sequence: 2,
+            activePanel: ClientPanel.TemuairSpells,
+            vitals: Vitals(),
+            spellbook: Spellbook(spell));
+        var retried = scenario.Dispatch(
+            refreshed.RaisedEvents.Single(
+                value => value is AutomationCycleRequested));
 
         Assert.Multiple(() =>
         {
-            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Paused));
+            Assert.That(failed.State.Lifecycle, Is.EqualTo(MacroLifecycle.Running));
             Assert.That(failed.State.PendingAction, Is.Null);
+            Assert.That(
+                failed.State.RecoverableActionFailureCount,
+                Is.EqualTo(1));
             Assert.That(
                 failed.State.SpellCast?.Status,
                 Is.EqualTo(SpellCastStatus.IssueFailed));
             Assert.That(
+                failed.State.SpellCast?.SnapshotRequiredAfter,
+                Is.Null);
+            Assert.That(
                 failed.State.LastActionIssue?.Status,
                 Is.EqualTo(ClientActionIssueStatus.Failed));
+            Assert.That(retried.Intent, Is.TypeOf<CastSpellIntent>());
+            Assert.That(
+                ((CastSpellIntent)retried.Intent!).ActionId,
+                Is.Not.EqualTo(((CastSpellIntent)requested.Intent!).ActionId));
         });
     }
 

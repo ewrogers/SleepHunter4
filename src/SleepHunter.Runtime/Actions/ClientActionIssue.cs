@@ -4,7 +4,8 @@ public sealed record ClientActionIssue
 {
     public ClientActionIssue(
         ClientActionId actionId,
-        ClientActionIssueStatus status)
+        ClientActionIssueStatus status,
+        string? message = null)
     {
         if (actionId.Value <= 0)
         {
@@ -24,11 +25,16 @@ public sealed record ClientActionIssue
 
         ActionId = actionId;
         Status = status;
+        Message = string.IsNullOrWhiteSpace(message)
+            ? null
+            : message.Trim();
     }
 
     public ClientActionId ActionId { get; }
 
     public ClientActionIssueStatus Status { get; }
+
+    public string? Message { get; }
 
     public bool WasIssued => Status == ClientActionIssueStatus.Issued;
 }

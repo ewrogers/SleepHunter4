@@ -56,6 +56,9 @@ public sealed class ObservationChangeScenarioTests
             Assert.That(
                 changed.State.StopReason,
                 Is.EqualTo(MacroStopReason.None));
+            Assert.That(
+                changed.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.CoordinatesChanged));
             Assert.That(changed.State.PendingAction, Is.Null);
             Assert.That(
                 changed.State.PanelTransition?.Status,
@@ -110,6 +113,9 @@ public sealed class ObservationChangeScenarioTests
             Assert.That(
                 changed.State.StopReason,
                 Is.EqualTo(MacroStopReason.None));
+            Assert.That(
+                changed.State.PauseReason,
+                Is.EqualTo(MacroPauseReason.MapChanged));
         });
     }
 

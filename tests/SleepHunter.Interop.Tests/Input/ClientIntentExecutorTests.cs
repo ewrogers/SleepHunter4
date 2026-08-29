@@ -82,6 +82,10 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.ToActionIssue().Status,
                 Is.EqualTo(ClientActionIssueStatus.Rejected));
+            Assert.That(
+                result.ToActionIssue().Message,
+                Is.EqualTo(
+                    "Intent planning requires a complete client snapshot."));
             Assert.That(sink.Attempts, Is.Empty);
         });
     }
@@ -110,6 +114,9 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.ToActionIssue().Status,
                 Is.EqualTo(ClientActionIssueStatus.Rejected));
+            Assert.That(
+                result.ToActionIssue().Message,
+                Is.EqualTo("The window owner changed."));
             Assert.That(sink.Attempts, Is.Empty);
         });
     }
@@ -136,6 +143,10 @@ public sealed class ClientIntentExecutorTests
             Assert.That(
                 result.ToActionIssue().Status,
                 Is.EqualTo(ClientActionIssueStatus.PartiallyIssued));
+            Assert.That(
+                result.ToActionIssue().Message,
+                Does.StartWith(
+                    "Client input failed after one or more messages were posted."));
             Assert.That(sink.Attempts, Has.Count.EqualTo(3));
         });
     }
@@ -161,8 +172,15 @@ public sealed class ClientIntentExecutorTests
                 failed.ToActionIssue().Status,
                 Is.EqualTo(ClientActionIssueStatus.Failed));
             Assert.That(
+                failed.ToActionIssue().Message,
+                Does.StartWith(
+                    "Client input failed before any messages were posted."));
+            Assert.That(
                 unsupported.ToActionIssue().Status,
                 Is.EqualTo(ClientActionIssueStatus.Unsupported));
+            Assert.That(
+                unsupported.ToActionIssue().Message,
+                Does.Contain("UnsupportedIntent"));
         });
     }
 
